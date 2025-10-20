@@ -3,16 +3,18 @@ import { relations, sql } from 'drizzle-orm'
 
 // Users table
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: text('id').primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
+  emailVerified: boolean('email_verified').notNull().default(false),
   name: varchar('name', { length: 255 }).notNull(),
+  image: text('image'),
   roleType: varchar('role_type', { length: 50 }),
-  buddyId: uuid('buddy_id'),
+  buddyId: text('buddy_id'),
   nextReviewDate: date('next_review_date'),
   avatarUrl: text('avatar_url'),
   isAdmin: boolean('is_admin').default(false),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
 })
 
 // Relations for users
@@ -44,8 +46,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 // Feedback table
 export const feedback = pgTable('feedback', {
   id: uuid('id').primaryKey().defaultRandom(),
-  reviewerId: uuid('reviewer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  revieweeId: uuid('reviewee_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reviewerId: text('reviewer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  revieweeId: text('reviewee_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   weekYear: varchar('week_year', { length: 10 }),
@@ -69,7 +71,7 @@ export const feedbackRelations = relations(feedback, ({ one }) => ({
 // Goals table
 export const goals = pgTable('goals', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   goalText: text('goal_text').notNull(),
   status: varchar('status', { length: 50 }).default('active'),
   targetDate: date('target_date'),
@@ -89,8 +91,8 @@ export const goalsRelations = relations(goals, ({ one }) => ({
 // Review schedules table
 export const reviewSchedules = pgTable('review_schedules', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  buddyId: uuid('buddy_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  buddyId: text('buddy_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   scheduledDate: date('scheduled_date').notNull(),
   completedDate: date('completed_date'),
   status: varchar('status', { length: 50 }).default('scheduled'),
@@ -116,7 +118,7 @@ export const reviewSchedulesRelations = relations(reviewSchedules, ({ one }) => 
 // Onboarding imports table
 export const onboardingImports = pgTable('onboarding_imports', {
   id: uuid('id').primaryKey().defaultRandom(),
-  adminId: uuid('admin_id').notNull().references(() => users.id),
+  adminId: text('admin_id').notNull().references(() => users.id),
   filename: varchar('filename', { length: 255 }),
   rowsImported: integer('rows_imported'),
   status: varchar('status', { length: 50 }),
@@ -131,3 +133,41 @@ export const onboardingImportsRelations = relations(onboardingImports, ({ one })
     references: [users.id],
   }),
 }))
+
+// Better-auth tables
+export const sessions = pgTable('session', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const accounts = pgTable('account', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  expiresAt: timestamp('expires_at'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const verifications = pgTable('verification', {
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
