@@ -133,12 +133,10 @@ const userMenuItems = [
 
       <!-- Bottom section with user profile -->
       <template #footer="{ collapsed }">
-        <div class="px-4 py-4 space-y-3">
+        <div class="px-4 py-4 space-y-4">
           <!-- Color mode toggle -->
-          <div v-if="!collapsed" class="flex items-center justify-between">
-            <span class="text-sm text-gray-600 dark:text-gray-400"
-              >Dark Mode</span
-            >
+          <div v-if="!collapsed" class="flex items-center justify-between gap-3">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
             <UColorModeSwitch />
           </div>
           <UColorModeSwitch v-else />

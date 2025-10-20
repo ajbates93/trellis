@@ -1,14 +1,16 @@
 <template>
-  <div class="p-4 sm:p-6 lg:p-8">
-    <!-- Welcome header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-        Welcome back, {{ user?.name?.split(' ')[0] || 'there' }}
-      </h1>
-      <p class="mt-2 text-gray-600 dark:text-gray-400">
-        Here's what's happening with your feedback and goals
-      </p>
-    </div>
+  <UDashboardPanel id="home">
+    <template #body>
+      <div class="p-4 sm:p-6 lg:p-8">
+        <!-- Welcome header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Welcome back, {{ user?.name?.split(' ')[0] || 'there' }}
+          </h1>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">
+            Here's what's happening with your feedback and goals
+          </p>
+        </div>
 
     <!-- Stats cards grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -25,11 +27,11 @@
             <UIcon name="i-heroicons-chat-bubble-left" class="text-primary text-xl" />
           </div>
         </div>
-        <div class="mt-4">
-          <UChip :text="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
-                 :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'"
-                 size="xs" />
-          <span class="ml-2 text-xs text-gray-600 dark:text-gray-400">vs last week</span>
+        <div class="mt-4 flex items-center gap-2">
+          <UBadge :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
+                  :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'"
+                  size="xs" />
+          <span class="text-xs text-gray-600 dark:text-gray-400">vs last week</span>
         </div>
       </UCard>
 
@@ -46,11 +48,11 @@
             <UIcon name="i-heroicons-inbox" class="text-green-500 text-xl" />
           </div>
         </div>
-        <div class="mt-4">
-          <UChip :text="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
-                 :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'"
-                 size="xs" />
-          <span class="ml-2 text-xs text-gray-600 dark:text-gray-400">vs last week</span>
+        <div class="mt-4 flex items-center gap-2">
+          <UBadge :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
+                  :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'"
+                  size="xs" />
+          <span class="text-xs text-gray-600 dark:text-gray-400">vs last week</span>
         </div>
       </UCard>
 
@@ -67,11 +69,11 @@
             <UIcon name="i-heroicons-flag" class="text-blue-500 text-xl" />
           </div>
         </div>
-        <div class="mt-4">
-          <UChip :text="`${stats.completedGoals} completed`"
-                 color="primary"
-                 size="xs" />
-          <span class="ml-2 text-xs text-gray-600 dark:text-gray-400">this month</span>
+        <div class="mt-4 flex items-center gap-2">
+          <UBadge :label="`${stats.completedGoals} completed`"
+                  color="primary"
+                  size="xs" />
+          <span class="text-xs text-gray-600 dark:text-gray-400">this month</span>
         </div>
       </UCard>
 
@@ -88,9 +90,9 @@
             <UIcon name="i-heroicons-calendar-days" class="text-purple-500 text-xl" />
           </div>
         </div>
-        <div class="mt-4">
-          <UChip text="Upcoming" color="primary" size="xs" />
-          <span class="ml-2 text-xs text-gray-600 dark:text-gray-400">days remaining</span>
+        <div class="mt-4 flex items-center gap-2">
+          <UBadge label="Upcoming" color="primary" size="xs" />
+          <span class="text-xs text-gray-600 dark:text-gray-400">days remaining</span>
         </div>
       </UCard>
     </div>
@@ -202,7 +204,9 @@
         </div>
       </div>
     </UCard>
-  </div>
+      </div>
+    </template>
+  </UDashboardPanel>
 </template>
 
 <script setup lang="ts">
@@ -234,9 +238,9 @@ const feedbackColumns = [
     label: 'From'
   },
   {
-    key: 'content',
-    label: 'Feedback',
-    class: 'max-w-md truncate'
+    key: "content",
+    label: "Feedback",
+    class: "max-w-md truncate",
   },
   {
     key: "date",
