@@ -195,12 +195,11 @@
           </template>
         </UTable>
 
-        <UEmpty
-          v-else
-          icon="i-heroicons-chat-bubble-left-right"
-          title="No feedback yet"
-          description="You haven't received any feedback yet. Check back later!"
-        />
+        <div v-else class="text-center py-12">
+          <UIcon name="i-heroicons-chat-bubble-left-right" class="text-gray-400 text-4xl mb-2" />
+          <p class="text-lg font-semibold text-gray-900 dark:text-white">No feedback yet</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">You haven't received any feedback yet. Check back later!</p>
+        </div>
       </div>
     </UCard>
   </div>
