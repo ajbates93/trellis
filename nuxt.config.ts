@@ -4,5 +4,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxt/test-utils", "@nuxt/ui", "@nuxt/eslint", "nuxt-mcp"],
   css: ["~/assets/css/main.css"],
+
+  ui: {
+    icons: {
+      // Only use heroicons, disable lucide
+      collections: ["heroicons"],
+    },
+  },
 });
 

@@ -11,34 +11,23 @@ const feedbackText = ref("");
 const isSubmitting = ref(false);
 const showSuccess = ref(false);
 
-// Mock users list - will be replaced with API call
-const users = ref([
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@pocketworks.co.uk",
-    avatarUrl: "https://avatar.vercel.sh/john",
-    roleType: "dev",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane.smith@pocketworks.co.uk",
-    avatarUrl: "https://avatar.vercel.sh/jane",
-    roleType: "design",
-  },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob.johnson@pocketworks.co.uk",
-    avatarUrl: "https://avatar.vercel.sh/bob",
-    roleType: "qa",
-  },
-]);
+// Fetch users from API
+const { data: usersData } = await useFetch("/api/users");
+const users = computed(() => usersData.value?.users || []);
 
-// Filter out current user from list
+// Fetch random feedback prompt
+const { data: promptData } = await useFetch("/api/feedback-prompts/random");
+const currentPrompt = computed(() => promptData.value?.prompt);
+
+// Filter out current user from list and format for USelectMenu
 const availableUsers = computed(() => {
-  return users.value.filter((u) => u.id !== user.value?.id);
+  return users.value
+    .filter((u) => u.id !== user.value?.id)
+    .map((u) => ({
+      ...u,
+      label: u.name, // USelectMenu needs a 'label' property
+      value: u.id,
+    }));
 });
 
 // Check if user can give feedback (not already reviewed this week)
@@ -103,21 +92,17 @@ watch(selectedUser, async (newUser) => {
 
 <template>
   <UDashboardPanel id="give-feedback">
-    <template #header>
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <template #body>
+      <div class="p-4 sm:p-6 lg:p-8">
+        <!-- Page header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Give Feedback
           </h1>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <p class="mt-2 text-gray-600 dark:text-gray-400">
             Share constructive feedback with your colleagues
           </p>
         </div>
-      </div>
-    </template>
-
-    <template #body>
-      <div class="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
         <!-- Success Message -->
         <UCard v-if="showSuccess" class="mb-6 bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
           <div class="flex items-center gap-3">
@@ -136,6 +121,21 @@ watch(selectedUser, async (newUser) => {
         <!-- Feedback Form -->
         <UCard>
           <form @submit.prevent="submitFeedback" class="space-y-6">
+            <!-- Random Question Display -->
+            <div v-if="currentPrompt" class="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div class="flex items-start gap-3">
+                <UIcon name="i-heroicons-light-bulb" class="text-primary text-xl mt-0.5" />
+                <div>
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Question to consider:
+                  </p>
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ currentPrompt.question }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- User Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -143,39 +143,42 @@ watch(selectedUser, async (newUser) => {
               </label>
               <USelectMenu
                 v-model="selectedUser"
-                :options="availableUsers"
+                :items="availableUsers"
                 placeholder="Search for a colleague..."
-                searchable
-                value-attribute="id"
+                value-key="id"
+                :search-input="{ placeholder: 'Search colleagues...' }"
               >
-                <template #label>
-                  <div v-if="selectedUser" class="flex items-center gap-2">
-                    <UAvatar
-                      :src="selectedUser.avatarUrl"
-                      :alt="selectedUser.name"
-                      size="xs"
-                    />
-                    <span>{{ selectedUser.name }}</span>
-                  </div>
-                  <span v-else class="text-gray-500">Select a colleague...</span>
+                <template #leading>
+                  <UAvatar
+                    v-if="selectedUser"
+                    :src="selectedUser.image || selectedUser.avatarUrl"
+                    :alt="selectedUser.name"
+                    size="xs"
+                  />
                 </template>
 
-                <template #option="{ option }">
+                <template #item="{ item }">
                   <div class="flex items-center gap-3 w-full">
                     <UAvatar
-                      :src="option.avatarUrl"
-                      :alt="option.name"
+                      :src="item.image || item.avatarUrl"
+                      :alt="item.name"
                       size="sm"
                     />
                     <div class="flex-1 min-w-0">
                       <p class="font-medium text-gray-900 dark:text-white truncate">
-                        {{ option.name }}
+                        {{ item.name }}
                       </p>
                       <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {{ option.email }}
+                        {{ item.email }}
                       </p>
                     </div>
-                    <UBadge :label="option.roleType" size="xs" color="neutral" />
+                    <UBadge v-if="item.roleType" :label="item.roleType" size="xs" color="neutral" />
+                  </div>
+                </template>
+
+                <template #empty>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center">
+                    No colleagues found
                   </div>
                 </template>
               </USelectMenu>
@@ -200,9 +203,11 @@ watch(selectedUser, async (newUser) => {
               </label>
               <UTextarea
                 v-model="feedbackText"
-                :rows="8"
+                :rows="12"
                 placeholder="Share your feedback here... Be specific, constructive, and kind."
                 :disabled="!selectedUser"
+                class="w-full"
+                :ui="{ wrapper: 'w-full' }"
               />
               <div class="mt-2 flex items-center justify-between text-sm">
                 <p
@@ -226,7 +231,6 @@ watch(selectedUser, async (newUser) => {
                   <p class="font-semibold mb-2">Tips for great feedback:</p>
                   <ul class="space-y-1 list-disc list-inside text-blue-700 dark:text-blue-300">
                     <li>Be specific with examples</li>
-                    <li>Focus on behaviors, not personality</li>
                     <li>Balance positive recognition with constructive suggestions</li>
                     <li>Consider impact and suggest improvements</li>
                   </ul>
