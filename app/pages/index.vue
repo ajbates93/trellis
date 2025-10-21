@@ -134,21 +134,8 @@
       </div>
     </UCard>
 
-    <!-- Activity chart placeholder -->
-    <UCard class="mb-8">
-      <div class="space-y-4">
-        <div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Activity Overview</h2>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Your feedback activity over the last 12 weeks</p>
-        </div>
-        <div class="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div class="text-center">
-            <UIcon name="i-heroicons-chart-bar" class="text-gray-400 text-4xl mb-2" />
-            <p class="text-sm text-gray-500 dark:text-gray-400">Chart coming soon</p>
-          </div>
-        </div>
-      </div>
-    </UCard>
+    <!-- Activity chart -->
+    <FeedbackActivityChart class="mb-8" />
 
     <!-- Recent feedback -->
     <UCard>
