@@ -28,26 +28,34 @@
   - [x] Recent feedback preview
   - [x] Feedback activity chart (12 weeks)
 
-## Phase 3: Feedback System
-- [ ] Give Feedback page
-  - [ ] User selection dropdown (searchable)
-  - [ ] Feedback text area with validation
-  - [ ] Check if already reviewed this week
-  - [ ] Submit feedback functionality
-  - [ ] Success confirmation with confetti
+## Phase 3: Feedback System (In Progress)
+- [x] Database setup
+  - [x] Added feedback_prompts table to schema
+  - [x] Created comprehensive seed script with team data
+  - [x] Implemented user linking system (seeded users → OAuth users)
+  - [x] Added buddy assignments for all team members
+  - [x] Seeded 21 feedback questions across 6 categories
+- [x] Give Feedback page
+  - [x] User selection dropdown (searchable)
+  - [x] Feedback text area with validation
+  - [x] Check if already reviewed this week
+  - [x] Submit feedback functionality
+  - [x] Success confirmation (confetti deferred)
+  - [x] Feedback guidelines card
+  - [x] Character count validation (min 10 chars)
 - [ ] Feedback Inbox page
   - [ ] Tabs: Received / Given / For My Buddies
   - [ ] Feedback list with cards
   - [ ] Filter by date range, role, read/unread
   - [ ] Mark as read functionality
   - [ ] Pagination (20 per page)
-- [ ] API endpoints
-  - [ ] POST /api/feedback - Submit feedback
+- [x] API endpoints (partial)
+  - [x] POST /api/feedback - Submit feedback
   - [ ] GET /api/feedback/received - Get received feedback
   - [ ] GET /api/feedback/given - Get given feedback
   - [ ] GET /api/feedback/for-buddy - Get feedback for buddies
   - [ ] PATCH /api/feedback/:id/read - Mark as read
-  - [ ] GET /api/feedback/can-review/:userId - Check weekly limit
+  - [x] GET /api/feedback/can-review/:userId - Check weekly limit
 
 ## Phase 4: Goals Management
 - [ ] Goals page with Kanban layout
@@ -173,5 +181,12 @@
 
 ## Current Status
 **Last Updated:** 2025-10-21
-**Current Phase:** Phase 3 - Feedback System
-**Next Task:** Create Give Feedback page with user selection and form validation
+**Current Phase:** Phase 3 - Feedback System (In Progress)
+**Completed This Session:**
+- Give Feedback page with full validation and weekly limit checking
+- User linking system for automatic OAuth/seeded user merging
+- Comprehensive database seeding with team data and buddy assignments
+- Feedback submission API with weekly tracking
+- Feedback activity chart visualization with Unovis
+
+**Next Task:** Build Feedback Inbox page with tabs (Received / Given / For My Buddies)
