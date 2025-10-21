@@ -57,6 +57,55 @@ npm run generate
 - Server-side sessions stored in PostgreSQL (30-day duration)
 - Protected routes require valid session
 
+### User Linking System
+The application implements an automatic user-linking system to handle pre-populated user data before OAuth authentication:
+
+**Use Cases**:
+1. **MVP Development**: Seed database with team members for testing before they log in
+2. **SaaS Onboarding**: Admins import user data (names, emails, buddy relationships) before granting system access
+3. **Bulk User Setup**: Pre-configure team structures and relationships before user activation
+
+**Problem**: When users are created in the database before they authenticate, OAuth providers (like Better Auth) create new user records with different IDs on first login, resulting in duplicate user records and broken relationships.
+
+**Solution**: A Better Auth hook automatically detects and merges pre-created users with OAuth users on first login:
+
+1. **Pre-Created Users**:
+   - Created via seed script (`npm run db:seed`) or admin CSV import
+   - Have `emailVerified = false` flag to identify them as pre-created
+   - Can have buddy relationships, receive feedback, be assigned goals
+
+2. **First Login**: When a user authenticates via Google OAuth:
+   - Better Auth creates a new user record with its own ID format
+   - Hook detects matching pre-created user by email (`emailVerified = false`)
+   - Migrates all data to the OAuth user ID:
+     - Feedback (as reviewer and reviewee)
+     - Goals
+     - Review schedules
+     - Buddy relationships (bidirectional)
+   - Deletes old pre-created user record
+
+3. **Result**: Single authenticated user with all pre-configured relationships preserved
+
+**Implementation**: See `server/utils/auth.ts` hooks configuration. The hook runs after successful OAuth sign-in and performs atomic database migrations to ensure data consistency.
+
+**Benefits**:
+- Admins can set up complete team structures before user access
+- No duplicate users in production
+- Seamless user experience on first login
+- All relationships and historical data preserved
+- Supports gradual rollout (some users active, others pre-configured)
+
+**SaaS Workflow Example**:
+```
+Admin imports CSV → Pre-created users with buddy assignments
+                  ↓
+Users receive invitation email → Click login link
+                  ↓
+First OAuth login → Automatic user linking
+                  ↓
+User sees existing buddy, can give/receive feedback immediately
+```
+
 ## Database Schema
 
 ### Core Tables
