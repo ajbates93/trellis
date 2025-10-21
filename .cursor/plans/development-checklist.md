@@ -10,22 +10,23 @@
 - [x] Create login page
 - [x] Test authentication flow
 
-## Phase 2: Core Layout & Navigation
-- [ ] Create main layout with sidebar
-  - [ ] Logo and app branding
-  - [ ] Navigation menu (Dashboard, Feedback, Goals, Reviews, Admin)
-  - [ ] User profile section with avatar
-  - [ ] Dark mode toggle
-  - [ ] Logout button
-- [ ] Create dashboard page (employee view)
-  - [ ] Welcome header with user name
-  - [ ] Stats cards (4 across)
-    - [ ] Feedback given this week
-    - [ ] Feedback received this week
-    - [ ] Active goals count
-    - [ ] Next review date countdown
-  - [ ] Quick actions panel
-  - [ ] Recent feedback preview
+## Phase 2: Core Layout & Navigation ✅
+- [x] Create main layout with sidebar
+  - [x] Logo and app branding
+  - [x] Navigation menu (Dashboard, Feedback, Goals, Reviews, Admin)
+  - [x] User profile section with avatar
+  - [x] Dark mode toggle
+  - [x] Logout button
+- [x] Create dashboard page (employee view)
+  - [x] Welcome header with user name
+  - [x] Stats cards (4 across)
+    - [x] Feedback given this week
+    - [x] Feedback received this week
+    - [x] Active goals count
+    - [x] Next review date countdown
+  - [x] Quick actions panel
+  - [x] Recent feedback preview
+  - [x] Feedback activity chart (12 weeks)
 
 ## Phase 3: Feedback System
 - [ ] Give Feedback page
@@ -171,6 +172,6 @@
 ---
 
 ## Current Status
-**Last Updated:** 2025-10-20
-**Current Phase:** Phase 2 - Core Layout & Navigation
-**Next Task:** Create main layout with sidebar navigation
+**Last Updated:** 2025-10-21
+**Current Phase:** Phase 3 - Feedback System
+**Next Task:** Create Give Feedback page with user selection and form validation

@@ -11,7 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx server/database/seed.ts"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
@@ -32,6 +33,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.5"
+    "drizzle-kit": "^0.31.5",
+    "tsx": "^4.20.6"
   }
 }

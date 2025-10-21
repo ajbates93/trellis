@@ -134,6 +134,15 @@ export const onboardingImportsRelations = relations(onboardingImports, ({ one })
   }),
 }))
 
+// Feedback prompts table
+export const feedbackPrompts = pgTable('feedback_prompts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  question: text('question').notNull(),
+  category: varchar('category', { length: 50 }),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
 // Better-auth tables
 export const sessions = pgTable('session', {
   id: text('id').primaryKey(),
