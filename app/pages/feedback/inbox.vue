@@ -85,7 +85,16 @@ const formatDate = (date: string | Date) => {
 // Column definitions
 const receivedColumns = [
   { id: "from", accessorKey: "reviewer", header: "From" },
-  { id: "content", accessorKey: "content", header: "Feedback" },
+  {
+    id: "content",
+    accessorKey: "content",
+    header: "Feedback",
+    meta: {
+      class: {
+        td: "max-w-md"
+      }
+    }
+  },
   { id: "date", accessorKey: "publishedAt", header: "Date" },
   { id: "status", accessorKey: "isRead", header: "Status" },
   { id: "actions", header: "" },
@@ -93,14 +102,32 @@ const receivedColumns = [
 
 const givenColumns = [
   { id: "to", accessorKey: "reviewee", header: "To" },
-  { id: "content", accessorKey: "content", header: "Feedback" },
+  {
+    id: "content",
+    accessorKey: "content",
+    header: "Feedback",
+    meta: {
+      class: {
+        td: "max-w-md"
+      }
+    }
+  },
   { id: "date", accessorKey: "createdAt", header: "Date" },
   { id: "status", accessorKey: "published", header: "Status" },
 ];
 
 const buddyFeedbackColumns = [
   { id: "from", accessorKey: "reviewer", header: "From" },
-  { id: "content", accessorKey: "content", header: "Feedback" },
+  {
+    id: "content",
+    accessorKey: "content",
+    header: "Feedback",
+    meta: {
+      class: {
+        td: "max-w-md"
+      }
+    }
+  },
   { id: "date", accessorKey: "createdAt", header: "Date" },
   { id: "actions", header: "" },
 ];
@@ -158,7 +185,20 @@ const buddyFeedbackColumns = [
                 </template>
 
                 <template #content-cell="{ row }">
-                  <p class="max-w-md truncate">{{ row.original.content }}</p>
+                  <UPopover>
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                    >
+                      <span class="truncate block">{{ row.original.content }}</span>
+                    </UButton>
+                    <template #content>
+                      <div class="p-4 max-w-md">
+                        <p class="text-sm whitespace-normal">{{ row.original.content }}</p>
+                      </div>
+                    </template>
+                  </UPopover>
                 </template>
 
                 <template #date-cell="{ row }">
@@ -221,7 +261,20 @@ const buddyFeedbackColumns = [
                 </template>
 
                 <template #content-cell="{ row }">
-                  <p class="max-w-md truncate">{{ row.original.content }}</p>
+                  <UPopover>
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                    >
+                      <span class="truncate block">{{ row.original.content }}</span>
+                    </UButton>
+                    <template #content>
+                      <div class="p-4 max-w-md">
+                        <p class="text-sm whitespace-normal">{{ row.original.content }}</p>
+                      </div>
+                    </template>
+                  </UPopover>
                 </template>
 
                 <template #date-cell="{ row }">
@@ -321,7 +374,20 @@ const buddyFeedbackColumns = [
                   </template>
 
                   <template #content-cell="{ row }">
-                    <p class="max-w-md">{{ row.original.content }}</p>
+                    <UPopover>
+                      <UButton
+                        variant="ghost"
+                        color="neutral"
+                        class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                      >
+                        <span class="truncate block">{{ row.original.content }}</span>
+                      </UButton>
+                      <template #content>
+                        <div class="p-4 max-w-md">
+                          <p class="text-sm whitespace-normal">{{ row.original.content }}</p>
+                        </div>
+                      </template>
+                    </UPopover>
                   </template>
 
                   <template #date-cell="{ row }">
