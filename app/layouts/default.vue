@@ -4,6 +4,9 @@ const { user, signOut } = useAuth();
 // Navigation links
 const route = useRoute();
 
+// Loading indicator for page navigation
+const { isLoading } = useLoadingIndicator();
+
 const navigationLinks = computed(() => {
   const links = [
     {
@@ -102,7 +105,16 @@ const userMenuItems = [
 </script>
 
 <template>
-  <UDashboardGroup unit="rem">
+  <div class="relative">
+    <!-- Global loading indicator for page navigation -->
+    <UProgress
+      v-if="isLoading"
+      color="primary"
+      animation="carousel"
+      class="fixed top-0 left-0 right-0 z-50"
+    />
+
+    <UDashboardGroup unit="rem">
     <UDashboardSidebar
       collapsible
       resizable
@@ -165,7 +177,8 @@ const userMenuItems = [
       </template>
     </UDashboardSidebar>
 
-    <!-- Main content area -->
-    <slot />
-  </UDashboardGroup>
+      <!-- Main content area -->
+      <slot />
+    </UDashboardGroup>
+  </div>
 </template>

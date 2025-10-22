@@ -36,10 +36,11 @@ const buddyAssignments = computed(() => buddyData.value?.buddyAssignments || [])
 const markAsRead = async (feedbackId: string) => {
   try {
     await $fetch(`/api/feedback/${feedbackId}/read`, { method: "PATCH" });
-    await refreshReceived();
+    return await refreshReceived();
   } catch (error) {
     console.error("Failed to mark as read:", error);
     alert("Failed to mark as read");
+    throw error;
   }
 };
 
@@ -47,10 +48,11 @@ const markAsRead = async (feedbackId: string) => {
 const publishFeedback = async (feedbackId: string) => {
   try {
     await $fetch(`/api/feedback/${feedbackId}/publish`, { method: "PATCH" });
-    await refreshBuddy();
+    return await refreshBuddy();
   } catch (error) {
     console.error("Failed to publish feedback:", error);
     alert("Failed to publish feedback");
+    throw error;
   }
 };
 
@@ -61,10 +63,11 @@ const publishBatch = async (feedbackIds: string[]) => {
       method: "POST",
       body: { feedbackIds },
     });
-    await refreshBuddy();
+    return await refreshBuddy();
   } catch (error) {
     console.error("Failed to publish batch:", error);
     alert("Failed to publish feedback");
+    throw error;
   }
 };
 
@@ -74,7 +77,7 @@ const publishAllForUser = async (userId: string) => {
   if (!assignment || assignment.feedback.length === 0) return;
 
   const feedbackIds = assignment.feedback.map((f) => f.id);
-  await publishBatch(feedbackIds);
+  return await publishBatch(feedbackIds);
 };
 
 // Format date helper
@@ -218,6 +221,7 @@ const buddyFeedbackColumns = [
                 <template #actions-cell="{ row }">
                   <UButton
                     v-if="!row.original.isRead"
+                    loading-auto
                     @click="markAsRead(row.original.id)"
                     size="xs"
                     variant="ghost"
@@ -338,6 +342,7 @@ const buddyFeedbackColumns = [
                   </div>
                   <UButton
                     v-if="assignment.pendingCount > 0"
+                    loading-auto
                     @click="publishAllForUser(assignment.user.id)"
                     size="sm"
                     color="primary"
@@ -398,6 +403,7 @@ const buddyFeedbackColumns = [
 
                   <template #actions-cell="{ row }">
                     <UButton
+                      loading-auto
                       @click="publishFeedback(row.original.id)"
                       size="xs"
                       color="primary"
