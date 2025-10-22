@@ -219,6 +219,174 @@ async function seed() {
       }
     }
 
+    // Step 4: Create sample feedback for testing
+    console.log("\n💬 Creating sample feedback...");
+
+    const alexBatesId = userIdMap["Alex Bates"];
+    const marcinId = userIdMap["Marcin"];
+    const matejId = userIdMap["Matej"];
+    const roryId = userIdMap["Rory"];
+    const juditId = userIdMap["Judit"];
+    const lucyId = userIdMap["Lucy"];
+    const annaId = userIdMap["Anna"];
+    const matteoId = userIdMap["Matteo"];
+
+    if (!alexBatesId || !marcinId || !matejId) {
+      console.log("   ⚠️  Skipping feedback creation - required users not found");
+    } else {
+      const { feedback: feedbackTable } = await import("./schema");
+
+      // Sample feedback data
+      const sampleFeedback = [
+        // Feedback GIVEN by Alex Bates (some published, some pending)
+        {
+          reviewerId: alexBatesId,
+          revieweeId: roryId,
+          content: "Rory has been doing an excellent job leading the sprint planning sessions. His organization and communication skills really help the team stay aligned.",
+          published: true,
+          publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          publishedBy: annaId,
+          weekYear: "2025-W42",
+          isRead: true,
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: alexBatesId,
+          revieweeId: juditId,
+          content: "Judit's design work on the new dashboard has been fantastic. The user feedback has been overwhelmingly positive.",
+          published: false,
+          weekYear: "2025-W43",
+          isRead: false,
+          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: alexBatesId,
+          revieweeId: lucyId,
+          content: "Lucy's attention to detail in QA has caught several critical bugs before they reached production. Really appreciate the thoroughness!",
+          published: false,
+          weekYear: "2025-W43",
+          isRead: false,
+          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+        },
+
+        // Feedback RECEIVED by Alex Bates (all published)
+        {
+          reviewerId: roryId,
+          revieweeId: alexBatesId,
+          content: "Alex has been great at breaking down complex technical problems into manageable tasks. His code reviews are thorough and educational.",
+          published: true,
+          publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+          publishedBy: matteoId,
+          weekYear: "2025-W42",
+          isRead: false,
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: juditId,
+          revieweeId: alexBatesId,
+          content: "Alex is always willing to pair program and share knowledge. I've learned a lot about system architecture from working with him.",
+          published: true,
+          publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          publishedBy: matteoId,
+          weekYear: "2025-W41",
+          isRead: true,
+          createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: annaId,
+          revieweeId: alexBatesId,
+          content: "Alex's technical documentation has been incredibly helpful for onboarding new team members. Well written and easy to follow.",
+          published: true,
+          publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          publishedBy: matteoId,
+          weekYear: "2025-W41",
+          isRead: true,
+          createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+        },
+
+        // Feedback FOR Marcin (Alex is buddy) - Mix published/unpublished
+        {
+          reviewerId: roryId,
+          revieweeId: marcinId,
+          content: "Marcin's work on the API integration has been solid. Clean code and good error handling throughout.",
+          published: false,
+          weekYear: "2025-W43",
+          isRead: false,
+          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: juditId,
+          revieweeId: marcinId,
+          content: "Really appreciate Marcin's responsiveness to design feedback. He implemented the UI changes quickly and exactly as specified.",
+          published: false,
+          weekYear: "2025-W43",
+          isRead: false,
+          createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: lucyId,
+          revieweeId: marcinId,
+          content: "Marcin has been very helpful in explaining the backend architecture. His documentation is thorough.",
+          published: true,
+          publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+          publishedBy: alexBatesId,
+          weekYear: "2025-W42",
+          isRead: false,
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        },
+
+        // Feedback FOR Matej (Alex is buddy) - Mix published/unpublished
+        {
+          reviewerId: annaId,
+          revieweeId: matejId,
+          content: "Matej's problem-solving skills are excellent. He quickly identified and fixed a tricky performance issue that had been bothering us for weeks.",
+          published: false,
+          weekYear: "2025-W43",
+          isRead: false,
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: roryId,
+          revieweeId: matejId,
+          content: "Matej is great at knowledge sharing in team meetings. He explains complex concepts in a way that everyone can understand.",
+          published: false,
+          weekYear: "2025-W43",
+          isRead: false,
+          createdAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: lucyId,
+          revieweeId: matejId,
+          content: "Matej's code is always well-tested. I rarely find bugs in his work during QA.",
+          published: true,
+          publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+          publishedBy: alexBatesId,
+          weekYear: "2025-W41",
+          isRead: true,
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        },
+      ];
+
+      // Insert feedback
+      for (const fb of sampleFeedback) {
+        try {
+          await db.insert(feedbackTable).values(fb);
+          const status = fb.published ? "✓ Published" : "○ Pending";
+          const reviewer = Object.keys(userIdMap).find(
+            (k) => userIdMap[k] === fb.reviewerId
+          );
+          const reviewee = Object.keys(userIdMap).find(
+            (k) => userIdMap[k] === fb.revieweeId
+          );
+          console.log(
+            `   ${status} ${reviewer} → ${reviewee}: ${fb.content.substring(0, 40)}...`
+          );
+        } catch (error) {
+          console.log(`   ⚠️  Feedback may already exist, skipping...`);
+        }
+      }
+    }
+
     console.log("\n✅ Seed completed successfully!");
     console.log(`\n📊 Summary:`);
     console.log(`   - Users: ${Object.keys(userIdMap).length}`);

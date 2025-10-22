@@ -42,6 +42,12 @@ const isFormValid = computed(() => {
   );
 });
 
+// Get the selected user object from the ID
+const selectedUserObject = computed(() => {
+  if (!selectedUser.value) return null;
+  return availableUsers.value.find((u) => u.id === selectedUser.value);
+});
+
 // Submit feedback
 const submitFeedback = async () => {
   if (!isFormValid.value) return;
@@ -52,7 +58,7 @@ const submitFeedback = async () => {
     await $fetch("/api/feedback", {
       method: "POST",
       body: {
-        revieweeId: selectedUser.value.id,
+        revieweeId: selectedUser.value, // This is already the ID string
         content: feedbackText.value,
       },
     });
@@ -75,11 +81,11 @@ const submitFeedback = async () => {
 };
 
 // Watch selected user to check if can review
-watch(selectedUser, async (newUser) => {
-  if (newUser) {
+watch(selectedUser, async (userId) => {
+  if (userId) {
     try {
       const { alreadyReviewedThisWeek } = await $fetch(
-        `/api/feedback/can-review/${newUser.id}`
+        `/api/feedback/can-review/${userId}` // userId is already a string
       );
       canReviewUser.value = !alreadyReviewedThisWeek;
     } catch (error) {
@@ -112,7 +118,7 @@ watch(selectedUser, async (newUser) => {
                 Feedback submitted successfully!
               </p>
               <p class="text-sm text-green-700 dark:text-green-300">
-                Your feedback has been sent to {{ selectedUser?.name }}
+                Your feedback will be shared with {{ selectedUserObject?.name }} during their next buddy review.
               </p>
             </div>
           </div>
@@ -150,9 +156,9 @@ watch(selectedUser, async (newUser) => {
               >
                 <template #leading>
                   <UAvatar
-                    v-if="selectedUser"
-                    :src="selectedUser.image || selectedUser.avatarUrl"
-                    :alt="selectedUser.name"
+                    v-if="selectedUserObject"
+                    :src="selectedUserObject.image || selectedUserObject.avatarUrl"
+                    :alt="selectedUserObject.name"
                     size="xs"
                   />
                 </template>

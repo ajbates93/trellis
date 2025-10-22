@@ -1,0 +1,350 @@
+<script setup lang="ts">
+import { format } from "date-fns";
+
+definePageMeta({
+  layout: "default",
+});
+
+// Tab state
+const selectedTab = ref("received");
+
+const tabs = [
+  { label: "Received", value: "received" },
+  { label: "Given", value: "given" },
+  { label: "For My Buddies", value: "for-buddies" },
+];
+
+// Fetch received feedback (published only)
+const { data: receivedData, refresh: refreshReceived } = await useFetch(
+  "/api/feedback/received"
+);
+const receivedFeedback = computed(() => receivedData.value?.feedback || []);
+
+// Fetch given feedback (all)
+const { data: givenData } = await useFetch(
+  "/api/feedback/given"
+);
+const givenFeedback = computed(() => givenData.value?.feedback || []);
+
+// Fetch buddy assignments with pending feedback
+const { data: buddyData, refresh: refreshBuddy } = await useFetch(
+  "/api/feedback/for-buddy"
+);
+const buddyAssignments = computed(() => buddyData.value?.buddyAssignments || []);
+
+// Mark feedback as read
+const markAsRead = async (feedbackId: string) => {
+  try {
+    await $fetch(`/api/feedback/${feedbackId}/read`, { method: "PATCH" });
+    await refreshReceived();
+  } catch (error) {
+    console.error("Failed to mark as read:", error);
+    alert("Failed to mark as read");
+  }
+};
+
+// Publish single feedback
+const publishFeedback = async (feedbackId: string) => {
+  try {
+    await $fetch(`/api/feedback/${feedbackId}/publish`, { method: "PATCH" });
+    await refreshBuddy();
+  } catch (error) {
+    console.error("Failed to publish feedback:", error);
+    alert("Failed to publish feedback");
+  }
+};
+
+// Publish batch feedback
+const publishBatch = async (feedbackIds: string[]) => {
+  try {
+    await $fetch("/api/feedback/publish-batch", {
+      method: "POST",
+      body: { feedbackIds },
+    });
+    await refreshBuddy();
+  } catch (error) {
+    console.error("Failed to publish batch:", error);
+    alert("Failed to publish feedback");
+  }
+};
+
+// Publish all for a specific user
+const publishAllForUser = async (userId: string) => {
+  const assignment = buddyAssignments.value.find((a) => a.user.id === userId);
+  if (!assignment || assignment.feedback.length === 0) return;
+
+  const feedbackIds = assignment.feedback.map((f) => f.id);
+  await publishBatch(feedbackIds);
+};
+
+// Format date helper
+const formatDate = (date: string | Date) => {
+  return format(new Date(date), "MMM d, yyyy");
+};
+
+// Column definitions
+const receivedColumns = [
+  { id: "from", accessorKey: "reviewer", header: "From" },
+  { id: "content", accessorKey: "content", header: "Feedback" },
+  { id: "date", accessorKey: "publishedAt", header: "Date" },
+  { id: "status", accessorKey: "isRead", header: "Status" },
+  { id: "actions", header: "" },
+];
+
+const givenColumns = [
+  { id: "to", accessorKey: "reviewee", header: "To" },
+  { id: "content", accessorKey: "content", header: "Feedback" },
+  { id: "date", accessorKey: "createdAt", header: "Date" },
+  { id: "status", accessorKey: "published", header: "Status" },
+];
+
+const buddyFeedbackColumns = [
+  { id: "from", accessorKey: "reviewer", header: "From" },
+  { id: "content", accessorKey: "content", header: "Feedback" },
+  { id: "date", accessorKey: "createdAt", header: "Date" },
+  { id: "actions", header: "" },
+];
+</script>
+
+<template>
+  <UDashboardPanel id="feedback-inbox">
+    <template #body>
+      <div class="p-4 sm:p-6 lg:p-8">
+        <!-- Page header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Feedback Inbox
+          </h1>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">
+            View and manage your feedback
+          </p>
+        </div>
+
+        <!-- Tabs -->
+        <UTabs v-model="selectedTab" :items="tabs" class="mb-6" />
+
+        <!-- Tab Content -->
+        <div class="mt-6">
+          <!-- Received Tab -->
+          <div v-if="selectedTab === 'received'">
+            <UCard>
+              <div v-if="receivedFeedback.length === 0" class="text-center py-12">
+                <UIcon
+                  name="i-heroicons-inbox"
+                  class="text-gray-400 text-4xl mb-2"
+                />
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  No feedback received yet
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Check back later for feedback from your colleagues
+                </p>
+              </div>
+
+              <UTable
+                v-else
+                :columns="receivedColumns"
+                :data="receivedFeedback"
+              >
+                <template #from-cell="{ row }">
+                  <div class="flex items-center gap-2">
+                    <UAvatar
+                      :src="row.original.reviewer.image || row.original.reviewer.avatarUrl"
+                      :alt="row.original.reviewer.name"
+                      size="xs"
+                    />
+                    <span>{{ row.original.reviewer.name }}</span>
+                  </div>
+                </template>
+
+                <template #content-cell="{ row }">
+                  <p class="max-w-md truncate">{{ row.original.content }}</p>
+                </template>
+
+                <template #date-cell="{ row }">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ formatDate(row.original.publishedAt) }}
+                  </span>
+                </template>
+
+                <template #status-cell="{ row }">
+                  <UBadge
+                    :label="row.original.isRead ? 'Read' : 'Unread'"
+                    :color="row.original.isRead ? 'neutral' : 'primary'"
+                    size="xs"
+                  />
+                </template>
+
+                <template #actions-cell="{ row }">
+                  <UButton
+                    v-if="!row.original.isRead"
+                    @click="markAsRead(row.original.id)"
+                    size="xs"
+                    variant="ghost"
+                  >
+                    Mark as Read
+                  </UButton>
+                </template>
+              </UTable>
+            </UCard>
+          </div>
+
+          <!-- Given Tab -->
+          <div v-else-if="selectedTab === 'given'">
+            <UCard>
+              <div v-if="givenFeedback.length === 0" class="text-center py-12">
+                <UIcon
+                  name="i-heroicons-chat-bubble-left"
+                  class="text-gray-400 text-4xl mb-2"
+                />
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  You haven't given any feedback yet
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Start by giving feedback to your colleagues
+                </p>
+                <UButton to="/feedback/give" color="primary">
+                  Give Feedback
+                </UButton>
+              </div>
+
+              <UTable v-else :columns="givenColumns" :data="givenFeedback">
+                <template #to-cell="{ row }">
+                  <div class="flex items-center gap-2">
+                    <UAvatar
+                      :src="row.original.reviewee.image || row.original.reviewee.avatarUrl"
+                      :alt="row.original.reviewee.name"
+                      size="xs"
+                    />
+                    <span>{{ row.original.reviewee.name }}</span>
+                  </div>
+                </template>
+
+                <template #content-cell="{ row }">
+                  <p class="max-w-md truncate">{{ row.original.content }}</p>
+                </template>
+
+                <template #date-cell="{ row }">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ formatDate(row.original.createdAt) }}
+                  </span>
+                </template>
+
+                <template #status-cell="{ row }">
+                  <UBadge
+                    :label="row.original.published ? 'Published' : 'Pending'"
+                    :color="row.original.published ? 'success' : 'neutral'"
+                    size="xs"
+                  />
+                </template>
+              </UTable>
+            </UCard>
+          </div>
+
+          <!-- For My Buddies Tab -->
+          <div v-else-if="selectedTab === 'for-buddies'">
+            <div v-if="buddyAssignments.length === 0">
+              <UCard>
+                <div class="text-center py-12">
+                  <UIcon
+                    name="i-heroicons-users"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                    You're not assigned as a buddy
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Contact your manager to be assigned as a buddy
+                  </p>
+                </div>
+              </UCard>
+            </div>
+
+            <!-- Accordion for each buddy assignment -->
+            <div v-else class="space-y-4">
+              <UCard
+                v-for="assignment in buddyAssignments"
+                :key="assignment.user.id"
+              >
+                <!-- User header -->
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-3">
+                    <UAvatar
+                      :src="assignment.user.image || assignment.user.avatarUrl || undefined"
+                      :alt="assignment.user.name"
+                      size="md"
+                    />
+                    <div>
+                      <p class="font-semibold text-gray-900 dark:text-white">
+                        {{ assignment.user.name }}
+                      </p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ assignment.pendingCount }} pending feedback
+                      </p>
+                    </div>
+                  </div>
+                  <UButton
+                    v-if="assignment.pendingCount > 0"
+                    @click="publishAllForUser(assignment.user.id)"
+                    size="sm"
+                    color="primary"
+                  >
+                    Publish All ({{ assignment.pendingCount }})
+                  </UButton>
+                </div>
+
+                <!-- Feedback table or empty state -->
+                <div v-if="assignment.pendingCount === 0" class="text-center py-8">
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-3xl mb-2"
+                  />
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    All caught up!
+                  </p>
+                </div>
+
+                <UTable
+                  v-else
+                  :columns="buddyFeedbackColumns"
+                  :data="assignment.feedback"
+                >
+                  <template #from-cell="{ row }">
+                    <div class="flex items-center gap-2">
+                      <UAvatar
+                        :src="row.original.reviewer.image || row.original.reviewer.avatarUrl"
+                        :alt="row.original.reviewer.name"
+                        size="xs"
+                      />
+                      <span>{{ row.original.reviewer.name }}</span>
+                    </div>
+                  </template>
+
+                  <template #content-cell="{ row }">
+                    <p class="max-w-md">{{ row.original.content }}</p>
+                  </template>
+
+                  <template #date-cell="{ row }">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ formatDate(row.original.createdAt) }}
+                    </span>
+                  </template>
+
+                  <template #actions-cell="{ row }">
+                    <UButton
+                      @click="publishFeedback(row.original.id)"
+                      size="xs"
+                      color="primary"
+                    >
+                      Publish
+                    </UButton>
+                  </template>
+                </UTable>
+              </UCard>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </UDashboardPanel>
+</template>

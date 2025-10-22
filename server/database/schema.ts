@@ -52,6 +52,9 @@ export const feedback = pgTable('feedback', {
   createdAt: timestamp('created_at').defaultNow(),
   weekYear: varchar('week_year', { length: 10 }),
   isRead: boolean('is_read').default(false),
+  published: boolean('published').default(false),
+  publishedAt: timestamp('published_at'),
+  publishedBy: text('published_by').references(() => users.id),
 })
 
 // Relations for feedback
