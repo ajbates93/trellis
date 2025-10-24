@@ -28,7 +28,7 @@
   - [x] Recent feedback preview
   - [x] Feedback activity chart (12 weeks)
 
-## Phase 3: Feedback System (In Progress)
+## Phase 3: Feedback System ✅
 - [x] Database setup
   - [x] Added feedback_prompts table to schema
   - [x] Created comprehensive seed script with team data
@@ -43,18 +43,21 @@
   - [x] Success confirmation (confetti deferred)
   - [x] Feedback guidelines card
   - [x] Character count validation (min 10 chars)
-- [ ] Feedback Inbox page
-  - [ ] Tabs: Received / Given / For My Buddies
-  - [ ] Feedback list with cards
-  - [ ] Filter by date range, role, read/unread
-  - [ ] Mark as read functionality
-  - [ ] Pagination (20 per page)
-- [x] API endpoints (partial)
+- [x] Feedback Inbox page
+  - [x] Tabs: Received / Given / For My Buddies
+  - [x] Feedback list with cards
+  - [x] Content truncation with popovers
+  - [x] Mark as read functionality
+  - [x] Publish feedback (single and batch)
+  - [x] Loading states (page navigation + button spinners)
+- [x] API endpoints
   - [x] POST /api/feedback - Submit feedback
-  - [ ] GET /api/feedback/received - Get received feedback
-  - [ ] GET /api/feedback/given - Get given feedback
-  - [ ] GET /api/feedback/for-buddy - Get feedback for buddies
-  - [ ] PATCH /api/feedback/:id/read - Mark as read
+  - [x] GET /api/feedback/received - Get received feedback
+  - [x] GET /api/feedback/given - Get given feedback
+  - [x] GET /api/feedback/for-buddy - Get feedback for buddies
+  - [x] PATCH /api/feedback/:id/read - Mark as read
+  - [x] PATCH /api/feedback/:id/publish - Publish single feedback
+  - [x] POST /api/feedback/publish-batch - Publish multiple feedback
   - [x] GET /api/feedback/can-review/:userId - Check weekly limit
 
 ## Phase 4: Goals Management
@@ -121,7 +124,48 @@
   - [ ] GET /api/analytics/activity-heatmap
   - [ ] GET /api/analytics/team-engagement
 
-## Phase 8: Polish & Testing
+## Phase 8: AI-Driven Feedback Insights
+**Dependencies:** Requires Phase 3 (Feedback) ✅ and Phase 4 (Goals) to be complete
+
+**Overview:** Intelligent analysis of feedback patterns using LLM to identify recurring themes and suggest actionable goals.
+
+**Detailed Plan:** See `.cursor/plans/ai-sentiment-analysis.md`
+
+- [ ] Database schema
+  - [ ] Create feedback_insights table
+  - [ ] Add insights tracking columns to users/feedback tables
+  - [ ] Create database migrations
+- [ ] LLM Analysis Service
+  - [ ] Create /server/services/feedbackAnalysis.ts (Claude 3.5 Haiku)
+  - [ ] Prompt engineering for theme extraction
+  - [ ] JSON response parsing and validation
+  - [ ] Error handling and retries
+- [ ] API Endpoints
+  - [ ] POST /api/feedback/analyze - Trigger analysis (rate limited)
+  - [ ] GET /api/feedback/insights - Fetch cached insights
+  - [ ] PATCH /api/feedback/insights/:id/dismiss - Dismiss suggestion
+  - [ ] PATCH /api/feedback/insights/:id/act - Mark acted upon
+- [ ] Background Job (Railway Cron)
+  - [ ] Create /server/cron/analyze-feedback.ts
+  - [ ] Configure railway.toml for nightly runs
+  - [ ] Batch processing (max 10 users per run)
+  - [ ] Auto-trigger when 5+ new feedback items
+- [ ] UI Components
+  - [ ] Create FeedbackInsights.vue component
+  - [ ] Theme cards with count badges and sentiment colors
+  - [ ] Suggested goal banner with create/dismiss actions
+  - [ ] "Last analyzed" timestamp and refresh button
+  - [ ] Loading/empty/error states
+- [ ] Integration
+  - [ ] Add insights to Dashboard (index.vue)
+  - [ ] Add insights to Inbox (feedback/inbox.vue)
+  - [ ] Connect to Goals page (pre-fill suggestions)
+  - [ ] Track conversion metrics (suggestions → goals created)
+
+**Estimated Effort:** 3-4 days (Balanced approach)
+**Cost:** <$5/month for 50 active users (using Claude 3.5 Haiku)
+
+## Phase 9: Polish & Testing
 - [ ] Responsive design
   - [ ] Mobile layouts
   - [ ] Tablet layouts
@@ -144,7 +188,7 @@
   - [ ] ARIA labels
   - [ ] Color contrast
 
-## Phase 9: Deployment & Launch
+## Phase 10: Deployment & Launch
 - [ ] Environment configuration
   - [ ] Production environment variables
   - [ ] Google OAuth production callback URLs
@@ -162,7 +206,7 @@
   - [ ] Admin guide
   - [ ] Deployment notes
 
-## Phase 10: Future Enhancements (Phase 2)
+## Phase 11: Future Enhancements (Phase 2)
 - [ ] Notion API integration
   - [ ] Sync goals from Notion
   - [ ] Export feedback to Notion
@@ -180,13 +224,20 @@
 ---
 
 ## Current Status
-**Last Updated:** 2025-10-21
-**Current Phase:** Phase 3 - Feedback System (In Progress)
-**Completed This Session:**
-- Give Feedback page with full validation and weekly limit checking
-- User linking system for automatic OAuth/seeded user merging
-- Comprehensive database seeding with team data and buddy assignments
-- Feedback submission API with weekly tracking
-- Feedback activity chart visualization with Unovis
+**Last Updated:** 2025-10-24
+**Current Phase:** Phase 4 - Goals Management (Ready to Start)
+**Recently Completed:**
+- ✅ Phase 3: Feedback System (COMPLETE)
+  - Give Feedback page with full validation and weekly limit checking
+  - Feedback Inbox with 3 tabs (Received, Given, For My Buddies)
+  - Mark as read and publish feedback functionality
+  - All 8 feedback API endpoints operational
+  - User linking system for automatic OAuth/seeded user merging
+  - Comprehensive database seeding with team data and buddy assignments
 
-**Next Task:** Build Feedback Inbox page with tabs (Received / Given / For My Buddies)
+**Current Sprint:**
+- 📋 Planning AI-Driven Feedback Insights (Phase 8)
+  - Created detailed implementation plan (see `.cursor/plans/ai-sentiment-analysis.md`)
+  - Blocked by: Goals Management (Phase 4)
+
+**Next Task:** Implement Goals Management (Phase 4) - Kanban board with CRUD operations

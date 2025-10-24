@@ -22,6 +22,13 @@
       "when": 1761139790073,
       "tag": "0002_chief_jane_foster",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1761316997034,
+      "tag": "0003_dazzling_garia",
+      "breakpoints": true
     }
   ]
 }

@@ -259,14 +259,34 @@ definePageMeta({
 
 const { user } = useAuth();
 
+// Fetch goals data
+const { data: goalsData } = await useFetch("/api/goals");
+const goals = computed(() => goalsData.value?.goals || []);
+
+// Calculate goal stats
+const activeGoalsCount = computed(() =>
+  goals.value.filter((g) => g.status === "active").length
+);
+
+const completedGoalsThisMonth = computed(() => {
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  return goals.value.filter((g) => {
+    if (g.status !== "completed" || !g.completedAt) return false;
+    const completedDate = new Date(g.completedAt);
+    return completedDate >= firstDayOfMonth;
+  }).length;
+});
+
 // Mock stats data - will be replaced with API calls
 const stats = ref({
   feedbackGiven: 5,
   feedbackGivenTrend: 25,
   feedbackReceived: 8,
   feedbackReceivedTrend: 14,
-  activeGoals: 3,
-  completedGoals: 2,
+  activeGoals: activeGoalsCount,
+  completedGoals: completedGoalsThisMonth,
   daysUntilReview: 14,
 });
 

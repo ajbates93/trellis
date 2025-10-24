@@ -34,6 +34,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     relationName: 'reviewee',
   }),
   goals: many(goals),
+  goalNotes: many(goalNotes),
   reviewSchedulesAsUser: many(reviewSchedules, {
     relationName: 'user',
   }),
@@ -84,9 +85,32 @@ export const goals = pgTable('goals', {
 })
 
 // Relations for goals
-export const goalsRelations = relations(goals, ({ one }) => ({
+export const goalsRelations = relations(goals, ({ one, many }) => ({
   user: one(users, {
     fields: [goals.userId],
+    references: [users.id],
+  }),
+  notes: many(goalNotes),
+}))
+
+// Goal notes table
+export const goalNotes = pgTable('goal_notes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  goalId: uuid('goal_id').notNull().references(() => goals.id, { onDelete: 'cascade' }),
+  authorId: text('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  noteText: text('note_text').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Relations for goal notes
+export const goalNotesRelations = relations(goalNotes, ({ one }) => ({
+  goal: one(goals, {
+    fields: [goalNotes.goalId],
+    references: [goals.id],
+  }),
+  author: one(users, {
+    fields: [goalNotes.authorId],
     references: [users.id],
   }),
 }))

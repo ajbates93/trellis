@@ -246,26 +246,36 @@ john.doe@pocketworks.co.uk,John Doe,dev,jane.smith@pocketworks.co.uk,2025-03-15
 
 ## Development Phases
 
-### Week 1-2: Foundation
-- Set up Nuxt 4 + Nuxt UI
-- Configure Railway deployment
-- PostgreSQL setup and migrations
-- Better-auth with Google OAuth
+### Week 1-2: Foundation ✅ COMPLETE
+- ✅ Set up Nuxt 4 + Nuxt UI
+- ✅ Configure Railway deployment
+- ✅ PostgreSQL setup and migrations
+- ✅ Better-auth with Google OAuth
+- ✅ User linking system for pre-created users
 
-### Week 3-4: Core Features
-- User dashboard with visualizations
-- Feedback submission and inbox
-- Goals management
+### Week 3-4: Core Features 🚧 IN PROGRESS
+- ✅ User dashboard with visualizations
+- ✅ Feedback submission (give.vue)
+  - ✅ Weekly review tracking
+  - ✅ "Already reviewed" validation
+  - ✅ User selection with avatars
+- ✅ Feedback inbox (inbox.vue)
+  - ✅ Three-tab interface (Received, Given, For My Buddies)
+  - ✅ Content truncation with popover
+  - ✅ Mark as read functionality
+  - ✅ Publish feedback (single and batch)
+  - ✅ Loading states (page navigation + button spinners)
+- ⏳ Goals management (pending)
 
 ### Week 5-6: Admin & Polish
-- Admin panel and CSV onboarding
-- Responsive design refinement
-- Data visualizations
+- ⏳ Admin panel and CSV onboarding
+- ⏳ Responsive design refinement
+- ⏳ Data visualizations
 
 ### Week 7-8: Testing & Launch
-- User acceptance testing
-- Performance optimization
-- Production deployment
+- ⏳ User acceptance testing
+- ⏳ Performance optimization
+- ⏳ Production deployment
 
 ## Future Enhancements (Phase 2)
 

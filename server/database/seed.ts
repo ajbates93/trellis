@@ -387,11 +387,118 @@ async function seed() {
       }
     }
 
+    // Step 5: Create sample goals for testing
+    console.log("\n🎯 Creating sample goals...");
+
+    if (!alexBatesId || !marcinId) {
+      console.log("   ⚠️  Skipping goals creation - required users not found");
+    } else {
+      const { goals: goalsTable } = await import("./schema");
+
+      // Sample goals for Alex Bates
+      const sampleGoals = [
+        // Alex Bates - Active goals
+        {
+          userId: alexBatesId,
+          goalText: "Improve my public speaking skills by presenting at the next team all-hands meeting",
+          status: "active",
+          targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        },
+        {
+          userId: alexBatesId,
+          goalText: "Learn advanced TypeScript patterns and apply them to our codebase",
+          status: "active",
+          targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+        },
+        {
+          userId: alexBatesId,
+          goalText: "Mentor two junior developers and help them complete their onboarding projects",
+          status: "active",
+          targetDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        },
+        // Alex Bates - Completed goal
+        {
+          userId: alexBatesId,
+          goalText: "Complete the AWS certification course",
+          status: "completed",
+          targetDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          completedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        },
+        {
+          userId: alexBatesId,
+          goalText: "Reduce code review turnaround time to under 24 hours",
+          status: "completed",
+          targetDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+          completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+        },
+        // Alex Bates - Archived goal
+        {
+          userId: alexBatesId,
+          goalText: "Migrate legacy authentication system to OAuth",
+          status: "archived",
+          targetDate: null,
+          createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        },
+
+        // Marcin - Active goals
+        {
+          userId: marcinId,
+          goalText: "Improve backend API performance by implementing caching strategies",
+          status: "active",
+          targetDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        },
+        {
+          userId: marcinId,
+          goalText: "Write comprehensive API documentation for all endpoints",
+          status: "active",
+          targetDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+        },
+        // Marcin - Completed goal
+        {
+          userId: marcinId,
+          goalText: "Refactor database queries to use proper ORM patterns",
+          status: "completed",
+          targetDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        },
+      ];
+
+      // Insert goals
+      for (const goal of sampleGoals) {
+        try {
+          await db.insert(goalsTable).values(goal);
+          const userName = Object.keys(userIdMap).find((k) => userIdMap[k] === goal.userId);
+          const statusEmoji = goal.status === "active" ? "🎯" : goal.status === "completed" ? "✅" : "📦";
+          console.log(`   ${statusEmoji} ${userName}: ${goal.goalText.substring(0, 50)}...`);
+        } catch (error) {
+          console.log(`   ⚠️  Goal may already exist, skipping...`);
+        }
+      }
+    }
+
     console.log("\n✅ Seed completed successfully!");
     console.log(`\n📊 Summary:`);
     console.log(`   - Users: ${Object.keys(userIdMap).length}`);
     console.log(`   - Buddy relationships: ${Object.keys(BUDDY_ASSIGNMENTS).length}`);
     console.log(`   - Feedback prompts: ${QUESTIONS.length}`);
+    console.log(`   - Sample goals: Created for Alex Bates and Marcin`);
   } catch (error) {
     console.error("❌ Seed failed:", error);
     throw error;
