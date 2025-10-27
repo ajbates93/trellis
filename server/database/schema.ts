@@ -77,6 +77,7 @@ export const goals = pgTable('goals', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   goalText: text('goal_text').notNull(),
+  description: text('description'), // Rich text HTML content from TipTap
   status: varchar('status', { length: 50 }).default('active'),
   targetDate: date('target_date'),
   createdAt: timestamp('created_at').defaultNow(),

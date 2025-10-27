@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
       .values({
         userId: session.user.id,
         goalText: body.goalText.trim(),
+        description: body.description || null, // Rich text HTML from TipTap
         status: body.status || "active",
         targetDate: body.targetDate || null,
       })

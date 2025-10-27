@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
         goal: {
           id: goals.id,
           goalText: goals.goalText,
+          description: goals.description,
           status: goals.status,
           targetDate: goals.targetDate,
           createdAt: goals.createdAt,

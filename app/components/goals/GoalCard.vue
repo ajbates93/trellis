@@ -5,6 +5,7 @@ const props = defineProps<{
   goal: {
     id: string;
     goalText: string;
+    description: string | null;
     status: string | null;
     targetDate: string | null;
     createdAt: string | null;
@@ -26,6 +27,7 @@ const showNotes = ref(false);
 const isUpdatingStatus = ref(false);
 const isDeleting = ref(false);
 const showEditModal = ref(false);
+const showViewModal = ref(false);
 
 // Actions
 const changeStatus = async (newStatus: string) => {
@@ -105,9 +107,14 @@ const actionMenuItems = computed(() => {
       <!-- Goal Header -->
       <div class="flex justify-between items-start gap-2">
         <div class="flex-1">
-          <p class="text-base font-medium text-gray-900 dark:text-gray-100">
-            {{ goal.goalText }}
-          </p>
+          <button
+            @click="showViewModal = true"
+            class="text-left w-full group"
+          >
+            <p class="text-base font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">
+              {{ goal.goalText }}
+            </p>
+          </button>
           <div class="flex items-center gap-2 mt-2">
             <!-- Target Date Badge -->
             <UBadge
@@ -238,6 +245,67 @@ const actionMenuItems = computed(() => {
       </div>
     </div>
 
+    <!-- View Modal -->
+    <UModal
+      v-model:open="showViewModal"
+      :title="goal.goalText"
+      class="sm:max-w-2xl"
+    >
+      <template #body>
+        <div class="space-y-4">
+          <!-- Status Badge -->
+          <div>
+            <UBadge
+              :color="goal.status === 'active' ? 'green' : goal.status === 'completed' ? 'blue' : 'gray'"
+              size="sm"
+            >
+              {{ goal.status }}
+            </UBadge>
+          </div>
+
+          <!-- Target Date -->
+          <div v-if="goal.targetDate">
+            <label class="block text-sm font-medium mb-1">Target Date</label>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-heroicons-calendar" class="text-gray-500" />
+              <span class="text-sm">{{ formatTargetDate(goal.targetDate) }}</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div v-if="goal.description">
+            <label class="block text-sm font-medium mb-2">Description</label>
+            <div
+              class="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
+              v-html="goal.description"
+            ></div>
+          </div>
+          <div v-else class="text-sm text-gray-500 italic">
+            No description provided
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex justify-between w-full">
+          <UButton
+            color="gray"
+            variant="ghost"
+            @click="showViewModal = false"
+          >
+            Close
+          </UButton>
+          <UButton
+            v-if="mode === 'owner'"
+            icon="i-heroicons-pencil"
+            @click="showViewModal = false; showEditModal = true"
+          >
+            Edit Goal
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Edit Modal -->
     <GoalsGoalModal
       v-if="mode === 'owner'"
@@ -249,3 +317,66 @@ const actionMenuItems = computed(() => {
     />
   </UCard>
 </template>
+
+<style scoped>
+/* Task list styling for description display */
+:deep(ul[data-type="taskList"]) {
+  list-style: none;
+  padding: 0;
+}
+
+:deep(ul[data-type="taskList"] li) {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+  margin: 0.25rem 0;
+}
+
+:deep(ul[data-type="taskList"] li > label) {
+  flex: 0 0 auto;
+  margin-top: 0.125rem;
+  user-select: none;
+}
+
+:deep(ul[data-type="taskList"] li > div) {
+  flex: 1 1 auto;
+}
+
+:deep(ul[data-type="taskList"] li > div > p) {
+  margin: 0;
+}
+
+:deep(ul[data-type="taskList"] input[type="checkbox"]) {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Regular bullet/numbered lists */
+:deep(.prose ul:not([data-type="taskList"])) {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+:deep(.prose ol) {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+:deep(.prose ul:not([data-type="taskList"]) li),
+:deep(.prose ol li) {
+  margin: 0.25rem 0;
+  padding-left: 0.25rem;
+}
+
+/* General prose styling */
+:deep(.prose p) {
+  margin: 0.5rem 0;
+}
+
+:deep(.prose p:first-child) {
+  margin-top: 0;
+}
+</style>

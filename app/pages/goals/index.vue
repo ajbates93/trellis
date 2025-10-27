@@ -163,6 +163,7 @@
 interface Goal {
   id: string;
   goalText: string;
+  description: string | null;
   status: string | null;
   targetDate: string | null;
   createdAt: string | null;

@@ -4,6 +4,7 @@ const props = defineProps<{
   goal?: {
     id: string;
     goalText: string;
+    description: string | null;
     targetDate: string | null;
   } | null;
   mode: "create" | "edit";
@@ -23,6 +24,7 @@ const isOpen = computed({
 
 // Form state
 const goalText = ref(props.goal?.goalText || "");
+const description = ref(props.goal?.description || "");
 const targetDate = ref(props.goal?.targetDate || null);
 const isSubmitting = ref(false);
 
@@ -45,6 +47,7 @@ const handleSubmit = async () => {
         method: "POST",
         body: {
           goalText: goalText.value.trim(),
+          description: description.value || null,
           targetDate: targetDate.value || null,
         },
       });
@@ -54,6 +57,7 @@ const handleSubmit = async () => {
         method: "PATCH",
         body: {
           goalText: goalText.value.trim(),
+          description: description.value || null,
           targetDate: targetDate.value || null,
         },
       });
@@ -73,6 +77,7 @@ const handleSubmit = async () => {
 watch(isOpen, (newVal) => {
   if (!newVal) {
     goalText.value = props.goal?.goalText || "";
+    description.value = props.goal?.description || "";
     targetDate.value = props.goal?.targetDate || null;
   }
 });
@@ -81,34 +86,52 @@ watch(isOpen, (newVal) => {
 <template>
   <UModal
     v-model:open="isOpen"
+    class="sm:max-w-2xl"
     :title="mode === 'create' ? 'Create New Goal' : 'Edit Goal'"
-    :ui="{ footer: 'justify-end' }"
+    :ui="{
+      footer: 'justify-end',
+    }"
   >
     <template #body>
       <div class="space-y-4">
-        <!-- Goal Text -->
+        <!-- Goal Title -->
         <div>
           <label class="block text-sm font-medium mb-2">
-            Goal <span class="text-red-500">*</span>
+            Title <span class="text-red-500">*</span>
           </label>
-          <UTextarea
+          <UInput
             v-model="goalText"
-            placeholder="Describe your goal..."
-            :rows="4"
+            placeholder="e.g., Improve public speaking skills"
+            class="w-full"
             :maxlength="500"
             autofocus
+            size="lg"
           />
-          <div class="flex justify-between mt-1 text-xs text-gray-500">
+          <div
+            v-if="goalText.length > 0"
+            class="flex justify-between mt-1 text-xs text-gray-500"
+          >
             <span v-if="goalText.length < 10" class="text-red-500">
               Minimum 10 characters
             </span>
-            <span v-else class="text-green-500">
-              ✓ Valid
-            </span>
+            <span v-else class="text-green-500"> ✓ Valid </span>
             <span :class="{ 'text-red-500': charCount > 500 }">
               {{ charCount }}/500
             </span>
           </div>
+          <div v-else class="h-[20px]"></div>
+        </div>
+
+        <!-- Description (Rich Text) -->
+        <div>
+          <label class="block text-sm font-medium mb-2">
+            Description (Optional)
+          </label>
+          <p class="text-xs text-gray-500 mb-2">
+            Add details, bullet points, or checklist items to track your
+            progress
+          </p>
+          <GoalsGoalDescriptionEditor v-model="description" />
         </div>
 
         <!-- Target Date -->

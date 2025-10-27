@@ -46,6 +46,7 @@ export default defineEventHandler(async (event) => {
       .update(goals)
       .set({
         ...(body.goalText !== undefined && { goalText: body.goalText.trim() }),
+        ...(body.description !== undefined && { description: body.description }), // Rich text HTML
         ...(body.targetDate !== undefined && { targetDate: body.targetDate }),
         updatedAt: new Date(),
       })
