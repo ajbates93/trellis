@@ -115,7 +115,7 @@
                   Next Review
                 </p>
                 <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.daysUntilReview }}
+                  {{ stats.daysUntilReview !== null ? stats.daysUntilReview : '—' }}
                 </p>
               </div>
               <div
@@ -128,10 +128,14 @@
               </div>
             </div>
             <div class="mt-4 flex items-center gap-2">
-              <UBadge label="Upcoming" color="primary" size="xs" />
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >days remaining</span
-              >
+              <UBadge
+                :label="stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'"
+                :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
+                size="xs"
+              />
+              <span class="text-xs text-gray-600 dark:text-gray-400">
+                {{ stats.daysUntilReview !== null ? 'days remaining' : '' }}
+              </span>
             </div>
           </UCard>
         </div>
@@ -182,6 +186,9 @@
         <!-- Activity chart -->
         <FeedbackActivityChart class="mb-8" />
 
+        <!-- Sentiment Analysis -->
+        <SentimentAnalysis class="mb-8" />
+
         <!-- Recent feedback -->
         <UCard>
           <div class="space-y-4">
@@ -207,28 +214,32 @@
             <UTable
               v-if="recentFeedback.length > 0"
               :columns="feedbackColumns"
-              :rows="recentFeedback"
+              :data="recentFeedback"
             >
-              <template #from-data="{ row }">
+              <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
                   <UAvatar
-                    :src="row.reviewer.image || row.reviewer.avatarUrl"
-                    :alt="row.reviewer.name"
+                    :src="row.original.reviewer.image || row.original.reviewer.avatarUrl"
+                    :alt="row.original.reviewer.name"
                     size="xs"
                   />
-                  <span>{{ row.reviewer.name }}</span>
+                  <span>{{ row.original.reviewer.name }}</span>
                 </div>
               </template>
 
-              <template #date-data="{ row }">
+              <template #content-cell="{ row }">
+                <span class="truncate max-w-md block">{{ row.original.content }}</span>
+              </template>
+
+              <template #date-cell="{ row }">
                 <span class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ formatDate(row.createdAt) }}
+                  {{ formatDate(row.original.publishedAt) }}
                 </span>
               </template>
 
-              <template #status-data="{ row }">
-                <UBadge :color="row.isRead ? 'gray' : 'primary'" size="xs">
-                  {{ row.isRead ? "Read" : "Unread" }}
+              <template #status-cell="{ row }">
+                <UBadge :color="row.original.isRead ? 'gray' : 'primary'" size="xs">
+                  {{ row.original.isRead ? "Read" : "Unread" }}
                 </UBadge>
               </template>
             </UTable>
@@ -279,53 +290,61 @@ const completedGoalsThisMonth = computed(() => {
   }).length;
 });
 
-// Mock stats data - will be replaced with API calls
-const stats = ref({
-  feedbackGiven: 5,
-  feedbackGivenTrend: 25,
-  feedbackReceived: 8,
-  feedbackReceivedTrend: 14,
-  activeGoals: activeGoalsCount,
-  completedGoals: completedGoalsThisMonth,
-  daysUntilReview: 14,
+// Fetch dashboard stats
+const { data: dashboardStats } = await useFetch("/api/dashboard/stats");
+
+// Fetch recent feedback (limit to 5)
+const { data: feedbackData } = await useFetch("/api/feedback/received");
+const recentFeedback = computed(() => {
+  const feedback = feedbackData.value?.feedback || [];
+  return feedback.slice(0, 5); // Limit to 5 most recent
 });
 
-// Mock recent feedback - will be replaced with API calls
-const recentFeedback = ref([
-  // Empty for now - will fetch from API
-]);
+// Combine stats with goals data
+const stats = computed(() => ({
+  feedbackGiven: dashboardStats.value?.feedbackGiven || 0,
+  feedbackGivenTrend: dashboardStats.value?.feedbackGivenTrend || 0,
+  feedbackReceived: dashboardStats.value?.feedbackReceived || 0,
+  feedbackReceivedTrend: dashboardStats.value?.feedbackReceivedTrend || 0,
+  activeGoals: activeGoalsCount.value,
+  completedGoals: completedGoalsThisMonth.value,
+  daysUntilReview: dashboardStats.value?.daysUntilReview || null,
+}));
 
 const feedbackColumns = [
   {
-    key: "from",
-    label: "From",
+    id: "from",
+    accessorKey: "reviewer",
+    header: "From",
   },
   {
-    key: "content",
-    label: "Feedback",
-    class: "max-w-md truncate",
+    id: "content",
+    accessorKey: "content",
+    header: "Feedback",
+    meta: {
+      class: {
+        td: "max-w-md"
+      }
+    }
   },
   {
-    key: "date",
-    label: "Date",
+    id: "date",
+    accessorKey: "publishedAt",
+    header: "Date",
   },
   {
-    key: "status",
-    label: "Status",
+    id: "status",
+    accessorKey: "isRead",
+    header: "Status",
   },
 ];
 
-const formatDate = (date: string) => {
+const formatDate = (date: string | Date) => {
+  if (!date) return '';
   return new Date(date).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
 };
-
-// TODO: Fetch real data from API
-// onMounted(async () => {
-//   const { data } = await $fetch('/api/dashboard/stats')
-//   stats.value = data
-// })
 </script>

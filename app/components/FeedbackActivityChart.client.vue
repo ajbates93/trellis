@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { eachWeekOfInterval, format, subWeeks } from 'date-fns'
+import { format } from 'date-fns'
 import { VisXYContainer, VisLine, VisAxis, VisArea, VisCrosshair, VisTooltip } from '@unovis/vue'
 import { useElementSize } from '@vueuse/core'
 
@@ -15,26 +15,20 @@ const { width } = useElementSize(cardRef)
 
 const data = ref<DataRecord[]>([])
 
-// Generate data for last 12 weeks
-const generateData = () => {
-  const now = new Date()
-  const twelveWeeksAgo = subWeeks(now, 12)
-
-  const weeks = eachWeekOfInterval({
-    start: twelveWeeksAgo,
-    end: now
-  })
-
-  // Mock data - will be replaced with API calls
-  data.value = weeks.map(date => ({
-    date,
-    given: Math.floor(Math.random() * 10) + 1,
-    received: Math.floor(Math.random() * 10) + 1
-  }))
+// Fetch real data from API
+const fetchData = async () => {
+  try {
+    const response = await $fetch<{ timeline: DataRecord[] }>('/api/analytics/feedback-timeline')
+    data.value = response.timeline
+  } catch (error) {
+    console.error('Failed to fetch feedback timeline:', error)
+    // Fallback to empty data if fetch fails
+    data.value = []
+  }
 }
 
 onMounted(() => {
-  generateData()
+  fetchData()
 })
 
 const x = (_: DataRecord, i: number) => i

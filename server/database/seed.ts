@@ -219,7 +219,7 @@ async function seed() {
       }
     }
 
-    // Step 4: Create sample feedback for testing
+    // Step 4: Create sample feedback for testing (60-80 items across 12 weeks)
     console.log("\n💬 Creating sample feedback...");
 
     const alexBatesId = userIdMap["Alex Bates"];
@@ -230,161 +230,221 @@ async function seed() {
     const lucyId = userIdMap["Lucy"];
     const annaId = userIdMap["Anna"];
     const matteoId = userIdMap["Matteo"];
+    const alexBrittenId = userIdMap["Alex Britten"];
+    const markId = userIdMap["Mark"];
+    const joshId = userIdMap["Josh"];
+    const mattChambersId = userIdMap["Matt Chambers"];
 
     if (!alexBatesId || !marcinId || !matejId) {
       console.log("   ⚠️  Skipping feedback creation - required users not found");
     } else {
       const { feedback: feedbackTable } = await import("./schema");
 
-      // Sample feedback data
-      const sampleFeedback = [
-        // Feedback GIVEN by Alex Bates (some published, some pending)
+      // Helper function to calculate week number in ISO format
+      const getWeekYear = (date: Date): string => {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+        const yearStart = new Date(d.getFullYear(), 0, 1);
+        const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+        return `${d.getFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
+      };
+
+      // Helper to get random items from array
+      const getRandomItems = <T,>(arr: T[], count: number): T[] => {
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+      };
+
+      // Feedback content templates organized by theme
+      const feedbackTemplates = {
+        communication: [
+          "Great job communicating complex technical concepts in team meetings. Very clear and easy to understand.",
+          "Really appreciate the regular updates on project progress. Helps everyone stay aligned.",
+          "Could improve on sharing blockers earlier - would help the team provide support sooner.",
+          "Excellent at actively listening and incorporating feedback from others.",
+          "The documentation you wrote for the new feature was exceptionally clear and helpful.",
+        ],
+        technical: [
+          "Your code quality has been consistently excellent. Clean, well-tested, and maintainable.",
+          "Great problem-solving skills when debugging that tricky production issue last week.",
+          "The refactoring work you did really improved the codebase architecture.",
+          "Could benefit from more comprehensive error handling in edge cases.",
+          "Really impressed with how quickly you picked up the new framework.",
+        ],
+        collaboration: [
+          "Always willing to help teammates when they're stuck. Great team player!",
+          "Your code reviews are thorough and educational. I learn something new each time.",
+          "Would love to see you participate more actively in team discussions and brainstorming.",
+          "Excellent at pairing with junior developers and helping them level up.",
+          "Really appreciate how you share knowledge and resources with the team.",
+        ],
+        initiative: [
+          "Love that you proactively identified and fixed that performance bottleneck.",
+          "Great initiative in proposing and implementing the automated testing improvements.",
+          "Would be great to see you take ownership of larger feature implementations.",
+          "Really impressed by how you took the lead on the sprint planning improvements.",
+          "Your proactive approach to learning new technologies is inspiring.",
+        ],
+        quality: [
+          "Your attention to detail in QA has prevented several bugs from reaching production.",
+          "The test coverage you maintain is excellent and gives everyone confidence.",
+          "Could be helpful to add more integration tests alongside the unit tests.",
+          "Really appreciate the thoroughness of your code reviews.",
+          "Your work consistently meets high quality standards.",
+        ],
+      };
+
+      // All user IDs for generating diverse feedback
+      const allUserIds = [
+        alexBatesId, marcinId, matejId, roryId, juditId, lucyId,
+        annaId, matteoId, alexBrittenId, markId, joshId, mattChambersId
+      ].filter(Boolean);
+
+      // Generate feedback across 12 weeks with realistic distribution
+      const sampleFeedback: any[] = [];
+      const now = Date.now();
+      const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+      // Week distribution (target count per week)
+      const weeklyDistribution = [
+        4, 3, 5, 7, 8, 6, 9, 5, 6, 7, 8, 10  // Total: ~78 items
+      ];
+
+      for (let weekOffset = 11; weekOffset >= 0; weekOffset--) {
+        const targetCount = weeklyDistribution[11 - weekOffset];
+        const weekStart = now - (weekOffset * oneWeek);
+
+        for (let i = 0; i < targetCount; i++) {
+          // Random day within the week (0-6 days offset)
+          const dayOffset = Math.floor(Math.random() * 7);
+          const hourOffset = Math.floor(Math.random() * 24);
+          const createdAt = new Date(weekStart + (dayOffset * 24 * 60 * 60 * 1000) + (hourOffset * 60 * 60 * 1000));
+          const weekYear = getWeekYear(createdAt);
+
+          // Random reviewer and reviewee (ensure they're different)
+          let reviewerId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
+          let revieweeId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
+
+          // Ensure reviewer and reviewee are different
+          while (reviewerId === revieweeId) {
+            revieweeId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
+          }
+
+          // Random theme and content
+          const themes = Object.keys(feedbackTemplates) as Array<keyof typeof feedbackTemplates>;
+          const theme = themes[Math.floor(Math.random() * themes.length)];
+          const templates = feedbackTemplates[theme];
+          const content = templates[Math.floor(Math.random() * templates.length)];
+
+          // 70% published, 30% unpublished
+          const isPublished = Math.random() < 0.7;
+
+          // For published feedback, published 1-2 days after creation
+          const publishedAt = isPublished
+            ? new Date(createdAt.getTime() + (1 + Math.random()) * 24 * 60 * 60 * 1000)
+            : undefined;
+
+          // Random publisher (usually a buddy or admin)
+          const publishedBy = isPublished
+            ? [annaId, roryId, markId, matteoId, alexBatesId][Math.floor(Math.random() * 5)]
+            : undefined;
+
+          // Random read status (80% of published feedback is read)
+          const isRead = isPublished ? Math.random() < 0.8 : false;
+
+          sampleFeedback.push({
+            reviewerId,
+            revieweeId,
+            content,
+            createdAt,
+            weekYear,
+            published: isPublished,
+            publishedAt,
+            publishedBy,
+            isRead,
+          });
+        }
+      }
+
+      // Add guaranteed published feedback FOR Alex Bates (for testing Recent Feedback section)
+      const guaranteedFeedbackForAlex = [
         {
-          reviewerId: alexBatesId,
-          revieweeId: roryId,
-          content: "Rory has been doing an excellent job leading the sprint planning sessions. His organization and communication skills really help the team stay aligned.",
+          reviewerId: roryId,
+          revieweeId: alexBatesId,
+          content: "Alex has been doing an excellent job with code reviews. His feedback is always constructive and helps improve code quality.",
           published: true,
-          publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          publishedAt: new Date(now - 2 * 24 * 60 * 60 * 1000),
+          publishedBy: matteoId,
+          weekYear: getWeekYear(new Date(now - 3 * 24 * 60 * 60 * 1000)),
+          isRead: false,
+          createdAt: new Date(now - 3 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: juditId,
+          revieweeId: alexBatesId,
+          content: "Really appreciate Alex's technical leadership on the project. He's great at explaining complex concepts to the team.",
+          published: true,
+          publishedAt: new Date(now - 4 * 24 * 60 * 60 * 1000),
+          publishedBy: matteoId,
+          weekYear: getWeekYear(new Date(now - 5 * 24 * 60 * 60 * 1000)),
+          isRead: true,
+          createdAt: new Date(now - 5 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: annaId,
+          revieweeId: alexBatesId,
+          content: "Alex's documentation for the new API has been incredibly helpful. Clear, concise, and well-organized.",
+          published: true,
+          publishedAt: new Date(now - 6 * 24 * 60 * 60 * 1000),
+          publishedBy: markId,
+          weekYear: getWeekYear(new Date(now - 7 * 24 * 60 * 60 * 1000)),
+          isRead: true,
+          createdAt: new Date(now - 7 * 24 * 60 * 60 * 1000),
+        },
+        {
+          reviewerId: matteoId,
+          revieweeId: alexBatesId,
+          content: "Great collaboration on the sprint planning. Alex helps keep discussions focused and productive.",
+          published: true,
+          publishedAt: new Date(now - 10 * 24 * 60 * 60 * 1000),
           publishedBy: annaId,
-          weekYear: "2025-W42",
+          weekYear: getWeekYear(new Date(now - 11 * 24 * 60 * 60 * 1000)),
           isRead: true,
-          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(now - 11 * 24 * 60 * 60 * 1000),
         },
         {
-          reviewerId: alexBatesId,
-          revieweeId: juditId,
-          content: "Judit's design work on the new dashboard has been fantastic. The user feedback has been overwhelmingly positive.",
-          published: false,
-          weekYear: "2025-W43",
-          isRead: false,
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: alexBatesId,
-          revieweeId: lucyId,
-          content: "Lucy's attention to detail in QA has caught several critical bugs before they reached production. Really appreciate the thoroughness!",
-          published: false,
-          weekYear: "2025-W43",
-          isRead: false,
-          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-        },
-
-        // Feedback RECEIVED by Alex Bates (all published)
-        {
-          reviewerId: roryId,
+          reviewerId: marcinId,
           revieweeId: alexBatesId,
-          content: "Alex has been great at breaking down complex technical problems into manageable tasks. His code reviews are thorough and educational.",
+          content: "Alex has been very supportive in helping me ramp up on the codebase. His pairing sessions are always valuable.",
           published: true,
-          publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+          publishedAt: new Date(now - 14 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
-          weekYear: "2025-W42",
-          isRead: false,
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: juditId,
-          revieweeId: alexBatesId,
-          content: "Alex is always willing to pair program and share knowledge. I've learned a lot about system architecture from working with him.",
-          published: true,
-          publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          publishedBy: matteoId,
-          weekYear: "2025-W41",
+          weekYear: getWeekYear(new Date(now - 15 * 24 * 60 * 60 * 1000)),
           isRead: true,
-          createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: annaId,
-          revieweeId: alexBatesId,
-          content: "Alex's technical documentation has been incredibly helpful for onboarding new team members. Well written and easy to follow.",
-          published: true,
-          publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          publishedBy: matteoId,
-          weekYear: "2025-W41",
-          isRead: true,
-          createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-        },
-
-        // Feedback FOR Marcin (Alex is buddy) - Mix published/unpublished
-        {
-          reviewerId: roryId,
-          revieweeId: marcinId,
-          content: "Marcin's work on the API integration has been solid. Clean code and good error handling throughout.",
-          published: false,
-          weekYear: "2025-W43",
-          isRead: false,
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: juditId,
-          revieweeId: marcinId,
-          content: "Really appreciate Marcin's responsiveness to design feedback. He implemented the UI changes quickly and exactly as specified.",
-          published: false,
-          weekYear: "2025-W43",
-          isRead: false,
-          createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: lucyId,
-          revieweeId: marcinId,
-          content: "Marcin has been very helpful in explaining the backend architecture. His documentation is thorough.",
-          published: true,
-          publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-          publishedBy: alexBatesId,
-          weekYear: "2025-W42",
-          isRead: false,
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        },
-
-        // Feedback FOR Matej (Alex is buddy) - Mix published/unpublished
-        {
-          reviewerId: annaId,
-          revieweeId: matejId,
-          content: "Matej's problem-solving skills are excellent. He quickly identified and fixed a tricky performance issue that had been bothering us for weeks.",
-          published: false,
-          weekYear: "2025-W43",
-          isRead: false,
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: roryId,
-          revieweeId: matejId,
-          content: "Matej is great at knowledge sharing in team meetings. He explains complex concepts in a way that everyone can understand.",
-          published: false,
-          weekYear: "2025-W43",
-          isRead: false,
-          createdAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
-        },
-        {
-          reviewerId: lucyId,
-          revieweeId: matejId,
-          content: "Matej's code is always well-tested. I rarely find bugs in his work during QA.",
-          published: true,
-          publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-          publishedBy: alexBatesId,
-          weekYear: "2025-W41",
-          isRead: true,
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(now - 15 * 24 * 60 * 60 * 1000),
         },
       ];
 
-      // Insert feedback
+      sampleFeedback.unshift(...guaranteedFeedbackForAlex);
+
+      // Insert all generated feedback
+      let insertedCount = 0;
       for (const fb of sampleFeedback) {
         try {
           await db.insert(feedbackTable).values(fb);
-          const status = fb.published ? "✓ Published" : "○ Pending";
-          const reviewer = Object.keys(userIdMap).find(
-            (k) => userIdMap[k] === fb.reviewerId
-          );
-          const reviewee = Object.keys(userIdMap).find(
-            (k) => userIdMap[k] === fb.revieweeId
-          );
+          const status = fb.published ? "✓" : "○";
+          const reviewer = Object.keys(userIdMap).find(k => userIdMap[k] === fb.reviewerId) || "Unknown";
+          const reviewee = Object.keys(userIdMap).find(k => userIdMap[k] === fb.revieweeId) || "Unknown";
           console.log(
-            `   ${status} ${reviewer} → ${reviewee}: ${fb.content.substring(0, 40)}...`
+            `   ${status} ${fb.weekYear} ${reviewer} → ${reviewee}: ${fb.content.substring(0, 35)}...`
           );
+          insertedCount++;
         } catch (error) {
-          console.log(`   ⚠️  Feedback may already exist, skipping...`);
+          // Silently skip duplicates
         }
       }
+      console.log(`\n   📊 Inserted ${insertedCount} feedback items across 12 weeks (including ${guaranteedFeedbackForAlex.length} guaranteed for Alex Bates)`);
     }
 
     // Step 5: Create sample goals for testing
@@ -498,6 +558,7 @@ async function seed() {
     console.log(`   - Users: ${Object.keys(userIdMap).length}`);
     console.log(`   - Buddy relationships: ${Object.keys(BUDDY_ASSIGNMENTS).length}`);
     console.log(`   - Feedback prompts: ${QUESTIONS.length}`);
+    console.log(`   - Feedback items: ~78 items across 12 weeks (70% published)`);
     console.log(`   - Sample goals: Created for Alex Bates and Marcin`);
   } catch (error) {
     console.error("❌ Seed failed:", error);
