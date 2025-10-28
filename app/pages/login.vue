@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { createAuthClient } from "better-auth/vue";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import { inferAdditionalFields, adminClient } from "better-auth/client/plugins";
 
 definePageMeta({
   layout: "auth",
@@ -80,11 +80,9 @@ const authClient = createAuthClient({
         avatarUrl: {
           type: "string",
         },
-        isAdmin: {
-          type: "boolean",
-        },
       },
     }),
+    adminClient(),
   ],
 });
 const loading = ref(false);

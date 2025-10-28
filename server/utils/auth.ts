@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin } from "better-auth/plugins";
 import { db } from "../database/connection";
 import * as schema from "../database/schema";
 import { eq, and } from "drizzle-orm";
@@ -40,14 +41,13 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
-      isAdmin: {
-        type: "boolean",
-        required: false,
-        defaultValue: false,
-        input: false,
-      },
     },
   },
+  plugins: [
+    admin({
+      defaultRole: "user",
+    }),
+  ],
   hooks: {
     user: {
       created: async ({ user }) => {
@@ -108,11 +108,25 @@ export const auth = betterAuth({
               .set({ buddyId: user.id })
               .where(eq(schema.users.buddyId, seededUser.id));
 
-            // Transfer the buddy relationship from seeded user to OAuth user
+            // Transfer the buddy relationship and other fields from seeded user to OAuth user
+            const updateData: any = {};
             if (seededUser.buddyId) {
+              updateData.buddyId = seededUser.buddyId;
+            }
+            if (seededUser.roleType) {
+              updateData.roleType = seededUser.roleType;
+            }
+            if (seededUser.nextReviewDate) {
+              updateData.nextReviewDate = seededUser.nextReviewDate;
+            }
+            if (seededUser.role) {
+              updateData.role = seededUser.role;
+            }
+
+            if (Object.keys(updateData).length > 0) {
               await db
                 .update(schema.users)
-                .set({ buddyId: seededUser.buddyId })
+                .set(updateData)
                 .where(eq(schema.users.id, user.id));
             }
 

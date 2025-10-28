@@ -7,10 +7,10 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Check if user is admin (user should be attached from auth middleware)
+  // Check if user has admin role (user should be attached from auth middleware)
   const user = event.context.user
 
-  if (!user || !user.isAdmin) {
+  if (!user || user.role !== 'admin') {
     throw createError({
       statusCode: 403,
       message: 'Forbidden - Admin access required',

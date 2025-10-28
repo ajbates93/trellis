@@ -172,7 +172,7 @@ async function seed() {
             createdAt: new Date(),
             updatedAt: new Date(),
             // First user becomes admin
-            isAdmin: member.email === "alex.bates@pocketworks.co.uk",
+            role: member.email === "alex.bates@pocketworks.co.uk" ? "admin" : "user",
           })
           .returning();
 

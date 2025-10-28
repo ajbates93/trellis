@@ -12,7 +12,11 @@ export const users = pgTable('users', {
   buddyId: text('buddy_id'),
   nextReviewDate: date('next_review_date'),
   avatarUrl: text('avatar_url'),
-  isAdmin: boolean('is_admin').default(false),
+  // Admin plugin fields
+  role: varchar('role', { length: 50 }).default('user'),
+  banned: boolean('banned').default(false),
+  banReason: varchar('ban_reason', { length: 255 }),
+  banExpires: timestamp('ban_expires'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
 })
@@ -179,6 +183,8 @@ export const sessions = pgTable('session', {
   token: text('token').notNull().unique(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
+  // Admin plugin field for impersonation
+  impersonatedBy: text('impersonated_by'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })

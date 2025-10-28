@@ -83,7 +83,7 @@ const allLinks = [
 ];
 
 const navigationLinks = computed(() =>
-  allLinks.filter((item) => !item.requiresAdmin || user.value?.isAdmin),
+  allLinks.filter((item) => !item.requiresAdmin || user.value?.role === 'admin'),
 );
 
 // User dropdown menu

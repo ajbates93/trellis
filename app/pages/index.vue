@@ -171,7 +171,7 @@
                 View Goals
               </UButton>
               <UButton
-                v-if="user?.isAdmin"
+                v-if="user?.role === 'admin'"
                 to="/admin/dashboard"
                 color="white"
                 size="lg"

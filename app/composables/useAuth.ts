@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/vue";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import { inferAdditionalFields, adminClient } from "better-auth/client/plugins";
 
 export const useAuth = () => {
   const authClient = createAuthClient({
@@ -18,11 +18,9 @@ export const useAuth = () => {
           avatarUrl: {
             type: "string",
           },
-          isAdmin: {
-            type: "boolean",
-          },
         },
       }),
+      adminClient(),
     ],
   });
   const sessionData = authClient.useSession();
