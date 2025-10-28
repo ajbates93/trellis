@@ -35,12 +35,13 @@
               </p>
             </div>
 
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <UIcon
-                name="i-heroicons-clock"
-                class="text-purple-500"
-              />
-              <span class="text-sm font-medium text-purple-700 dark:text-purple-400">
+            <div
+              class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg"
+            >
+              <UIcon name="i-heroicons-clock" class="text-purple-500" />
+              <span
+                class="text-sm font-medium text-purple-700 dark:text-purple-400"
+              >
                 Estimated: Phase 6 (Weeks 5-6)
               </span>
             </div>
@@ -56,7 +57,10 @@
                 <div
                   class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center"
                 >
-                  <UIcon name="i-heroicons-chart-bar" class="text-blue-500 text-xl" />
+                  <UIcon
+                    name="i-heroicons-chart-bar"
+                    class="text-blue-500 text-xl"
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   Platform Statistics
@@ -64,19 +68,31 @@
               </div>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Total feedback submitted
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Active users & engagement rates
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Goals completion metrics
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Review schedule tracking
                 </li>
               </ul>
@@ -90,7 +106,10 @@
                 <div
                   class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center"
                 >
-                  <UIcon name="i-heroicons-users" class="text-green-500 text-xl" />
+                  <UIcon
+                    name="i-heroicons-users"
+                    class="text-green-500 text-xl"
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   User Management
@@ -98,19 +117,31 @@
               </div>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Manage buddy assignments
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Set review dates (bulk actions)
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   User roles & permissions
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Activity monitoring
                 </li>
               </ul>
@@ -124,7 +155,10 @@
                 <div
                   class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center"
                 >
-                  <UIcon name="i-heroicons-arrow-up-tray" class="text-purple-500 text-xl" />
+                  <UIcon
+                    name="i-heroicons-arrow-up-tray"
+                    class="text-purple-500 text-xl"
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   CSV Onboarding
@@ -132,19 +166,31 @@
               </div>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Bulk user import
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   CSV validation & preview
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Error reporting
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Import history & audit log
                 </li>
               </ul>
@@ -158,7 +204,10 @@
                 <div
                   class="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center"
                 >
-                  <UIcon name="i-heroicons-fire" class="text-amber-500 text-xl" />
+                  <UIcon
+                    name="i-heroicons-fire"
+                    class="text-amber-500 text-xl"
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   Engagement Analytics
@@ -166,19 +215,31 @@
               </div>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Team engagement charts
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Feedback distribution by role
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Top contributors leaderboard
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Activity trends over time
                 </li>
               </ul>
@@ -200,19 +261,31 @@
               </div>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Review pending feedback
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Batch publish/reject
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Flagged content review
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Content quality insights
                 </li>
               </ul>
@@ -226,7 +299,10 @@
                 <div
                   class="w-12 h-12 rounded-lg bg-gray-500/10 flex items-center justify-center"
                 >
-                  <UIcon name="i-heroicons-cog-6-tooth" class="text-gray-500 text-xl" />
+                  <UIcon
+                    name="i-heroicons-cog-6-tooth"
+                    class="text-gray-500 text-xl"
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   System Settings
@@ -234,19 +310,31 @@
               </div>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Platform configuration
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Email notification settings
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Review cycle scheduling
                 </li>
                 <li class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500 text-sm" />
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="text-green-500 text-sm"
+                  />
                   Integration management
                 </li>
               </ul>
@@ -256,12 +344,7 @@
 
         <!-- Back to Dashboard Button -->
         <div class="mt-8 flex justify-center">
-          <UButton
-            to="/"
-            color="white"
-            size="lg"
-            icon="i-heroicons-arrow-left"
-          >
+          <UButton to="/" color="white" size="lg" icon="i-heroicons-arrow-left">
             Back to Dashboard
           </UButton>
         </div>
@@ -273,6 +356,6 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
-  middleware: ["auth"], // Protect with auth middleware
+  middleware: ["auth", "admin"],
 });
 </script>

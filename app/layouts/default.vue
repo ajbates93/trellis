@@ -10,85 +10,81 @@ const { isLoading } = useLoadingIndicator();
 // Fetch unread feedback count
 const { unreadCount } = useUnreadCount();
 
-const navigationLinks = computed(() => {
-  const links = [
-    {
-      label: "Home",
-      icon: "i-heroicons-home",
-      to: "/",
-      active: route.path === "/",
-    },
-    {
-      label: "Feedback",
-      icon: "i-heroicons-chat-bubble-left-right",
-      active: route.path.startsWith("/feedback"),
-      children: [
-        {
-          label: "Give Feedback",
-          to: "/feedback/give",
-        },
-        {
-          label: "Inbox",
-          to: "/feedback/inbox",
-          badge:
-            unreadCount.value > 0 ? unreadCount.value.toString() : undefined,
-        },
-      ],
-    },
-    {
-      label: "Goals",
-      icon: "i-heroicons-flag",
-      to: "/goals",
-      active: route.path === "/goals",
-    },
-    {
-      label: "Reviews",
-      icon: "i-heroicons-calendar-days",
-      to: "/reviews",
-      active: route.path === "/reviews",
-    },
-    {
-      label: "Settings",
-      icon: "i-heroicons-cog-6-tooth",
-      active: route.path.startsWith("/settings"),
-      children: [
-        {
-          label: "General",
-          to: "/settings/general",
-        },
-        {
-          label: "Notifications",
-          to: "/settings/notifications",
-        },
-      ],
-    },
-  ];
+const allLinks = [
+  {
+    label: "Home",
+    icon: "i-heroicons-home",
+    to: "/",
+    active: route.path === "/",
+  },
+  {
+    label: "Feedback",
+    icon: "i-heroicons-chat-bubble-left-right",
+    active: route.path.startsWith("/feedback"),
+    children: [
+      {
+        label: "Give Feedback",
+        to: "/feedback/give",
+      },
+      {
+        label: "Inbox",
+        to: "/feedback/inbox",
+        badge: unreadCount.value > 0 ? unreadCount.value.toString() : undefined,
+      },
+    ],
+  },
+  {
+    label: "Goals",
+    icon: "i-heroicons-flag",
+    to: "/goals",
+    active: route.path === "/goals",
+  },
+  {
+    label: "Reviews",
+    icon: "i-heroicons-calendar-days",
+    to: "/reviews",
+    active: route.path === "/reviews",
+  },
+  {
+    label: "Settings",
+    icon: "i-heroicons-cog-6-tooth",
+    active: route.path.startsWith("/settings"),
+    children: [
+      {
+        label: "General",
+        to: "/settings/general",
+      },
+      {
+        label: "Notifications",
+        to: "/settings/notifications",
+      },
+    ],
+  },
+  {
+    label: "Admin",
+    icon: "i-heroicons-shield-check",
+    active: route.path.startsWith("/admin"),
+    requiresAdmin: true,
+    children: [
+      {
+        label: "Dashboard",
+        to: "/admin/dashboard",
+      },
+      {
+        label: "Users",
+        to: "/admin/users",
+      },
+      {
+        label: "Onboarding",
+        to: "/admin/onboard",
+      },
+    ],
+  },
+];
 
-  // Add admin section if user is admin
-  if (user.value?.isAdmin) {
-    links.push({
-      label: "Admin",
-      icon: "i-heroicons-shield-check",
-      active: route.path.startsWith("/admin"),
-      children: [
-        {
-          label: "Dashboard",
-          to: "/admin/dashboard",
-        },
-        {
-          label: "Users",
-          to: "/admin/users",
-        },
-        {
-          label: "Onboarding",
-          to: "/admin/onboard",
-        },
-      ],
-    });
-  }
-
-  return links;
-});
+const navigationLinks = computed(() =>
+  allLinks.filter((item) => !item.requiresAdmin || user.value?.isAdmin),
+);
 
 // User dropdown menu
 const userMenuItems = [

@@ -58,12 +58,35 @@
 
 <script setup lang="ts">
 import { createAuthClient } from "better-auth/vue";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 
 definePageMeta({
   layout: "auth",
 });
 
-const authClient = createAuthClient();
+const authClient = createAuthClient({
+  plugins: [
+    inferAdditionalFields({
+      user: {
+        roleType: {
+          type: "string",
+        },
+        buddyId: {
+          type: "string",
+        },
+        nextReviewDate: {
+          type: "date",
+        },
+        avatarUrl: {
+          type: "string",
+        },
+        isAdmin: {
+          type: "boolean",
+        },
+      },
+    }),
+  ],
+});
 const loading = ref(false);
 
 const signInWithGoogle = async () => {

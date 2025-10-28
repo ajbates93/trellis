@@ -1,7 +1,30 @@
 import { createAuthClient } from "better-auth/vue";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 
 export const useAuth = () => {
-  const authClient = createAuthClient();
+  const authClient = createAuthClient({
+    plugins: [
+      inferAdditionalFields({
+        user: {
+          roleType: {
+            type: "string",
+          },
+          buddyId: {
+            type: "string",
+          },
+          nextReviewDate: {
+            type: "date",
+          },
+          avatarUrl: {
+            type: "string",
+          },
+          isAdmin: {
+            type: "boolean",
+          },
+        },
+      }),
+    ],
+  });
   const sessionData = authClient.useSession();
   const user = computed(() => sessionData.value.data?.user);
   const session = computed(() => sessionData.value.data?.session);
