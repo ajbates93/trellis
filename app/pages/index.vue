@@ -194,9 +194,17 @@
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Recent Feedback
-                </h2>
+                <div class="flex items-center gap-2">
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Recent Feedback
+                  </h2>
+                  <UBadge
+                    v-if="unreadCount > 0"
+                    :label="`${unreadCount} unread`"
+                    color="primary"
+                    size="sm"
+                  />
+                </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   Latest feedback you've received
                 </p>
@@ -299,6 +307,9 @@ const recentFeedback = computed(() => {
   const feedback = feedbackData.value?.feedback || [];
   return feedback.slice(0, 5); // Limit to 5 most recent
 });
+
+// Fetch unread feedback count
+const { unreadCount } = useUnreadCount();
 
 // Combine stats with goals data
 const stats = computed(() => ({

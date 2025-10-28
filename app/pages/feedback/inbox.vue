@@ -32,11 +32,15 @@ const { data: buddyData, refresh: refreshBuddy } = await useFetch(
 );
 const buddyAssignments = computed(() => buddyData.value?.buddyAssignments || []);
 
+// Get unread count refresh function
+const { refreshUnreadCount } = useUnreadCount();
+
 // Mark feedback as read
 const markAsRead = async (feedbackId: string) => {
   try {
     await $fetch(`/api/feedback/${feedbackId}/read`, { method: "PATCH" });
-    return await refreshReceived();
+    await refreshReceived();
+    await refreshUnreadCount(); // Refresh unread count globally
   } catch (error) {
     console.error("Failed to mark as read:", error);
     alert("Failed to mark as read");

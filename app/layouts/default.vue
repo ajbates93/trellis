@@ -7,6 +7,9 @@ const route = useRoute();
 // Loading indicator for page navigation
 const { isLoading } = useLoadingIndicator();
 
+// Fetch unread feedback count
+const { unreadCount } = useUnreadCount();
+
 const navigationLinks = computed(() => {
   const links = [
     {
@@ -27,6 +30,8 @@ const navigationLinks = computed(() => {
         {
           label: "Inbox",
           to: "/feedback/inbox",
+          badge:
+            unreadCount.value > 0 ? unreadCount.value.toString() : undefined,
         },
       ],
     },
@@ -115,67 +120,74 @@ const userMenuItems = [
     />
 
     <UDashboardGroup unit="rem">
-    <UDashboardSidebar
-      collapsible
-      resizable
-      :ui="{ footer: 'lg:border-t lg:border-gray-200 dark:lg:border-gray-800' }"
-    >
-      <!-- Logo and branding -->
-      <template #header="{ collapsed }">
-        <div class="flex items-center gap-3 px-4 py-4">
-          <div
-            class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"
-          >
-            <UIcon name="i-heroicons-users" class="text-white text-lg" />
+      <UDashboardSidebar
+        collapsible
+        resizable
+        :ui="{
+          footer: 'lg:border-t lg:border-gray-200 dark:lg:border-gray-800',
+        }"
+      >
+        <!-- Logo and branding -->
+        <template #header="{ collapsed }">
+          <div class="flex items-center gap-3 px-4 py-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"
+            >
+              <UIcon name="i-heroicons-users" class="text-white text-lg" />
+            </div>
+            <span v-if="!collapsed" class="text-lg font-semibold">Cohort</span>
           </div>
-          <span v-if="!collapsed" class="text-lg font-semibold">Cohort</span>
-        </div>
-      </template>
+        </template>
 
-      <!-- Main navigation -->
-      <template #default="{ collapsed }">
-        <UNavigationMenu
-          :items="navigationLinks"
-          :collapsed="collapsed"
-          orientation="vertical"
-          tooltip
-          popover
-        />
-      </template>
+        <!-- Main navigation -->
+        <template #default="{ collapsed }">
+          <UNavigationMenu
+            :items="navigationLinks"
+            :collapsed="collapsed"
+            orientation="vertical"
+            tooltip
+            popover
+          />
+        </template>
 
-      <!-- Bottom section with user profile -->
-      <template #footer="{ collapsed }">
-        <div class="px-4 py-4 space-y-4">
-          <!-- Color mode toggle -->
-          <div v-if="!collapsed" class="flex items-center justify-between gap-3">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
-            <UColorModeSwitch />
+        <!-- Bottom section with user profile -->
+        <template #footer="{ collapsed }">
+          <div class="px-4 py-4 space-y-4">
+            <!-- Color mode toggle -->
+            <div
+              v-if="!collapsed"
+              class="flex items-center justify-between gap-3"
+            >
+              <span class="text-sm text-gray-600 dark:text-gray-400"
+                >Dark Mode</span
+              >
+              <UColorModeSwitch />
+            </div>
+            <UColorModeSwitch v-else />
+
+            <!-- User profile -->
+            <UDropdownMenu :items="userMenuItems">
+              <template #trigger>
+                <button class="w-full">
+                  <UUser
+                    v-if="!collapsed"
+                    :name="user?.name || 'User'"
+                    :description="user?.email"
+                    :avatar="{ src: user?.image || user?.avatarUrl }"
+                    class="w-full"
+                  />
+                  <UAvatar
+                    v-else
+                    :src="user?.image || user?.avatarUrl"
+                    :alt="user?.name || 'User'"
+                    size="sm"
+                  />
+                </button>
+              </template>
+            </UDropdownMenu>
           </div>
-          <UColorModeSwitch v-else />
-
-          <!-- User profile -->
-          <UDropdownMenu :items="userMenuItems">
-            <template #trigger>
-              <button class="w-full">
-                <UUser
-                  v-if="!collapsed"
-                  :name="user?.name || 'User'"
-                  :description="user?.email"
-                  :avatar="{ src: user?.image || user?.avatarUrl }"
-                  class="w-full"
-                />
-                <UAvatar
-                  v-else
-                  :src="user?.image || user?.avatarUrl"
-                  :alt="user?.name || 'User'"
-                  size="sm"
-                />
-              </button>
-            </template>
-          </UDropdownMenu>
-        </div>
-      </template>
-    </UDashboardSidebar>
+        </template>
+      </UDashboardSidebar>
 
       <!-- Main content area -->
       <slot />
