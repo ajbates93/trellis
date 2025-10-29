@@ -5,18 +5,18 @@ import { eq } from "drizzle-orm";
 
 // Team members data
 const TEAM_MEMBERS = [
-  { name: "Alex Britten", email: "alex.britten@pocketworks.co.uk" },
-  { name: "Alex Bates", email: "alex.bates@pocketworks.co.uk" },
-  { name: "Mark", email: "mark.houghton@pocketworks.co.uk" },
-  { name: "Rory", email: "rory@pocketworks.co.uk" },
-  { name: "Anna", email: "anna@pocketworks.co.uk" },
-  { name: "Matteo", email: "matteo@pocketworks.co.uk" },
-  { name: "Judit", email: "judit@pocketworks.co.uk" },
-  { name: "Lucy", email: "lucy@pocketworks.co.uk" },
-  { name: "Josh", email: "josh@pocketworks.co.uk" },
-  { name: "Marcin", email: "marcin@pocketworks.co.uk" },
-  { name: "Matej", email: "matej@pocketworks.co.uk" },
-  { name: "Matt Chambers", email: "matt.chambers@pocketworks.co.uk" },
+  { name: "Alex Britten", email: "alex.britten@pocketworks.co.uk", roleType: "qa" },
+  { name: "Alex Bates", email: "alex.bates@pocketworks.co.uk", roleType: "dev" },
+  { name: "Mark", email: "mark.houghton@pocketworks.co.uk", roleType: "dev" },
+  { name: "Rory", email: "rory@pocketworks.co.uk", roleType: "dev" },
+  { name: "Anna", email: "anna@pocketworks.co.uk", roleType: "design" },
+  { name: "Matteo", email: "matteo@pocketworks.co.uk", roleType: "dev" },
+  { name: "Judit", email: "judit@pocketworks.co.uk", roleType: "design" },
+  { name: "Lucy", email: "lucy@pocketworks.co.uk", roleType: "growth" },
+  { name: "Josh", email: "josh@pocketworks.co.uk", roleType: "dev" },
+  { name: "Marcin", email: "marcin@pocketworks.co.uk", roleType: "dev" },
+  { name: "Matej", email: "matej@pocketworks.co.uk", roleType: "dev" },
+  { name: "Matt Chambers", email: "matt.chambers@pocketworks.co.uk", roleType: "qa" },
 ];
 
 // Buddy assignments - who receives feedback about whom
@@ -168,6 +168,7 @@ async function seed() {
             id: crypto.randomUUID(),
             email: member.email,
             name: member.name,
+            roleType: member.roleType,
             emailVerified: false,
             createdAt: new Date(),
             updatedAt: new Date(),

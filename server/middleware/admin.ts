@@ -1,3 +1,5 @@
+import { auth } from "../utils/auth";
+
 export default defineEventHandler(async (event) => {
   // Only check admin routes
   const adminRoutes = ['/api/admin']
@@ -7,13 +9,16 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Check if user has admin role (user should be attached from auth middleware)
-  const user = event.context.user
+  // Get session from Better Auth
+  const session = await auth.api.getSession({ headers: event.headers });
 
-  if (!user || user.role !== 'admin') {
+  if (!session?.user || session.user.role !== 'admin') {
     throw createError({
       statusCode: 403,
       message: 'Forbidden - Admin access required',
     })
   }
+
+  // Attach user to context for use in API routes
+  event.context.user = session.user;
 })
