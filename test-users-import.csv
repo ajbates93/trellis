@@ -1,0 +1,13 @@
+email,name,roleType,buddyEmail,nextReviewDate
+alex.britten@pocketworks.co.uk,Alex Britten,qa,rory@pocketworks.co.uk,2025-12-15
+alex.bates@pocketworks.co.uk,Alex Bates,dev,,2025-11-20
+mark.houghton@pocketworks.co.uk,Mark,dev,rory@pocketworks.co.uk,2025-12-01
+rory@pocketworks.co.uk,Rory,dev,anna@pocketworks.co.uk,2025-11-25
+anna@pocketworks.co.uk,Anna,design,mark.houghton@pocketworks.co.uk,2025-12-10
+matteo@pocketworks.co.uk,Matteo,dev,mark.houghton@pocketworks.co.uk,2025-11-30
+judit@pocketworks.co.uk,Judit,design,anna@pocketworks.co.uk,2025-12-05
+lucy@pocketworks.co.uk,Lucy,growth,anna@pocketworks.co.uk,2025-12-20
+josh@pocketworks.co.uk,Josh,dev,matteo@pocketworks.co.uk,2025-11-28
+marcin@pocketworks.co.uk,Marcin,dev,alex.bates@pocketworks.co.uk,2025-12-12
+matej@pocketworks.co.uk,Matej,dev,alex.bates@pocketworks.co.uk,2025-12-18
+matt.chambers@pocketworks.co.uk,Matt Chambers,qa,alex.britten@pocketworks.co.uk,2025-12-08

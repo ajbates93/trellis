@@ -112,11 +112,11 @@ export default defineEventHandler(async (event) => {
       }
 
       // Validate roleType if provided
-      if (row.roletype && !["dev", "design", "qa"].includes(row.roletype)) {
+      if (row.roletype && !["dev", "design", "qa", "growth"].includes(row.roletype)) {
         errors.push({
           row: i + 1,
           field: "roleType",
-          message: `Invalid role type: ${row.roletype}. Must be dev, design, or qa`,
+          message: `Invalid role type: ${row.roletype}. Must be dev, design, qa, or growth`,
         });
         continue;
       }

@@ -108,27 +108,37 @@
   - [ ] POST /api/reviews - Schedule review (admin)
   - [ ] PATCH /api/reviews/:id/complete - Mark as completed
 
-## Phase 6: Admin Panel
-- [ ] Admin dashboard page
-  - [ ] Platform-wide stats cards
-  - [ ] Team engagement chart
-  - [ ] Feedback distribution (donut chart)
-  - [ ] Top contributors leaderboard
-  - [ ] Recent activity feed
-- [ ] User management
-  - [ ] Buddy relationships table
-  - [ ] Reassign buddy functionality
-  - [ ] Set review dates (bulk actions)
+## Phase 6: Admin Panel 🚧
+- [x] Admin dashboard page
+  - [x] Platform-wide stats cards (total users, active/invited, feedback, goals, reviews)
+  - [x] Team engagement chart (12-week feedback timeline with @unovis/vue)
+  - [x] Feedback distribution (donut chart by role type)
+  - [x] Top contributors leaderboard (top 10 with medals)
+  - [x] Recent activity feed (feedback and goals)
+- [x] User management
+  - [x] User table with tabs (All/Active/Invited)
+  - [x] Edit user modal (role, buddy, roleType, nextReviewDate)
+  - [x] Add user modal (create invited users)
+  - [x] Reassign buddy functionality
+  - [x] Set review dates (individual)
+  - [ ] Bulk actions for buddy assignment and review dates
 - [ ] CSV onboarding
   - [ ] Upload CSV interface
   - [ ] Preview and validation
-  - [ ] Import users functionality
+  - [ ] Import users functionality (page)
   - [ ] Error reporting
-- [ ] API endpoints
-  - [ ] POST /api/admin/onboard - CSV import
-  - [ ] GET /api/admin/stats - Platform statistics
-  - [ ] GET /api/admin/engagement - Engagement metrics
-  - [ ] PUT /api/users/:id/buddy - Update buddy assignment
+- [x] API endpoints
+  - [x] POST /api/admin/onboard/import - CSV import
+  - [x] GET /api/admin/onboard/history - Import history
+  - [x] GET /api/admin/onboard/template - CSV template download
+  - [x] GET /api/admin/stats - Platform statistics
+  - [x] GET /api/admin/engagement - Engagement metrics (12 weeks)
+  - [x] GET /api/admin/feedback-distribution - Role distribution
+  - [x] GET /api/admin/top-contributors - Top 10 feedback givers
+  - [x] GET /api/admin/recent-activity - Latest feedback and goals
+  - [x] GET /api/admin/users - List users with filtering
+  - [x] PATCH /api/admin/users/:id - Update user (role, buddy, roleType)
+  - [x] POST /api/admin/users - Create new invited user
 
 ## Phase 7: Data Visualizations
 - [ ] Dashboard charts
@@ -244,14 +254,17 @@
 ---
 
 ## Current Status
-**Last Updated:** 2025-10-28
-**Current Phase:** Phase 5 - Reviews Management (Ready to Start)
+**Last Updated:** 2025-10-29
+**Current Phase:** Phase 6 - Admin Panel (In Progress - 75% Complete)
 **Recently Completed:**
-- ✅ Authentication & Authorization Improvements (Phase 2 enhancement)
-  - Extended Better Auth types for custom user fields (isAdmin, roleType, buddyId, etc.)
-  - Created route middleware for auth and admin protection
-  - Implemented filter-based conditional admin navigation
-  - Built custom error page with proper UX for 403/404/500 errors
+- ✅ Phase 6: Admin Panel (Partial)
+  - Integrated Better Auth admin plugin for user role management
+  - Built admin dashboard with 5 data visualizations (@unovis/vue charts)
+  - Created user management interface (table with tabs, edit/add modals)
+  - Implemented 11 admin API endpoints (stats, engagement, users, onboarding)
+  - Fixed SSR/hydration issues by switching from useFetch to $fetch
+  - User table with proper column definitions and filtering
+  - Role-based access control using Better Auth roles
 - ✅ Phase 4: Goals Management (COMPLETE)
   - Goals page with accordion layout (Active/Completed/Archived)
   - Rich text descriptions using Nuxt TipTap editor with formatting, lists, and checkboxes
@@ -269,9 +282,8 @@
   - User linking system for automatic OAuth/seeded user merging
   - Comprehensive database seeding with team data and buddy assignments
 
-**Unblocked:**
-- ✅ AI-Driven Feedback Insights (Phase 8) - Goals dependency now satisfied
-  - Detailed implementation plan available (`.cursor/plans/ai-sentiment-analysis.md`)
-  - Can now suggest goals based on feedback themes
+**Remaining in Phase 6:**
+- CSV onboarding UI (upload interface, preview, validation, import history page)
+- Bulk actions for user management (bulk buddy assignment, bulk review dates)
 
-**Next Task:** Implement Reviews Management (Phase 5) OR start Phase 8 (AI Insights)
+**Next Task:** Complete Phase 6 (CSV onboarding UI) OR proceed to Phase 5 (Reviews Management)
