@@ -236,7 +236,14 @@
               </template>
 
               <template #content-cell="{ row }">
-                <span class="truncate max-w-md block">{{ row.original.content }}</span>
+                <UButton
+                  variant="ghost"
+                  color="neutral"
+                  class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                  @click="openFeedbackModal(row.original)"
+                >
+                  <span class="truncate block">{{ row.original.content }}</span>
+                </UButton>
               </template>
 
               <template #date-cell="{ row }">
@@ -269,6 +276,12 @@
       </div>
     </template>
   </UDashboardPanel>
+
+  <!-- Feedback Modal -->
+  <FeedbackModal
+    v-model="isModalOpen"
+    :feedback="selectedFeedback"
+  />
 </template>
 
 <script setup lang="ts">
@@ -357,5 +370,15 @@ const formatDate = (date: string | Date) => {
     month: "short",
     year: "numeric",
   });
+};
+
+// Modal state
+const isModalOpen = ref(false);
+const selectedFeedback = ref<any>(null);
+
+// Open modal with selected feedback
+const openFeedbackModal = (feedback: any) => {
+  selectedFeedback.value = feedback;
+  isModalOpen.value = true;
 };
 </script>

@@ -89,6 +89,22 @@ const formatDate = (date: string | Date) => {
   return format(new Date(date), "MMM d, yyyy");
 };
 
+// Modal state
+const isModalOpen = ref(false);
+const selectedFeedback = ref<any>(null);
+
+// Open modal with selected feedback
+const openFeedbackModal = (feedback: any) => {
+  selectedFeedback.value = feedback;
+  isModalOpen.value = true;
+};
+
+// Handle mark as read from modal
+const handleMarkAsReadFromModal = async (feedbackId: string) => {
+  await markAsRead(feedbackId);
+  isModalOpen.value = false;
+};
+
 // Column definitions
 const receivedColumns = [
   { id: "from", accessorKey: "reviewer", header: "From" },
@@ -192,20 +208,14 @@ const buddyFeedbackColumns = [
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UPopover>
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    >
-                      <span class="truncate block">{{ row.original.content }}</span>
-                    </UButton>
-                    <template #content>
-                      <div class="p-4 max-w-md">
-                        <p class="text-sm whitespace-normal">{{ row.original.content }}</p>
-                      </div>
-                    </template>
-                  </UPopover>
+                  <UButton
+                    variant="ghost"
+                    color="neutral"
+                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                    @click="openFeedbackModal(row.original)"
+                  >
+                    <span class="truncate block">{{ row.original.content }}</span>
+                  </UButton>
                 </template>
 
                 <template #date-cell="{ row }">
@@ -269,20 +279,14 @@ const buddyFeedbackColumns = [
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UPopover>
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    >
-                      <span class="truncate block">{{ row.original.content }}</span>
-                    </UButton>
-                    <template #content>
-                      <div class="p-4 max-w-md">
-                        <p class="text-sm whitespace-normal">{{ row.original.content }}</p>
-                      </div>
-                    </template>
-                  </UPopover>
+                  <UButton
+                    variant="ghost"
+                    color="neutral"
+                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                    @click="openFeedbackModal(row.original)"
+                  >
+                    <span class="truncate block">{{ row.original.content }}</span>
+                  </UButton>
                 </template>
 
                 <template #date-cell="{ row }">
@@ -423,4 +427,12 @@ const buddyFeedbackColumns = [
       </div>
     </template>
   </UDashboardPanel>
+
+  <!-- Feedback Modal -->
+  <FeedbackModal
+    v-model="isModalOpen"
+    :feedback="selectedFeedback"
+    :show-mark-as-read="selectedTab === 'received'"
+    @mark-as-read="handleMarkAsReadFromModal"
+  />
 </template>
