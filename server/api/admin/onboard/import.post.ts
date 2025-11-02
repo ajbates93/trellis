@@ -91,16 +91,6 @@ export default defineEventHandler(async (event) => {
         continue;
       }
 
-      // Validate @pocketworks.co.uk domain
-      if (!row.email.endsWith("@pocketworks.co.uk")) {
-        errors.push({
-          row: i + 1,
-          field: "email",
-          message: `Email must be @pocketworks.co.uk domain: ${row.email}`,
-        });
-        continue;
-      }
-
       // Validate name is not empty
       if (!row.name || row.name.trim() === "") {
         errors.push({

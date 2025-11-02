@@ -4,6 +4,14 @@ const { user, signOut } = useAuth();
 // Navigation links
 const route = useRoute();
 
+// Logout confirmation modal
+const isLogoutModalOpen = ref(false);
+
+const handleLogout = async () => {
+  isLogoutModalOpen.value = false;
+  await signOut();
+};
+
 // Loading indicator for page navigation
 const { isLoading } = useLoadingIndicator();
 
@@ -148,7 +156,21 @@ const userMenuItems = [
 
         <!-- Bottom section with user profile -->
         <template #footer="{ collapsed }">
-          <div class="px-4 py-4 space-y-4">
+          <div class="flex flex-col gap-3">
+            <!-- User profile button -->
+            <UButton
+              v-if="user"
+              :avatar="{
+                src: user.image || user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=10b981&color=fff`
+              }"
+              :label="collapsed ? undefined : (user.name || user.email || 'User')"
+              color="neutral"
+              variant="ghost"
+              class="w-full"
+              :block="!collapsed"
+              @click="navigateTo('/profile')"
+            />
+
             <!-- Color mode toggle -->
             <div
               v-if="!collapsed"
@@ -159,28 +181,23 @@ const userMenuItems = [
               >
               <UColorModeSwitch />
             </div>
-            <UColorModeSwitch v-else />
+            <UColorModeSwitch v-else class="mx-auto" />
 
-            <!-- User profile -->
-            <UDropdownMenu :items="userMenuItems">
-              <template #trigger>
-                <button class="w-full">
-                  <UUser
-                    v-if="!collapsed"
-                    :name="user?.name || 'User'"
-                    :description="user?.email"
-                    :avatar="{ src: user?.image || user?.avatarUrl }"
-                    class="w-full"
-                  />
-                  <UAvatar
-                    v-else
-                    :src="user?.image || user?.avatarUrl"
-                    :alt="user?.name || 'User'"
-                    size="sm"
-                  />
-                </button>
+            <!-- Logout button -->
+            <UButton
+              :icon="collapsed ? 'i-heroicons-arrow-right-on-rectangle' : undefined"
+              :label="collapsed ? undefined : 'Log Out'"
+              color="neutral"
+              variant="outline"
+              class="w-full"
+              :block="!collapsed"
+              :square="collapsed"
+              @click="isLogoutModalOpen = true"
+            >
+              <template v-if="!collapsed" #leading>
+                <UIcon name="i-heroicons-arrow-right-on-rectangle" />
               </template>
-            </UDropdownMenu>
+            </UButton>
           </div>
         </template>
       </UDashboardSidebar>
@@ -188,5 +205,26 @@ const userMenuItems = [
       <!-- Main content area -->
       <slot />
     </UDashboardGroup>
+
+    <!-- Logout confirmation modal -->
+    <UModal
+      v-model:open="isLogoutModalOpen"
+      title="Confirm Logout"
+      description="Are you sure you want to log out of Cohort?"
+    >
+      <template #footer>
+        <UButton
+          label="Cancel"
+          color="neutral"
+          variant="ghost"
+          @click="isLogoutModalOpen = false"
+        />
+        <UButton
+          label="Log Out"
+          color="error"
+          @click="handleLogout"
+        />
+      </template>
+    </UModal>
   </div>
 </template>

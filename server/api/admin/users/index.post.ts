@@ -14,14 +14,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Check if email is valid Pocketworks email
-  if (!email.endsWith("@pocketworks.co.uk")) {
-    throw createError({
-      statusCode: 400,
-      message: "Only @pocketworks.co.uk emails are allowed",
-    });
-  }
-
   // Check if user already exists
   const existingUser = await db
     .select()
