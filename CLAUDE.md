@@ -52,7 +52,9 @@ npm run generate
 
 ### Authentication Flow
 - Google OAuth via Better-auth
-- Only `@pocketworks.co.uk` emails permitted
+- **Invitation-based access**: Only users pre-created by admins can authenticate (any email domain allowed)
+- Users must be imported via CSV or created by admin before they can log in
+- Unauthorized OAuth attempts are rejected with friendly error message
 - First user automatically becomes admin (`is_admin = true`)
 - Server-side sessions stored in PostgreSQL (30-day duration)
 - Protected routes require valid session
@@ -76,15 +78,22 @@ The application implements an automatic user-linking system to handle pre-popula
 
 2. **First Login**: When a user authenticates via Google OAuth:
    - Better Auth creates a new user record with its own ID format
-   - Hook detects matching pre-created user by email (`emailVerified = false`)
-   - Migrates all data to the OAuth user ID:
-     - Feedback (as reviewer and reviewee)
-     - Goals
-     - Review schedules
-     - Buddy relationships (bidirectional)
-   - Deletes old pre-created user record
+   - Hook checks if pre-created user exists with matching email (`emailVerified = false`)
+   - **If pre-created user exists**:
+     - Migrates all data to the OAuth user ID:
+       - Feedback (as reviewer and reviewee)
+       - Goals
+       - Review schedules
+       - Buddy relationships (bidirectional)
+     - Deletes old pre-created user record
+   - **If NO pre-created user exists** (unauthorized):
+     - Deletes OAuth user record immediately
+     - Shows error: "You haven't been invited to this workspace"
+     - User cannot access the system
 
-3. **Result**: Single authenticated user with all pre-configured relationships preserved
+3. **Result**:
+   - **Invited users**: Single authenticated user with all pre-configured relationships preserved
+   - **Unauthorized users**: Access denied, no user record created
 
 **Implementation**: See `server/utils/auth.ts` hooks configuration. The hook runs after successful OAuth sign-in and performs atomic database migrations to ensure data consistency.
 
@@ -208,7 +217,7 @@ Following Nuxt file-based conventions:
 ## Key Features
 
 ### Phase 1 (MVP)
-1. **Authentication**: Google OAuth for @pocketworks.co.uk
+1. **Authentication**: Google OAuth with invitation-based access control (any email domain)
 2. **Dashboard**: Personalized view with stats, charts, action items
 3. **Feedback Submission**: Submit feedback with weekly review tracking
 4. **Feedback Inbox**: View received/given feedback with filters
@@ -224,11 +233,15 @@ Following Nuxt file-based conventions:
 ### CSV Import Format
 ```csv
 email,name,role_type,buddy_email,next_review_date
-john.doe@pocketworks.co.uk,John Doe,dev,jane.smith@pocketworks.co.uk,2025-03-15
+john.doe@company.com,John Doe,dev,jane.smith@company.com,2025-03-15
+alice@external-contractor.io,Alice Brown,design,john.doe@company.com,2025-04-01
 ```
+
+**Note**: Any email domain is accepted (including external contractors/partners). Access is controlled via invitation only - users must be pre-created by admin before they can authenticate.
 
 ## Security Considerations
 
+- **Invitation-based access control**: Only pre-created users can authenticate (prevents unauthorized access)
 - All endpoints (except auth) require valid session
 - Admin endpoints verify `is_admin` flag
 - SQL injection prevention via parameterized queries
@@ -236,6 +249,7 @@ john.doe@pocketworks.co.uk,John Doe,dev,jane.smith@pocketworks.co.uk,2025-03-15
 - CSRF protection via Better-auth
 - Rate limiting on feedback submission (max 10/hour)
 - Input validation on all user-submitted content
+- OAuth user records automatically deleted if no matching invitation found
 
 ## Performance Targets
 

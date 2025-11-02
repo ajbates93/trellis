@@ -4,7 +4,7 @@ import { admin } from "better-auth/plugins";
 import { db } from "../database/connection";
 import * as schema from "../database/schema";
 import { eq, and } from "drizzle-orm";
-import { createAuthMiddleware } from "better-auth/api";
+import { createAuthMiddleware, APIError } from "better-auth/api";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -48,99 +48,143 @@ export const auth = betterAuth({
       defaultRole: "user",
     }),
   ],
-  hooks: {
+  databaseHooks: {
     user: {
-      created: async ({ user }) => {
-        const email = user.email;
-        if (!email) return;
+      create: {
+        before: async (user) => {
+          const email = user.email;
 
-        try {
-          // Check if a seeded user exists with this email
+          if (!email) {
+            throw new APIError("BAD_REQUEST", {
+              message: "Email is required for authentication",
+            });
+          }
+
+          // Check if a pre-created user exists with this email
           const existingSeededUsers = await db
             .select()
             .from(schema.users)
             .where(
               and(
                 eq(schema.users.email, email),
-                eq(schema.users.emailVerified, false), // Seeded users have emailVerified = false
+                eq(schema.users.emailVerified, false), // Pre-created users have emailVerified = false
               ),
             );
 
-          // If we found a seeded user (not the one just created by Better Auth)
-          const seededUser = existingSeededUsers.find((u) => u.id !== user.id);
+          // If no pre-created user found, reject the creation
+          if (existingSeededUsers.length === 0) {
+            console.log(`🚫 Unauthorized login attempt: ${email} (not invited)`);
+            throw new APIError("FORBIDDEN", {
+              message: "You haven't been invited to this workspace. Contact your admin for access.",
+            });
+          }
 
-          if (seededUser) {
-            console.log(
-              `🔗 Linking seeded user ${seededUser.name} (${seededUser.id}) with OAuth user (${user.id})`,
-            );
+          console.log(`✅ Invitation found for ${email} - allowing user creation`);
 
-            // Update all feedback references to point to the new Better Auth user ID
-            await db
-              .update(schema.feedback)
-              .set({ reviewerId: user.id })
-              .where(eq(schema.feedback.reviewerId, seededUser.id));
+          // Allow user creation to proceed
+          return { data: user };
+        },
+      },
+    },
+  },
+  hooks: {
+    user: {
+      created: async ({ user }) => {
+        const email = user.email;
+        if (!email) return;
 
-            await db
-              .update(schema.feedback)
-              .set({ revieweeId: user.id })
-              .where(eq(schema.feedback.revieweeId, seededUser.id));
+        // Check if a pre-created user exists with this email
+        const existingSeededUsers = await db
+          .select()
+          .from(schema.users)
+          .where(
+            and(
+              eq(schema.users.email, email),
+              eq(schema.users.emailVerified, false), // Pre-created users have emailVerified = false
+            ),
+          );
 
-            // Update all goals references
-            await db
-              .update(schema.goals)
-              .set({ userId: user.id })
-              .where(eq(schema.goals.userId, seededUser.id));
+        // If we found a pre-created user (not the one just created by Better Auth)
+        const seededUser = existingSeededUsers.find((u) => u.id !== user.id);
 
-            // Update all review schedules references
-            await db
-              .update(schema.reviewSchedules)
-              .set({ userId: user.id })
-              .where(eq(schema.reviewSchedules.userId, seededUser.id));
+        if (!seededUser) {
+          // This shouldn't happen if databaseHooks.before is working, but log it
+          console.warn(`⚠️ No pre-created user found for ${email} in created hook (should have been blocked by before hook)`);
+          return;
+        }
 
-            await db
-              .update(schema.reviewSchedules)
-              .set({ buddyId: user.id })
-              .where(eq(schema.reviewSchedules.buddyId, seededUser.id));
+        // Pre-created user found - proceed with linking
+        try {
+          console.log(
+            `🔗 Linking pre-created user ${seededUser.name} (${seededUser.id}) with OAuth user (${user.id})`,
+          );
 
-            // Update buddy relationships - people who have this user as their buddy
+          // Update all feedback references to point to the new Better Auth user ID
+          await db
+            .update(schema.feedback)
+            .set({ reviewerId: user.id })
+            .where(eq(schema.feedback.reviewerId, seededUser.id));
+
+          await db
+            .update(schema.feedback)
+            .set({ revieweeId: user.id })
+            .where(eq(schema.feedback.revieweeId, seededUser.id));
+
+          // Update all goals references
+          await db
+            .update(schema.goals)
+            .set({ userId: user.id })
+            .where(eq(schema.goals.userId, seededUser.id));
+
+          // Update all review schedules references
+          await db
+            .update(schema.reviewSchedules)
+            .set({ userId: user.id })
+            .where(eq(schema.reviewSchedules.userId, seededUser.id));
+
+          await db
+            .update(schema.reviewSchedules)
+            .set({ buddyId: user.id })
+            .where(eq(schema.reviewSchedules.buddyId, seededUser.id));
+
+          // Update buddy relationships - people who have this user as their buddy
+          await db
+            .update(schema.users)
+            .set({ buddyId: user.id })
+            .where(eq(schema.users.buddyId, seededUser.id));
+
+          // Transfer the buddy relationship and other fields from seeded user to OAuth user
+          const updateData: any = {};
+          if (seededUser.buddyId) {
+            updateData.buddyId = seededUser.buddyId;
+          }
+          if (seededUser.roleType) {
+            updateData.roleType = seededUser.roleType;
+          }
+          if (seededUser.nextReviewDate) {
+            updateData.nextReviewDate = seededUser.nextReviewDate;
+          }
+          if (seededUser.role) {
+            updateData.role = seededUser.role;
+          }
+
+          if (Object.keys(updateData).length > 0) {
             await db
               .update(schema.users)
-              .set({ buddyId: user.id })
-              .where(eq(schema.users.buddyId, seededUser.id));
-
-            // Transfer the buddy relationship and other fields from seeded user to OAuth user
-            const updateData: any = {};
-            if (seededUser.buddyId) {
-              updateData.buddyId = seededUser.buddyId;
-            }
-            if (seededUser.roleType) {
-              updateData.roleType = seededUser.roleType;
-            }
-            if (seededUser.nextReviewDate) {
-              updateData.nextReviewDate = seededUser.nextReviewDate;
-            }
-            if (seededUser.role) {
-              updateData.role = seededUser.role;
-            }
-
-            if (Object.keys(updateData).length > 0) {
-              await db
-                .update(schema.users)
-                .set(updateData)
-                .where(eq(schema.users.id, user.id));
-            }
-
-            // Delete the old seeded user record
-            await db
-              .delete(schema.users)
-              .where(eq(schema.users.id, seededUser.id));
-
-            console.log(
-              `✅ Successfully merged seeded user ${seededUser.name} into OAuth user`,
-            );
+              .set(updateData)
+              .where(eq(schema.users.id, user.id));
           }
+
+          // Delete the old pre-created user record
+          await db
+            .delete(schema.users)
+            .where(eq(schema.users.id, seededUser.id));
+
+          console.log(
+            `✅ Successfully merged pre-created user ${seededUser.name} into OAuth user`,
+          );
         } catch (error) {
-          console.error("Error linking seeded user:", error);
+          console.error("Error linking pre-created user:", error);
           // Don't throw - allow user creation to continue even if linking fails
         }
       },

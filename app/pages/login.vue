@@ -85,16 +85,66 @@ const authClient = createAuthClient({
     adminClient(),
   ],
 });
+
 const loading = ref(false);
+const toast = useToast();
+
+const route = useRoute();
+const router = useRouter();
+
+// Check for error in URL query params (from OAuth callback)
+onMounted(() => {
+  const error = route.query.error as string;
+  if (error) {
+    if (error.includes("invited") || error.includes("invitation") || error.includes("workspace")) {
+      toast.add({
+        title: "Access Denied",
+        description: "You haven't been invited to this workspace. Please contact your admin for access.",
+        color: "error",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    } else {
+      toast.add({
+        title: "Authentication Failed",
+        description: error,
+        color: "error",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    }
+    // Clear error from URL
+    router.replace({ query: {} });
+  }
+});
 
 const signInWithGoogle = async () => {
   loading.value = true;
+
   try {
     await authClient.signIn.social({
       provider: "google",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to sign in:", error);
+
+    // Display user-friendly error message
+    const errorMsg = error?.message || error?.toString() || "Unknown error";
+
+    if (errorMsg.includes("invited") || errorMsg.includes("invitation") || errorMsg.includes("workspace")) {
+      toast.add({
+        title: "Access Denied",
+        description: "You haven't been invited to this workspace. Please contact your admin for access.",
+        color: "error",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    } else {
+      toast.add({
+        title: "Authentication Failed",
+        description: errorMsg,
+        color: "error",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    }
+
     loading.value = false;
   }
 };
