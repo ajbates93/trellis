@@ -91,7 +91,9 @@ const allLinks = [
 ];
 
 const navigationLinks = computed(() =>
-  allLinks.filter((item) => !item.requiresAdmin || user.value?.role === 'admin'),
+  allLinks.filter(
+    (item) => !item.requiresAdmin || user.value?.role === "admin",
+  ),
 );
 
 // User dropdown menu
@@ -156,48 +158,36 @@ const userMenuItems = [
 
         <!-- Bottom section with user profile -->
         <template #footer="{ collapsed }">
-          <div class="flex flex-col gap-3">
-            <!-- User profile button -->
-            <UButton
-              v-if="user"
-              :avatar="{
-                src: user.image || user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=10b981&color=fff`
-              }"
-              :label="collapsed ? undefined : (user.name || user.email || 'User')"
-              color="neutral"
-              variant="ghost"
-              class="w-full"
-              :block="!collapsed"
-              @click="navigateTo('/profile')"
-            />
+          <div class="flex flex-col gap-2 w-full">
+            <!-- User profile + Sign out row -->
+            <div v-if="user" class="flex justify-between items-center gap-2">
+              <UButton
+                :avatar="{
+                  src:
+                    user.image ||
+                    user.avatarUrl ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=10b981&color=fff`,
+                }"
+                :label="
+                  collapsed ? undefined : user.name || user.email || 'User'
+                "
+                color="neutral"
+                variant="ghost"
+                class="min-w-0 !w-auto text-left"
+                :block="!collapsed"
+                @click="navigateTo('/profile')"
+              />
 
-            <!-- Color mode toggle -->
-            <div
-              v-if="!collapsed"
-              class="flex items-center justify-between gap-3"
-            >
-              <span class="text-sm text-gray-600 dark:text-gray-400"
-                >Dark Mode</span
-              >
-              <UColorModeSwitch />
+              <!-- Sign out icon button -->
+              <UButton
+                icon="i-heroicons-arrow-right-on-rectangle"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                square
+                @click="isLogoutModalOpen = true"
+              />
             </div>
-            <UColorModeSwitch v-else class="mx-auto" />
-
-            <!-- Logout button -->
-            <UButton
-              :icon="collapsed ? 'i-heroicons-arrow-right-on-rectangle' : undefined"
-              :label="collapsed ? undefined : 'Log Out'"
-              color="neutral"
-              variant="outline"
-              class="w-full"
-              :block="!collapsed"
-              :square="collapsed"
-              @click="isLogoutModalOpen = true"
-            >
-              <template v-if="!collapsed" #leading>
-                <UIcon name="i-heroicons-arrow-right-on-rectangle" />
-              </template>
-            </UButton>
           </div>
         </template>
       </UDashboardSidebar>
@@ -219,11 +209,7 @@ const userMenuItems = [
           variant="ghost"
           @click="isLogoutModalOpen = false"
         />
-        <UButton
-          label="Log Out"
-          color="error"
-          @click="handleLogout"
-        />
+        <UButton label="Log Out" color="error" @click="handleLogout" />
       </template>
     </UModal>
   </div>
