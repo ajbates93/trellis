@@ -16,6 +16,8 @@ const emit = defineEmits<{
   "update:isOpen": [value: boolean];
 }>();
 
+const toast = useToast();
+
 // Local computed for v-model
 const isOpen = computed({
   get: () => props.isOpen,
@@ -52,6 +54,12 @@ const handleSubmit = async () => {
         },
       });
       emit("success", goal);
+      toast.add({
+        title: "Goal created",
+        description: "Your new goal has been added successfully.",
+        color: "success",
+        icon: "i-heroicons-check-circle",
+      });
     } else if (props.mode === "edit" && props.goal) {
       const { goal } = await $fetch(`/api/goals/${props.goal.id}`, {
         method: "PATCH",
@@ -62,12 +70,26 @@ const handleSubmit = async () => {
         },
       });
       emit("success", goal);
+      toast.add({
+        title: "Goal updated",
+        description: "Your changes have been saved successfully.",
+        color: "success",
+        icon: "i-heroicons-check-circle",
+      });
     }
 
     isOpen.value = false;
   } catch (error) {
     console.error("Failed to save goal:", error);
-    alert("Failed to save goal. Please try again.");
+    toast.add({
+      title:
+        props.mode === "create"
+          ? "Failed to create goal"
+          : "Failed to update goal",
+      description: "Please try again.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     isSubmitting.value = false;
   }

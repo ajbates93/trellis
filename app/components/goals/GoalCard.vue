@@ -22,6 +22,8 @@ const emit = defineEmits<{
   updated: [];
 }>();
 
+const toast = useToast();
+
 // State
 const showNotes = ref(false);
 const isUpdatingStatus = ref(false);
@@ -40,9 +42,27 @@ const changeStatus = async (newStatus: string) => {
     });
 
     emit("statusChanged");
+
+    const statusLabels: Record<string, string> = {
+      active: "reactivated",
+      completed: "marked as complete",
+      archived: "archived",
+    };
+
+    toast.add({
+      title: "Goal updated",
+      description: `Goal ${statusLabels[newStatus] || "updated"} successfully.`,
+      color: "green",
+      icon: "i-heroicons-check-circle",
+    });
   } catch (error) {
     console.error("Failed to update status:", error);
-    alert("Failed to update status. Please try again.");
+    toast.add({
+      title: "Failed to update status",
+      description: "Please try again.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     isUpdatingStatus.value = false;
   }
@@ -59,9 +79,21 @@ const deleteGoal = async () => {
     });
 
     emit("deleted");
+
+    toast.add({
+      title: "Goal deleted",
+      description: "The goal has been permanently removed.",
+      color: "green",
+      icon: "i-heroicons-check-circle",
+    });
   } catch (error) {
     console.error("Failed to delete goal:", error);
-    alert("Failed to delete goal. Please try again.");
+    toast.add({
+      title: "Failed to delete goal",
+      description: "Please try again.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     isDeleting.value = false;
   }
@@ -102,16 +134,17 @@ const actionMenuItems = computed(() => {
 </script>
 
 <template>
-  <UCard class="hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+  <UCard
+    class="hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+  >
     <div class="space-y-3">
       <!-- Goal Header -->
       <div class="flex justify-between items-start gap-2">
         <div class="flex-1">
-          <button
-            @click="showViewModal = true"
-            class="text-left w-full group"
-          >
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">
+          <button @click="showViewModal = true" class="text-left w-full group">
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors"
+            >
               {{ goal.goalText }}
             </p>
           </button>
@@ -161,7 +194,7 @@ const actionMenuItems = computed(() => {
           <UButton
             size="sm"
             variant="soft"
-            color="green"
+            color="success"
             icon="i-heroicons-check-circle"
             :loading="isUpdatingStatus"
             @click="changeStatus('completed')"
@@ -229,7 +262,9 @@ const actionMenuItems = computed(() => {
         <UButton
           size="xs"
           variant="ghost"
-          :icon="showNotes ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+          :icon="
+            showNotes ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'
+          "
           @click="showNotes = !showNotes"
         >
           {{ showNotes ? "Hide" : "Show" }} Notes
@@ -237,11 +272,11 @@ const actionMenuItems = computed(() => {
       </div>
 
       <!-- Notes Section (Expandable) -->
-      <div v-if="showNotes" class="pt-3 border-t border-gray-200 dark:border-gray-700">
-        <GoalsGoalNoteThread
-          :goal-id="goal.id"
-          :can-add-note="true"
-        />
+      <div
+        v-if="showNotes"
+        class="pt-3 border-t border-gray-200 dark:border-gray-700"
+      >
+        <GoalsGoalNoteThread :goal-id="goal.id" :can-add-note="true" />
       </div>
     </div>
 
@@ -256,7 +291,13 @@ const actionMenuItems = computed(() => {
           <!-- Status Badge -->
           <div>
             <UBadge
-              :color="goal.status === 'active' ? 'green' : goal.status === 'completed' ? 'blue' : 'gray'"
+              :color="
+                goal.status === 'active'
+                  ? 'green'
+                  : goal.status === 'completed'
+                    ? 'blue'
+                    : 'gray'
+              "
               size="sm"
             >
               {{ goal.status }}
@@ -268,7 +309,9 @@ const actionMenuItems = computed(() => {
             <label class="block text-sm font-medium mb-1">Target Date</label>
             <div class="flex items-center gap-2">
               <UIcon name="i-heroicons-calendar" class="text-gray-500" />
-              <span class="text-sm">{{ formatTargetDate(goal.targetDate) }}</span>
+              <span class="text-sm">{{
+                formatTargetDate(goal.targetDate)
+              }}</span>
             </div>
           </div>
 
@@ -288,17 +331,16 @@ const actionMenuItems = computed(() => {
 
       <template #footer>
         <div class="flex justify-between w-full">
-          <UButton
-            color="gray"
-            variant="ghost"
-            @click="showViewModal = false"
-          >
+          <UButton color="gray" variant="ghost" @click="showViewModal = false">
             Close
           </UButton>
           <UButton
             v-if="mode === 'owner'"
             icon="i-heroicons-pencil"
-            @click="showViewModal = false; showEditModal = true"
+            @click="
+              showViewModal = false;
+              showEditModal = true;
+            "
           >
             Edit Goal
           </UButton>

@@ -3,7 +3,10 @@
     "allow": [
       "WebFetch(domain:ui4.nuxt.com)",
       "WebFetch(domain:ui.nuxt.com)",
-      "mcp__nuxt-ui-remote__get_documentation_page"
+      "mcp__nuxt-ui-remote__get_documentation_page",
+      "Bash(docker compose:*)",
+      "WebSearch",
+      "WebFetch(domain:www.better-auth.com)"
     ],
     "deny": [],
     "ask": []
