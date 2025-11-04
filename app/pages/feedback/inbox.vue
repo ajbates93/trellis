@@ -53,7 +53,7 @@ const markAsRead = async (feedbackId: string) => {
     toast.add({
       title: "Failed to mark as read",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
     throw error;
@@ -76,7 +76,7 @@ const publishFeedback = async (feedbackId: string) => {
     toast.add({
       title: "Failed to publish feedback",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
     throw error;
@@ -102,7 +102,7 @@ const publishBatch = async (feedbackIds: string[]) => {
     toast.add({
       title: "Failed to publish feedback",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
     throw error;

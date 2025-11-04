@@ -63,7 +63,7 @@ const submitNote = async () => {
     toast.add({
       title: "Failed to add note",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -142,7 +142,7 @@ const formatRelativeTime = (dateString: string) => {
           </span>
           <div class="flex gap-2">
             <UButton
-              color="gray"
+              color="neutral"
               variant="ghost"
               size="sm"
               @click="

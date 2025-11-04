@@ -164,7 +164,6 @@
               </UButton>
               <UButton
                 to="/goals"
-                color="white"
                 size="lg"
                 icon="i-heroicons-flag"
               >
@@ -173,7 +172,6 @@
               <UButton
                 v-if="user?.role === 'admin'"
                 to="/admin/dashboard"
-                color="white"
                 size="lg"
                 icon="i-heroicons-shield-check"
               >
@@ -211,7 +209,6 @@
               </div>
               <UButton
                 to="/feedback/inbox"
-                color="white"
                 size="sm"
                 trailing-icon="i-heroicons-arrow-right"
               >

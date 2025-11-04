@@ -3,7 +3,7 @@
     v-model:open="isOpen"
     title="Add New User"
     description="Create a new invited user who can log in via Google OAuth"
-    :ui="{ width: 'sm:max-w-md' }"
+    class="sm:max-w-md"
   >
     <template #body>
       <form @submit.prevent="onSubmit" class="space-y-4">
@@ -74,7 +74,7 @@
         <!-- Error Message -->
         <UAlert
           v-if="errorMessage"
-          color="red"
+          color="error"
           variant="subtle"
           :title="errorMessage"
           icon="i-heroicons-exclamation-triangle"
@@ -83,7 +83,7 @@
     </template>
 
     <template #footer>
-      <UButton color="gray" variant="ghost" @click="close" :disabled="saving">
+      <UButton color="neutral" variant="ghost" @click="close" :disabled="saving">
         Cancel
       </UButton>
       <UButton color="primary" :loading="saving" @click="onSubmit">

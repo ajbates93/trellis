@@ -4,7 +4,7 @@ import { admin } from "better-auth/plugins";
 import { db } from "../database/connection";
 import * as schema from "../database/schema";
 import { eq, and } from "drizzle-orm";
-import { createAuthMiddleware, APIError } from "better-auth/api";
+import { APIError } from "better-auth/api";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {

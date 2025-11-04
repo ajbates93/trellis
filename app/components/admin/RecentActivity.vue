@@ -50,7 +50,7 @@
               <span class="font-medium">{{ item.metadata.revieweeName }}</span>
               <UBadge
                 v-if="!item.metadata.published"
-                color="amber"
+                color="warning"
                 variant="subtle"
                 size="xs"
                 class="ml-2"
@@ -62,7 +62,7 @@
               <span class="font-medium">{{ item.metadata.userName }}</span>
               created a goal
               <UBadge
-                :color="item.metadata.status === 'completed' ? 'green' : 'blue'"
+                :color="item.metadata.status === 'completed' ? 'success' : 'primary'"
                 variant="subtle"
                 size="xs"
                 class="ml-2"

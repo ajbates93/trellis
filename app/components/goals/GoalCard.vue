@@ -52,7 +52,7 @@ const changeStatus = async (newStatus: string) => {
     toast.add({
       title: "Goal updated",
       description: `Goal ${statusLabels[newStatus] || "updated"} successfully.`,
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
   } catch (error) {
@@ -60,7 +60,7 @@ const changeStatus = async (newStatus: string) => {
     toast.add({
       title: "Failed to update status",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -83,7 +83,7 @@ const deleteGoal = async () => {
     toast.add({
       title: "Goal deleted",
       description: "The goal has been permanently removed.",
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
   } catch (error) {
@@ -91,7 +91,7 @@ const deleteGoal = async () => {
     toast.add({
       title: "Failed to delete goal",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -151,7 +151,7 @@ const actionMenuItems = computed(() => {
           <div class="flex items-center gap-2 mt-2">
             <!-- Target Date Badge -->
             <UBadge
-              :color="goal.targetDate ? 'blue' : 'gray'"
+              :color="goal.targetDate ? 'primary' : 'neutral'"
               variant="subtle"
               size="sm"
             >
@@ -164,7 +164,7 @@ const actionMenuItems = computed(() => {
             <!-- Owner Badge (buddy mode) -->
             <UBadge
               v-if="mode === 'buddy' && ownerName"
-              color="gray"
+              color="neutral"
               variant="subtle"
               size="xs"
             >
@@ -181,7 +181,7 @@ const actionMenuItems = computed(() => {
           <UButton
             icon="i-heroicons-ellipsis-vertical"
             variant="ghost"
-            color="gray"
+            color="neutral"
             size="xs"
           />
         </UDropdown>
@@ -205,7 +205,7 @@ const actionMenuItems = computed(() => {
           <UButton
             size="sm"
             variant="soft"
-            color="gray"
+            color="neutral"
             icon="i-heroicons-archive-box"
             :loading="isUpdatingStatus"
             @click="changeStatus('archived')"
@@ -220,7 +220,7 @@ const actionMenuItems = computed(() => {
           <UButton
             size="sm"
             variant="soft"
-            color="blue"
+            color="primary"
             icon="i-heroicons-arrow-path"
             :loading="isUpdatingStatus"
             @click="changeStatus('active')"
@@ -231,7 +231,7 @@ const actionMenuItems = computed(() => {
           <UButton
             size="sm"
             variant="soft"
-            color="gray"
+            color="neutral"
             icon="i-heroicons-archive-box"
             :loading="isUpdatingStatus"
             @click="changeStatus('archived')"
@@ -246,7 +246,7 @@ const actionMenuItems = computed(() => {
           <UButton
             size="sm"
             variant="soft"
-            color="blue"
+            color="primary"
             icon="i-heroicons-arrow-path"
             :loading="isUpdatingStatus"
             @click="changeStatus('active')"
@@ -293,10 +293,10 @@ const actionMenuItems = computed(() => {
             <UBadge
               :color="
                 goal.status === 'active'
-                  ? 'green'
+                  ? 'success'
                   : goal.status === 'completed'
-                    ? 'blue'
-                    : 'gray'
+                    ? 'primary'
+                    : 'neutral'
               "
               size="sm"
             >
@@ -331,7 +331,7 @@ const actionMenuItems = computed(() => {
 
       <template #footer>
         <div class="flex justify-between w-full">
-          <UButton color="gray" variant="ghost" @click="showViewModal = false">
+          <UButton color="neutral" variant="ghost" @click="showViewModal = false">
             Close
           </UButton>
           <UButton

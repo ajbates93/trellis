@@ -3,7 +3,7 @@
     v-model:open="isOpen"
     title="Edit User"
     description="Update user role, buddy assignment, and other settings"
-    :ui="{ width: 'sm:max-w-md' }"
+    class="sm:max-w-md"
   >
     <template #body>
       <form @submit.prevent="onSubmit" class="space-y-4">
@@ -85,7 +85,7 @@
         <!-- Error Message -->
         <UAlert
           v-if="errorMessage"
-          color="red"
+          color="error"
           variant="subtle"
           :title="errorMessage"
           icon="i-heroicons-exclamation-triangle"
@@ -95,7 +95,7 @@
 
     <template #footer>
       <UButton
-        color="gray"
+        color="neutral"
         variant="ghost"
         @click="close"
         :disabled="saving"
