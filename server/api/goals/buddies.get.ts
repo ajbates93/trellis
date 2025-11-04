@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
       }
       acc[userId].goals.push(item.goal);
       return acc;
-    }, {} as Record<string, { user: typeof item.user; goals: typeof item.goal[] }>);
+    }, {} as Record<string, { user: any; goals: any[] }>);
 
     // Convert to array
     const buddyAssignments = Object.values(groupedByUser);

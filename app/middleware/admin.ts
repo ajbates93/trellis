@@ -1,9 +1,9 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  // Fetch session directly to avoid race conditions
-  const { data: session } = await useFetch('/api/auth/get-session');
+  // Use the auth composable to get user session
+  const { user } = useAuth();
 
   // Check if user has admin role
-  if (session.value?.user?.role !== 'admin') {
+  if (user.value?.role !== 'admin') {
     throw createError({
       statusCode: 403,
       statusMessage: 'Forbidden',

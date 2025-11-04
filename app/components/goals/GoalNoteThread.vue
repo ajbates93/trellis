@@ -88,7 +88,7 @@ const formatRelativeTime = (dateString: string) => {
       >
         <!-- Avatar -->
         <UAvatar
-          :src="note.author.avatarUrl || note.author.image"
+          :src="note.author.avatarUrl || note.author.image || undefined"
           :alt="note.author.name"
           size="sm"
         />
@@ -97,7 +97,7 @@ const formatRelativeTime = (dateString: string) => {
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <span class="font-medium text-sm">{{ note.author.name }}</span>
-            <span class="text-xs text-gray-500">
+            <span v-if="note.createdAt" class="text-xs text-gray-500">
               {{ formatRelativeTime(note.createdAt) }}
             </span>
           </div>

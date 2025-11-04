@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   // Get session from Better Auth
   const session = await auth.api.getSession({ headers: event.headers });
 
-  if (!session?.user || session.user.role !== 'admin') {
+  if (!session?.user || (session.user as any).role !== 'admin') {
     throw createError({
       statusCode: 403,
       message: 'Forbidden - Admin access required',

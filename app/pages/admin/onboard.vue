@@ -251,8 +251,8 @@
               variant="soft"
               :title="`Successfully imported ${importResult.imported} users`"
               :description="
-                importResult.errors?.length > 0
-                  ? `${importResult.errors.length} warnings during import`
+                (importResult.errors?.length ?? 0) > 0
+                  ? `${importResult.errors?.length ?? 0} warnings during import`
                   : 'All users imported without issues'
               "
             />
@@ -542,11 +542,19 @@ const parseCSV = (text: string) => {
     return;
   }
 
-  const headers = lines[0].split(",").map((h) => h.trim());
+  const firstLine = lines[0];
+  if (!firstLine) {
+    csvPreview.value = null;
+    return;
+  }
+
+  const headers = firstLine.split(",").map((h) => h.trim());
   const rows: Record<string, string>[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const currentLine = lines[i];
+    if (!currentLine) continue;
+    const line = currentLine.trim();
     if (!line) continue;
 
     const values = line.split(",").map((v) => v.trim());

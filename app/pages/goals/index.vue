@@ -35,12 +35,6 @@
                   defaultOpen: true,
                 },
               ]"
-              :ui="{
-                item: {
-                  base: 'mb-4',
-                  label: 'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer'
-                }
-              }"
             >
               <template #active-goals>
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3">
@@ -72,12 +66,6 @@
                   defaultOpen: false,
                 },
               ]"
-              :ui="{
-                item: {
-                  base: 'mb-4',
-                  label: 'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer'
-                }
-              }"
             >
               <template #completed-goals>
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3">
@@ -109,12 +97,6 @@
                   defaultOpen: false,
                 },
               ]"
-              :ui="{
-                item: {
-                  base: 'mb-4',
-                  label: 'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer'
-                }
-              }"
             >
               <template #archived-goals>
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3">

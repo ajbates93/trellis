@@ -115,8 +115,8 @@ const isOpen = computed({
         formData.value = {
           name: "",
           email: "",
-          roleType: null,
-          buddyId: null,
+          roleType: undefined,
+          buddyId: undefined,
         };
       }, 300);
     }
@@ -126,11 +126,14 @@ const isOpen = computed({
 const saving = ref(false);
 const errorMessage = ref("");
 
+type RoleOption = { value: null; label: string } | { value: string; label: string };
+type BuddyOption = { value: any; label: any };
+
 const formData = ref({
   name: "",
   email: "",
-  roleType: null as string | null,
-  buddyId: null as string | null,
+  roleType: undefined as RoleOption | undefined,
+  buddyId: undefined as BuddyOption | undefined,
 });
 
 const roleTypeOptions = [
@@ -171,14 +174,9 @@ const onSubmit = async () => {
 
   saving.value = true;
   try {
-    // Extract value property if object, otherwise use as-is
-    const roleTypeValue = typeof formData.value.roleType === 'object' && formData.value.roleType !== null
-      ? (formData.value.roleType as any).value
-      : formData.value.roleType;
-
-    const buddyIdValue = typeof formData.value.buddyId === 'object' && formData.value.buddyId !== null
-      ? (formData.value.buddyId as any).value
-      : formData.value.buddyId;
+    // Extract value property from selected options
+    const roleTypeValue = formData.value.roleType?.value;
+    const buddyIdValue = formData.value.buddyId?.value;
 
     await $fetch("/api/admin/users", {
       method: "POST",

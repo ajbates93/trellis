@@ -130,7 +130,7 @@
             <div class="mt-4 flex items-center gap-2">
               <UBadge
                 :label="stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'"
-                :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
+                :color="stats.daysUntilReview !== null ? 'primary' : 'neutral'"
                 size="xs"
               />
               <span class="text-xs text-gray-600 dark:text-gray-400">
@@ -224,7 +224,7 @@
               <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
                   <UAvatar
-                    :src="row.original.reviewer.image || row.original.reviewer.avatarUrl"
+                    :src="row.original.reviewer.image || row.original.reviewer.avatarUrl || undefined"
                     :alt="row.original.reviewer.name"
                     size="xs"
                   />
@@ -244,13 +244,13 @@
               </template>
 
               <template #date-cell="{ row }">
-                <span class="text-sm text-gray-600 dark:text-gray-400">
+                <span v-if="row.original.publishedAt" class="text-sm text-gray-600 dark:text-gray-400">
                   {{ formatDate(row.original.publishedAt) }}
                 </span>
               </template>
 
               <template #status-cell="{ row }">
-                <UBadge :color="row.original.isRead ? 'gray' : 'primary'" size="xs">
+                <UBadge :color="row.original.isRead ? 'neutral' : 'primary'" size="xs">
                   {{ row.original.isRead ? "Read" : "Unread" }}
                 </UBadge>
               </template>

@@ -238,7 +238,7 @@ const buddyFeedbackColumns = [
                     <UAvatar
                       :src="
                         row.original.reviewer.image ||
-                        row.original.reviewer.avatarUrl
+                        row.original.reviewer.avatarUrl || undefined
                       "
                       :alt="row.original.reviewer.name"
                       size="xs"
@@ -261,7 +261,7 @@ const buddyFeedbackColumns = [
                 </template>
 
                 <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                  <span v-if="row.original.publishedAt" class="text-sm text-gray-600 dark:text-gray-400">
                     {{ formatDate(row.original.publishedAt) }}
                   </span>
                 </template>
@@ -314,7 +314,7 @@ const buddyFeedbackColumns = [
                     <UAvatar
                       :src="
                         row.original.reviewee.image ||
-                        row.original.reviewee.avatarUrl
+                        row.original.reviewee.avatarUrl || undefined
                       "
                       :alt="row.original.reviewee.name"
                       size="xs"
@@ -337,7 +337,7 @@ const buddyFeedbackColumns = [
                 </template>
 
                 <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                  <span v-if="row.original.createdAt" class="text-sm text-gray-600 dark:text-gray-400">
                     {{ formatDate(row.original.createdAt) }}
                   </span>
                 </template>
@@ -436,7 +436,7 @@ const buddyFeedbackColumns = [
                       <UAvatar
                         :src="
                           row.original.reviewer.image ||
-                          row.original.reviewer.avatarUrl
+                          row.original.reviewer.avatarUrl || undefined
                         "
                         :alt="row.original.reviewer.name"
                         size="xs"
@@ -467,7 +467,7 @@ const buddyFeedbackColumns = [
                   </template>
 
                   <template #date-cell="{ row }">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                    <span v-if="row.original.createdAt" class="text-sm text-gray-600 dark:text-gray-400">
                       {{ formatDate(row.original.createdAt) }}
                     </span>
                   </template>

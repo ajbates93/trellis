@@ -40,8 +40,9 @@ watch(
 );
 
 onMounted(() => {
-  if (props.modelValue && unref(editor)) {
-    unref(editor).commands.setContent(props.modelValue);
+  const editorInstance = unref(editor);
+  if (props.modelValue && editorInstance) {
+    editorInstance.commands.setContent(props.modelValue);
   }
 });
 

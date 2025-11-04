@@ -89,7 +89,7 @@ export const auth = betterAuth({
   },
   hooks: {
     user: {
-      created: async ({ user }) => {
+      created: async ({ user }: { user: any }) => {
         const email = user.email;
         if (!email) return;
 

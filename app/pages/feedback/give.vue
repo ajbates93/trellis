@@ -7,7 +7,7 @@ const { user } = useAuth();
 const toast = useToast();
 
 // Form state
-const selectedUser = ref(null);
+const selectedUser = ref<string | undefined>(undefined);
 const feedbackText = ref("");
 const isSubmitting = ref(false);
 const showSuccess = ref(false);
@@ -75,7 +75,7 @@ const submitFeedback = async () => {
 
     // Reset form after 2 seconds
     setTimeout(() => {
-      selectedUser.value = null;
+      selectedUser.value = undefined;
       feedbackText.value = "";
       showSuccess.value = false;
     }, 2000);
@@ -189,7 +189,7 @@ watch(selectedUser, async (userId) => {
                   <UAvatar
                     v-if="selectedUserObject"
                     :src="
-                      selectedUserObject.image || selectedUserObject.avatarUrl
+                      selectedUserObject.image || selectedUserObject.avatarUrl || undefined
                     "
                     :alt="selectedUserObject.name"
                     size="xs"
@@ -199,7 +199,7 @@ watch(selectedUser, async (userId) => {
                 <template #item="{ item }">
                   <div class="flex items-center gap-3 w-full">
                     <UAvatar
-                      :src="item.image || item.avatarUrl"
+                      :src="item.image || item.avatarUrl || undefined"
                       :alt="item.name"
                       size="sm"
                     />
@@ -259,7 +259,6 @@ watch(selectedUser, async (userId) => {
                 placeholder="Share your feedback here... Be specific, constructive, and kind."
                 :disabled="!selectedUser"
                 class="w-full"
-                :ui="{ wrapper: 'w-full' }"
               />
               <div class="mt-2 flex items-center justify-between text-sm">
                 <p

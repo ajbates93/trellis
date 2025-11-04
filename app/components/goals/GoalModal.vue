@@ -45,15 +45,15 @@ const handleSubmit = async () => {
 
   try {
     if (props.mode === "create") {
-      const { goal } = await $fetch("/api/goals", {
+      const response = await $fetch("/api/goals", {
         method: "POST",
         body: {
           goalText: goalText.value.trim(),
           description: description.value || null,
           targetDate: targetDate.value || null,
         },
-      });
-      emit("success", goal);
+      }) as { goal: any };
+      emit("success", response.goal);
       toast.add({
         title: "Goal created",
         description: "Your new goal has been added successfully.",
@@ -61,15 +61,15 @@ const handleSubmit = async () => {
         icon: "i-heroicons-check-circle",
       });
     } else if (props.mode === "edit" && props.goal) {
-      const { goal } = await $fetch(`/api/goals/${props.goal.id}`, {
+      const response = await $fetch(`/api/goals/${props.goal.id}`, {
         method: "PATCH",
         body: {
           goalText: goalText.value.trim(),
           description: description.value || null,
           targetDate: targetDate.value || null,
         },
-      });
-      emit("success", goal);
+      }) as { goal: any };
+      emit("success", response.goal);
       toast.add({
         title: "Goal updated",
         description: "Your changes have been saved successfully.",

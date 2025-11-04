@@ -10,7 +10,7 @@
         <!-- User Info (Read-only) -->
         <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <UAvatar
-            :src="localUser.avatarUrl || localUser.image"
+            :src="localUser.avatarUrl || localUser.image || undefined"
             :alt="localUser.name"
             size="sm"
           />
@@ -163,13 +163,13 @@ watch(
         name: newUser.name,
         email: newUser.email,
         role: newUser.role || "user",
-        roleType: newUser.roleType,
-        buddyId: newUser.buddyId,
-        nextReviewDate: newUser.nextReviewDate
+        roleType: newUser.roleType || null,
+        buddyId: newUser.buddyId || null,
+        nextReviewDate: (newUser.nextReviewDate
           ? new Date(newUser.nextReviewDate).toISOString().split("T")[0]
-          : null,
-        avatarUrl: newUser.avatarUrl,
-        image: newUser.image,
+          : null) as string | null,
+        avatarUrl: newUser.avatarUrl || null,
+        image: newUser.image || null,
       };
     }
   },
