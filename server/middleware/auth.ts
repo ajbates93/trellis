@@ -2,7 +2,7 @@ import { auth } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
   // Skip auth check for public routes
-  const publicRoutes = ["/api/auth", "/login"];
+  const publicRoutes = ["/api/auth", "/api/health", "/login"];
   const path = event.path;
 
   if (publicRoutes.some((route) => path.startsWith(route))) {

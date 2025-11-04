@@ -1,0 +1,24 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+startCommand = "node .output/server/index.mjs"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+# Node environment
+NODE_ENV = "production"
+
+# Port (Railway will inject this automatically)
+# PORT = "3000"
+
+# Required environment variables (set these in Railway dashboard):
+# - DATABASE_URL
+# - GOOGLE_CLIENT_ID
+# - GOOGLE_CLIENT_SECRET
+# - BETTER_AUTH_SECRET
+# - BETTER_AUTH_URL

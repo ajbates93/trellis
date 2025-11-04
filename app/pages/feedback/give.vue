@@ -4,6 +4,7 @@ definePageMeta({
 });
 
 const { user } = useAuth();
+const toast = useToast();
 
 // Form state
 const selectedUser = ref(null);
@@ -65,6 +66,13 @@ const submitFeedback = async () => {
 
     showSuccess.value = true;
 
+    toast.add({
+      title: "Feedback submitted successfully!",
+      description: `Your feedback will be shared with ${selectedUserObject.value?.name} during their next buddy review.`,
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+
     // Reset form after 2 seconds
     setTimeout(() => {
       selectedUser.value = null;
@@ -73,8 +81,12 @@ const submitFeedback = async () => {
     }, 2000);
   } catch (error) {
     console.error("Failed to submit feedback:", error);
-    // TODO: Show error toast notification
-    alert("Failed to submit feedback. Please try again.");
+    toast.add({
+      title: "Failed to submit feedback",
+      description: "Please try again.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     isSubmitting.value = false;
   }
@@ -85,7 +97,7 @@ watch(selectedUser, async (userId) => {
   if (userId) {
     try {
       const { alreadyReviewedThisWeek } = await $fetch(
-        `/api/feedback/can-review/${userId}` // userId is already a string
+        `/api/feedback/can-review/${userId}`, // userId is already a string
       );
       canReviewUser.value = !alreadyReviewedThisWeek;
     } catch (error) {
@@ -110,15 +122,22 @@ watch(selectedUser, async (userId) => {
           </p>
         </div>
         <!-- Success Message -->
-        <UCard v-if="showSuccess" class="mb-6 bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
+        <UCard
+          v-if="showSuccess"
+          class="mb-6 bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
+        >
           <div class="flex items-center gap-3">
-            <UIcon name="i-heroicons-check-circle" class="text-green-500 text-2xl" />
+            <UIcon
+              name="i-heroicons-check-circle"
+              class="text-green-500 text-2xl"
+            />
             <div>
               <p class="font-semibold text-green-900 dark:text-green-100">
                 Feedback submitted successfully!
               </p>
               <p class="text-sm text-green-700 dark:text-green-300">
-                Your feedback will be shared with {{ selectedUserObject?.name }} during their next buddy review.
+                Your feedback will be shared with
+                {{ selectedUserObject?.name }} during their next buddy review.
               </p>
             </div>
           </div>
@@ -128,14 +147,24 @@ watch(selectedUser, async (userId) => {
         <UCard>
           <form @submit.prevent="submitFeedback" class="space-y-6">
             <!-- Random Question Display -->
-            <div v-if="currentPrompt" class="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div
+              v-if="currentPrompt"
+              class="p-4 bg-primary/5 border border-primary/20 rounded-lg"
+            >
               <div class="flex items-start gap-3">
-                <UIcon name="i-heroicons-light-bulb" class="text-primary text-xl mt-0.5" />
+                <UIcon
+                  name="i-heroicons-light-bulb"
+                  class="text-primary text-xl mt-0.5"
+                />
                 <div>
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <p
+                    class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Question to consider:
                   </p>
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     {{ currentPrompt.question }}
                   </p>
                 </div>
@@ -144,7 +173,9 @@ watch(selectedUser, async (userId) => {
 
             <!-- User Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label
+                class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
                 Who would you like to give feedback to?
               </label>
               <USelectMenu
@@ -157,7 +188,9 @@ watch(selectedUser, async (userId) => {
                 <template #leading>
                   <UAvatar
                     v-if="selectedUserObject"
-                    :src="selectedUserObject.image || selectedUserObject.avatarUrl"
+                    :src="
+                      selectedUserObject.image || selectedUserObject.avatarUrl
+                    "
                     :alt="selectedUserObject.name"
                     size="xs"
                   />
@@ -171,19 +204,30 @@ watch(selectedUser, async (userId) => {
                       size="sm"
                     />
                     <div class="flex-1 min-w-0">
-                      <p class="font-medium text-gray-900 dark:text-white truncate">
+                      <p
+                        class="font-medium text-gray-900 dark:text-white truncate"
+                      >
                         {{ item.name }}
                       </p>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      <p
+                        class="text-sm text-gray-500 dark:text-gray-400 truncate"
+                      >
                         {{ item.email }}
                       </p>
                     </div>
-                    <UBadge v-if="item.roleType" :label="item.roleType" size="xs" color="neutral" />
+                    <UBadge
+                      v-if="item.roleType"
+                      :label="item.roleType"
+                      size="xs"
+                      color="neutral"
+                    />
                   </div>
                 </template>
 
                 <template #empty>
-                  <div class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center">
+                  <div
+                    class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center"
+                  >
                     No colleagues found
                   </div>
                 </template>
@@ -196,15 +240,17 @@ watch(selectedUser, async (userId) => {
               >
                 <UIcon name="i-heroicons-exclamation-triangle" class="mt-0.5" />
                 <p>
-                  You've already given feedback to this person this week. You can still
-                  submit more feedback if needed.
+                  You've already given feedback to this person this week. You
+                  can still submit more feedback if needed.
                 </p>
               </div>
             </div>
 
             <!-- Feedback Text Area -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label
+                class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
                 Your Feedback
               </label>
               <UTextarea
@@ -230,14 +276,24 @@ watch(selectedUser, async (userId) => {
             </div>
 
             <!-- Guidelines -->
-            <UCard :ui="{ body: 'space-y-2' }" class="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+            <UCard
+              :ui="{ body: 'space-y-2' }"
+              class="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800"
+            >
               <div class="flex items-start gap-2">
-                <UIcon name="i-heroicons-light-bulb" class="text-blue-500 mt-0.5" />
+                <UIcon
+                  name="i-heroicons-light-bulb"
+                  class="text-blue-500 mt-0.5"
+                />
                 <div class="text-sm text-blue-900 dark:text-blue-100">
                   <p class="font-semibold mb-2">Tips for great feedback:</p>
-                  <ul class="space-y-1 list-disc list-inside text-blue-700 dark:text-blue-300">
+                  <ul
+                    class="space-y-1 list-disc list-inside text-blue-700 dark:text-blue-300"
+                  >
                     <li>Be specific with examples</li>
-                    <li>Balance positive recognition with constructive suggestions</li>
+                    <li>
+                      Balance positive recognition with constructive suggestions
+                    </li>
                     <li>Consider impact and suggest improvements</li>
                   </ul>
                 </div>
@@ -245,14 +301,10 @@ watch(selectedUser, async (userId) => {
             </UCard>
 
             <!-- Submit Button -->
-            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
-              <UButton
-                to="/"
-                color="white"
-                variant="ghost"
-              >
-                Cancel
-              </UButton>
+            <div
+              class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800"
+            >
+              <UButton to="/" color="white" variant="ghost"> Cancel </UButton>
               <UButton
                 type="submit"
                 color="primary"

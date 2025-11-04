@@ -7,11 +7,9 @@ A buddy management and peer feedback platform for Pocketworks. Streamlines feedb
 Before you begin, ensure you have the following installed:
 - **Node.js** (v20 or higher recommended)
 - **npm** (comes with Node.js)
-- **PostgreSQL** (v14 or higher)
+- **PostgreSQL** (v14 or higher, or use Railway hosted database)
 
 ## Installation
-
-Follow these steps to get the project up and running on your local machine:
 
 ### 1. Clone the Repository
 
@@ -142,7 +140,67 @@ cohort/
 
 ## Authentication
 
-This application uses Google OAuth and is restricted to `@pocketworks.co.uk` email addresses. The first user to log in will automatically become an admin.
+This application uses invitation-based access control via Google OAuth. Users must be pre-created by an admin (via CSV import or manual creation) before they can authenticate. Any email domain is accepted. The first user to log in will automatically become an admin.
+
+## Deployment
+
+### Deploying to Railway
+
+This application is configured for deployment on Railway. Follow these steps:
+
+1. **Create a Railway Project**
+   - Go to [Railway](https://railway.app) and create a new project
+   - Add a PostgreSQL database service
+   - Add a new service from your GitHub repository
+
+2. **Configure Environment Variables**
+
+   In the Railway dashboard, set the following environment variables:
+
+   ```bash
+   NODE_ENV=production
+   DATABASE_URL=<automatically set by Railway PostgreSQL>
+   GOOGLE_CLIENT_ID=<your production Google OAuth client ID>
+   GOOGLE_CLIENT_SECRET=<your production Google OAuth secret>
+   BETTER_AUTH_SECRET=<generate new 32+ char string>
+   BETTER_AUTH_URL=https://your-app.railway.app
+   ```
+
+   **Important:** Generate a new `BETTER_AUTH_SECRET` for production using:
+   ```bash
+   openssl rand -base64 32
+   ```
+
+3. **Update Google OAuth Credentials**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Add production redirect URI: `https://your-app.railway.app/api/auth/callback/google`
+   - Update authorized origins to include your Railway domain
+
+4. **Deploy**
+   - Railway will automatically build and deploy your application
+   - The health check endpoint `/api/health` will verify deployment status
+   - Database migrations will need to be run manually on first deploy:
+     ```bash
+     # In Railway dashboard, open the service shell and run:
+     npm run db:push
+     ```
+
+5. **Monitor Deployment**
+   - Check the health endpoint: `https://your-app.railway.app/api/health`
+   - View logs in the Railway dashboard
+   - Railway will automatically restart the service if health checks fail
+
+### Production Checklist
+
+Before launching to production, ensure:
+
+- [ ] All environment variables are set correctly
+- [ ] Google OAuth redirect URIs include production domain
+- [ ] Database schema has been pushed (`npm run db:push`)
+- [ ] At least one admin user has been created (first user becomes admin automatically)
+- [ ] Health check endpoint returns `{"status": "healthy"}`
+- [ ] HTTPS is enabled (Railway does this automatically)
+- [ ] Different `BETTER_AUTH_SECRET` is used for production (not the same as development)
 
 ## Troubleshooting
 

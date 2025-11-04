@@ -10,9 +10,11 @@ const emit = defineEmits<{
   noteAdded: [];
 }>();
 
+const toast = useToast();
+
 // Fetch notes
 const { data: notesData, refresh: refreshNotes } = await useFetch(
-  `/api/goals/${props.goalId}/notes`
+  `/api/goals/${props.goalId}/notes`,
 );
 const notes = computed(() => notesData.value?.notes || []);
 
@@ -49,9 +51,21 @@ const submitNote = async () => {
     // Refresh notes
     await refreshNotes();
     emit("noteAdded");
+
+    toast.add({
+      title: "Note added",
+      description: "Your note has been added successfully.",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
   } catch (error) {
     console.error("Failed to add note:", error);
-    alert("Failed to add note. Please try again.");
+    toast.add({
+      title: "Failed to add note",
+      description: "Please try again.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     isSubmitting.value = false;
   }
@@ -87,7 +101,9 @@ const formatRelativeTime = (dateString: string) => {
               {{ formatRelativeTime(note.createdAt) }}
             </span>
           </div>
-          <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+          <p
+            class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
+          >
             {{ note.noteText }}
           </p>
         </div>
@@ -129,7 +145,10 @@ const formatRelativeTime = (dateString: string) => {
               color="gray"
               variant="ghost"
               size="sm"
-              @click="showNoteForm = false; noteText = ''"
+              @click="
+                showNoteForm = false;
+                noteText = '';
+              "
               :disabled="isSubmitting"
             >
               Cancel
