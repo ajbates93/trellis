@@ -87,7 +87,7 @@ const handleSubmit = async () => {
           ? "Failed to create goal"
           : "Failed to update goal",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -172,7 +172,7 @@ watch(isOpen, (newVal) => {
 
     <template #footer>
       <UButton
-        color="gray"
+        color="neutral"
         variant="ghost"
         @click="isOpen = false"
         :disabled="isSubmitting"

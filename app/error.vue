@@ -36,7 +36,6 @@
         </UButton>
         <UButton
           size="lg"
-          color="white"
           icon="i-heroicons-home"
           to="/"
         >

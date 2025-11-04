@@ -43,7 +43,7 @@
         <!-- Role Badge -->
         <template #role-cell="{ row }">
           <UBadge
-            :color="row.original.role === 'admin' ? 'purple' : 'gray'"
+            :color="row.original.role === 'admin' ? 'primary' : 'neutral'"
             variant="subtle"
             class="capitalize"
           >
@@ -78,7 +78,7 @@
         <!-- Status Badge -->
         <template #status-cell="{ row }">
           <UBadge
-            :color="row.original.status === 'active' ? 'green' : 'amber'"
+            :color="row.original.status === 'active' ? 'success' : 'warning'"
             variant="subtle"
             class="capitalize"
           >
@@ -91,7 +91,7 @@
           <UButton
             icon="i-heroicons-pencil-square"
             size="sm"
-            color="gray"
+            color="neutral"
             variant="ghost"
             class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
             @click="$emit('edit', row.original)"

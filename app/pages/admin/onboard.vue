@@ -20,7 +20,6 @@
           </div>
           <UButton
             icon="i-heroicons-arrow-down-tray"
-            color="white"
             variant="solid"
             @click="downloadTemplate"
             :loading="downloadingTemplate"
@@ -95,7 +94,7 @@
 
             <UAlert
               icon="i-heroicons-light-bulb"
-              color="blue"
+              color="primary"
               variant="soft"
               title="User Linking"
               description="Imported users are pre-created with emailVerified=false. When they first log in via Google OAuth, their accounts will automatically link and preserve all buddy assignments and relationships."
@@ -153,7 +152,7 @@
                 </div>
                 <UButton
                   icon="i-heroicons-x-mark"
-                  color="gray"
+                  color="neutral"
                   variant="ghost"
                   size="sm"
                   @click="clearFile"
@@ -227,7 +226,7 @@
               </UButton>
               <UButton
                 icon="i-heroicons-x-mark"
-                color="gray"
+                color="neutral"
                 variant="soft"
                 @click="clearFile"
               >
@@ -262,7 +261,7 @@
             <UAlert
               v-else
               icon="i-heroicons-x-circle"
-              color="red"
+              color="error"
               variant="soft"
               title="Import failed"
               :description="`${importResult.errors?.length || 0} errors found. Please fix them and try again.`"
@@ -279,7 +278,7 @@
                   v-for="(error, index) in importResult.errors"
                   :key="index"
                   icon="i-heroicons-exclamation-triangle"
-                  color="amber"
+                  color="warning"
                   variant="soft"
                   :title="`Row ${error.row}: ${error.field}`"
                   :description="error.message"
@@ -317,7 +316,7 @@
               <h3 class="text-lg font-semibold">Import History</h3>
               <UButton
                 icon="i-heroicons-arrow-path"
-                color="gray"
+                color="neutral"
                 variant="ghost"
                 size="sm"
                 @click="fetchHistory"
@@ -398,7 +397,7 @@
                   </td>
                   <td class="px-4 py-3 text-sm">
                     <UBadge
-                      :color="item.status === 'completed' ? 'green' : 'red'"
+                      :color="item.status === 'completed' ? 'success' : 'error'"
                       variant="soft"
                     >
                       {{ item.status }}
@@ -409,7 +408,7 @@
                     <UButton
                       v-if="item.errorLog"
                       icon="i-heroicons-exclamation-circle"
-                      color="gray"
+                      color="neutral"
                       variant="ghost"
                       size="xs"
                       @click="viewErrors(item)"
@@ -438,7 +437,7 @@
                 v-for="(error, index) in selectedErrorLog"
                 :key="index"
                 icon="i-heroicons-exclamation-triangle"
-                color="amber"
+                color="warning"
                 variant="soft"
                 :title="`Row ${error.row}: ${error.field}`"
                 :description="error.message"

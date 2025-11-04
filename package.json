@@ -38,6 +38,7 @@
   "devDependencies": {
     "@tiptap/extension-task-item": "^2.26.4",
     "@tiptap/extension-task-list": "^2.26.4",
+    "@types/node": "^24.10.0",
     "drizzle-kit": "^0.31.5",
     "tsx": "^4.20.6"
   }

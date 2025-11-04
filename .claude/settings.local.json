@@ -6,7 +6,8 @@
       "mcp__nuxt-ui-remote__get_documentation_page",
       "Bash(docker compose:*)",
       "WebSearch",
-      "WebFetch(domain:www.better-auth.com)"
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(npx nuxt typecheck:*)"
     ],
     "deny": [],
     "ask": []

@@ -39,7 +39,7 @@
             :value="stats.feedbackThisWeek"
             :subtitle="`${stats.totalFeedback} total`"
             icon="i-heroicons-chat-bubble-left-right"
-            color="blue"
+            color="primary"
           />
           <AdminStatsCard
             v-if="stats"
@@ -47,7 +47,7 @@
             :value="stats.activeGoals"
             subtitle="Currently in progress"
             icon="i-heroicons-flag"
-            color="green"
+            color="success"
           />
           <AdminStatsCard
             v-if="stats"
@@ -55,7 +55,7 @@
             :value="stats.pendingReviews"
             subtitle="Scheduled"
             icon="i-heroicons-calendar"
-            color="amber"
+            color="warning"
           />
           <AdminStatsCard
             v-if="stats"
@@ -63,7 +63,7 @@
             :value="stats.activeUsers"
             :subtitle="`${stats.invitedUsers} invited`"
             icon="i-heroicons-users"
-            color="purple"
+            color="primary"
           />
         </div>
 

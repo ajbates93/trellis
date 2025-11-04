@@ -44,11 +44,11 @@ const getSentimentColor = (sentiment: string) => {
     case 'positive':
       return 'primary'
     case 'constructive':
-      return 'amber'
+      return 'warning'
     case 'neutral':
-      return 'gray'
+      return 'neutral'
     default:
-      return 'gray'
+      return 'neutral'
   }
 }
 </script>

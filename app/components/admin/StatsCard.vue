@@ -29,28 +29,32 @@ const props = defineProps<{
   value: string | number;
   subtitle?: string;
   icon?: string;
-  color?: "blue" | "green" | "purple" | "amber" | "red";
+  color?: "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
 }>();
 
 const iconBgClass = computed(() => {
   const colors = {
-    blue: "bg-blue-500/10",
-    green: "bg-green-500/10",
-    purple: "bg-purple-500/10",
-    amber: "bg-amber-500/10",
-    red: "bg-red-500/10",
+    primary: "bg-blue-500/10",
+    secondary: "bg-purple-500/10",
+    success: "bg-green-500/10",
+    info: "bg-blue-500/10",
+    warning: "bg-amber-500/10",
+    error: "bg-red-500/10",
+    neutral: "bg-gray-500/10",
   };
-  return colors[props.color || "blue"];
+  return colors[props.color || "primary"];
 });
 
 const iconClass = computed(() => {
   const colors = {
-    blue: "text-blue-500",
-    green: "text-green-500",
-    purple: "text-purple-500",
-    amber: "text-amber-500",
-    red: "text-red-500",
+    primary: "text-blue-500",
+    secondary: "text-purple-500",
+    success: "text-green-500",
+    info: "text-blue-500",
+    warning: "text-amber-500",
+    error: "text-red-500",
+    neutral: "text-gray-500",
   };
-  return colors[props.color || "blue"];
+  return colors[props.color || "primary"];
 });
 </script>

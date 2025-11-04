@@ -84,7 +84,7 @@ const submitFeedback = async () => {
     toast.add({
       title: "Failed to submit feedback",
       description: "Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -304,7 +304,7 @@ watch(selectedUser, async (userId) => {
             <div
               class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800"
             >
-              <UButton to="/" color="white" variant="ghost"> Cancel </UButton>
+              <UButton to="/" variant="ghost"> Cancel </UButton>
               <UButton
                 type="submit"
                 color="primary"
