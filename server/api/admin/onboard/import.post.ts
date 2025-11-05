@@ -53,7 +53,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Validate header
-    const header = lines[0].toLowerCase().split(",").map((h) => h.trim());
+    const headerLine = lines[0];
+    if (!headerLine) {
+      throw createError({
+        statusCode: 400,
+        message: "CSV header is missing",
+      });
+    }
+    const header = headerLine.toLowerCase().split(",").map((h) => h.trim());
     const requiredFields = ["email", "name"];
 
     for (const field of requiredFields) {
@@ -70,7 +77,9 @@ export default defineEventHandler(async (event) => {
     const errors: ValidationError[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
+      const currentLine = lines[i];
+      if (!currentLine) continue;
+      const line = currentLine.trim();
       if (!line) continue; // Skip empty lines
 
       const values = line.split(",").map((v) => v.trim());
@@ -137,6 +146,7 @@ export default defineEventHandler(async (event) => {
     // Check for existing users in database
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
+      if (!row) continue;
       const existingUser = await db
         .select()
         .from(users)
@@ -191,7 +201,10 @@ export default defineEventHandler(async (event) => {
           })
           .returning();
 
-        importedUsers.push(newUser.id);
+        const createdUser = newUser[0];
+        if (createdUser?.id) {
+          importedUsers.push(createdUser.id);
+        }
       } catch (error) {
         console.error(`Failed to import user ${row.email}:`, error);
         errors.push({
@@ -212,7 +225,7 @@ export default defineEventHandler(async (event) => {
             .where(eq(users.email, row.buddyEmail))
             .limit(1);
 
-          if (buddy.length > 0) {
+          if (buddy.length > 0 && buddy[0]) {
             await db
               .update(users)
               .set({ buddyId: buddy[0].id })

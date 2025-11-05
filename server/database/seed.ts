@@ -463,44 +463,44 @@ async function seed() {
           userId: alexBatesId,
           goalText: "Improve my public speaking skills by presenting at the next team all-hands meeting",
           status: "active",
-          targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
           userId: alexBatesId,
           goalText: "Learn advanced TypeScript patterns and apply them to our codebase",
           status: "active",
-          targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
-          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), // 60 days from now
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
           userId: alexBatesId,
           goalText: "Mentor two junior developers and help them complete their onboarding projects",
           status: "active",
-          targetDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         },
         // Alex Bates - Completed goal
         {
           userId: alexBatesId,
           goalText: "Complete the AWS certification course",
           status: "completed",
-          targetDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          completedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          completedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
           userId: alexBatesId,
           goalText: "Reduce code review turnaround time to under 24 hours",
           status: "completed",
-          targetDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-          completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+          completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
         },
         // Alex Bates - Archived goal
         {
@@ -508,8 +508,8 @@ async function seed() {
           goalText: "Migrate legacy authentication system to OAuth",
           status: "archived",
           targetDate: null,
-          createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         },
 
         // Marcin - Active goals
@@ -517,34 +517,34 @@ async function seed() {
           userId: marcinId,
           goalText: "Improve backend API performance by implementing caching strategies",
           status: "active",
-          targetDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
           userId: marcinId,
           goalText: "Write comprehensive API documentation for all endpoints",
           status: "active",
-          targetDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         },
         // Marcin - Completed goal
         {
           userId: marcinId,
           goalText: "Refactor database queries to use proper ORM patterns",
           status: "completed",
-          targetDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         },
       ];
 
       // Insert goals
       for (const goal of sampleGoals) {
         try {
-          await db.insert(goalsTable).values(goal);
+          await db.insert(goalsTable).values(goal as any);
           const userName = Object.keys(userIdMap).find((k) => userIdMap[k] === goal.userId);
           const statusEmoji = goal.status === "active" ? "🎯" : goal.status === "completed" ? "✅" : "📦";
           console.log(`   ${statusEmoji} ${userName}: ${goal.goalText.substring(0, 50)}...`);

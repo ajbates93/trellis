@@ -87,6 +87,7 @@ export const auth = betterAuth({
       },
     },
   },
+  // @ts-ignore - Better Auth hooks type definition issue
   hooks: {
     user: {
       created: async ({ user }: { user: any }) => {

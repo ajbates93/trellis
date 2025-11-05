@@ -63,6 +63,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const goalData = goal[0];
+    if (!goalData) {
+      throw createError({
+        statusCode: 404,
+        message: "Goal not found",
+      });
+    }
     const isOwner = goalData.userId === session.user.id;
     const isBuddy = goalData.owner.buddyId === session.user.id;
 
@@ -100,7 +106,7 @@ export default defineEventHandler(async (event) => {
       })
       .from(goalNotes)
       .innerJoin(users, eq(goalNotes.authorId, users.id))
-      .where(eq(goalNotes.id, newNote[0].id))
+      .where(eq(goalNotes.id, newNote[0]?.id ?? ''))
       .limit(1);
 
     return { note: noteWithAuthor[0] };

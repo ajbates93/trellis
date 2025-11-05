@@ -82,9 +82,9 @@ export default defineEventHandler(async (event) => {
       .returning();
 
     return { success: true, feedback: updatedFeedback };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error publishing feedback:", error);
-    if (error.statusCode) {
+    if (error?.statusCode) {
       throw error;
     }
     throw createError({

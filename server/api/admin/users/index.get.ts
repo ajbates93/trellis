@@ -74,9 +74,9 @@ export default defineEventHandler(async (event) => {
   return {
     users: usersWithBuddies,
     counts: {
-      all: totalUsers[0].count,
-      active: activeUsers[0].count,
-      invited: invitedUsers[0].count,
+      all: totalUsers[0]?.count ?? 0,
+      active: activeUsers[0]?.count ?? 0,
+      invited: invitedUsers[0]?.count ?? 0,
     },
   };
 });

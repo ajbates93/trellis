@@ -90,9 +90,9 @@ export default defineEventHandler(async (event) => {
       publishedCount: updated.length,
       feedback: updated,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error batch publishing feedback:", error);
-    if (error.statusCode) {
+    if (error?.statusCode) {
       throw error;
     }
     throw createError({

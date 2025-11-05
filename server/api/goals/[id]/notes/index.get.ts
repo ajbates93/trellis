@@ -46,6 +46,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const goalData = goal[0];
+    if (!goalData) {
+      throw createError({
+        statusCode: 404,
+        message: "Goal not found",
+      });
+    }
     const isOwner = goalData.userId === session.user.id;
     const isBuddy = goalData.owner.buddyId === session.user.id;
 
