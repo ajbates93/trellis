@@ -87,8 +87,8 @@ export const auth = betterAuth({
       },
     },
   },
-  // @ts-ignore - Better Auth hooks type definition issue
   hooks: {
+    // @ts-expect-error - Better Auth hooks type definition mismatch
     user: {
       created: async ({ user }: { user: any }) => {
         const email = user.email;

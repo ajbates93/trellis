@@ -201,7 +201,7 @@ export default defineEventHandler(async (event) => {
           })
           .returning();
 
-        const createdUser = newUser[0];
+        const createdUser = (newUser as any)[0];
         if (createdUser?.id) {
           importedUsers.push(createdUser.id);
         }
