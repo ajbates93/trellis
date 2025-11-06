@@ -45,6 +45,15 @@ export const useFeedbackInsights = () => {
   const themes = computed(() => insightsSummary.value?.data?.themes || [])
   const suggestedGoals = computed(() => insightsSummary.value?.data?.suggestedGoals || [])
 
+  // Also fetch total published feedback count for users who haven't analyzed yet
+  const { data: totalFeedbackData } = useFetch('/api/feedback/received')
+  const totalPublishedFeedback = computed(() => {
+    if (hasAnalysis.value) {
+      return feedbackCount.value
+    }
+    return totalFeedbackData.value?.feedback?.filter((f: any) => f.isPublished !== false).length || 0
+  })
+
   // Calculate days since last analysis
   const daysSinceAnalysis = computed(() => {
     if (!lastAnalyzed.value) return null
@@ -139,6 +148,7 @@ export const useFeedbackInsights = () => {
     hasAnalysis,
     lastAnalyzed,
     feedbackCount,
+    totalPublishedFeedback,
     newFeedbackCount,
     sentimentData,
     themes,

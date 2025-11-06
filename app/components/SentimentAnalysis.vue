@@ -14,6 +14,7 @@ const {
   analyzeFeedback,
   newFeedbackCount,
   feedbackCount,
+  totalPublishedFeedback,
 } = useFeedbackInsights()
 
 // Transform sentiment data for the donut chart
@@ -110,6 +111,7 @@ const createGoalFromSuggestion = (goalText: string) => {
             size="xs"
           />
           <UButton
+            v-if="totalPublishedFeedback >= 3"
             :loading="isAnalyzing"
             :disabled="!canAnalyze && hasAnalysis"
             size="sm"
@@ -131,16 +133,43 @@ const createGoalFromSuggestion = (goalText: string) => {
       <p class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
         No insights yet
       </p>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Click "Analyze Now" to generate AI-powered insights from your feedback
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        {{ totalPublishedFeedback >= 3
+          ? 'Click "Analyze Now" to generate AI-powered insights from your feedback'
+          : `You have ${totalPublishedFeedback} piece${totalPublishedFeedback !== 1 ? 's' : ''} of feedback. Collect at least 3 to unlock AI insights.`
+        }}
       </p>
+      <div v-if="totalPublishedFeedback < 3" class="mb-6">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div class="flex items-center gap-1">
+            <div
+              v-for="i in 3"
+              :key="i"
+              class="w-3 h-3 rounded-full"
+              :class="i <= totalPublishedFeedback ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'"
+            />
+          </div>
+          <span class="text-xs text-gray-600 dark:text-gray-400">
+            {{ totalPublishedFeedback }}/3 feedback needed
+          </span>
+        </div>
+      </div>
       <UButton
+        v-if="totalPublishedFeedback >= 3"
         :loading="isAnalyzing"
         size="lg"
         icon="i-heroicons-sparkles"
         @click="analyzeFeedback"
       >
         Analyze Now
+      </UButton>
+      <UButton
+        v-else
+        size="lg"
+        disabled
+        icon="i-heroicons-lock-closed"
+      >
+        Needs {{ 3 - totalPublishedFeedback }} More Feedback
       </UButton>
     </div>
 
