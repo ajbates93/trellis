@@ -17,6 +17,7 @@
     "db:reseed": "npm run db:reset && npm run db:seed"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
     "@nuxt/eslint": "^1.9.0",
     "@nuxt/test-utils": "^3.19.2",
     "@nuxt/ui": "^4.0.1",

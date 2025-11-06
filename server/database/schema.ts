@@ -12,6 +12,7 @@ export const users = pgTable('users', {
   buddyId: text('buddy_id'),
   nextReviewDate: date('next_review_date'),
   avatarUrl: text('avatar_url'),
+  lastInsightsDate: timestamp('last_insights_date'),
   // Admin plugin fields
   role: varchar('role', { length: 50 }).default('user'),
   banned: boolean('banned').default(false),
@@ -46,6 +47,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     relationName: 'buddy',
   }),
   onboardingImports: many(onboardingImports),
+  feedbackInsights: many(feedbackInsights),
 }))
 
 // Feedback table
@@ -174,6 +176,36 @@ export const feedbackPrompts = pgTable('feedback_prompts', {
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at').defaultNow(),
 })
+
+// Feedback insights table
+// Stores AI-generated sentiment analysis, recurring themes, and goal suggestions
+// based on aggregated feedback received by each user. This enables intelligent
+// pattern detection using LLMs (e.g., Claude 3.5 Haiku) to identify areas for
+// improvement and suggest actionable development goals. Results are cached to
+// minimize API costs and improve performance.
+export const feedbackInsights = pgTable('feedback_insights', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  analysisDate: timestamp('analysis_date').defaultNow(),
+  feedbackCount: integer('feedback_count').notNull(),
+  feedbackIds: text('feedback_ids').notNull(), // JSON array of feedback UUIDs
+  sentimentData: text('sentiment_data').notNull(), // JSON: {positive: %, constructive: %, neutral: %}
+  themes: text('themes').notNull(), // JSON array: [{name, count, sentiment, keywords}]
+  suggestedGoals: text('suggested_goals'), // JSON array: [{goalText, basedOnTheme, confidence, dismissed, actedUpon}]
+  llmModel: varchar('llm_model', { length: 100 }), // Track which model was used (e.g., claude-3-5-haiku-20250219)
+  status: varchar('status', { length: 50 }).default('completed'), // pending, completed, failed
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// Relations for feedback insights
+export const feedbackInsightsRelations = relations(feedbackInsights, ({ one }) => ({
+  user: one(users, {
+    fields: [feedbackInsights.userId],
+    references: [users.id],
+  }),
+}))
 
 // Better-auth tables
 export const sessions = pgTable('session', {
