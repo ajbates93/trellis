@@ -95,9 +95,28 @@ const handleSubmit = async () => {
   }
 };
 
+// Update form when modal opens or props change
+watch(
+  () => props.goal,
+  (newGoal) => {
+    if (newGoal) {
+      goalText.value = newGoal.goalText || "";
+      description.value = newGoal.description || "";
+      targetDate.value = newGoal.targetDate || null;
+    }
+  },
+  { immediate: true }
+);
+
 // Reset form when modal closes
-watch(isOpen, (newVal) => {
-  if (!newVal) {
+watch(isOpen, (newVal, oldVal) => {
+  if (newVal && !oldVal) {
+    // Modal opening - load props
+    goalText.value = props.goal?.goalText || "";
+    description.value = props.goal?.description || "";
+    targetDate.value = props.goal?.targetDate || null;
+  } else if (!newVal && oldVal) {
+    // Modal closing - reset to empty for create mode, or original values for edit mode
     goalText.value = props.goal?.goalText || "";
     description.value = props.goal?.description || "";
     targetDate.value = props.goal?.targetDate || null;

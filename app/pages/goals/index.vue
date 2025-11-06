@@ -154,6 +154,7 @@
     :is-open="showCreateModal"
     @update:is-open="showCreateModal = $event"
     mode="create"
+    :goal="initialGoalText ? { goalText: initialGoalText, description: null, targetDate: null, id: '' } : null"
     @success="handleGoalCreated"
   />
 </template>
@@ -227,6 +228,32 @@ const tabs = computed(() => {
 
 // Create goal modal state
 const showCreateModal = ref(false);
+const initialGoalText = ref<string | null>(null);
+
+// Check for suggested goal from query params
+const route = useRoute();
+const router = useRouter();
+
+onMounted(async () => {
+  if (route.query.suggested === 'true' && route.query.text) {
+    initialGoalText.value = route.query.text as string;
+    showCreateModal.value = true;
+
+    // Wait for Vue to update and modal to populate, then clean URL
+    await nextTick();
+    setTimeout(() => {
+      router.replace({ query: {} });
+    }, 200);
+  }
+});
+
+// Watch for modal close to reset state
+watch(showCreateModal, (newValue) => {
+  if (!newValue && initialGoalText.value) {
+    // Modal closed, clear the initial text
+    initialGoalText.value = null;
+  }
+});
 
 // Refresh handlers
 const handleGoalChange = async () => {
