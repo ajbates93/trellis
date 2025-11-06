@@ -234,18 +234,23 @@ const initialGoalText = ref<string | null>(null);
 const route = useRoute();
 const router = useRouter();
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.suggested === 'true' && route.query.text) {
     initialGoalText.value = route.query.text as string;
     showCreateModal.value = true;
+
+    // Wait for Vue to update and modal to populate, then clean URL
+    await nextTick();
+    setTimeout(() => {
+      router.replace({ query: {} });
+    }, 200);
   }
 });
 
-// Watch for modal close to clear query params and reset state
+// Watch for modal close to reset state
 watch(showCreateModal, (newValue) => {
   if (!newValue && initialGoalText.value) {
-    // Modal closed, clear the URL params and initial text
-    router.replace({ query: {} });
+    // Modal closed, clear the initial text
     initialGoalText.value = null;
   }
 });
