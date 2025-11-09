@@ -2,31 +2,31 @@
   <UDashboardPanel id="admin-onboard">
     <template #body>
       <div class="p-4 sm:p-6 lg:p-8">
-        <!-- Header -->
-        <div class="mb-8 flex items-center justify-between">
-          <div>
-            <div class="flex items-center gap-3 mb-2">
-              <UIcon
-                name="i-heroicons-arrow-up-tray"
-                class="text-purple-500 text-3xl"
-              />
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                CSV Onboarding
-              </h1>
+          <!-- Header -->
+          <div class="mb-8 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <UIcon
+                  name="i-heroicons-arrow-up-tray"
+                  class="text-purple-500 text-3xl"
+                />
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  CSV Onboarding
+                </h1>
+              </div>
+              <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Bulk import users to get your team started quickly
+              </p>
             </div>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-              Bulk import users to get your team started quickly
-            </p>
+            <UButton
+              icon="i-heroicons-arrow-down-tray"
+              variant="solid"
+              :loading="downloadingTemplate"
+              @click="downloadTemplate"
+            >
+              Download Template
+            </UButton>
           </div>
-          <UButton
-            icon="i-heroicons-arrow-down-tray"
-            variant="solid"
-            :loading="downloadingTemplate"
-            @click="downloadTemplate"
-          >
-            Download Template
-          </UButton>
-        </div>
 
         <!-- Instructions Card -->
         <UCard class="mb-8">
@@ -421,38 +421,34 @@
             </table>
           </div>
         </UCard>
-
-        <!-- Error Log Modal -->
-        <UModal v-model="showErrorModal">
-          <UCard>
-            <template #header>
-              <h3 class="text-lg font-semibold">Import Errors</h3>
-            </template>
-
-            <div
-              v-if="selectedErrorLog"
-              class="space-y-2 max-h-96 overflow-y-auto"
-            >
-              <UAlert
-                v-for="(error, index) in selectedErrorLog"
-                :key="index"
-                icon="i-heroicons-exclamation-triangle"
-                color="warning"
-                variant="soft"
-                :title="`Row ${error.row}: ${error.field}`"
-                :description="error.message"
-                size="xs"
-              />
-            </div>
-
-            <template #footer>
-              <UButton @click="showErrorModal = false">Close</UButton>
-            </template>
-          </UCard>
-        </UModal>
       </div>
     </template>
   </UDashboardPanel>
+
+  <!-- Error Log Modal -->
+  <UModal v-model:open="showErrorModal" title="Import Errors">
+    <template #body>
+      <div
+        v-if="selectedErrorLog"
+        class="space-y-2 max-h-96 overflow-y-auto"
+      >
+        <UAlert
+          v-for="(error, index) in selectedErrorLog"
+          :key="index"
+          icon="i-heroicons-exclamation-triangle"
+          color="warning"
+          variant="soft"
+          :title="`Row ${error.row}: ${error.field}`"
+          :description="error.message"
+          size="xs"
+        />
+      </div>
+    </template>
+
+    <template #footer>
+      <UButton @click="showErrorModal = false">Close</UButton>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
