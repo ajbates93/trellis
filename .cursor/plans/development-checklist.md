@@ -154,46 +154,57 @@
   - [ ] GET /api/analytics/activity-heatmap
   - [ ] GET /api/analytics/team-engagement
 
-## Phase 8: AI-Driven Feedback Insights
-**Dependencies:** Requires Phase 3 (Feedback) ✅ and Phase 4 (Goals) to be complete
+## Phase 8: AI-Driven Feedback Insights ✅ (MVP Complete)
+**Dependencies:** Requires Phase 3 (Feedback) ✅ and Phase 4 (Goals) ✅
 
 **Overview:** Intelligent analysis of feedback patterns using LLM to identify recurring themes and suggest actionable goals.
 
 **Detailed Plan:** See `.cursor/plans/ai-sentiment-analysis.md`
 
-- [ ] Database schema
-  - [ ] Create feedback_insights table
-  - [ ] Add insights tracking columns to users/feedback tables
-  - [ ] Create database migrations
-- [ ] LLM Analysis Service
-  - [ ] Create /server/services/feedbackAnalysis.ts (Claude 3.5 Haiku)
-  - [ ] Prompt engineering for theme extraction
-  - [ ] JSON response parsing and validation
-  - [ ] Error handling and retries
-- [ ] API Endpoints
-  - [ ] POST /api/feedback/analyze - Trigger analysis (rate limited)
-  - [ ] GET /api/feedback/insights - Fetch cached insights
-  - [ ] PATCH /api/feedback/insights/:id/dismiss - Dismiss suggestion
-  - [ ] PATCH /api/feedback/insights/:id/act - Mark acted upon
-- [ ] Background Job (Railway Cron)
+- [x] Database schema
+  - [x] Create feedback_insights table (with comprehensive documentation)
+  - [x] Add lastInsightsDate column to users table
+  - [x] Updated reset script to include new tables
+- [x] LLM Analysis Service
+  - [x] Create /server/services/anthropicClient.ts (Claude 3.5 Haiku)
+  - [x] Prompt engineering for theme extraction and goal suggestions
+  - [x] JSON response parsing and validation
+  - [x] Error handling and retries
+- [x] API Endpoints (MVP)
+  - [x] POST /api/insights/analyze - Trigger analysis (rate limited 1x/24hrs)
+  - [x] GET /api/insights/user-summary - Fetch cached insights
+  - [ ] PATCH /api/insights/dismiss - Dismiss suggestion (deferred)
+  - [ ] PATCH /api/insights/mark-acted - Mark acted upon (deferred)
+- [ ] Background Job (Railway Cron) - Deferred to Phase 2
   - [ ] Create /server/cron/analyze-feedback.ts
   - [ ] Configure railway.toml for nightly runs
   - [ ] Batch processing (max 10 users per run)
   - [ ] Auto-trigger when 5+ new feedback items
-- [ ] UI Components
-  - [ ] Create FeedbackInsights.vue component
-  - [ ] Theme cards with count badges and sentiment colors
-  - [ ] Suggested goal banner with create/dismiss actions
-  - [ ] "Last analyzed" timestamp and refresh button
-  - [ ] Loading/empty/error states
-- [ ] Integration
-  - [ ] Add insights to Dashboard (index.vue)
-  - [ ] Add insights to Inbox (feedback/inbox.vue)
-  - [ ] Connect to Goals page (pre-fill suggestions)
-  - [ ] Track conversion metrics (suggestions → goals created)
+- [x] UI Components
+  - [x] Create SentimentAnalysis.vue component
+  - [x] Donut chart visualization (@unovis/vue)
+  - [x] Theme cards with count badges and sentiment colors
+  - [x] Suggested goal cards with "Create Goal" action
+  - [x] "Last analyzed" timestamp and refresh button
+  - [x] Loading/analyzing states
+  - [x] Empty state with progress indicator (0-2 feedback)
+  - [x] Smart button states (disabled when <3 feedback)
+- [x] Integration
+  - [x] Add insights to Dashboard (index.vue)
+  - [x] Connect to Goals page (pre-fill suggestions via query params)
+  - [x] Goal modal reactive to prop changes
+  - [x] Clean URL handling after navigation
+  - [ ] Add insights to Inbox (feedback/inbox.vue) - deferred
+  - [ ] Track conversion metrics (suggestions → goals created) - deferred
+- [x] Testing & Data
+  - [x] Enhanced seed script with 25+ diverse feedback items
+  - [x] Varied sentiments (positive/constructive/neutral)
+  - [x] Multiple themes (communication, technical, collaboration, client relations, etc.)
+  - [x] TypeScript type safety (all errors resolved)
 
-**Estimated Effort:** 3-4 days (Balanced approach)
-**Cost:** <$5/month for 50 active users (using Claude 3.5 Haiku)
+**Completed:** 2025-01-09
+**Actual Effort:** ~1 day (MVP approach)
+**Cost:** ~$0.001 per analysis with Claude 3.5 Haiku
 
 ## Phase 9: Polish & Testing
 - [ ] Responsive design

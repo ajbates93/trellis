@@ -6,7 +6,7 @@
     class="sm:max-w-md"
   >
     <template #body>
-      <form @submit.prevent="onSubmit" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="onSubmit">
         <!-- Name -->
         <div>
           <label class="block text-sm font-medium mb-2">
@@ -83,7 +83,7 @@
     </template>
 
     <template #footer>
-      <UButton color="neutral" variant="ghost" @click="close" :disabled="saving">
+      <UButton color="neutral" variant="ghost" :disabled="saving" @click="close">
         Cancel
       </UButton>
       <UButton color="primary" :loading="saving" @click="onSubmit">

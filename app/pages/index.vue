@@ -115,7 +115,9 @@
                   Next Review
                 </p>
                 <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.daysUntilReview !== null ? stats.daysUntilReview : '—' }}
+                  {{
+                    stats.daysUntilReview !== null ? stats.daysUntilReview : "—"
+                  }}
                 </p>
               </div>
               <div
@@ -129,12 +131,14 @@
             </div>
             <div class="mt-4 flex items-center gap-2">
               <UBadge
-                :label="stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'"
+                :label="
+                  stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'
+                "
                 :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
                 size="xs"
               />
               <span class="text-xs text-gray-600 dark:text-gray-400">
-                {{ stats.daysUntilReview !== null ? 'days remaining' : '' }}
+                {{ stats.daysUntilReview !== null ? "days remaining" : "" }}
               </span>
             </div>
           </UCard>
@@ -162,11 +166,7 @@
               >
                 Give Feedback
               </UButton>
-              <UButton
-                to="/goals"
-                size="lg"
-                icon="i-heroicons-flag"
-              >
+              <UButton to="/goals" size="lg" icon="i-heroicons-flag">
                 View Goals
               </UButton>
               <UButton
@@ -193,7 +193,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <div class="flex items-center gap-2">
-                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h2
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     Recent Feedback
                   </h2>
                   <UBadge
@@ -224,7 +226,10 @@
               <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
                   <UAvatar
-                    :src="row.original.reviewer.image || row.original.reviewer.avatarUrl"
+                    :src="
+                      row.original.reviewer.image ||
+                      row.original.reviewer.avatarUrl
+                    "
                     :alt="row.original.reviewer.name"
                     size="xs"
                   />
@@ -250,7 +255,10 @@
               </template>
 
               <template #status-cell="{ row }">
-                <UBadge :color="row.original.isRead ? 'gray' : 'primary'" size="xs">
+                <UBadge
+                  :color="row.original.isRead ? 'gray' : 'primary'"
+                  size="xs"
+                >
                   {{ row.original.isRead ? "Read" : "Unread" }}
                 </UBadge>
               </template>
@@ -275,10 +283,7 @@
   </UDashboardPanel>
 
   <!-- Feedback Modal -->
-  <FeedbackModal
-    v-model="isModalOpen"
-    :feedback="selectedFeedback"
-  />
+  <FeedbackModal v-model="isModalOpen" :feedback="selectedFeedback" />
 </template>
 
 <script setup lang="ts">
@@ -293,8 +298,8 @@ const { data: goalsData } = await useFetch("/api/goals");
 const goals = computed(() => goalsData.value?.goals || []);
 
 // Calculate goal stats
-const activeGoalsCount = computed(() =>
-  goals.value.filter((g) => g.status === "active").length
+const activeGoalsCount = computed(
+  () => goals.value.filter((g) => g.status === "active").length,
 );
 
 const completedGoalsThisMonth = computed(() => {
@@ -344,9 +349,9 @@ const feedbackColumns = [
     header: "Feedback",
     meta: {
       class: {
-        td: "max-w-md"
-      }
-    }
+        td: "max-w-md",
+      },
+    },
   },
   {
     id: "date",
@@ -361,7 +366,7 @@ const feedbackColumns = [
 ];
 
 const formatDate = (date: string | Date) => {
-  if (!date) return '';
+  if (!date) return "";
   return new Date(date).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",

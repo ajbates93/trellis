@@ -141,7 +141,7 @@ const actionMenuItems = computed(() => {
       <!-- Goal Header -->
       <div class="flex justify-between items-start gap-2">
         <div class="flex-1">
-          <button @click="showViewModal = true" class="text-left w-full group">
+          <button class="text-left w-full group" @click="showViewModal = true">
             <p
               class="text-base font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors"
             >
@@ -197,8 +197,8 @@ const actionMenuItems = computed(() => {
             color="success"
             icon="i-heroicons-check-circle"
             :loading="isUpdatingStatus"
-            @click="changeStatus('completed')"
             class="hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            @click="changeStatus('completed')"
           >
             Mark Complete
           </UButton>
@@ -208,8 +208,8 @@ const actionMenuItems = computed(() => {
             color="neutral"
             icon="i-heroicons-archive-box"
             :loading="isUpdatingStatus"
-            @click="changeStatus('archived')"
             class="hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            @click="changeStatus('archived')"
           >
             Archive
           </UButton>
@@ -223,8 +223,8 @@ const actionMenuItems = computed(() => {
             color="primary"
             icon="i-heroicons-arrow-path"
             :loading="isUpdatingStatus"
-            @click="changeStatus('active')"
             class="hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            @click="changeStatus('active')"
           >
             Reactivate
           </UButton>
@@ -234,8 +234,8 @@ const actionMenuItems = computed(() => {
             color="neutral"
             icon="i-heroicons-archive-box"
             :loading="isUpdatingStatus"
-            @click="changeStatus('archived')"
             class="hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            @click="changeStatus('archived')"
           >
             Archive
           </UButton>
@@ -249,8 +249,8 @@ const actionMenuItems = computed(() => {
             color="primary"
             icon="i-heroicons-arrow-path"
             :loading="isUpdatingStatus"
-            @click="changeStatus('active')"
             class="hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            @click="changeStatus('active')"
           >
             Reactivate
           </UButton>
@@ -321,7 +321,7 @@ const actionMenuItems = computed(() => {
             <div
               class="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
               v-html="goal.description"
-            ></div>
+            />
           </div>
           <div v-else class="text-sm text-gray-500 italic">
             No description provided
@@ -352,9 +352,9 @@ const actionMenuItems = computed(() => {
     <GoalsGoalModal
       v-if="mode === 'owner'"
       :is-open="showEditModal"
-      @update:is-open="showEditModal = $event"
       :goal="goal"
       mode="edit"
+      @update:is-open="showEditModal = $event"
       @success="handleGoalUpdated"
     />
   </UCard>

@@ -21,8 +21,8 @@
           <UButton
             icon="i-heroicons-arrow-down-tray"
             variant="solid"
-            @click="downloadTemplate"
             :loading="downloadingTemplate"
+            @click="downloadTemplate"
           >
             Download Template
           </UButton>
@@ -112,21 +112,21 @@
             <!-- File Input -->
             <div
               class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+              :class="{
+                'border-blue-500 bg-blue-50 dark:bg-blue-950': isDragging,
+              }"
               @click="triggerFileInput"
               @dragover.prevent="isDragging = true"
               @dragleave="isDragging = false"
               @drop.prevent="handleFileDrop"
-              :class="{
-                'border-blue-500 bg-blue-50 dark:bg-blue-950': isDragging,
-              }"
             >
               <input
                 ref="fileInput"
                 type="file"
                 accept=".csv"
-                @change="handleFileSelect"
                 class="hidden"
-              />
+                @change="handleFileSelect"
+              >
               <UIcon
                 name="i-heroicons-document-arrow-up"
                 class="mx-auto text-4xl text-gray-400 mb-4"
@@ -218,9 +218,9 @@
               <UButton
                 icon="i-heroicons-arrow-up-tray"
                 color="primary"
-                @click="importCSV"
                 :loading="importing"
                 :disabled="!csvPreview"
+                @click="importCSV"
               >
                 Import Users
               </UButton>
@@ -319,8 +319,8 @@
                 color="neutral"
                 variant="ghost"
                 size="sm"
-                @click="fetchHistory"
                 :loading="loadingHistory"
+                @click="fetchHistory"
               >
                 Refresh
               </UButton>

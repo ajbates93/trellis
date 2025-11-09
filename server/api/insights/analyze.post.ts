@@ -25,8 +25,8 @@ export default defineEventHandler(async (event) => {
       .where(
         and(
           eq(feedbackInsights.userId, userId),
-          gte(feedbackInsights.analysisDate, oneDayAgo)
-        )
+          gte(feedbackInsights.analysisDate, oneDayAgo),
+        ),
       )
       .orderBy(desc(feedbackInsights.analysisDate))
       .limit(1);
@@ -42,13 +42,15 @@ export default defineEventHandler(async (event) => {
       }
 
       return {
-        status: 'cached',
-        message: 'Analysis from last 24 hours returned',
+        status: "cached",
+        message: "Analysis from last 24 hours returned",
         lastAnalyzed: cached.analysisDate,
         data: {
           sentimentData: JSON.parse(cached.sentimentData),
           themes: JSON.parse(cached.themes),
-          suggestedGoals: cached.suggestedGoals ? JSON.parse(cached.suggestedGoals) : [],
+          suggestedGoals: cached.suggestedGoals
+            ? JSON.parse(cached.suggestedGoals)
+            : [],
           feedbackCount: cached.feedbackCount,
         },
       };
@@ -66,18 +68,13 @@ export default defineEventHandler(async (event) => {
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.reviewerId, users.id))
-      .where(
-        and(
-          eq(feedback.revieweeId, userId),
-          eq(feedback.published, true)
-        )
-      )
+      .where(and(eq(feedback.revieweeId, userId), eq(feedback.published, true)))
       .orderBy(desc(feedback.createdAt));
 
     // Filter out feedback with null createdAt and map to proper type
     const validFeedback = receivedFeedback
-      .filter(f => f.createdAt !== null)
-      .map(f => ({
+      .filter((f) => f.createdAt !== null)
+      .map((f) => ({
         ...f,
         createdAt: f.createdAt as Date,
       }));
@@ -97,13 +94,13 @@ export default defineEventHandler(async (event) => {
       .where(eq(users.id, userId))
       .limit(1);
 
-    const userName = user[0]?.name || 'the employee';
+    const userName = user[0]?.name || "the employee";
 
     // Analyze feedback using Claude
     const analysisResult = await analyzeFeedback(validFeedback, userName);
 
     // Store the analysis in the database
-    const feedbackIds = validFeedback.map(f => f.id);
+    const feedbackIds = validFeedback.map((f) => f.id);
 
     const result = await db
       .insert(feedbackInsights)
@@ -115,14 +112,14 @@ export default defineEventHandler(async (event) => {
         sentimentData: JSON.stringify(analysisResult.sentimentData),
         themes: JSON.stringify(analysisResult.themes),
         suggestedGoals: JSON.stringify(
-          analysisResult.suggestedGoals.map(goal => ({
+          analysisResult.suggestedGoals.map((goal) => ({
             ...goal,
             dismissed: false,
             actedUpon: false,
-          }))
+          })),
         ),
-        llmModel: 'claude-3-5-haiku-20241022',
-        status: 'completed',
+        llmModel: "claude-3-5-haiku-20241022",
+        status: "completed",
       })
       .returning();
 
@@ -141,13 +138,13 @@ export default defineEventHandler(async (event) => {
       .where(eq(users.id, userId));
 
     return {
-      status: 'completed',
-      message: 'Feedback analyzed successfully',
+      status: "completed",
+      message: "Feedback analyzed successfully",
       lastAnalyzed: insertedInsight.analysisDate,
       data: {
         sentimentData: analysisResult.sentimentData,
         themes: analysisResult.themes,
-        suggestedGoals: analysisResult.suggestedGoals.map(goal => ({
+        suggestedGoals: analysisResult.suggestedGoals.map((goal) => ({
           ...goal,
           dismissed: false,
           actedUpon: false,

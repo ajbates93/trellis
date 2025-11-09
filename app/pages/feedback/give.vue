@@ -145,7 +145,7 @@ watch(selectedUser, async (userId) => {
 
         <!-- Feedback Form -->
         <UCard>
-          <form @submit.prevent="submitFeedback" class="space-y-6">
+          <form class="space-y-6" @submit.prevent="submitFeedback">
             <!-- Random Question Display -->
             <div
               v-if="currentPrompt"

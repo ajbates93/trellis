@@ -278,9 +278,9 @@ const buddyFeedbackColumns = [
                   <UButton
                     v-if="!row.original.isRead"
                     loading-auto
-                    @click="markAsRead(row.original.id)"
                     size="xs"
                     variant="ghost"
+                    @click="markAsRead(row.original.id)"
                   >
                     Mark as Read
                   </UButton>
@@ -404,9 +404,9 @@ const buddyFeedbackColumns = [
                   <UButton
                     v-if="assignment.pendingCount > 0"
                     loading-auto
-                    @click="publishAllForUser(assignment.user.id)"
                     size="sm"
                     color="primary"
+                    @click="publishAllForUser(assignment.user.id)"
                   >
                     Publish All ({{ assignment.pendingCount }})
                   </UButton>
@@ -475,9 +475,9 @@ const buddyFeedbackColumns = [
                   <template #actions-cell="{ row }">
                     <UButton
                       loading-auto
-                      @click="publishFeedback(row.original.id)"
                       size="xs"
                       color="primary"
+                      @click="publishFeedback(row.original.id)"
                     >
                       Publish
                     </UButton>

@@ -60,7 +60,6 @@ onBeforeUnmount(() => {
       <!-- Bold -->
       <button
         type="button"
-        @click="editor.chain().focus().toggleBold().run()"
         :disabled="!editor.can().chain().focus().toggleBold().run()"
         :class="[
           'px-2 py-1 rounded text-sm font-semibold transition-colors',
@@ -68,6 +67,7 @@ onBeforeUnmount(() => {
             ? 'bg-primary text-white'
             : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
         ]"
+        @click="editor.chain().focus().toggleBold().run()"
       >
         B
       </button>
@@ -75,7 +75,6 @@ onBeforeUnmount(() => {
       <!-- Italic -->
       <button
         type="button"
-        @click="editor.chain().focus().toggleItalic().run()"
         :disabled="!editor.can().chain().focus().toggleItalic().run()"
         :class="[
           'px-2 py-1 rounded text-sm italic transition-colors',
@@ -83,23 +82,24 @@ onBeforeUnmount(() => {
             ? 'bg-primary text-white'
             : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
         ]"
+        @click="editor.chain().focus().toggleItalic().run()"
       >
         I
       </button>
 
       <!-- Divider -->
-      <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
+      <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"/>
 
       <!-- Bullet List -->
       <button
         type="button"
-        @click="editor.chain().focus().toggleBulletList().run()"
         :class="[
           'px-2 py-1 rounded text-sm transition-colors flex items-center gap-1',
           editor.isActive('bulletList')
             ? 'bg-primary text-white'
             : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
         ]"
+        @click="editor.chain().focus().toggleBulletList().run()"
       >
         <UIcon name="i-heroicons-list-bullet" />
         <span class="text-xs">List</span>
@@ -108,13 +108,13 @@ onBeforeUnmount(() => {
       <!-- Task List -->
       <button
         type="button"
-        @click="editor.chain().focus().toggleTaskList().run()"
         :class="[
           'px-2 py-1 rounded text-sm transition-colors flex items-center gap-1',
           editor.isActive('taskList')
             ? 'bg-primary text-white'
             : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
         ]"
+        @click="editor.chain().focus().toggleTaskList().run()"
       >
         <UIcon name="i-heroicons-check-circle" />
         <span class="text-xs">Tasks</span>

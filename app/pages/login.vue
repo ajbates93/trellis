@@ -22,9 +22,9 @@
         color="primary"
         size="xl"
         block
-        @click="signInWithGoogle"
         :loading="loading"
         class="border-2 transition-colors cursor-pointer"
+        @click="signInWithGoogle"
       >
         <template #leading>
           <svg class="w-5 h-5" viewBox="0 0 24 24">
