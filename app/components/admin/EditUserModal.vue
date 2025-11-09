@@ -6,7 +6,7 @@
     class="sm:max-w-md"
   >
     <template #body>
-      <form @submit.prevent="onSubmit" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="onSubmit">
         <!-- User Info (Read-only) -->
         <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <UAvatar
@@ -97,8 +97,8 @@
       <UButton
         color="neutral"
         variant="ghost"
-        @click="close"
         :disabled="saving"
+        @click="close"
       >
         Cancel
       </UButton>

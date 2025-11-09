@@ -382,7 +382,7 @@ async function seed() {
           const weekYear = getWeekYear(createdAt);
 
           // Random reviewer and reviewee (ensure they're different)
-          let reviewerId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
+          const reviewerId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
           let revieweeId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
 
           // Ensure reviewer and reviewee are different

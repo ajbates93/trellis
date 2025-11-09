@@ -1,95 +1,110 @@
-import { pgTable, uuid, varchar, text, timestamp, date, boolean, integer } from 'drizzle-orm/pg-core'
-import { relations, sql } from 'drizzle-orm'
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  timestamp,
+  date,
+  boolean,
+  integer,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // Users table
-export const users = pgTable('users', {
-  id: text('id').primaryKey(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  emailVerified: boolean('email_verified').notNull().default(false),
-  name: varchar('name', { length: 255 }).notNull(),
-  image: text('image'),
-  roleType: varchar('role_type', { length: 50 }),
-  buddyId: text('buddy_id'),
-  nextReviewDate: date('next_review_date'),
-  avatarUrl: text('avatar_url'),
-  lastInsightsDate: timestamp('last_insights_date'),
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  emailVerified: boolean("email_verified").notNull().default(false),
+  name: varchar("name", { length: 255 }).notNull(),
+  image: text("image"),
+  roleType: varchar("role_type", { length: 50 }),
+  buddyId: text("buddy_id"),
+  nextReviewDate: date("next_review_date"),
+  avatarUrl: text("avatar_url"),
+  lastInsightsDate: timestamp("last_insights_date"),
   // Admin plugin fields
-  role: varchar('role', { length: 50 }).default('user'),
-  banned: boolean('banned').default(false),
-  banReason: varchar('ban_reason', { length: 255 }),
-  banExpires: timestamp('ban_expires'),
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
-})
+  role: varchar("role", { length: 50 }).default("user"),
+  banned: boolean("banned").default(false),
+  banReason: varchar("ban_reason", { length: 255 }),
+  banExpires: timestamp("ban_expires"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
 
 // Relations for users
 export const usersRelations = relations(users, ({ one, many }) => ({
   buddy: one(users, {
     fields: [users.buddyId],
     references: [users.id],
-    relationName: 'buddy',
+    relationName: "buddy",
   }),
   buddiesOf: many(users, {
-    relationName: 'buddy',
+    relationName: "buddy",
   }),
   feedbackGiven: many(feedback, {
-    relationName: 'reviewer',
+    relationName: "reviewer",
   }),
   feedbackReceived: many(feedback, {
-    relationName: 'reviewee',
+    relationName: "reviewee",
   }),
   goals: many(goals),
   goalNotes: many(goalNotes),
   reviewSchedulesAsUser: many(reviewSchedules, {
-    relationName: 'user',
+    relationName: "user",
   }),
   reviewSchedulesAsBuddy: many(reviewSchedules, {
-    relationName: 'buddy',
+    relationName: "buddy",
   }),
   onboardingImports: many(onboardingImports),
   feedbackInsights: many(feedbackInsights),
-}))
+}));
 
 // Feedback table
-export const feedback = pgTable('feedback', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  reviewerId: text('reviewer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  revieweeId: text('reviewee_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  content: text('content').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-  weekYear: varchar('week_year', { length: 10 }),
-  isRead: boolean('is_read').default(false),
-  published: boolean('published').default(false),
-  publishedAt: timestamp('published_at'),
-  publishedBy: text('published_by').references(() => users.id),
-})
+export const feedback = pgTable("feedback", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reviewerId: text("reviewer_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  revieweeId: text("reviewee_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  weekYear: varchar("week_year", { length: 10 }),
+  isRead: boolean("is_read").default(false),
+  published: boolean("published").default(false),
+  publishedAt: timestamp("published_at"),
+  publishedBy: text("published_by").references(() => users.id),
+});
 
 // Relations for feedback
 export const feedbackRelations = relations(feedback, ({ one }) => ({
   reviewer: one(users, {
     fields: [feedback.reviewerId],
     references: [users.id],
-    relationName: 'reviewer',
+    relationName: "reviewer",
   }),
   reviewee: one(users, {
     fields: [feedback.revieweeId],
     references: [users.id],
-    relationName: 'reviewee',
+    relationName: "reviewee",
   }),
-}))
+}));
 
 // Goals table
-export const goals = pgTable('goals', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  goalText: text('goal_text').notNull(),
-  description: text('description'), // Rich text HTML content from TipTap
-  status: varchar('status', { length: 50 }).default('active'),
-  targetDate: date('target_date'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-  completedAt: timestamp('completed_at'),
-})
+export const goals = pgTable("goals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  goalText: text("goal_text").notNull(),
+  description: text("description"), // Rich text HTML content from TipTap
+  status: varchar("status", { length: 50 }).default("active"),
+  targetDate: date("target_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
 
 // Relations for goals
 export const goalsRelations = relations(goals, ({ one, many }) => ({
@@ -98,17 +113,21 @@ export const goalsRelations = relations(goals, ({ one, many }) => ({
     references: [users.id],
   }),
   notes: many(goalNotes),
-}))
+}));
 
 // Goal notes table
-export const goalNotes = pgTable('goal_notes', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  goalId: uuid('goal_id').notNull().references(() => goals.id, { onDelete: 'cascade' }),
-  authorId: text('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  noteText: text('note_text').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-})
+export const goalNotes = pgTable("goal_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  goalId: uuid("goal_id")
+    .notNull()
+    .references(() => goals.id, { onDelete: "cascade" }),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  noteText: text("note_text").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 // Relations for goal notes
 export const goalNotesRelations = relations(goalNotes, ({ one }) => ({
@@ -120,62 +139,74 @@ export const goalNotesRelations = relations(goalNotes, ({ one }) => ({
     fields: [goalNotes.authorId],
     references: [users.id],
   }),
-}))
+}));
 
 // Review schedules table
-export const reviewSchedules = pgTable('review_schedules', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  buddyId: text('buddy_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  scheduledDate: date('scheduled_date').notNull(),
-  completedDate: date('completed_date'),
-  status: varchar('status', { length: 50 }).default('scheduled'),
-  notes: text('notes'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-})
+export const reviewSchedules = pgTable("review_schedules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  buddyId: text("buddy_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  scheduledDate: date("scheduled_date").notNull(),
+  completedDate: date("completed_date"),
+  status: varchar("status", { length: 50 }).default("scheduled"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 // Relations for review schedules
-export const reviewSchedulesRelations = relations(reviewSchedules, ({ one }) => ({
-  user: one(users, {
-    fields: [reviewSchedules.userId],
-    references: [users.id],
-    relationName: 'user',
+export const reviewSchedulesRelations = relations(
+  reviewSchedules,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [reviewSchedules.userId],
+      references: [users.id],
+      relationName: "user",
+    }),
+    buddy: one(users, {
+      fields: [reviewSchedules.buddyId],
+      references: [users.id],
+      relationName: "buddy",
+    }),
   }),
-  buddy: one(users, {
-    fields: [reviewSchedules.buddyId],
-    references: [users.id],
-    relationName: 'buddy',
-  }),
-}))
+);
 
 // Onboarding imports table
-export const onboardingImports = pgTable('onboarding_imports', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  adminId: text('admin_id').notNull().references(() => users.id),
-  filename: varchar('filename', { length: 255 }),
-  rowsImported: integer('rows_imported'),
-  status: varchar('status', { length: 50 }),
-  errorLog: text('error_log'),
-  createdAt: timestamp('created_at').defaultNow(),
-})
+export const onboardingImports = pgTable("onboarding_imports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  adminId: text("admin_id")
+    .notNull()
+    .references(() => users.id),
+  filename: varchar("filename", { length: 255 }),
+  rowsImported: integer("rows_imported"),
+  status: varchar("status", { length: 50 }),
+  errorLog: text("error_log"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Relations for onboarding imports
-export const onboardingImportsRelations = relations(onboardingImports, ({ one }) => ({
-  admin: one(users, {
-    fields: [onboardingImports.adminId],
-    references: [users.id],
+export const onboardingImportsRelations = relations(
+  onboardingImports,
+  ({ one }) => ({
+    admin: one(users, {
+      fields: [onboardingImports.adminId],
+      references: [users.id],
+    }),
   }),
-}))
+);
 
 // Feedback prompts table
-export const feedbackPrompts = pgTable('feedback_prompts', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  question: text('question').notNull(),
-  category: varchar('category', { length: 50 }),
-  isActive: boolean('is_active').default(true),
-  createdAt: timestamp('created_at').defaultNow(),
-})
+export const feedbackPrompts = pgTable("feedback_prompts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  question: text("question").notNull(),
+  category: varchar("category", { length: 50 }),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Feedback insights table
 // Stores AI-generated sentiment analysis, recurring themes, and goal suggestions
@@ -183,66 +214,75 @@ export const feedbackPrompts = pgTable('feedback_prompts', {
 // pattern detection using LLMs (e.g., Claude 3.5 Haiku) to identify areas for
 // improvement and suggest actionable development goals. Results are cached to
 // minimize API costs and improve performance.
-export const feedbackInsights = pgTable('feedback_insights', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  analysisDate: timestamp('analysis_date').defaultNow(),
-  feedbackCount: integer('feedback_count').notNull(),
-  feedbackIds: text('feedback_ids').notNull(), // JSON array of feedback UUIDs
-  sentimentData: text('sentiment_data').notNull(), // JSON: {positive: %, constructive: %, neutral: %}
-  themes: text('themes').notNull(), // JSON array: [{name, count, sentiment, keywords}]
-  suggestedGoals: text('suggested_goals'), // JSON array: [{goalText, basedOnTheme, confidence, dismissed, actedUpon}]
-  llmModel: varchar('llm_model', { length: 100 }), // Track which model was used (e.g., claude-3-5-haiku-20250219)
-  status: varchar('status', { length: 50 }).default('completed'), // pending, completed, failed
-  errorMessage: text('error_message'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-})
+export const feedbackInsights = pgTable("feedback_insights", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  analysisDate: timestamp("analysis_date").defaultNow(),
+  feedbackCount: integer("feedback_count").notNull(),
+  feedbackIds: text("feedback_ids").notNull(), // JSON array of feedback UUIDs
+  sentimentData: text("sentiment_data").notNull(), // JSON: {positive: %, constructive: %, neutral: %}
+  themes: text("themes").notNull(), // JSON array: [{name, count, sentiment, keywords}]
+  suggestedGoals: text("suggested_goals"), // JSON array: [{goalText, basedOnTheme, confidence, dismissed, actedUpon}]
+  llmModel: varchar("llm_model", { length: 100 }), // Track which model was used (e.g., claude-3-5-haiku-20250219)
+  status: varchar("status", { length: 50 }).default("completed"), // pending, completed, failed
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 // Relations for feedback insights
-export const feedbackInsightsRelations = relations(feedbackInsights, ({ one }) => ({
-  user: one(users, {
-    fields: [feedbackInsights.userId],
-    references: [users.id],
+export const feedbackInsightsRelations = relations(
+  feedbackInsights,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [feedbackInsights.userId],
+      references: [users.id],
+    }),
   }),
-}))
+);
 
 // Better-auth tables
-export const sessions = pgTable('session', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: timestamp('expires_at').notNull(),
-  token: text('token').notNull().unique(),
-  ipAddress: text('ip_address'),
-  userAgent: text('user_agent'),
+export const sessions = pgTable("session", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
   // Admin plugin field for impersonation
-  impersonatedBy: text('impersonated_by'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-})
+  impersonatedBy: text("impersonated_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
-export const accounts = pgTable('account', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  accountId: text('account_id').notNull(),
-  providerId: text('provider_id').notNull(),
-  accessToken: text('access_token'),
-  refreshToken: text('refresh_token'),
-  idToken: text('id_token'),
-  expiresAt: timestamp('expires_at'),
-  accessTokenExpiresAt: timestamp('access_token_expires_at'),
-  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
-  scope: text('scope'),
-  password: text('password'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-})
+export const accounts = pgTable("account", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  expiresAt: timestamp("expires_at"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
-export const verifications = pgTable('verification', {
-  id: text('id').primaryKey(),
-  identifier: text('identifier').notNull(),
-  value: text('value').notNull(),
-  expiresAt: timestamp('expires_at').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-})
+export const verifications = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});

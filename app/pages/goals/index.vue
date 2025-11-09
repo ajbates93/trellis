@@ -38,12 +38,15 @@
               :ui="{
                 item: {
                   base: 'mb-4',
-                  label: 'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer'
-                }
+                  label:
+                    'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer',
+                },
               }"
             >
               <template #active-goals>
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3">
+                <div
+                  class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
+                >
                   <div
                     v-if="activeGoals.length === 0"
                     class="col-span-full text-center py-8 text-gray-500"
@@ -75,12 +78,15 @@
               :ui="{
                 item: {
                   base: 'mb-4',
-                  label: 'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer'
-                }
+                  label:
+                    'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer',
+                },
               }"
             >
               <template #completed-goals>
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3">
+                <div
+                  class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
+                >
                   <div
                     v-if="completedGoals.length === 0"
                     class="col-span-full text-center py-8 text-gray-500"
@@ -112,12 +118,15 @@
               :ui="{
                 item: {
                   base: 'mb-4',
-                  label: 'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer'
-                }
+                  label:
+                    'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer',
+                },
               }"
             >
               <template #archived-goals>
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3">
+                <div
+                  class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
+                >
                   <div
                     v-if="archivedGoals.length === 0"
                     class="col-span-full text-center py-8 text-gray-500"
@@ -152,9 +161,18 @@
   <!-- Create Goal Modal (positioned outside the dashboard panel) -->
   <GoalsGoalModal
     :is-open="showCreateModal"
-    @update:is-open="showCreateModal = $event"
     mode="create"
-    :goal="initialGoalText ? { goalText: initialGoalText, description: null, targetDate: null, id: '' } : null"
+    :goal="
+      initialGoalText
+        ? {
+            goalText: initialGoalText,
+            description: null,
+            targetDate: null,
+            id: '',
+          }
+        : null
+    "
+    @update:is-open="showCreateModal = $event"
     @success="handleGoalCreated"
   />
 </template>
@@ -235,7 +253,7 @@ const route = useRoute();
 const router = useRouter();
 
 onMounted(async () => {
-  if (route.query.suggested === 'true' && route.query.text) {
+  if (route.query.suggested === "true" && route.query.text) {
     initialGoalText.value = route.query.text as string;
     showCreateModal.value = true;
 

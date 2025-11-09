@@ -145,11 +145,11 @@ const formatRelativeTime = (dateString: string) => {
               color="neutral"
               variant="ghost"
               size="sm"
+              :disabled="isSubmitting"
               @click="
                 showNoteForm = false;
                 noteText = '';
               "
-              :disabled="isSubmitting"
             >
               Cancel
             </UButton>

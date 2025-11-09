@@ -160,7 +160,7 @@ watch(isOpen, (newVal, oldVal) => {
               {{ charCount }}/500
             </span>
           </div>
-          <div v-else class="h-[20px]"></div>
+          <div v-else class="h-[20px]"/>
         </div>
 
         <!-- Description (Rich Text) -->
@@ -193,8 +193,8 @@ watch(isOpen, (newVal, oldVal) => {
       <UButton
         color="neutral"
         variant="ghost"
-        @click="isOpen = false"
         :disabled="isSubmitting"
+        @click="isOpen = false"
       >
         Cancel
       </UButton>
