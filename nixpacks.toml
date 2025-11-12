@@ -1,0 +1,14 @@
+# Nixpacks configuration for Railway
+# Ensures build dependencies are available for native modules
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "python3", "gcc", "gnumake"]
+
+[phases.install]
+cmds = ["npm ci --prefer-offline --no-audit"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "node .output/server/index.mjs"
