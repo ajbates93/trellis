@@ -2,6 +2,10 @@
   "name": "cohort",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",

@@ -3,7 +3,10 @@
 
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm install && npm run build"
+buildCommand = "npm ci --prefer-offline --no-audit --omit=optional && npm run build"
+
+[build.env]
+NODE_VERSION = "20.19.0"
 
 [deploy]
 startCommand = "node .output/server/index.mjs"
