@@ -31,8 +31,9 @@
           </label>
           <USelectMenu
             v-model="localUser.role"
-            :options="roleOptions"
+            :items="roleOptions"
             placeholder="Select role"
+            value-key="value"
             class="w-full"
           />
         </div>
@@ -44,8 +45,9 @@
           </label>
           <USelectMenu
             v-model="localUser.roleType"
-            :options="roleTypeOptions"
+            :items="roleTypeOptions"
             placeholder="Select job role"
+            value-key="value"
             class="w-full"
           />
         </div>
@@ -57,10 +59,9 @@
           </label>
           <USelectMenu
             v-model="localUser.buddyId"
-            :options="buddyOptions"
+            :items="buddyOptions"
             placeholder="Select buddy"
-            value-attribute="value"
-            option-attribute="label"
+            value-key="value"
             class="w-full"
           >
             <template #leading>
