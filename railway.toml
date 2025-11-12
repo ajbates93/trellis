@@ -1,62 +1,8 @@
 # Railway Configuration for Cohort
-# This configuration applies to both staging and production environments
 
 [build]
-builder = "NIXPACKS"
-# Build command is handled by nixpacks.toml
-
-[build.env]
-NODE_VERSION = "20.19.0"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "node .output/server/index.mjs"
-healthcheckPath = "/api/health"
-healthcheckTimeout = 300
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
-
-[env]
-# Node environment
-NODE_ENV = "production"
-
-# Port (Railway will inject this automatically)
-# PORT = "3000"
-
-# ==============================================================================
-# ENVIRONMENT-SPECIFIC VARIABLES
-# Configure these in Railway dashboard for each environment (staging/production)
-# ==============================================================================
-
-# Required environment variables for STAGING:
-# - DATABASE_URL: Railway staging PostgreSQL connection string
-# - GOOGLE_CLIENT_ID: Google OAuth client ID (same for both or separate)
-# - GOOGLE_CLIENT_SECRET: Google OAuth client secret
-# - BETTER_AUTH_SECRET: Generate with: openssl rand -base64 32
-# - BETTER_AUTH_URL: https://your-staging-url.railway.app
-# - ANTHROPIC_API_KEY: Claude API key for AI insights (optional for staging)
-
-# Required environment variables for PRODUCTION:
-# - DATABASE_URL: Railway production PostgreSQL connection string
-# - GOOGLE_CLIENT_ID: Google OAuth client ID (same for both or separate)
-# - GOOGLE_CLIENT_SECRET: Google OAuth client secret
-# - BETTER_AUTH_SECRET: Generate with: openssl rand -base64 32 (MUST be different from staging)
-# - BETTER_AUTH_URL: https://your-production-url.railway.app
-# - ANTHROPIC_API_KEY: Claude API key for AI insights
-
-# ==============================================================================
-# DEPLOYMENT STRATEGY
-# ==============================================================================
-# Staging Environment:
-#   - Deploys from: 'staging' branch
-#   - Auto-deploys: Yes (on push to staging branch)
-#   - Database: Railway staging environment
-#   - Purpose: Pre-production testing
-#
-# Production Environment:
-#   - Deploys from: 'main' branch
-#   - Auto-deploys: Yes (on push to main branch)
-#   - Database: Railway production environment
-#   - Purpose: Live application
-#
-# Workflow: feature-branch → PR → staging → test → PR → main → production
-# ==============================================================================
