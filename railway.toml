@@ -3,7 +3,7 @@
 
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci --prefer-offline --no-audit && npm run build"
+# Build command is handled by nixpacks.toml
 
 [build.env]
 NODE_VERSION = "20.19.0"
