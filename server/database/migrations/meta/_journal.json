@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1760723189041,
-      "tag": "0000_useful_demogoblin",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1761063983182,
-      "tag": "0001_lumpy_venus",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1761139790073,
-      "tag": "0002_chief_jane_foster",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1761316997034,
-      "tag": "0003_dazzling_garia",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1761560292918,
-      "tag": "0004_optimal_hannibal_king",
+      "when": 1762980000809,
+      "tag": "0000_redundant_alex_power",
       "breakpoints": true
     }
   ]

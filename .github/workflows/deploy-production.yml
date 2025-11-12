@@ -27,9 +27,31 @@ jobs:
         run: npm ci
 
       - name: Run database migrations
+        id: migrate
         run: npm run db:migrate
+        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Migration failure help
+        if: steps.migrate.outcome == 'failure'
+        run: |
+          echo "❌ Database migration failed on PRODUCTION!"
+          echo ""
+          echo "⚠️ WARNING: Do NOT delete the production database!"
+          echo ""
+          echo "This usually means there's a problematic migration."
+          echo "You should:"
+          echo "1. Check the migration files in server/database/migrations/"
+          echo "2. Test the migration on staging first"
+          echo "3. If needed, create a reverse migration or fix the problematic migration"
+          echo "4. Contact your team before proceeding"
+          echo ""
+          echo "For non-destructive fixes, you can:"
+          echo "1. Connect to the production database manually"
+          echo "2. Run the migration SQL manually with appropriate fixes"
+          echo "3. Update the migrations table to mark it as applied"
+          exit 1
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli

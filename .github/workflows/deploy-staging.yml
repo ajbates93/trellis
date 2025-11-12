@@ -27,9 +27,31 @@ jobs:
         run: npm ci
 
       - name: Run database migrations
+        id: migrate
         run: npm run db:migrate
+        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Migration failure help
+        if: steps.migrate.outcome == 'failure'
+        run: |
+          echo "❌ Database migration failed!"
+          echo ""
+          echo "This usually happens when:"
+          echo "1. The staging database schema is out of sync with migrations"
+          echo "2. There are incompatible schema changes (e.g., uuid → text conversion)"
+          echo ""
+          echo "To fix this:"
+          echo "1. Go to Railway Dashboard → Staging Environment → PostgreSQL"
+          echo "2. Delete the database service (Settings → Danger Zone → Delete)"
+          echo "3. Add a new PostgreSQL database"
+          echo "4. Update STAGING_DATABASE_URL secret in GitHub with new connection string"
+          echo "5. Update DATABASE_URL environment variable in Railway staging service"
+          echo "6. Re-run this workflow"
+          echo ""
+          echo "The migrations will create the database from scratch on the fresh database."
+          exit 1
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
