@@ -53,13 +53,17 @@ jobs:
           echo "3. Update the migrations table to mark it as applied"
           exit 1
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
       - name: Deploy to Railway Production
-        run: railway up --service ${{ vars.RAILWAY_PRODUCTION_SERVICE_NAME }} --environment production
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "✅ Migrations completed successfully"
+          echo ""
+          echo "Railway will auto-deploy from the main branch."
+          echo "Configure in Railway Dashboard:"
+          echo "  1. Go to Railway → Production Environment → Your Service"
+          echo "  2. Settings → Source → Set branch to 'main'"
+          echo "  3. Railway will auto-deploy on every push to main branch"
+          echo ""
+          echo "Deployment will happen automatically via Railway Git integration."
 
       - name: Deployment notification
         if: success()
