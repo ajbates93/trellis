@@ -33,6 +33,7 @@
             v-model="localUser.role"
             :items="roleOptions"
             placeholder="Select role"
+            value-key="value"
             class="w-full"
           />
         </div>
@@ -46,6 +47,7 @@
             v-model="localUser.roleType"
             :items="roleTypeOptions"
             placeholder="Select job role"
+            value-key="value"
             class="w-full"
           />
         </div>
