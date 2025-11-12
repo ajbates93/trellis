@@ -291,6 +291,187 @@ alice@external-contractor.io,Alice Brown,design,john.doe@company.com,2025-04-01
 - ⏳ Performance optimization
 - ⏳ Production deployment
 
+## Deployment & Environments
+
+### Environment Strategy
+
+Cohort uses a three-environment deployment strategy:
+
+| Environment | Purpose | Git Branch | Auto-Deploy | Database |
+|-------------|---------|------------|-------------|----------|
+| **Local** | Development | Any | No | Local PostgreSQL |
+| **Staging** | Pre-production testing | `staging` | Yes (GitHub Actions) | Railway Staging DB |
+| **Production** | Live application | `main` | Yes (GitHub Actions) | Railway Production DB |
+
+### Deployment Workflow
+
+```
+feature-branch → PR → staging branch → test → PR → main branch → production
+```
+
+**Typical Development Cycle:**
+
+1. **Feature Development:**
+   ```bash
+   git checkout -b feature/your-feature-name
+   # Make changes, commit
+   git push origin feature/your-feature-name
+   ```
+
+2. **Deploy to Staging:**
+   ```bash
+   git checkout staging
+   git merge feature/your-feature-name
+   git push origin staging  # Auto-deploys to Railway staging
+   ```
+
+3. **Test on Staging:**
+   - Visit staging URL
+   - Test all changes thoroughly
+   - Verify database migrations succeeded
+
+4. **Deploy to Production:**
+   ```bash
+   # Create PR: staging → main
+   git checkout main
+   git pull origin main
+   git checkout -b release/staging-to-main
+   git merge staging
+   git push origin release/staging-to-main
+   # Get PR approval, merge to main
+   # Auto-deploys to Railway production
+   ```
+
+### GitHub Actions CI/CD
+
+**Three automated workflows:**
+
+1. **PR Testing** (`.github/workflows/test.yml`)
+   - Triggers on all PRs to `staging` and `main`
+   - Runs: ESLint → TypeScript type-check → Build verification
+   - Blocks merge if checks fail
+
+2. **Staging Deploy** (`.github/workflows/deploy-staging.yml`)
+   - Triggers on push to `staging` branch
+   - Runs: Database migrations → Deploy to Railway staging
+   - Auto-deploys on every push
+
+3. **Production Deploy** (`.github/workflows/deploy-production.yml`)
+   - Triggers on push to `main` branch
+   - Runs: Database migrations → Deploy to Railway production
+   - Creates deployment tag (e.g., `production-20250112-143000`)
+   - Auto-deploys on every push
+
+### Required GitHub Secrets
+
+Configure in: **Repository Settings → Secrets and variables → Actions**
+
+**Secrets:**
+- `RAILWAY_TOKEN`: Railway API token
+- `STAGING_DATABASE_URL`: Staging database connection string
+- `PRODUCTION_DATABASE_URL`: Production database connection string
+
+**Variables:**
+- `STAGING_URL`: Staging app URL
+- `PRODUCTION_URL`: Production app URL
+- `RAILWAY_STAGING_SERVICE_NAME`: Railway staging service name
+- `RAILWAY_PRODUCTION_SERVICE_NAME`: Railway production service name
+
+### Railway Configuration
+
+**Environment Variables (set in Railway dashboard):**
+
+**Staging:**
+- `NODE_ENV=production`
+- `DATABASE_URL`: [Railway staging database]
+- `BETTER_AUTH_SECRET`: [Generate unique: `openssl rand -base64 32`]
+- `BETTER_AUTH_URL`: https://your-staging-app.railway.app
+- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: OAuth credentials
+- `ANTHROPIC_API_KEY`: [Optional for staging]
+
+**Production:**
+- `NODE_ENV=production`
+- `DATABASE_URL`: [Railway production database]
+- `BETTER_AUTH_SECRET`: [Generate unique: `openssl rand -base64 32`] (DIFFERENT from staging!)
+- `BETTER_AUTH_URL`: https://your-production-app.railway.app
+- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: OAuth credentials
+- `ANTHROPIC_API_KEY`: [Required for AI insights]
+
+**Google OAuth Setup:**
+- Add authorized redirect URIs for each environment:
+  - Staging: `https://your-staging-app.railway.app/api/auth/callback/google`
+  - Production: `https://your-production-app.railway.app/api/auth/callback/google`
+
+### Local Development Setup
+
+**Prerequisites:**
+```bash
+# Install PostgreSQL (macOS)
+brew install postgresql@16
+brew services start postgresql@16
+
+# Create local database
+createdb cohort
+```
+
+**Environment Configuration:**
+```bash
+# Copy example environment file
+cp .env.example .env.local
+
+# Update .env.local with local values
+DATABASE_URL=postgresql://localhost:5432/cohort
+BETTER_AUTH_URL=http://localhost:3000
+# ... other variables (see .env.example)
+```
+
+**Database Setup:**
+```bash
+npm install
+npm run db:migrate    # Run migrations
+npm run db:seed       # Seed test data
+```
+
+**Start Development:**
+```bash
+npm run dev
+# Visit: http://localhost:3000
+```
+
+### Database Migrations
+
+**Local Development:**
+```bash
+npm run db:generate    # Generate migration from schema changes
+npm run db:migrate     # Run migrations
+npm run db:check       # Check migration status
+npm run db:studio      # Open database GUI
+```
+
+**Staging/Production:**
+- Migrations run automatically via GitHub Actions
+- Manual intervention only if migration fails
+
+### Rollback Procedures
+
+**Via Railway Dashboard:**
+1. Go to Railway → Environment → Deployments
+2. Find last working deployment
+3. Click "Redeploy"
+
+**Via Git:**
+```bash
+# Revert problematic commit
+git revert [bad-commit-hash]
+git push origin main
+
+# Or hard reset (destructive)
+git reset --hard [good-commit-hash]
+git push origin main --force
+```
+
+**Detailed Guide:** See `.cursor/plans/deployment-guide.md` for comprehensive deployment documentation.
+
 ## Future Enhancements (Phase 2)
 
 - Notion API integration for goals and review sync

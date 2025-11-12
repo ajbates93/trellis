@@ -1,0 +1,52 @@
+name: PR Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  test:
+    name: Lint, Type-Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Run TypeScript type-check
+        run: npx nuxt typecheck
+        continue-on-error: false
+
+      - name: Build application
+        run: npm run build
+        env:
+          # Mock environment variables for build
+          DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
+          GOOGLE_CLIENT_ID: mock-client-id
+          GOOGLE_CLIENT_SECRET: mock-client-secret
+          BETTER_AUTH_SECRET: mock-secret-key-for-testing-only
+          BETTER_AUTH_URL: http://localhost:3000
+          ANTHROPIC_API_KEY: mock-anthropic-key
+
+      - name: Check for build artifacts
+        run: |
+          if [ ! -d ".output" ]; then
+            echo "Build failed: .output directory not found"
+            exit 1
+          fi
+          echo "Build successful: .output directory exists"
