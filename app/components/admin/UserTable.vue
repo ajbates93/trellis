@@ -88,14 +88,15 @@
 
         <!-- Actions -->
         <template #actions-cell="{ row }">
-          <UButton
-            icon="i-heroicons-pencil-square"
-            size="sm"
-            color="neutral"
-            variant="ghost"
-            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-            @click="$emit('edit', row.original)"
-          />
+          <UDropdown :items="getActionItems(row.original)" :popper="{ placement: 'bottom-end' }">
+            <UButton
+              icon="i-heroicons-ellipsis-vertical"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+            />
+          </UDropdown>
         </template>
       </UTable>
     </div>
@@ -111,7 +112,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   edit: [user: any];
+  impersonate: [user: any];
 }>();
+
+const { user: currentUser } = useAuth();
 
 const columns = [
   { id: "name", accessorKey: "name", header: "User" },
@@ -121,4 +125,25 @@ const columns = [
   { id: "status", accessorKey: "status", header: "Status" },
   { id: "actions", header: "" },
 ];
+
+const getActionItems = (user: any) => {
+  const items = [
+    {
+      label: "Edit",
+      icon: "i-heroicons-pencil-square",
+      click: () => emit("edit", user),
+    },
+  ];
+
+  // Only show impersonate option if it's not the current user
+  if (user.id !== currentUser.value?.id) {
+    items.push({
+      label: "Impersonate",
+      icon: "i-heroicons-user-circle",
+      click: () => emit("impersonate", user),
+    });
+  }
+
+  return [items];
+};
 </script>

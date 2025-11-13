@@ -1,8 +1,37 @@
 <script setup lang="ts">
-const { user, signOut } = useAuth();
+const { user, signOut, session, authClient } = useAuth();
 
 // Navigation links
 const route = useRoute();
+
+// Check if currently impersonating
+const isImpersonating = computed(() => {
+  return session.value?.impersonatedBy !== undefined;
+});
+
+const stopImpersonating = async () => {
+  try {
+    const toast = useToast();
+    await authClient.admin.stopImpersonating();
+
+    toast.add({
+      title: "Stopped impersonating",
+      description: "You are back to your admin account",
+      color: "green",
+    });
+
+    // Redirect to admin users page
+    await navigateTo("/admin/users");
+  } catch (error) {
+    console.error("Failed to stop impersonating:", error);
+    const toast = useToast();
+    toast.add({
+      title: "Error",
+      description: "Failed to stop impersonating. Please try again.",
+      color: "red",
+    });
+  }
+};
 
 // Logout confirmation modal
 const isLogoutModalOpen = ref(false);
@@ -125,7 +154,28 @@ const userMenuItems = [
       class="fixed top-0 left-0 right-0 z-50"
     />
 
-    <UDashboardGroup unit="rem">
+    <!-- Impersonation banner -->
+    <div
+      v-if="isImpersonating"
+      class="fixed top-0 left-0 right-0 z-40 bg-amber-500 dark:bg-amber-600 text-white px-4 py-2 flex items-center justify-between shadow-lg"
+    >
+      <div class="flex items-center gap-2">
+        <UIcon name="i-heroicons-exclamation-triangle" class="text-xl" />
+        <span class="font-medium">
+          You are viewing as <strong>{{ user?.name || user?.email }}</strong>
+        </span>
+      </div>
+      <UButton
+        label="Stop Impersonating"
+        icon="i-heroicons-x-mark"
+        color="white"
+        variant="solid"
+        size="sm"
+        @click="stopImpersonating"
+      />
+    </div>
+
+    <UDashboardGroup unit="rem" :class="{ 'pt-12': isImpersonating }">
       <UDashboardSidebar
         collapsible
         resizable

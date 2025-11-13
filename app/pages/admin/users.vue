@@ -34,6 +34,7 @@
             :loading="loading"
             :error="error"
             @edit="openEditModal"
+            @impersonate="handleImpersonate"
           />
         </div>
       </div>
@@ -132,6 +133,43 @@ const fetchUsers = async (filter?: string) => {
 const openEditModal = (user: any) => {
   selectedUser.value = user;
   showEditModal.value = true;
+};
+
+const handleImpersonate = async (user: any) => {
+  try {
+    const { authClient } = useAuth();
+
+    // Show loading toast
+    const toast = useToast();
+    toast.add({
+      title: "Impersonating user...",
+      description: `Switching to ${user.name}'s account`,
+      color: "blue",
+    });
+
+    // Call the impersonate method from Better Auth
+    await authClient.admin.impersonateUser({
+      userId: user.id,
+    });
+
+    // Success - redirect to dashboard
+    toast.add({
+      title: "Impersonation successful",
+      description: `You are now viewing as ${user.name}`,
+      color: "green",
+    });
+
+    // Redirect to dashboard to see the impersonated view
+    await navigateTo("/dashboard");
+  } catch (error) {
+    console.error("Failed to impersonate user:", error);
+    const toast = useToast();
+    toast.add({
+      title: "Impersonation failed",
+      description: "Failed to impersonate user. Please try again.",
+      color: "red",
+    });
+  }
 };
 
 const handleSuccess = async () => {
