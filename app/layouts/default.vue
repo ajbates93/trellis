@@ -5,8 +5,15 @@ const { user, signOut, session, authClient } = useAuth();
 const route = useRoute();
 
 // Check if currently impersonating
+// Better Auth stores impersonation info in the session's impersonatedBy field
 const isImpersonating = computed(() => {
-  return session.value?.impersonatedBy !== undefined;
+  // Debug: log session to see structure
+  if (process.client) {
+    console.log("Session data:", session.value);
+    console.log("impersonatedBy value:", session.value?.impersonatedBy);
+  }
+  // Check if impersonatedBy exists and has a truthy value
+  return Boolean(session.value?.impersonatedBy);
 });
 
 const stopImpersonating = async () => {

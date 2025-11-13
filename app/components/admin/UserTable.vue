@@ -127,11 +127,16 @@ const columns = [
 ];
 
 const getActionItems = (user: any) => {
+  console.log("Getting action items for user:", user.id, "Current user:", currentUser.value?.id);
+
   const items = [
     {
       label: "Edit",
       icon: "i-heroicons-pencil-square",
-      click: () => emit("edit", user),
+      click: () => {
+        console.log("Edit clicked for user:", user.id);
+        emit("edit", user);
+      },
     },
   ];
 
@@ -140,10 +145,14 @@ const getActionItems = (user: any) => {
     items.push({
       label: "Impersonate",
       icon: "i-heroicons-user-circle",
-      click: () => emit("impersonate", user),
+      click: () => {
+        console.log("Impersonate clicked for user:", user.id);
+        emit("impersonate", user);
+      },
     });
   }
 
+  console.log("Action items:", items);
   return [items];
 };
 </script>
