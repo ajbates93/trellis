@@ -1,4 +1,4 @@
-template>
+<template>
   <div>
     <div v-if="loading" class="flex items-center justify-center py-12">
       <UIcon
@@ -88,7 +88,10 @@ template>
 
         <!-- Actions -->
         <template #actions-cell="{ row }">
-          <UDropdown :items="getActionItems(row.original)" :popper="{ placement: 'bottom-end' }">
+          <UDropdownMenu
+            :items="getActionItems(row.original)"
+            :content="{ align: 'end' }"
+          >
             <UButton
               icon="i-heroicons-ellipsis-vertical"
               size="sm"
@@ -96,7 +99,7 @@ template>
               variant="ghost"
               class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
             />
-          </UDropdown>
+          </UDropdownMenu>
         </template>
       </UTable>
     </div>
@@ -127,14 +130,11 @@ const columns = [
 ];
 
 const getActionItems = (user: any) => {
-  console.log("Getting action items for user:", user.id, "Current user:", currentUser.value?.id);
-
   const items = [
     {
       label: "Edit",
       icon: "i-heroicons-pencil-square",
-      click: () => {
-        console.log("Edit clicked for user:", user.id);
+      onSelect: () => {
         emit("edit", user);
       },
     },
@@ -145,14 +145,12 @@ const getActionItems = (user: any) => {
     items.push({
       label: "Impersonate",
       icon: "i-heroicons-user-circle",
-      click: () => {
-        console.log("Impersonate clicked for user:", user.id);
+      onSelect: () => {
         emit("impersonate", user);
       },
     });
   }
 
-  console.log("Action items:", items);
   return [items];
 };
 </script>

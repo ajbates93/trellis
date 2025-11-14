@@ -144,7 +144,7 @@ const handleImpersonate = async (user: any) => {
     toast.add({
       title: "Impersonating user...",
       description: `Switching to ${user.name}'s account`,
-      color: "blue",
+      color: "info",
     });
 
     // Call the impersonate method from Better Auth
@@ -156,18 +156,18 @@ const handleImpersonate = async (user: any) => {
     toast.add({
       title: "Impersonation successful",
       description: `You are now viewing as ${user.name}`,
-      color: "green",
+      color: "success",
     });
 
     // Redirect to dashboard to see the impersonated view
-    await navigateTo("/");
+    window.location.href = "/";
   } catch (error) {
     console.error("Failed to impersonate user:", error);
     const toast = useToast();
     toast.add({
       title: "Impersonation failed",
       description: "Failed to impersonate user. Please try again.",
-      color: "red",
+      color: "error",
     });
   }
 };

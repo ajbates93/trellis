@@ -26,7 +26,7 @@ const stopImpersonating = async () => {
     });
 
     // Redirect to admin dashboard to force a fresh page load
-    await navigateTo("/admin/users", { replace: true });
+    window.location.href = "/";
   } catch (error) {
     console.error("Failed to stop impersonating:", error);
     const toast = useToast();
@@ -180,6 +180,7 @@ const userMenuItems = [
         @click="stopImpersonating"
       />
     </div>
+    <pre class="fixed top-20">{{ isImpersonating }}</pre>
 
     <UDashboardGroup unit="rem" :class="{ 'pt-12': isImpersonating }">
       <UDashboardSidebar
