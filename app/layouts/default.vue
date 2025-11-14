@@ -180,8 +180,6 @@ const userMenuItems = [
         @click="stopImpersonating"
       />
     </div>
-    <pre class="fixed top-20">{{ isImpersonating }}</pre>
-
     <UDashboardGroup unit="rem" :class="{ 'pt-12': isImpersonating }">
       <UDashboardSidebar
         collapsible
