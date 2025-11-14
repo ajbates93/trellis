@@ -17,7 +17,9 @@ const pastReviewsByYear = computed(() => {
   const grouped = new Map<number, any[]>();
 
   pastReviews.value.forEach((review) => {
-    const year = new Date(review.completedDate || review.scheduledDate).getFullYear();
+    const year = new Date(
+      review.completedDate || review.scheduledDate,
+    ).getFullYear();
     if (!grouped.has(year)) {
       grouped.set(year, []);
     }
@@ -28,9 +30,10 @@ const pastReviewsByYear = computed(() => {
     .sort((a, b) => b[0] - a[0]) // Sort years descending
     .map(([year, reviews]) => ({
       year,
-      reviews: reviews.sort((a, b) =>
-        new Date(b.completedDate || b.scheduledDate).getTime() -
-        new Date(a.completedDate || a.completedDate).getTime()
+      reviews: reviews.sort(
+        (a, b) =>
+          new Date(b.completedDate || b.scheduledDate).getTime() -
+          new Date(a.completedDate || a.completedDate).getTime(),
       ),
     }));
 });
@@ -79,14 +82,19 @@ const formatDate = (date: string) => {
             </p>
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            v-else
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             <NuxtLink
               v-for="review in upcomingReviews"
               :key="review.id"
               :to="`/reviews/${review.id}`"
               class="block"
             >
-              <UCard class="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <UCard
+                class="hover:shadow-lg transition-shadow cursor-pointer h-full"
+              >
                 <div class="space-y-3">
                   <div class="flex items-start justify-between">
                     <div>
@@ -113,7 +121,9 @@ const formatDate = (date: string) => {
                     </span>
                   </div>
 
-                  <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div
+                    class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400"
+                  >
                     <div class="flex items-center gap-1">
                       <UIcon name="i-heroicons-chat-bubble-left" />
                       <span>{{ review.feedbackCount }} feedback</span>
@@ -146,32 +156,42 @@ const formatDate = (date: string) => {
 
           <UAccordion
             v-else
-            :items="pastReviewsByYear.map(({ year, reviews }) => ({
-              label: `${year} (${reviews.length} reviews)`,
-              slot: `year-${year}`,
-              defaultOpen: year === new Date().getFullYear(),
-            }))"
+            :items="
+              pastReviewsByYear.map(({ year, reviews }) => ({
+                label: `${year} (${reviews.length} reviews)`,
+                slot: `year-${year}`,
+                defaultOpen: year === new Date().getFullYear(),
+              }))
+            "
           >
             <template
               v-for="{ year, reviews } in pastReviewsByYear"
               :key="year"
               #[`year-${year}`]
             >
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
+              <div
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4"
+              >
                 <NuxtLink
                   v-for="review in reviews"
                   :key="review.id"
                   :to="`/reviews/${review.id}`"
                   class="block"
                 >
-                  <UCard class="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <UCard
+                    class="hover:shadow-lg transition-shadow cursor-pointer h-full"
+                  >
                     <div class="space-y-3">
                       <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white">
                           {{ review.name }}
                         </h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                          {{ formatDate(review.completedDate || review.scheduledDate) }}
+                          {{
+                            formatDate(
+                              review.completedDate || review.scheduledDate,
+                            )
+                          }}
                         </p>
                       </div>
 
@@ -186,7 +206,9 @@ const formatDate = (date: string) => {
                         </span>
                       </div>
 
-                      <div class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                      <div
+                        class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400"
+                      >
                         <UIcon name="i-heroicons-chat-bubble-left" />
                         <span>{{ review.feedbackCount }} feedback</span>
                       </div>

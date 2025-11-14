@@ -119,7 +119,10 @@ const publishAllForUser = async (userId: string) => {
 };
 
 // Reassign feedback to a different review
-const reassignFeedback = async (feedbackId: string, reviewScheduleId: string | null) => {
+const reassignFeedback = async (
+  feedbackId: string,
+  reviewScheduleId: string | null,
+) => {
   try {
     await $fetch(`/api/feedback/${feedbackId}/assign-review`, {
       method: "PATCH",
@@ -156,6 +159,7 @@ const fetchUserReviews = async (userId: string) => {
         label: r.name,
       }));
     userReviews.value.set(userId, allReviews);
+    console.log(userReviews.value);
   } catch (error) {
     console.error("Failed to fetch reviews:", error);
   }
@@ -643,7 +647,9 @@ const buddyFeedbackColumns = [
                         placeholder="Assign to review"
                         size="xs"
                         class="w-40"
-                        @update:model-value="reassignFeedback(row.original.id, $event)"
+                        @update:model-value="
+                          reassignFeedback(row.original.id, $event)
+                        "
                         @click="fetchUserReviews(assignment.user.id)"
                       />
                       <UButton

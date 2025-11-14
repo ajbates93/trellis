@@ -10,7 +10,9 @@ const toast = useToast();
 const reviewId = route.params.id as string;
 
 // Fetch review data
-const { data: reviewData, refresh } = await useFetch(`/api/reviews/${reviewId}`);
+const { data: reviewData, refresh } = await useFetch(
+  `/api/reviews/${reviewId}`,
+);
 
 const review = computed(() => reviewData.value?.review);
 const feedback = computed(() => reviewData.value?.feedback || []);
@@ -87,9 +89,7 @@ const formatDate = (date: string) => {
                   <p class="text-sm font-medium text-gray-900 dark:text-white">
                     {{ review.buddy?.name }}
                   </p>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">
-                    Buddy
-                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">Buddy</p>
                 </div>
               </div>
             </div>
@@ -116,7 +116,9 @@ const formatDate = (date: string) => {
                     name="i-heroicons-chat-bubble-left"
                     class="text-gray-400 text-4xl mb-2"
                   />
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     No feedback for this review
                   </p>
                 </div>
@@ -135,14 +137,20 @@ const formatDate = (date: string) => {
                       />
                       <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                          <span class="font-medium text-gray-900 dark:text-white">
+                          <span
+                            class="font-medium text-gray-900 dark:text-white"
+                          >
                             {{ fb.reviewer?.name }}
                           </span>
-                          <span class="text-sm text-gray-500 dark:text-gray-400">
+                          <span
+                            class="text-sm text-gray-500 dark:text-gray-400"
+                          >
                             {{ formatDate(fb.createdAt) }}
                           </span>
                         </div>
-                        <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                        <p
+                          class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
+                        >
                           {{ fb.content }}
                         </p>
                       </div>
@@ -159,7 +167,9 @@ const formatDate = (date: string) => {
                     name="i-heroicons-flag"
                     class="text-gray-400 text-4xl mb-2"
                   />
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     No goals
                   </p>
                 </div>
@@ -193,7 +203,10 @@ const formatDate = (date: string) => {
           </UTabs>
 
           <!-- Completion Notes (if completed) -->
-          <UCard v-if="review.status === 'completed' && review.completionNotes" class="mt-6">
+          <UCard
+            v-if="review.status === 'completed' && review.completionNotes"
+            class="mt-6"
+          >
             <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
               Review Summary
             </h3>
@@ -203,33 +216,32 @@ const formatDate = (date: string) => {
           </UCard>
         </div>
       </div>
+      <!-- Complete Review Modal -->
+      <UModal v-model:open="isCompleteModalOpen">
+        <template #body>
+          <UCard>
+            <template #header>
+              <h3 class="text-lg font-semibold">Complete Review</h3>
+            </template>
+
+            <UTextarea
+              v-model="completionNotes"
+              placeholder="Add summary notes (optional)"
+              :rows="6"
+              class="mb-4"
+            />
+
+            <template #footer>
+              <div class="flex justify-end gap-2">
+                <UButton variant="ghost" @click="isCompleteModalOpen = false">
+                  Cancel
+                </UButton>
+                <UButton @click="completeReview"> Complete Review </UButton>
+              </div>
+            </template>
+          </UCard>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
-
-  <!-- Complete Review Modal -->
-  <UModal v-model="isCompleteModalOpen">
-    <UCard>
-      <template #header>
-        <h3 class="text-lg font-semibold">Complete Review</h3>
-      </template>
-
-      <UTextarea
-        v-model="completionNotes"
-        placeholder="Add summary notes (optional)"
-        :rows="6"
-        class="mb-4"
-      />
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <UButton variant="ghost" @click="isCompleteModalOpen = false">
-            Cancel
-          </UButton>
-          <UButton @click="completeReview">
-            Complete Review
-          </UButton>
-        </div>
-      </template>
-    </UCard>
-  </UModal>
 </template>
