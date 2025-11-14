@@ -291,6 +291,73 @@ alice@external-contractor.io,Alice Brown,design,john.doe@company.com,2025-04-01
 - ⏳ Performance optimization
 - ⏳ Production deployment
 
+## Multi-Tenancy Strategy (Future Phase 11)
+
+Cohort will support multiple organizations with three potential approaches:
+
+### Option A: Workspace Model (Recommended for SMB)
+- **Access:** Single domain `app.cohort.com` with workspace switcher
+- **UX:** Users can join/create multiple workspaces (like Linear, Slack, Notion)
+- **Authentication:** Global OAuth initially (Google/Microsoft for all workspaces)
+- **Per-Workspace OAuth:** Add later as enterprise feature
+- **Best For:** Freelancers, consultants, startups, users managing multiple teams
+- **Timeline:** 10-12 weeks
+- **Database:** `workspaces` table + `workspace_members` (many-to-many) + workspace context in session
+
+**Key Benefits:**
+- Familiar UX for SMB/startup users
+- Users easily switch between multiple teams
+- Faster onboarding (no subdomain confusion)
+- Ideal for consultants managing multiple client workspaces
+
+**Technical Considerations:**
+- Workspace context must be threaded through app (session cookie or query param)
+- Deep links need workspace parameter: `app.cohort.com/feedback?workspace=pocketworks`
+- RLS policies filter by workspace_id from session context
+- Global OAuth simplifies initial implementation
+
+### Option B: Subdomain Model (Enterprise-Ready)
+- **Access:** Each organization gets subdomain: `company.cohort.com`
+- **UX:** Branded access per company, bookmark-based workspace switching
+- **Authentication:** Per-workspace OAuth configuration (company A uses Google, company B uses Okta)
+- **Custom Domains:** `feedback.company.com` → CNAME to subdomain
+- **Best For:** Enterprise customers (50+ employees), companies requiring SSO/custom OAuth
+- **Timeline:** 8 weeks
+- **Database:** `tenants` table + tenant_id on all tables + RLS
+
+**Key Benefits:**
+- Simpler OAuth implementation (tenant known from hostname)
+- Enterprise-grade isolation and branding
+- Custom domains easy to implement
+- Clear per-tenant billing model
+
+**Technical Considerations:**
+- Nitro plugin detects tenant from subdomain
+- Each tenant can have different OAuth provider
+- RLS policies use PostgreSQL session variable from hostname
+- Multi-org users must manage multiple browser tabs/bookmarks
+
+### Option C: Hybrid Model
+- **Access:** Subdomains + workspace switcher for multi-org users
+- **UX:** Best of both worlds (enterprise branding + easy workspace switching)
+- **Authentication:** Per-workspace OAuth via subdomains
+- **Best For:** Supporting both enterprise and SMB customers
+- **Timeline:** 10-11 weeks
+- **Database:** `tenants` + `workspace_members` + RLS
+
+**Key Benefits:**
+- Enterprise customers get branded subdomains
+- Multi-org users get seamless switching (redirects between subdomains)
+- Per-workspace OAuth naturally supported
+- Future-proof architecture
+
+**Current Status:** Single-tenant (Pocketworks only)
+
+**Detailed Plans:**
+- Full subdomain architecture: `.cursor/plans/multi-tenancy-saas-architecture.md`
+- Workspace model comparison: `.cursor/plans/workspace-model-comparison.md` (to be created)
+- Implementation guide: `.cursor/plans/workspace-model-implementation.md` (to be created)
+
 ## Deployment & Environments
 
 ### Environment Strategy

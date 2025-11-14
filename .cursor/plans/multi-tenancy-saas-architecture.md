@@ -64,7 +64,371 @@ CREATE POLICY tenant_isolation ON users
 - ❌ **Separate schema per tenant**: Better isolation but limits to ~10s of tenants, complex migrations
 - ✅ **Shared with tenant_id + RLS**: Industry standard for B2B SaaS serving 100s of customers
 
+---
+
+## Alternative Architecture: Workspace Model (SMB-Focused)
+
+### Overview
+
+The workspace model provides a more consumer-friendly approach, similar to Linear, Slack, and Notion. Instead of subdomain-based access, users interact with a single domain and switch between workspaces via a dropdown switcher.
+
+### Decision: Workspace-Based Access (Alternative to Subdomains)
+
+**Approach:** Single domain with workspace switcher
+
+**Architecture:**
+- Users sign up once at `app.cohort.com`
+- Global OAuth (all users authenticate with same provider initially)
+- Workspace picker dropdown in navbar (like Linear's organization switcher)
+- Users can create/join multiple workspaces
+- Session includes "current workspace" context
+
+**Rationale:**
+- **SMB-Friendly**: Simpler onboarding for small teams (5-50 employees)
+- **Multi-Org Support**: Freelancers/consultants can easily manage multiple client workspaces
+- **Familiar UX**: Matches expectations from Linear, Slack, Notion
+- **Faster Cold Start**: No DNS/subdomain setup required
+- **Flexible**: Users can join workspaces across different organizations
+
+**Trade-offs:**
+- **OAuth Complexity**: Per-workspace OAuth becomes harder (solvable with global OAuth initially, add per-workspace later)
+- **Context Management**: Must thread workspace ID through entire app
+- **Deep Links**: URLs need workspace parameter: `app.cohort.com/feedback?workspace=abc`
+- **Custom Domains**: More complex than subdomain model
+
+### Database Schema (Workspace Model)
+
+#### New Tables
+
+**`workspaces` Table:**
+```sql
+CREATE TABLE workspaces (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT UNIQUE NOT NULL,                -- 'pocketworks', 'acmecorp'
+  name TEXT NOT NULL,                        -- 'Pocketworks Ltd', 'Acme Corp'
+
+  -- Subscription & Limits
+  plan_type TEXT NOT NULL DEFAULT 'free',   -- 'free', 'pro', 'enterprise'
+  max_users INTEGER NOT NULL DEFAULT 10,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  trial_ends_at TIMESTAMP,
+
+  -- OAuth Configuration (optional per-workspace, NULL = use global)
+  oauth_provider TEXT,                       -- NULL = use global OAuth
+  oauth_client_id TEXT,
+  oauth_client_secret TEXT,                  -- AES-256 encrypted
+  oauth_tenant_id TEXT,                      -- For Azure AD
+  allowed_email_domains TEXT[],             -- ['@company.com'] or NULL for any
+
+  -- Branding & Settings
+  logo_url TEXT,
+  primary_color TEXT,                        -- Hex color for branding
+  settings JSONB DEFAULT '{}',               -- Flexible config storage
+
+  -- Metadata
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_by_user_id UUID                    -- First admin who created workspace
+);
+
+CREATE INDEX idx_workspaces_slug ON workspaces(slug);
+CREATE INDEX idx_workspaces_active ON workspaces(is_active) WHERE is_active = true;
+```
+
+**`workspace_members` Table (Many-to-Many):**
+```sql
+CREATE TABLE workspace_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member',       -- 'admin', 'member'
+  invited_by_user_id UUID REFERENCES users(id),
+  invited_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  accepted_at TIMESTAMP,
+
+  CONSTRAINT unique_membership UNIQUE (user_id, workspace_id)
+);
+
+CREATE INDEX idx_workspace_members_user ON workspace_members(user_id);
+CREATE INDEX idx_workspace_members_workspace ON workspace_members(workspace_id);
+```
+
+#### Modified Tables (Add workspace_id)
+
+Same as subdomain model—all tables need `workspace_id`:
+
+```sql
+-- users table
+ALTER TABLE users ADD COLUMN workspace_id UUID REFERENCES workspaces(id);
+CREATE INDEX idx_users_workspace ON users(workspace_id);
+
+-- feedback table
+ALTER TABLE feedback ADD COLUMN workspace_id UUID NOT NULL REFERENCES workspaces(id);
+CREATE INDEX idx_feedback_workspace ON feedback(workspace_id);
+
+-- goals table
+ALTER TABLE goals ADD COLUMN workspace_id UUID NOT NULL REFERENCES workspaces(id);
+CREATE INDEX idx_goals_workspace ON goals(workspace_id);
+
+-- ... repeat for all tables
+```
+
+### Authentication Flow (Global OAuth)
+
+```
+User visits app.cohort.com
+     ↓
+User clicks "Sign in with Google"
+     ↓
+Google OAuth callback → app.cohort.com/api/auth/callback/google
+     ↓
+User authenticated globally (no workspace context yet)
+     ↓
+Query workspace_members table for user's workspaces
+     ↓
+If 0 workspaces: Show workspace creation wizard
+If 1 workspace: Auto-select and redirect to dashboard
+If 2+ workspaces: Show workspace picker modal
+     ↓
+User selects workspace → stored in session cookie
+     ↓
+Redirect to dashboard with workspace context
+```
+
+**Session Cookie:**
+```
+cohort_session={
+  "user_id": "uuid",
+  "current_workspace_id": "uuid",  // Current active workspace
+  "expires_at": "timestamp"
+}
+```
+
+### Technical Implementation (Workspace Model)
+
+#### 1. Workspace Detection Middleware
+
+**File:** `server/plugins/workspace.ts`
+
+```typescript
+import { defineNitroPlugin } from 'nitropack/runtime/plugin'
+import { db } from '../db'
+import { workspaces, workspaceMembers } from '../db/schema'
+import { eq, and } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('request', async (event) => {
+    // Skip for static assets
+    if (event.path.startsWith('/_nuxt') || event.path === '/health') {
+      return
+    }
+
+    const session = await getUserSession(event)
+
+    if (!session) {
+      return // Not authenticated, skip workspace detection
+    }
+
+    // Get workspace from multiple sources (priority order):
+    // 1. Query parameter: ?workspace=abc
+    // 2. Session cookie: current_workspace_id
+    // 3. User's default workspace (first membership)
+
+    const query = getQuery(event)
+    let workspaceSlug = query.workspace as string | undefined
+    let workspaceId = session.current_workspace_id
+
+    if (workspaceSlug) {
+      // Lookup workspace by slug
+      const workspace = await db.query.workspaces.findFirst({
+        where: eq(workspaces.slug, workspaceSlug)
+      })
+
+      if (!workspace) {
+        throw createError({
+          statusCode: 404,
+          message: 'Workspace not found'
+        })
+      }
+
+      // Verify user is member of this workspace
+      const membership = await db.query.workspaceMembers.findFirst({
+        where: and(
+          eq(workspaceMembers.user_id, session.user.id),
+          eq(workspaceMembers.workspace_id, workspace.id)
+        )
+      })
+
+      if (!membership) {
+        throw createError({
+          statusCode: 403,
+          message: 'You are not a member of this workspace'
+        })
+      }
+
+      workspaceId = workspace.id
+      // Update session with new workspace
+      await setUserSession(event, {
+        ...session,
+        current_workspace_id: workspaceId
+      })
+    }
+
+    if (!workspaceId) {
+      // No workspace selected, redirect to workspace picker
+      if (!event.path.startsWith('/workspace-picker')) {
+        throw createError({
+          statusCode: 400,
+          message: 'No workspace selected',
+          data: { redirect: '/workspace-picker' }
+        })
+      }
+      return
+    }
+
+    // Load workspace
+    const workspace = await db.query.workspaces.findFirst({
+      where: eq(workspaces.id, workspaceId)
+    })
+
+    if (!workspace || !workspace.is_active) {
+      throw createError({
+        statusCode: 403,
+        message: 'Workspace is inactive or suspended'
+      })
+    }
+
+    // Set PostgreSQL session variable for RLS
+    await db.execute(sql`SET app.current_workspace_id = ${workspace.id}`)
+
+    // Attach workspace to event context
+    event.context.workspace = workspace
+
+    console.log(`[Workspace] ${workspace.name} (${workspace.slug})`)
+  })
+})
+```
+
+#### 2. Frontend Workspace Switcher
+
+**Composable:** `composables/useWorkspace.ts`
+
+```typescript
+export function useWorkspace() {
+  const workspace = useState<Workspace | null>('workspace', () => null)
+  const workspaces = useState<Workspace[]>('workspaces', () => [])
+
+  async function loadWorkspaces() {
+    const data = await $fetch('/api/workspaces/memberships')
+    workspaces.value = data.workspaces
+    workspace.value = data.current
+  }
+
+  async function switchWorkspace(workspaceSlug: string) {
+    await $fetch('/api/workspaces/switch', {
+      method: 'POST',
+      body: { slug: workspaceSlug }
+    })
+
+    // Redirect with workspace param
+    await navigateTo(`/?workspace=${workspaceSlug}`)
+
+    // Reload workspace context
+    await loadWorkspaces()
+  }
+
+  return {
+    workspace: readonly(workspace),
+    workspaces: readonly(workspaces),
+    loadWorkspaces,
+    switchWorkspace,
+    isPro: computed(() => workspace.value?.plan_type === 'pro'),
+    isEnterprise: computed(() => workspace.value?.plan_type === 'enterprise')
+  }
+}
+```
+
+**Component:** `components/WorkspaceSwitcher.vue`
+
+```vue
+<template>
+  <USelectMenu
+    v-model="selectedWorkspace"
+    :items="workspaces"
+    value-key="slug"
+    @update:model-value="handleSwitch"
+  >
+    <template #leading>
+      <UAvatar
+        :src="workspace?.logo_url"
+        :alt="workspace?.name"
+        size="xs"
+      />
+    </template>
+
+    <template #item="{ item }">
+      <div class="flex items-center gap-3">
+        <UAvatar :src="item.logo_url" :alt="item.name" size="sm" />
+        <div>
+          <p class="font-medium">{{ item.name }}</p>
+          <p class="text-xs text-gray-500">{{ item.slug }}</p>
+        </div>
+        <UBadge v-if="item.plan_type !== 'free'" :label="item.plan_type" size="xs" />
+      </div>
+    </template>
+  </USelectMenu>
+</template>
+
+<script setup lang="ts">
+const { workspace, workspaces, switchWorkspace } = useWorkspace()
+
+const selectedWorkspace = ref(workspace.value?.slug)
+
+async function handleSwitch(slug: string) {
+  await switchWorkspace(slug)
+}
+</script>
+```
+
+### Benefits of Workspace Model
+
+✅ **Familiar UX**: Matches Linear, Slack, Notion mental model
+✅ **Multi-Org Support**: Users easily manage multiple teams
+✅ **Simpler Onboarding**: No subdomain explanation needed
+✅ **Faster Cold Start**: No DNS setup per workspace
+✅ **Flexible**: Users join workspaces across organizations
+✅ **Better for Freelancers**: Consultants managing multiple clients
+
+### Challenges of Workspace Model
+
+❌ **OAuth Complexity**: Per-workspace OAuth requires custom middleware
+⚠️ **Context Management**: Must thread workspace ID through entire app
+⚠️ **Deep Links**: URLs need workspace parameter
+⚠️ **Custom Domains**: Harder to implement than subdomain model
+⚠️ **Session Management**: More complex than subdomain (no automatic cookie scoping)
+
+### When to Choose Workspace Model
+
+**Choose Workspace Model If:**
+- Target customers: SMB/startups (5-50 employees)
+- Users manage multiple teams/clients (freelancers, consultants)
+- Global OAuth is acceptable (add per-workspace later as enterprise feature)
+- Familiar consumer UX is priority
+- Want fastest time to multi-tenant launch
+
+**Choose Subdomain Model (Below) If:**
+- Target customers: Enterprise (50+ employees)
+- Per-workspace OAuth is critical from day 1
+- Custom domains are important
+- Simpler architecture is priority
+- Clear tenant isolation is requirement
+
+---
+
 ### 3. Authentication: Per-Tenant OAuth Configuration ✅
+
+**NOTE:** This section describes OAuth for the **subdomain model**. For workspace model OAuth, see above section.
 
 **Decision:** Each tenant configures their own OAuth provider during onboarding
 

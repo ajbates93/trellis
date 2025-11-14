@@ -247,7 +247,116 @@
   - [ ] Admin guide
   - [ ] Deployment notes
 
-## Phase 11: Future Enhancements (Phase 2)
+## Phase 11: Multi-Tenancy & SaaS Launch (Future Enhancements)
+
+### Decision Point: Architecture Model
+- [ ] Evaluate multi-tenancy approaches based on customer demand
+- [ ] Choose: Workspace Model (SMB focus) OR Subdomain Model (Enterprise) OR Hybrid
+- [ ] Review `.cursor/plans/workspace-model-comparison.md` for detailed trade-offs
+
+### Option A: Workspace Model (10-12 weeks)
+**Best for:** SMB/Startups (5-50 employees), freelancers, users managing multiple teams
+
+- [ ] Phase 11a: Global OAuth Implementation (2 weeks)
+  - [ ] Refactor Better-auth for global authentication
+  - [ ] User signup flow at `app.cohort.com`
+  - [ ] Workspace selection after OAuth callback
+  - [ ] Session management with workspace context
+- [ ] Phase 11b: Workspace Schema & Membership (2 weeks)
+  - [ ] Create `workspaces` table (id, slug, name, plan_type, settings, oauth_*)
+  - [ ] Create `workspace_members` table (user ↔ workspace many-to-many)
+  - [ ] Add `workspace_id` columns to all tables (users, feedback, goals, etc.)
+  - [ ] Implement Row-Level Security (RLS) policies
+  - [ ] Backfill existing data with default workspace
+- [ ] Phase 11c: Workspace Switcher UI (2 weeks)
+  - [ ] Build workspace picker component (navbar dropdown)
+  - [ ] Workspace creation flow (name, slug validation)
+  - [ ] Workspace invitation system (email invites + CSV import)
+  - [ ] Current workspace context management (composable)
+  - [ ] Empty state when user has no workspaces
+- [ ] Phase 11d: Workspace Context Middleware (1-2 weeks)
+  - [ ] Nitro plugin to detect workspace from session/query param
+  - [ ] Update all API routes to use workspace context
+  - [ ] Deep link handling (`?workspace=abc`)
+  - [ ] Workspace-scoped RLS enforcement
+- [ ] Phase 11e: Multi-Workspace Onboarding (2-3 weeks)
+  - [ ] Workspace settings page (branding, members, billing)
+  - [ ] Member invitation (CSV + manual)
+  - [ ] Workspace branding (logo, colors)
+  - [ ] Workspace admin role management
+  - [ ] Workspace deletion/archival
+- [ ] Phase 11f: Billing Integration (2 weeks)
+  - [ ] Per-workspace subscription (Stripe/Paddle)
+  - [ ] Usage limits per plan (Free: 10 users, Pro: 50 users)
+  - [ ] Upgrade/downgrade flows
+  - [ ] Billing dashboard per workspace
+
+### Option B: Subdomain Model (8 weeks)
+**Best for:** Enterprise customers (50+ employees), per-workspace OAuth, custom domains
+
+- [ ] Follow existing plan in `.cursor/plans/multi-tenancy-saas-architecture.md`
+- [ ] Week 1-2: Database Preparation
+  - [ ] Create `tenants` table
+  - [ ] Add `tenant_id` columns to all tables (nullable)
+  - [ ] Backfill existing data with default tenant
+  - [ ] Make `tenant_id` NOT NULL
+  - [ ] Add indexes on tenant_id
+- [ ] Week 3-4: Tenant Detection
+  - [ ] Create Nitro plugin for subdomain detection
+  - [ ] Update all API routes to use `getTenantId(event)`
+  - [ ] Test locally with subdomain routing
+  - [ ] Deploy to staging
+- [ ] Week 5-6: RLS Implementation
+  - [ ] Enable RLS on `users` table, test thoroughly
+  - [ ] Enable RLS on `feedback` table, test thoroughly
+  - [ ] Enable RLS on remaining tables
+  - [ ] Monitor query performance
+- [ ] Week 7: OAuth Refactoring
+  - [ ] Implement OAuth secret encryption/decryption (AES-256-GCM)
+  - [ ] Refactor Better-auth to use tenant-specific OAuth config
+  - [ ] Test Google OAuth with Pocketworks tenant
+- [ ] Week 8: Multi-Tenant Onboarding + Billing
+  - [ ] Build `/signup` page (subdomain selection, OAuth config)
+  - [ ] Create tenant creation API
+  - [ ] Build tenant settings dashboard
+  - [ ] Integrate Stripe for billing
+  - [ ] Set up subscription plans
+
+### Option C: Hybrid Model (10-11 weeks)
+**Best for:** Supporting both enterprise and SMB customers
+
+- [ ] Implement subdomain model (8 weeks) — see Option B
+- [ ] Add `workspace_members` table (1 week)
+  - [ ] Create schema for user-workspace many-to-many
+  - [ ] Backfill with existing user-tenant relationships
+- [ ] Build workspace switcher that changes subdomain (1-2 weeks)
+  - [ ] Navbar dropdown component
+  - [ ] Fetch user's workspace memberships
+  - [ ] Redirect to selected workspace's subdomain
+  - [ ] Support users in multiple subdomains via membership
+
+### Common Tasks (All Options)
+- [ ] Security & Performance
+  - [ ] Implement audit logging per workspace/tenant
+  - [ ] Add rate limiting per workspace/tenant
+  - [ ] Cross-tenant isolation testing (security audit)
+  - [ ] Load testing with multiple tenants/workspaces
+- [ ] User Features
+  - [ ] Data export functionality (per workspace)
+  - [ ] Workspace/tenant analytics dashboard
+  - [ ] Workspace member management UI
+  - [ ] Invitation email templates
+- [ ] Billing & Compliance
+  - [ ] Usage metering and reporting
+  - [ ] Subscription management UI
+  - [ ] Invoice generation
+  - [ ] GDPR compliance (data deletion requests)
+
+### Future Enhancements (Post-Launch)
+- [ ] Per-workspace OAuth (enterprise add-on for workspace model)
+- [ ] Custom domains (`feedback.company.com`)
+- [ ] Dedicated databases for enterprise tier
+- [ ] API access with workspace-scoped keys
 - [ ] Notion API integration
   - [ ] Sync goals from Notion
   - [ ] Export feedback to Notion
@@ -257,7 +366,7 @@
   - [ ] Review reminders
   - [ ] New feedback notifications
 - [ ] Advanced analytics
-  - [ ] Sentiment analysis
+  - [ ] Sentiment analysis (already in Phase 8)
   - [ ] Network graphs
   - [ ] Predictive scheduling
 - [ ] Mobile app consideration
