@@ -160,7 +160,7 @@ const handleImpersonate = async (user: any) => {
     });
 
     // Redirect to dashboard to see the impersonated view
-    await navigateTo("/dashboard");
+    await navigateTo("/");
   } catch (error) {
     console.error("Failed to impersonate user:", error);
     const toast = useToast();

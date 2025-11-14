@@ -1,4 +1,4 @@
-<template>
+template>
   <div>
     <div v-if="loading" class="flex items-center justify-center py-12">
       <UIcon

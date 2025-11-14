@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { user, signOut, session, authClient } = useAuth();
+const { user, signOut, session, authClient, refreshSession } = useAuth();
 
 // Navigation links
 const route = useRoute();
@@ -7,11 +7,6 @@ const route = useRoute();
 // Check if currently impersonating
 // Better Auth stores impersonation info in the session's impersonatedBy field
 const isImpersonating = computed(() => {
-  // Debug: log session to see structure
-  if (process.client) {
-    console.log("Session data:", session.value);
-    console.log("impersonatedBy value:", session.value?.impersonatedBy);
-  }
   // Check if impersonatedBy exists and has a truthy value
   return Boolean(session.value?.impersonatedBy);
 });
@@ -21,21 +16,24 @@ const stopImpersonating = async () => {
     const toast = useToast();
     await authClient.admin.stopImpersonating();
 
+    // Refresh the session to update the UI
+    await refreshSession();
+
     toast.add({
       title: "Stopped impersonating",
       description: "You are back to your admin account",
-      color: "green",
+      color: "success",
     });
 
-    // Redirect to admin users page
-    await navigateTo("/admin/users");
+    // Redirect to admin dashboard to force a fresh page load
+    await navigateTo("/admin/users", { replace: true });
   } catch (error) {
     console.error("Failed to stop impersonating:", error);
     const toast = useToast();
     toast.add({
       title: "Error",
       description: "Failed to stop impersonating. Please try again.",
-      color: "red",
+      color: "error",
     });
   }
 };
@@ -164,7 +162,7 @@ const userMenuItems = [
     <!-- Impersonation banner -->
     <div
       v-if="isImpersonating"
-      class="fixed top-0 left-0 right-0 z-40 bg-amber-500 dark:bg-amber-600 text-white px-4 py-2 flex items-center justify-between shadow-lg"
+      class="fixed top-0 left-0 right-0 z-40 bg-amber-500 dark:bg-amber-600 text-white px-4 py-3 flex items-center justify-between shadow-lg"
     >
       <div class="flex items-center gap-2">
         <UIcon name="i-heroicons-exclamation-triangle" class="text-xl" />
@@ -175,9 +173,10 @@ const userMenuItems = [
       <UButton
         label="Stop Impersonating"
         icon="i-heroicons-x-mark"
-        color="white"
+        color="neutral"
         variant="solid"
         size="sm"
+        class="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 transition-all duration-200 shadow-sm hover:shadow-md"
         @click="stopImpersonating"
       />
     </div>

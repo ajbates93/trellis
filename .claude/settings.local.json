@@ -7,7 +7,9 @@
       "Bash(docker compose:*)",
       "WebSearch",
       "WebFetch(domain:www.better-auth.com)",
-      "Bash(npx nuxt typecheck:*)"
+      "Bash(npx nuxt typecheck:*)",
+      "mcp__nuxt-ui-remote__list_components",
+      "mcp__nuxt-ui-remote__get_component"
     ],
     "deny": [],
     "ask": []
