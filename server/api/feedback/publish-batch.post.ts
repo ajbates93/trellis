@@ -1,6 +1,7 @@
 import { db } from "../../database/connection";
 import { feedback, users } from "../../database/schema";
 import { eq, and, inArray } from "drizzle-orm";
+import { assignFeedbackToReview } from "../../utils/reviews";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -29,6 +30,7 @@ export default defineEventHandler(async (event) => {
         id: feedback.id,
         revieweeId: feedback.revieweeId,
         published: feedback.published,
+        createdAt: feedback.createdAt,
       })
       .from(feedback)
       .where(inArray(feedback.id, feedbackIds));
@@ -84,6 +86,17 @@ export default defineEventHandler(async (event) => {
       })
       .where(inArray(feedback.id, feedbackIds))
       .returning();
+
+    // Automatically assign each feedback to appropriate review
+    for (const item of feedbackItems) {
+      if (item.createdAt) {
+        await assignFeedbackToReview(
+          item.id,
+          item.revieweeId,
+          item.createdAt
+        );
+      }
+    }
 
     return {
       success: true,

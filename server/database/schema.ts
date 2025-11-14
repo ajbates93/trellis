@@ -75,6 +75,7 @@ export const feedback = pgTable("feedback", {
   published: boolean("published").default(false),
   publishedAt: timestamp("published_at"),
   publishedBy: text("published_by").references(() => users.id),
+  reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
 });
 
 // Relations for feedback
@@ -88,6 +89,10 @@ export const feedbackRelations = relations(feedback, ({ one }) => ({
     fields: [feedback.revieweeId],
     references: [users.id],
     relationName: "reviewee",
+  }),
+  reviewSchedule: one(reviewSchedules, {
+    fields: [feedback.reviewScheduleId],
+    references: [reviewSchedules.id],
   }),
 }));
 
@@ -154,6 +159,8 @@ export const reviewSchedules = pgTable("review_schedules", {
   completedDate: date("completed_date"),
   status: varchar("status", { length: 50 }).default("scheduled"),
   notes: text("notes"),
+  name: text("name"), // Custom review name, defaults to "Month YYYY"
+  completionNotes: text("completion_notes"), // Summary notes after review
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -161,7 +168,7 @@ export const reviewSchedules = pgTable("review_schedules", {
 // Relations for review schedules
 export const reviewSchedulesRelations = relations(
   reviewSchedules,
-  ({ one }) => ({
+  ({ one, many }) => ({
     user: one(users, {
       fields: [reviewSchedules.userId],
       references: [users.id],
@@ -172,6 +179,7 @@ export const reviewSchedulesRelations = relations(
       references: [users.id],
       relationName: "buddy",
     }),
+    feedback: many(feedback),
   }),
 );
 
