@@ -32,10 +32,18 @@ export const useAuth = () => {
     await navigateTo("/login");
   };
 
+  // Method to refresh/refetch the session
+  const refreshSession = async () => {
+    // Better Auth's useSession returns reactive data that updates automatically
+    // But we can trigger a manual fetch by calling the session endpoint
+    await authClient.$fetch("/session");
+  };
+
   return {
     authClient,
     user,
     session,
     signOut,
+    refreshSession,
   };
 };

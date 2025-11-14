@@ -1,8 +1,42 @@
 <script setup lang="ts">
-const { user, signOut } = useAuth();
+const { user, signOut, session, authClient, refreshSession } = useAuth();
 
 // Navigation links
 const route = useRoute();
+
+// Check if currently impersonating
+// Better Auth stores impersonation info in the session's impersonatedBy field
+const isImpersonating = computed(() => {
+  // Check if impersonatedBy exists and has a truthy value
+  return Boolean(session.value?.impersonatedBy);
+});
+
+const stopImpersonating = async () => {
+  try {
+    const toast = useToast();
+    await authClient.admin.stopImpersonating();
+
+    // Refresh the session to update the UI
+    await refreshSession();
+
+    toast.add({
+      title: "Stopped impersonating",
+      description: "You are back to your admin account",
+      color: "success",
+    });
+
+    // Redirect to admin dashboard to force a fresh page load
+    window.location.href = "/";
+  } catch (error) {
+    console.error("Failed to stop impersonating:", error);
+    const toast = useToast();
+    toast.add({
+      title: "Error",
+      description: "Failed to stop impersonating. Please try again.",
+      color: "error",
+    });
+  }
+};
 
 // Logout confirmation modal
 const isLogoutModalOpen = ref(false);
@@ -125,7 +159,30 @@ const userMenuItems = [
       class="fixed top-0 left-0 right-0 z-50"
     />
 
-    <UDashboardGroup unit="rem">
+    <!-- Impersonation banner -->
+    <div
+      v-if="isImpersonating"
+      class="fixed top-0 left-0 right-0 z-40 bg-amber-500 dark:bg-amber-600 text-white px-4 py-3 flex items-center justify-between shadow-lg"
+    >
+      <div class="flex items-center gap-2">
+        <UIcon name="i-heroicons-exclamation-triangle" class="text-xl" />
+        <span class="font-medium">
+          You are viewing as <strong>{{ user?.name || user?.email }}</strong>
+        </span>
+      </div>
+      <UButton
+        label="Stop Impersonating"
+        icon="i-heroicons-x-mark"
+        color="neutral"
+        variant="solid"
+        size="sm"
+        class="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 transition-all duration-200 shadow-sm hover:shadow-md"
+        @click="stopImpersonating"
+      />
+    </div>
+    <pre class="fixed top-20">{{ isImpersonating }}</pre>
+
+    <UDashboardGroup unit="rem" :class="{ 'pt-12': isImpersonating }">
       <UDashboardSidebar
         collapsible
         resizable
