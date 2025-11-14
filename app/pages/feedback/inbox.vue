@@ -118,6 +118,49 @@ const publishAllForUser = async (userId: string) => {
   return await publishBatch(feedbackIds);
 };
 
+// Reassign feedback to a different review
+const reassignFeedback = async (feedbackId: string, reviewScheduleId: string | null) => {
+  try {
+    await $fetch(`/api/feedback/${feedbackId}/assign-review`, {
+      method: "PATCH",
+      body: { reviewScheduleId },
+    });
+    await refreshBuddy();
+    toast.add({
+      title: "Feedback reassigned",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error) {
+    console.error("Failed to reassign feedback:", error);
+    toast.add({
+      title: "Failed to reassign",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
+// Fetch reviews for a user (for reassignment dropdown)
+const userReviews = ref<Map<string, any[]>>(new Map());
+const fetchUserReviews = async (userId: string) => {
+  if (userReviews.value.has(userId)) return;
+
+  try {
+    const data = await $fetch(`/api/reviews/upcoming`);
+    const data2 = await $fetch(`/api/reviews/past`);
+    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])]
+      .filter((r) => r.userId === userId)
+      .map((r) => ({
+        value: r.id,
+        label: r.name,
+      }));
+    userReviews.value.set(userId, allReviews);
+  } catch (error) {
+    console.error("Failed to fetch reviews:", error);
+  }
+};
+
 // Format date helper
 const formatDate = (date: string | Date) => {
   return format(new Date(date), "MMM d, yyyy");
@@ -224,7 +267,15 @@ const buddyFeedbackColumns = [
   },
   { id: "date", accessorKey: "createdAt", header: "Date" },
   { id: "review", accessorKey: "review", header: "Review" },
-  { id: "actions", header: "" },
+  {
+    id: "actions",
+    header: "Actions",
+    meta: {
+      class: {
+        td: "min-w-[280px]",
+      },
+    },
+  },
 ];
 </script>
 
@@ -585,14 +636,25 @@ const buddyFeedbackColumns = [
                   </template>
 
                   <template #actions-cell="{ row }">
-                    <UButton
-                      loading-auto
-                      size="xs"
-                      color="primary"
-                      @click="publishFeedback(row.original.id)"
-                    >
-                      Publish
-                    </UButton>
+                    <div class="flex items-center gap-2">
+                      <USelect
+                        :model-value="row.original.reviewScheduleId"
+                        :items="userReviews.get(assignment.user.id) || []"
+                        placeholder="Assign to review"
+                        size="xs"
+                        class="w-40"
+                        @update:model-value="reassignFeedback(row.original.id, $event)"
+                        @click="fetchUserReviews(assignment.user.id)"
+                      />
+                      <UButton
+                        loading-auto
+                        size="xs"
+                        color="primary"
+                        @click="publishFeedback(row.original.id)"
+                      >
+                        Publish
+                      </UButton>
+                    </div>
                   </template>
                 </UTable>
               </UCard>

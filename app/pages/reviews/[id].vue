@@ -1,0 +1,235 @@
+<script setup lang="ts">
+import { format } from "date-fns";
+
+definePageMeta({
+  layout: "default",
+});
+
+const route = useRoute();
+const toast = useToast();
+const reviewId = route.params.id as string;
+
+// Fetch review data
+const { data: reviewData, refresh } = await useFetch(`/api/reviews/${reviewId}`);
+
+const review = computed(() => reviewData.value?.review);
+const feedback = computed(() => reviewData.value?.feedback || []);
+const goals = computed(() => reviewData.value?.goals || []);
+
+// Complete review modal state
+const isCompleteModalOpen = ref(false);
+const completionNotes = ref("");
+
+// Complete review
+const completeReview = async () => {
+  try {
+    await $fetch(`/api/reviews/${reviewId}/complete`, {
+      method: "PATCH",
+      body: { completionNotes: completionNotes.value },
+    });
+    await refresh();
+    isCompleteModalOpen.value = false;
+    toast.add({
+      title: "Review completed",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error) {
+    console.error("Failed to complete review:", error);
+    toast.add({
+      title: "Failed to complete review",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
+const formatDate = (date: string) => {
+  return format(new Date(date), "MMM d, yyyy");
+};
+</script>
+
+<template>
+  <UDashboardPanel id="review-detail">
+    <template #body>
+      <div class="p-4 sm:p-6 lg:p-8">
+        <div v-if="!review" class="text-center py-12">
+          <p class="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+
+        <div v-else>
+          <!-- Header -->
+          <div class="mb-8">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {{ review.name }}
+                </h1>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                  {{ formatDate(review.scheduledDate) }}
+                </p>
+              </div>
+              <UBadge
+                :label="review.status"
+                :color="review.status === 'completed' ? 'success' : 'primary'"
+                size="lg"
+              />
+            </div>
+
+            <div class="flex items-center gap-4 mb-6">
+              <div class="flex items-center gap-2">
+                <UAvatar
+                  :src="review.buddy?.avatarUrl"
+                  :alt="review.buddy?.name"
+                  size="sm"
+                />
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ review.buddy?.name }}
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Buddy
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <UButton
+              v-if="review.status === 'scheduled'"
+              @click="isCompleteModalOpen = true"
+            >
+              Mark as Completed
+            </UButton>
+          </div>
+
+          <!-- Tabs -->
+          <UTabs
+            :items="[
+              { label: `Feedback (${feedback.length})`, value: 'feedback' },
+              { label: `Goals (${goals.length})`, value: 'goals' },
+            ]"
+          >
+            <template #feedback>
+              <UCard class="mt-4">
+                <div v-if="feedback.length === 0" class="text-center py-12">
+                  <UIcon
+                    name="i-heroicons-chat-bubble-left"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                    No feedback for this review
+                  </p>
+                </div>
+
+                <div v-else class="space-y-4">
+                  <div
+                    v-for="fb in feedback"
+                    :key="fb.id"
+                    class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  >
+                    <div class="flex items-start gap-3">
+                      <UAvatar
+                        :src="fb.reviewer?.avatarUrl"
+                        :alt="fb.reviewer?.name"
+                        size="sm"
+                      />
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                          <span class="font-medium text-gray-900 dark:text-white">
+                            {{ fb.reviewer?.name }}
+                          </span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ formatDate(fb.createdAt) }}
+                          </span>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                          {{ fb.content }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </UCard>
+            </template>
+
+            <template #goals>
+              <UCard class="mt-4">
+                <div v-if="goals.length === 0" class="text-center py-12">
+                  <UIcon
+                    name="i-heroicons-flag"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                    No goals
+                  </p>
+                </div>
+
+                <div v-else class="space-y-4">
+                  <div
+                    v-for="goal in goals"
+                    :key="goal.id"
+                    class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  >
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <p class="font-medium text-gray-900 dark:text-white">
+                          {{ goal.goalText }}
+                        </p>
+                        <div class="flex items-center gap-2 mt-2">
+                          <UBadge :label="goal.status" size="xs" />
+                          <span
+                            v-if="goal.targetDate"
+                            class="text-sm text-gray-500 dark:text-gray-400"
+                          >
+                            Target: {{ formatDate(goal.targetDate) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </UCard>
+            </template>
+          </UTabs>
+
+          <!-- Completion Notes (if completed) -->
+          <UCard v-if="review.status === 'completed' && review.completionNotes" class="mt-6">
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+              Review Summary
+            </h3>
+            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {{ review.completionNotes }}
+            </p>
+          </UCard>
+        </div>
+      </div>
+    </template>
+  </UDashboardPanel>
+
+  <!-- Complete Review Modal -->
+  <UModal v-model="isCompleteModalOpen">
+    <UCard>
+      <template #header>
+        <h3 class="text-lg font-semibold">Complete Review</h3>
+      </template>
+
+      <UTextarea
+        v-model="completionNotes"
+        placeholder="Add summary notes (optional)"
+        :rows="6"
+        class="mb-4"
+      />
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton variant="ghost" @click="isCompleteModalOpen = false">
+            Cancel
+          </UButton>
+          <UButton @click="completeReview">
+            Complete Review
+          </UButton>
+        </div>
+      </template>
+    </UCard>
+  </UModal>
+</template>
