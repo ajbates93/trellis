@@ -1,0 +1,101 @@
+import { db } from "../../database/connection";
+import { reviewSchedules, users } from "../../database/schema";
+import { eq } from "drizzle-orm";
+import { format } from "date-fns";
+
+export default defineEventHandler(async (event) => {
+  const session = event.context.session;
+
+  if (!session?.user) {
+    throw createError({
+      statusCode: 401,
+      message: "Unauthorized - Please log in",
+    });
+  }
+
+  try {
+    const body = await readBody(event);
+    const { userId, scheduledDate, name, notes } = body;
+
+    // Validate required fields
+    if (!userId || !scheduledDate) {
+      throw createError({
+        statusCode: 400,
+        message: "userId and scheduledDate are required",
+      });
+    }
+
+    // Validate cannot create review for yourself
+    if (userId === session.user.id) {
+      throw createError({
+        statusCode: 400,
+        message: "You cannot create a review for yourself",
+      });
+    }
+
+    // Validate that the user is a buddy of the current user
+    const [targetUser] = await db
+      .select({ buddyId: users.buddyId })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!targetUser) {
+      throw createError({
+        statusCode: 404,
+        message: "User not found",
+      });
+    }
+
+    if (targetUser.buddyId !== session.user.id) {
+      throw createError({
+        statusCode: 403,
+        message: "You can only create reviews for users you are a buddy of",
+      });
+    }
+
+    // Validate scheduled date is in the future
+    const selectedDate = new Date(scheduledDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+    if (selectedDate < today) {
+      throw createError({
+        statusCode: 400,
+        message: "Scheduled date must be in the future",
+      });
+    }
+
+    // Auto-generate name if not provided
+    const reviewName = name || format(selectedDate, "MMMM yyyy");
+
+    // Create the review
+    const [newReview] = await db
+      .insert(reviewSchedules)
+      .values({
+        userId,
+        buddyId: session.user.id,
+        scheduledDate,
+        name: reviewName,
+        notes: notes || null,
+        status: "scheduled",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return { review: newReview };
+  } catch (error) {
+    console.error("Error creating review:", error);
+
+    // Re-throw createError instances
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error;
+    }
+
+    throw createError({
+      statusCode: 500,
+      message: "Failed to create review",
+    });
+  }
+});

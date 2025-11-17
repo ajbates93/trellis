@@ -137,6 +137,16 @@ const feedbackColumns = [
             </UButton>
           </div>
 
+          <!-- Review Notes (if present) -->
+          <UCard v-if="review.notes" class="mb-6">
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+              Review Notes
+            </h3>
+            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {{ review.notes }}
+            </p>
+          </UCard>
+
           <!-- Tabs -->
           <UTabs v-model="selectedTab" :items="tabs" class="mb-6" />
 
