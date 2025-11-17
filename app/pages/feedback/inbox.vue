@@ -149,24 +149,34 @@ const userReviews = ref<Map<string, any[]>>(new Map());
 const fetchUserReviews = async (userId: string) => {
   if (userReviews.value.has(userId)) return;
 
+  console.log("Fetching reviews for user:", userId);
   try {
-    const data = await $fetch(`/api/reviews/upcoming`);
-    const data2 = await $fetch(`/api/reviews/past`);
-    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])]
-      .filter((r) => r.userId === userId)
-      .map((r) => ({
-        value: r.id,
-        label: r.name,
-      }));
+    const data = await $fetch(`/api/reviews/upcoming?userId=${userId}`);
+    const data2 = await $fetch(`/api/reviews/past?userId=${userId}`);
+    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])].map((r: any) => ({
+      value: r.id,
+      label: r.name,
+    }));
     userReviews.value.set(userId, allReviews);
-    console.log(userReviews.value);
+    console.log("Reviews for", userId, ":", allReviews);
   } catch (error) {
     console.error("Failed to fetch reviews:", error);
   }
 };
 
+// Watch buddyData and fetch reviews when it loads
+watch(buddyData, (data) => {
+  if (data?.buddyAssignments) {
+    console.log("Buddy data loaded, fetching reviews for", data.buddyAssignments.length, "users");
+    data.buddyAssignments.forEach((assignment: any) => {
+      fetchUserReviews(assignment.user.id);
+    });
+  }
+}, { immediate: true });
+
 // Format date helper
-const formatDate = (date: string | Date) => {
+const formatDate = (date: string | Date | null) => {
+  if (!date) return "N/A";
   return format(new Date(date), "MMM d, yyyy");
 };
 
@@ -331,7 +341,8 @@ const buddyFeedbackColumns = [
                     <UAvatar
                       :src="
                         row.original.reviewer.image ||
-                        row.original.reviewer.avatarUrl
+                        row.original.reviewer.avatarUrl ||
+                        undefined
                       "
                       :alt="row.original.reviewer.name"
                       size="xs"
@@ -448,7 +459,8 @@ const buddyFeedbackColumns = [
                       <UAvatar
                         :src="
                           row.original.reviewee.image ||
-                          row.original.reviewee.avatarUrl
+                          row.original.reviewee.avatarUrl ||
+                          undefined
                         "
                         :alt="row.original.reviewee.name"
                         size="xs"
@@ -587,7 +599,8 @@ const buddyFeedbackColumns = [
                       <UAvatar
                         :src="
                           row.original.reviewer.image ||
-                          row.original.reviewer.avatarUrl
+                          row.original.reviewer.avatarUrl ||
+                          undefined
                         "
                         :alt="row.original.reviewer.name"
                         size="xs"
@@ -647,10 +660,7 @@ const buddyFeedbackColumns = [
                         placeholder="Assign to review"
                         size="xs"
                         class="w-40"
-                        @update:model-value="
-                          reassignFeedback(row.original.id, $event)
-                        "
-                        @click="fetchUserReviews(assignment.user.id)"
+                        @update:model-value="(value: any) => reassignFeedback(row.original.id, value)"
                       />
                       <UButton
                         loading-auto

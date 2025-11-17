@@ -1,6 +1,6 @@
 import { db } from "../database/connection";
-import { reviewSchedules } from "../database/schema";
-import { eq, and, gte } from "drizzle-orm";
+import { reviewSchedules, feedback } from "../database/schema";
+import { eq, and, gte, sql } from "drizzle-orm";
 
 /**
  * Find the next scheduled review for a user after a given date
@@ -57,7 +57,3 @@ export async function assignFeedbackToReview(
 
   return nextReview.id;
 }
-
-// Import feedback for the update
-import { feedback } from "../database/schema";
-import { sql } from "drizzle-orm";

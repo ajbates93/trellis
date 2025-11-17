@@ -18,6 +18,9 @@ const review = computed(() => reviewData.value?.review);
 const feedback = computed(() => reviewData.value?.feedback || []);
 const goals = computed(() => reviewData.value?.goals || []);
 
+// Tab state
+const selectedTab = ref("feedback");
+
 // Complete review modal state
 const isCompleteModalOpen = ref(false);
 const completionNotes = ref("");
@@ -49,6 +52,38 @@ const completeReview = async () => {
 const formatDate = (date: string) => {
   return format(new Date(date), "MMM d, yyyy");
 };
+
+// Modal state for feedback
+const isFeedbackModalOpen = ref(false);
+const selectedFeedback = ref<any>(null);
+
+// Open feedback modal
+const openFeedbackModal = (feedbackItem: any) => {
+  selectedFeedback.value = feedbackItem;
+  isFeedbackModalOpen.value = true;
+};
+
+// Tabs with dynamic counts
+const tabs = computed(() => [
+  { label: `Feedback (${feedback.value.length})`, value: 'feedback' },
+  { label: `Goals (${goals.value.length})`, value: 'goals' },
+]);
+
+// Feedback table columns
+const feedbackColumns = [
+  { id: "from", accessorKey: "reviewer", header: "From" },
+  {
+    id: "content",
+    accessorKey: "content",
+    header: "Feedback",
+    meta: {
+      class: {
+        td: "max-w-md",
+      },
+    },
+  },
+  { id: "date", accessorKey: "createdAt", header: "Date" },
+];
 </script>
 
 <template>
@@ -103,14 +138,13 @@ const formatDate = (date: string) => {
           </div>
 
           <!-- Tabs -->
-          <UTabs
-            :items="[
-              { label: `Feedback (${feedback.length})`, value: 'feedback' },
-              { label: `Goals (${goals.length})`, value: 'goals' },
-            ]"
-          >
-            <template #feedback>
-              <UCard class="mt-4">
+          <UTabs v-model="selectedTab" :items="tabs" class="mb-6" />
+
+          <!-- Tab Content -->
+          <div class="mt-6">
+            <!-- Feedback Tab -->
+            <div v-if="selectedTab === 'feedback'">
+              <UCard>
                 <div v-if="feedback.length === 0" class="text-center py-12">
                   <UIcon
                     name="i-heroicons-chat-bubble-left"
@@ -123,45 +157,43 @@ const formatDate = (date: string) => {
                   </p>
                 </div>
 
-                <div v-else class="space-y-4">
-                  <div
-                    v-for="fb in feedback"
-                    :key="fb.id"
-                    class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                  >
-                    <div class="flex items-start gap-3">
+                <UTable v-else :columns="feedbackColumns" :data="feedback">
+                  <template #from-cell="{ row }">
+                    <div class="flex items-center gap-2">
                       <UAvatar
-                        :src="fb.reviewer?.avatarUrl"
-                        :alt="fb.reviewer?.name"
-                        size="sm"
+                        :src="row.original.reviewer.avatarUrl || undefined"
+                        :alt="row.original.reviewer.name"
+                        size="xs"
                       />
-                      <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-2">
-                          <span
-                            class="font-medium text-gray-900 dark:text-white"
-                          >
-                            {{ fb.reviewer?.name }}
-                          </span>
-                          <span
-                            class="text-sm text-gray-500 dark:text-gray-400"
-                          >
-                            {{ formatDate(fb.createdAt) }}
-                          </span>
-                        </div>
-                        <p
-                          class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
-                        >
-                          {{ fb.content }}
-                        </p>
-                      </div>
+                      <span>{{ row.original.reviewer.name }}</span>
                     </div>
-                  </div>
-                </div>
-              </UCard>
-            </template>
+                  </template>
 
-            <template #goals>
-              <UCard class="mt-4">
+                  <template #content-cell="{ row }">
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                      @click="openFeedbackModal(row.original)"
+                    >
+                      <span class="truncate block">{{
+                        row.original.content
+                      }}</span>
+                    </UButton>
+                  </template>
+
+                  <template #date-cell="{ row }">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ formatDate(row.original.createdAt) }}
+                    </span>
+                  </template>
+                </UTable>
+              </UCard>
+            </div>
+
+            <!-- Goals Tab -->
+            <div v-else-if="selectedTab === 'goals'">
+              <UCard>
                 <div v-if="goals.length === 0" class="text-center py-12">
                   <UIcon
                     name="i-heroicons-flag"
@@ -199,8 +231,8 @@ const formatDate = (date: string) => {
                   </div>
                 </div>
               </UCard>
-            </template>
-          </UTabs>
+            </div>
+          </div>
 
           <!-- Completion Notes (if completed) -->
           <UCard
@@ -242,6 +274,13 @@ const formatDate = (date: string) => {
           </UCard>
         </template>
       </UModal>
+
+      <!-- Feedback Modal -->
+      <FeedbackModal
+        v-model="isFeedbackModalOpen"
+        :feedback="selectedFeedback"
+        :show-mark-as-read="false"
+      />
     </template>
   </UDashboardPanel>
 </template>

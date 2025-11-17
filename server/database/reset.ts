@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db, client } from "./connection";
-import { users, feedback, feedbackPrompts, goals, goalNotes, feedbackInsights, onboardingImports } from "./schema";
+import { users, feedback, feedbackPrompts, goals, goalNotes, feedbackInsights, onboardingImports, reviewSchedules } from "./schema";
 import { sql } from "drizzle-orm";
 
 async function reset() {
@@ -19,6 +19,9 @@ async function reset() {
 
     console.log("   Deleting feedback...");
     await db.delete(feedback);
+
+    console.log("   Deleting review schedules...");
+    await db.delete(reviewSchedules);
 
     console.log("   Deleting onboarding imports...");
     await db.delete(onboardingImports);

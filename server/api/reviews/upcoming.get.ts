@@ -1,5 +1,5 @@
 import { db } from "../../database/connection";
-import { reviewSchedules, users } from "../../database/schema";
+import { reviewSchedules, users, feedback } from "../../database/schema";
 import { eq, and, or, gte, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -13,10 +13,41 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const query = getQuery(event);
+    const forUserId = query.userId as string | undefined;
+
+    // If fetching for a specific user, verify authorization
+    if (forUserId) {
+      // Check if requesting user is the buddy of the target user or an admin
+      const [targetUser] = await db
+        .select({ buddyId: users.buddyId })
+        .from(users)
+        .where(eq(users.id, forUserId))
+        .limit(1);
+
+      if (!targetUser) {
+        throw createError({
+          statusCode: 404,
+          message: "User not found",
+        });
+      }
+
+      const isOwnReviews = forUserId === session.user.id;
+      const isBuddy = targetUser.buddyId === session.user.id;
+      const isAdmin = session.user.role === 'admin';
+
+      if (!isOwnReviews && !isBuddy && !isAdmin) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view these reviews",
+        });
+      }
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
     // Get upcoming reviews where:
-    // - User is the reviewee OR the buddy
+    // - User is the reviewee OR the buddy (or specific user if forUserId provided)
     // - Status is 'scheduled'
     // - Scheduled date is today or in the future
     const upcomingReviews = await db
@@ -41,10 +72,12 @@ export default defineEventHandler(async (event) => {
       .innerJoin(users, eq(reviewSchedules.userId, users.id))
       .where(
         and(
-          or(
-            eq(reviewSchedules.userId, session.user.id),
-            eq(reviewSchedules.buddyId, session.user.id)
-          ),
+          forUserId
+            ? eq(reviewSchedules.userId, forUserId)
+            : or(
+                eq(reviewSchedules.userId, session.user.id),
+                eq(reviewSchedules.buddyId, session.user.id)
+              ),
           eq(reviewSchedules.status, 'scheduled'),
           gte(reviewSchedules.scheduledDate, today)
         )
@@ -90,6 +123,3 @@ export default defineEventHandler(async (event) => {
     });
   }
 });
-
-// Import feedback table for count query
-import { feedback } from "../../database/schema";
