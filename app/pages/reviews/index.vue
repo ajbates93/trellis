@@ -98,10 +98,20 @@ const formatDate = (date: string) => {
                 <div class="space-y-3">
                   <div class="flex items-start justify-between">
                     <div>
-                      <h3 class="font-semibold text-gray-900 dark:text-white">
+                      <div class="flex items-center gap-2 mb-1">
+                        <UAvatar
+                          :src="review.user?.avatarUrl"
+                          :alt="review.user?.name"
+                          size="xs"
+                        />
+                        <h3 class="font-semibold text-gray-900 dark:text-white">
+                          {{ review.user?.name }}
+                        </h3>
+                      </div>
+                      <p class="text-xs text-gray-500 dark:text-gray-500">
                         {{ review.name }}
-                      </h3>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                      </p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {{ formatDate(review.scheduledDate) }}
                       </p>
                     </div>
@@ -117,7 +127,7 @@ const formatDate = (date: string) => {
                       size="xs"
                     />
                     <span class="text-sm text-gray-600 dark:text-gray-400">
-                      with {{ review.buddy?.name }}
+                      Buddy: {{ review.buddy?.name }}
                     </span>
                   </div>
 
@@ -183,10 +193,20 @@ const formatDate = (date: string) => {
                   >
                     <div class="space-y-3">
                       <div>
-                        <h3 class="font-semibold text-gray-900 dark:text-white">
+                        <div class="flex items-center gap-2 mb-1">
+                          <UAvatar
+                            :src="review.user?.avatarUrl"
+                            :alt="review.user?.name"
+                            size="xs"
+                          />
+                          <h3 class="font-semibold text-gray-900 dark:text-white">
+                            {{ review.user?.name }}
+                          </h3>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-500">
                           {{ review.name }}
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           {{
                             formatDate(
                               review.completedDate || review.scheduledDate,
@@ -202,7 +222,7 @@ const formatDate = (date: string) => {
                           size="xs"
                         />
                         <span class="text-sm text-gray-600 dark:text-gray-400">
-                          with {{ review.buddy?.name }}
+                          Buddy: {{ review.buddy?.name }}
                         </span>
                       </div>
 
