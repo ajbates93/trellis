@@ -118,9 +118,101 @@ const publishAllForUser = async (userId: string) => {
   return await publishBatch(feedbackIds);
 };
 
+// Reassign feedback to a different review
+const reassignFeedback = async (
+  feedbackId: string,
+  reviewScheduleId: string | null,
+) => {
+  try {
+    await $fetch(`/api/feedback/${feedbackId}/assign-review`, {
+      method: "PATCH",
+      body: { reviewScheduleId },
+    });
+    await refreshBuddy();
+    toast.add({
+      title: "Feedback reassigned",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error) {
+    console.error("Failed to reassign feedback:", error);
+    toast.add({
+      title: "Failed to reassign",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
+// Fetch reviews for a user (for reassignment dropdown)
+const userReviews = ref<Map<string, any[]>>(new Map());
+const fetchUserReviews = async (userId: string) => {
+  if (userReviews.value.has(userId)) return;
+
+  console.log("Fetching reviews for user:", userId);
+  try {
+    const data = await $fetch(`/api/reviews/upcoming?userId=${userId}`);
+    const data2 = await $fetch(`/api/reviews/past?userId=${userId}`);
+    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])].map((r: any) => ({
+      value: r.id,
+      label: r.name,
+    }));
+    userReviews.value.set(userId, allReviews);
+    console.log("Reviews for", userId, ":", allReviews);
+  } catch (error) {
+    console.error("Failed to fetch reviews:", error);
+  }
+};
+
+// Watch buddyData and fetch reviews when it loads
+watch(buddyData, (data) => {
+  if (data?.buddyAssignments) {
+    console.log("Buddy data loaded, fetching reviews for", data.buddyAssignments.length, "users");
+    data.buddyAssignments.forEach((assignment: any) => {
+      fetchUserReviews(assignment.user.id);
+    });
+  }
+}, { immediate: true });
+
 // Format date helper
-const formatDate = (date: string | Date) => {
+const formatDate = (date: string | Date | null) => {
+  if (!date) return "N/A";
   return format(new Date(date), "MMM d, yyyy");
+};
+
+// Filter state for Given tab
+const selectedRecipient = ref<string | null>(null);
+
+// Get unique recipients from given feedback
+const recipients = computed(() => {
+  const uniqueRecipients = new Map();
+
+  givenFeedback.value.forEach((fb) => {
+    if (!uniqueRecipients.has(fb.reviewee.id)) {
+      uniqueRecipients.set(fb.reviewee.id, {
+        value: fb.reviewee.id,
+        label: fb.reviewee.name,
+        avatar: fb.reviewee.avatarUrl || fb.reviewee.image,
+      });
+    }
+  });
+
+  return Array.from(uniqueRecipients.values());
+});
+
+// Filtered given feedback based on selected recipient
+const filteredGivenFeedback = computed(() => {
+  if (!selectedRecipient.value) {
+    return givenFeedback.value;
+  }
+  return givenFeedback.value.filter(
+    (fb) => fb.reviewee.id === selectedRecipient.value,
+  );
+});
+
+// Clear recipient filter
+const clearRecipientFilter = () => {
+  selectedRecipient.value = null;
 };
 
 // Modal state
@@ -153,6 +245,7 @@ const receivedColumns = [
     },
   },
   { id: "date", accessorKey: "publishedAt", header: "Date" },
+  { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "isRead", header: "Status" },
   { id: "actions", header: "" },
 ];
@@ -170,6 +263,7 @@ const givenColumns = [
     },
   },
   { id: "date", accessorKey: "createdAt", header: "Date" },
+  { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "published", header: "Status" },
 ];
 
@@ -186,7 +280,16 @@ const buddyFeedbackColumns = [
     },
   },
   { id: "date", accessorKey: "createdAt", header: "Date" },
-  { id: "actions", header: "" },
+  { id: "review", accessorKey: "review", header: "Review" },
+  {
+    id: "actions",
+    header: "Actions",
+    meta: {
+      class: {
+        td: "min-w-[280px]",
+      },
+    },
+  },
 ];
 </script>
 
@@ -238,7 +341,8 @@ const buddyFeedbackColumns = [
                     <UAvatar
                       :src="
                         row.original.reviewer.image ||
-                        row.original.reviewer.avatarUrl
+                        row.original.reviewer.avatarUrl ||
+                        undefined
                       "
                       :alt="row.original.reviewer.name"
                       size="xs"
@@ -263,6 +367,19 @@ const buddyFeedbackColumns = [
                 <template #date-cell="{ row }">
                   <span class="text-sm text-gray-600 dark:text-gray-400">
                     {{ formatDate(row.original.publishedAt) }}
+                  </span>
+                </template>
+
+                <template #review-cell="{ row }">
+                  <NuxtLink
+                    v-if="row.original.review?.id"
+                    :to="`/reviews/${row.original.review.id}`"
+                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                  >
+                    {{ row.original.review.name }}
+                  </NuxtLink>
+                  <span v-else class="text-sm text-gray-400 dark:text-gray-600">
+                    Not assigned
                   </span>
                 </template>
 
@@ -308,48 +425,94 @@ const buddyFeedbackColumns = [
                 </UButton>
               </div>
 
-              <UTable v-else :columns="givenColumns" :data="givenFeedback">
-                <template #to-cell="{ row }">
-                  <div class="flex items-center gap-2">
-                    <UAvatar
-                      :src="
-                        row.original.reviewee.image ||
-                        row.original.reviewee.avatarUrl
-                      "
-                      :alt="row.original.reviewee.name"
+              <div v-else>
+                <!-- Filter Controls -->
+                <div class="mb-4 flex items-center gap-2">
+                  <USelect
+                    v-model="selectedRecipient"
+                    :items="recipients"
+                    placeholder="Filter by recipient"
+                    class="w-64"
+                  />
+                  <UButton
+                    v-if="selectedRecipient"
+                    variant="ghost"
+                    color="primary"
+                    icon="i-heroicons-x-mark"
+                    size="sm"
+                    @click="clearRecipientFilter"
+                  >
+                    Clear
+                  </UButton>
+                  <span
+                    v-if="selectedRecipient"
+                    class="text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    Showing {{ filteredGivenFeedback.length }} of
+                    {{ givenFeedback.length }} items
+                  </span>
+                </div>
+
+                <UTable :columns="givenColumns" :data="filteredGivenFeedback">
+                  <template #to-cell="{ row }">
+                    <div class="flex items-center gap-2">
+                      <UAvatar
+                        :src="
+                          row.original.reviewee.image ||
+                          row.original.reviewee.avatarUrl ||
+                          undefined
+                        "
+                        :alt="row.original.reviewee.name"
+                        size="xs"
+                      />
+                      <span>{{ row.original.reviewee.name }}</span>
+                    </div>
+                  </template>
+
+                  <template #content-cell="{ row }">
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                      @click="openFeedbackModal(row.original)"
+                    >
+                      <span class="truncate block">{{
+                        row.original.content
+                      }}</span>
+                    </UButton>
+                  </template>
+
+                  <template #date-cell="{ row }">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ formatDate(row.original.createdAt) }}
+                    </span>
+                  </template>
+
+                  <template #review-cell="{ row }">
+                    <NuxtLink
+                      v-if="row.original.review?.id"
+                      :to="`/reviews/${row.original.review.id}`"
+                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                    >
+                      {{ row.original.review.name }}
+                    </NuxtLink>
+                    <span
+                      v-else
+                      class="text-sm text-gray-400 dark:text-gray-600"
+                    >
+                      Not assigned
+                    </span>
+                  </template>
+
+                  <template #status-cell="{ row }">
+                    <UBadge
+                      :label="row.original.published ? 'Published' : 'Pending'"
+                      :color="row.original.published ? 'success' : 'neutral'"
                       size="xs"
                     />
-                    <span>{{ row.original.reviewee.name }}</span>
-                  </div>
-                </template>
-
-                <template #content-cell="{ row }">
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)"
-                  >
-                    <span class="truncate block">{{
-                      row.original.content
-                    }}</span>
-                  </UButton>
-                </template>
-
-                <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.createdAt) }}
-                  </span>
-                </template>
-
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :label="row.original.published ? 'Published' : 'Pending'"
-                    :color="row.original.published ? 'success' : 'neutral'"
-                    size="xs"
-                  />
-                </template>
-              </UTable>
+                  </template>
+                </UTable>
+              </div>
             </UCard>
           </div>
 
@@ -436,7 +599,8 @@ const buddyFeedbackColumns = [
                       <UAvatar
                         :src="
                           row.original.reviewer.image ||
-                          row.original.reviewer.avatarUrl
+                          row.original.reviewer.avatarUrl ||
+                          undefined
                         "
                         :alt="row.original.reviewer.name"
                         size="xs"
@@ -472,15 +636,41 @@ const buddyFeedbackColumns = [
                     </span>
                   </template>
 
-                  <template #actions-cell="{ row }">
-                    <UButton
-                      loading-auto
-                      size="xs"
-                      color="primary"
-                      @click="publishFeedback(row.original.id)"
+                  <template #review-cell="{ row }">
+                    <NuxtLink
+                      v-if="row.original.review?.id"
+                      :to="`/reviews/${row.original.review.id}`"
+                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
                     >
-                      Publish
-                    </UButton>
+                      {{ row.original.review.name }}
+                    </NuxtLink>
+                    <span
+                      v-else
+                      class="text-sm text-gray-400 dark:text-gray-600"
+                    >
+                      Not assigned
+                    </span>
+                  </template>
+
+                  <template #actions-cell="{ row }">
+                    <div class="flex items-center gap-2">
+                      <USelect
+                        :model-value="row.original.reviewScheduleId"
+                        :items="userReviews.get(assignment.user.id) || []"
+                        placeholder="Assign to review"
+                        size="xs"
+                        class="w-40"
+                        @update:model-value="(value: any) => reassignFeedback(row.original.id, value)"
+                      />
+                      <UButton
+                        loading-auto
+                        size="xs"
+                        color="primary"
+                        @click="publishFeedback(row.original.id)"
+                      >
+                        Publish
+                      </UButton>
+                    </div>
                   </template>
                 </UTable>
               </UCard>

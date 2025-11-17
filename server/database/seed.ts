@@ -739,7 +739,105 @@ async function seed() {
       console.log(`\n   📊 Inserted ${insertedCount} feedback items across 12 weeks (including ${guaranteedFeedbackForAlex.length} guaranteed for Alex Bates)`);
     }
 
-    // Step 5: Create sample goals for testing
+    // Step 5: Create review schedules
+    console.log("\n📅 Creating review schedules...");
+
+    const { reviewSchedules: reviewSchedulesTable } = await import("./schema");
+
+    // Create review schedules for users with buddies
+    const reviewScheduleData = [
+      // Alex Bates (buddy: Matteo) - upcoming and past
+      {
+        userId: alexBatesId,
+        buddyId: matteoId,
+        scheduledDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 days from now
+        status: "scheduled",
+        name: "January 2026",
+        notes: "Focus on technical growth and team collaboration",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        userId: alexBatesId,
+        buddyId: matteoId,
+        scheduledDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 90 days ago
+        status: "completed",
+        name: "October 2025",
+        notes: "Q4 review - focus on leadership development",
+        completedDate: new Date(Date.now() - 85 * 24 * 60 * 60 * 1000),
+        completionNotes: "Great progress on public speaking and mentorship. Continue developing these skills.",
+        createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000),
+        updatedAt: new Date(Date.now() - 85 * 24 * 60 * 60 * 1000),
+      },
+      // Matteo (buddy: Mark) - upcoming
+      {
+        userId: matteoId,
+        buddyId: markId,
+        scheduledDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "scheduled",
+        name: "February 2026",
+        notes: "Review of Q1 goals and project deliveries",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        userId: matteoId,
+        buddyId: markId,
+        scheduledDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "completed",
+        name: "November 2025",
+        completedDate: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000),
+        completionNotes: "Strong technical execution. Focus on communication with stakeholders next quarter.",
+        createdAt: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000),
+        updatedAt: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000),
+      },
+      // Marcin (buddy: Alex Bates) - upcoming
+      {
+        userId: marcinId,
+        buddyId: alexBatesId,
+        scheduledDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "scheduled",
+        name: "February 2026",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      // Matej (buddy: Alex Bates) - upcoming
+      {
+        userId: matejId,
+        buddyId: alexBatesId,
+        scheduledDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "scheduled",
+        name: "January 2026",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      // Rory (buddy: Anna) - past
+      {
+        userId: roryId,
+        buddyId: annaId,
+        scheduledDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "completed",
+        name: "December 2025",
+        completedDate: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
+        completionNotes: "Excellent quarter. Keep up the client communication improvements.",
+        createdAt: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000),
+        updatedAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
+      },
+    ];
+
+    for (const review of reviewScheduleData) {
+      try {
+        await db.insert(reviewSchedulesTable).values(review);
+        const userName = Object.keys(userIdMap).find((k) => userIdMap[k] === review.userId);
+        const buddyName = Object.keys(userIdMap).find((k) => userIdMap[k] === review.buddyId);
+        const statusEmoji = review.status === "scheduled" ? "📅" : "✅";
+        console.log(`   ${statusEmoji} ${userName} ↔ ${buddyName}: ${review.name} (${review.status})`);
+      } catch (error) {
+        console.log(`   ⚠️  Review schedule may already exist, skipping...`);
+      }
+    }
+
+    // Step 6: Create sample goals for testing
     console.log("\n🎯 Creating sample goals...");
 
     if (!alexBatesId || !marcinId) {
@@ -851,6 +949,7 @@ async function seed() {
     console.log(`   - Buddy relationships: ${Object.keys(BUDDY_ASSIGNMENTS).length}`);
     console.log(`   - Feedback prompts: ${QUESTIONS.length}`);
     console.log(`   - Feedback items: ~78 items across 12 weeks (70% published)`);
+    console.log(`   - Review schedules: 7 created (4 upcoming, 3 completed)`);
     console.log(`   - Sample goals: Created for Alex Bates and Marcin`);
   } catch (error) {
     console.error("❌ Seed failed:", error);
