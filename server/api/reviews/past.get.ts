@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get completed reviews where:
-    // - User is the reviewee OR the buddy (or specific user if forUserId provided)
+    // - User is the reviewee (or specific user if forUserId provided for buddy access)
     // - Status is 'completed'
     const pastReviews = await db
       .select({
@@ -73,10 +73,7 @@ export default defineEventHandler(async (event) => {
         and(
           forUserId
             ? eq(reviewSchedules.userId, forUserId)
-            : or(
-                eq(reviewSchedules.userId, session.user.id),
-                eq(reviewSchedules.buddyId, session.user.id)
-              ),
+            : eq(reviewSchedules.userId, session.user.id),
           eq(reviewSchedules.status, 'completed')
         )
       )

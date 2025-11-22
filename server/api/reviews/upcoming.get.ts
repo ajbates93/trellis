@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Get upcoming reviews where:
-    // - User is the reviewee OR the buddy (or specific user if forUserId provided)
+    // - User is the reviewee (or specific user if forUserId provided for buddy access)
     // - Status is 'scheduled'
     // - Scheduled date is today or in the future
     const upcomingReviews = await db
@@ -74,10 +74,7 @@ export default defineEventHandler(async (event) => {
         and(
           forUserId
             ? eq(reviewSchedules.userId, forUserId)
-            : or(
-                eq(reviewSchedules.userId, session.user.id),
-                eq(reviewSchedules.buddyId, session.user.id)
-              ),
+            : eq(reviewSchedules.userId, session.user.id),
           eq(reviewSchedules.status, 'scheduled'),
           gte(reviewSchedules.scheduledDate, today)
         )

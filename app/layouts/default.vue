@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { user, signOut, session, authClient, refreshSession } = useAuth();
+const { hasBuddies } = useBuddies();
 
 // Navigation links
 const route = useRoute();
@@ -52,13 +53,16 @@ const { isLoading } = useLoadingIndicator();
 // Fetch unread feedback count
 const { unreadCount } = useUnreadCount();
 
-const allLinks = [
-  {
-    label: "Home",
-    icon: "i-heroicons-home",
-    to: "/",
-    active: route.path === "/",
-  },
+// Dashboard link (top level)
+const dashboardLink = computed(() => ({
+  label: "Dashboard",
+  icon: "i-heroicons-squares-2x2",
+  to: "/",
+  active: route.path === "/",
+}));
+
+// Personal section links (without Dashboard)
+const personalLinks = computed(() => [
   {
     label: "Feedback",
     icon: "i-heroicons-chat-bubble-left-right",
@@ -67,11 +71,13 @@ const allLinks = [
       {
         label: "Give Feedback",
         to: "/feedback/give",
+        active: route.path === "/feedback/give",
       },
       {
         label: "Inbox",
         to: "/feedback/inbox",
         badge: unreadCount.value > 0 ? unreadCount.value.toString() : undefined,
+        active: route.path === "/feedback/inbox",
       },
     ],
   },
@@ -87,6 +93,35 @@ const allLinks = [
     to: "/reviews",
     active: route.path === "/reviews",
   },
+]);
+
+// Buddy section links (shown only if user has buddies)
+const buddyLinks = computed(() => {
+  if (!hasBuddies.value) return [];
+  return [
+    {
+      label: "Feedback",
+      icon: "i-heroicons-chat-bubble-left-right",
+      to: "/buddies/feedback",
+      active: route.path.startsWith("/buddies/feedback"),
+    },
+    {
+      label: "Goals",
+      icon: "i-heroicons-flag",
+      to: "/buddies/goals",
+      active: route.path.startsWith("/buddies/goals"),
+    },
+    {
+      label: "Reviews",
+      icon: "i-heroicons-calendar-days",
+      to: "/buddies/reviews",
+      active: route.path.startsWith("/buddies/reviews"),
+    },
+  ];
+});
+
+// Settings and admin links
+const settingsAndAdminLinks = computed(() => [
   {
     label: "Settings",
     icon: "i-heroicons-cog-6-tooth",
@@ -95,10 +130,12 @@ const allLinks = [
       {
         label: "General",
         to: "/settings/general",
+        active: route.path === "/settings/general",
       },
       {
         label: "Notifications",
         to: "/settings/notifications",
+        active: route.path === "/settings/notifications",
       },
     ],
   },
@@ -111,24 +148,43 @@ const allLinks = [
       {
         label: "Dashboard",
         to: "/admin/dashboard",
+        active: route.path === "/admin/dashboard",
       },
       {
         label: "Users",
         to: "/admin/users",
+        active: route.path === "/admin/users",
       },
       {
         label: "Onboarding",
         to: "/admin/onboard",
+        active: route.path === "/admin/onboard",
       },
     ],
   },
-];
+]);
 
-const navigationLinks = computed(() =>
-  allLinks.filter(
+// Combine all links with section structure
+const navigationLinks = computed(() => {
+  const allPersonalLinks = personalLinks;
+  const allBuddyLinks = buddyLinks.value;
+  const adminLinks = settingsAndAdminLinks.filter(
     (item) => !item.requiresAdmin || user.value?.role === "admin",
-  ),
-);
+  );
+
+  // Only include sections if there are links in them
+  const links = [...allPersonalLinks];
+
+  // Add buddy section if user has buddies
+  if (allBuddyLinks.length > 0) {
+    links.push(...allBuddyLinks);
+  }
+
+  // Add settings and admin links
+  links.push(...adminLinks);
+
+  return links;
+});
 
 // User dropdown menu
 const userMenuItems = [
@@ -202,12 +258,17 @@ const userMenuItems = [
 
         <!-- Main navigation -->
         <template #default="{ collapsed }">
-          <UNavigationMenu
-            :items="navigationLinks"
+          <SidebarNavigation
+            :dashboard-link="dashboardLink"
+            :personal-links="personalLinks"
+            :buddy-links="buddyLinks"
+            :settings-and-admin-links="
+              settingsAndAdminLinks.filter(
+                (item) => !item.requiresAdmin || user?.role === 'admin',
+              )
+            "
+            :has-buddies="hasBuddies"
             :collapsed="collapsed"
-            orientation="vertical"
-            tooltip
-            popover
           />
         </template>
 
