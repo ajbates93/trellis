@@ -26,18 +26,18 @@ definePageMeta({
 
 const { buddies, pending } = useBuddies();
 
-// Initialize selected buddy
+// Initialize selected buddy - null until buddies load
 const selectedBuddyId = ref<string | null>(null);
 
-// If user has exactly 1 buddy, auto-select them
+// Auto-select first buddy when they load
 watch(
   () => pending.value,
   (isPending) => {
-    if (!isPending && selectedBuddyId.value === null && buddies.value.length === 1) {
+    if (!isPending && selectedBuddyId.value === null && buddies.value.length > 0) {
       selectedBuddyId.value = buddies.value[0].id;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId

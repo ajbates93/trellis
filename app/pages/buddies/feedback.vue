@@ -7,16 +7,16 @@ definePageMeta({
 });
 
 const toast = useToast();
-const { buddies, pending } = useBuddies();
+const { buddies, hasBuddies, pending } = useBuddies();
 
-// Initialize selected buddy
+// Initialize selected buddy - null until buddies load
 const selectedBuddyId = ref<string | null>(null);
 
-// If user has exactly 1 buddy, auto-select them
+// Auto-select first buddy when they load
 watch(
   () => pending.value,
   (isPending) => {
-    if (!isPending && selectedBuddyId.value === null && buddies.value.length === 1) {
+    if (!isPending && selectedBuddyId.value === null && buddies.value.length > 0) {
       selectedBuddyId.value = buddies.value[0].id;
     }
   },
@@ -51,26 +51,20 @@ const { data: buddyGivenData, refresh: refreshBuddyGiven } = useFetch(() =>
 );
 const buddyGivenFeedback = computed(() => buddyGivenData.value?.feedback || []);
 
-// Fetch incoming (unpublished) feedback for buddy (reactive based on selectedBuddyId)
-const { data: incomingData, refresh: refreshIncoming } = useFetch(() =>
-  selectedBuddyId.value
-    ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
-    : null,
+// Fetch incoming (unpublished) feedback for all buddies
+const { data: incomingData, refresh: refreshIncoming } = useFetch(
+  "/api/feedback/for-buddy",
 );
 const incomingFeedback = computed(() => {
   const assignments = incomingData.value?.buddyAssignments || [];
-  if (assignments.length > 0 && assignments[0].feedback) {
-    return assignments[0].feedback;
-  }
-  return [];
+  return assignments.flatMap((assignment: any) => assignment.feedback || []);
 });
 
-// Refresh all data when buddy changes
+// Refresh Received/Given when buddy changes, but Incoming stays the same
 watch(selectedBuddyId, async () => {
   await Promise.all([
     refreshBuddyReceived(),
     refreshBuddyGiven(),
-    refreshIncoming(),
   ]);
 });
 

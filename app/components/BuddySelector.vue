@@ -29,24 +29,6 @@ const selectedBuddy = computed(() => {
   return buddies.value.find((b: BuddyUser) => b.id === props.buddyId);
 });
 
-const route = useRoute();
-const router = useRouter();
-
-// Whenever props.buddyId changes, update URL
-watch(
-  () => props.buddyId,
-  (newId) => {
-    if (newId && newId !== route.query.buddyId) {
-      router.push({
-        query: {
-          ...route.query,
-          buddyId: newId,
-        },
-      });
-    }
-  }
-);
-
 // Handle buddy selection from dropdown
 const handleBuddySelect = (buddyId: string) => {
   emit("buddy-selected", buddyId);
@@ -64,12 +46,13 @@ const getBuddyAvatar = (buddy: BuddyUser) => {
     <USelectMenu
       v-if="buddies.length > 0 && selectedBuddy"
       :model-value="selectedBuddy"
-      :options="buddies"
+      :items="buddies"
       option-attribute="name"
       searchable
+      class="w-80"
       @update:model-value="(buddy) => handleBuddySelect(buddy.id)"
     >
-      <template #label>
+      <template #leading>
         <div class="flex items-center gap-2">
           <UAvatar
             :src="getBuddyAvatar(selectedBuddy)"
@@ -80,18 +63,20 @@ const getBuddyAvatar = (buddy: BuddyUser) => {
         </div>
       </template>
 
-      <template #option="{ option: buddy }">
+      <template #item="{ item: buddy }">
         <div class="flex items-center gap-2">
-          <UAvatar
-            :src="getBuddyAvatar(buddy)"
-            :alt="buddy.name"
-            size="xs"
-          />
+          <UAvatar :src="getBuddyAvatar(buddy)" :alt="buddy.name" size="xs" />
           <div class="flex flex-col">
             <span class="font-medium">{{ buddy.name }}</span>
             <span class="text-xs text-gray-400">{{ buddy.email }}</span>
           </div>
         </div>
+      </template>
+
+      <template #empty>
+        <p class="text-sm text-gray-400 px-2 py-1.5">
+          You don't have any buddies assigned yet.
+        </p>
       </template>
     </USelectMenu>
 
