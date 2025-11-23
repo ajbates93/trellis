@@ -64,22 +64,17 @@ const dashboardLink = computed(() => ({
 // Personal section links (without Dashboard)
 const personalLinks = computed(() => [
   {
+    label: "Submit",
+    icon: "i-heroicons-paper-airplane",
+    to: "/feedback/give",
+    active: route.path === "/feedback/give",
+  },
+  {
     label: "Feedback",
     icon: "i-heroicons-chat-bubble-left-right",
-    active: route.path.startsWith("/feedback"),
-    children: [
-      {
-        label: "Give Feedback",
-        to: "/feedback/give",
-        active: route.path === "/feedback/give",
-      },
-      {
-        label: "Inbox",
-        to: "/feedback/inbox",
-        badge: unreadCount.value > 0 ? unreadCount.value.toString() : undefined,
-        active: route.path === "/feedback/inbox",
-      },
-    ],
+    to: "/feedback/inbox",
+    badge: unreadCount.value > 0 ? unreadCount.value.toString() : undefined,
+    active: route.path === "/feedback/inbox",
   },
   {
     label: "Goals",
