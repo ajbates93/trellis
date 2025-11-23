@@ -13,19 +13,6 @@
         </div>
 
         <div class="space-y-6">
-          <!-- Tabs (conditionally shown) -->
-          <UTabs
-            v-if="showBuddyTab"
-            v-model="selectedTab"
-            :items="tabs"
-            class="w-full"
-          />
-
-          <!-- My Goals Tab -->
-          <div
-            v-if="!showBuddyTab || selectedTab === 'my-goals'"
-            class="space-y-6"
-          >
             <!-- Active Goals Accordion -->
             <UAccordion
               :items="[
@@ -152,7 +139,6 @@
                 Add New Goal
               </UButton>
             </div>
-          </div>
         </div>
       </div>
     </template>
@@ -190,19 +176,6 @@ interface Goal {
   completedAt: string | null;
 }
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  avatarUrl: string | null;
-}
-
-interface BuddyAssignment {
-  user: User;
-  goals: Goal[];
-}
-
 definePageMeta({
   layout: "default",
 });
@@ -210,14 +183,6 @@ definePageMeta({
 // Fetch user's own goals
 const { data: goalsData, refresh: refreshGoals } = await useFetch("/api/goals");
 const myGoals = computed(() => (goalsData.value?.goals || []) as Goal[]);
-
-// Fetch buddy goals
-const { data: buddyData, refresh: refreshBuddyGoals } =
-  await useFetch("/api/goals/buddies");
-const buddyAssignments = computed(() => {
-  const assignments = buddyData.value?.buddyAssignments || [];
-  return assignments as unknown as BuddyAssignment[];
-});
 
 // Group goals by status
 const activeGoals = computed(() =>
@@ -229,20 +194,6 @@ const completedGoals = computed(() =>
 const archivedGoals = computed(() =>
   myGoals.value.filter((g: Goal) => g.status === "archived"),
 );
-
-// Tab state
-const selectedTab = ref("my-goals");
-
-// Show buddy tab only if user is buddying someone
-const showBuddyTab = computed(() => buddyAssignments.value.length > 0);
-
-const tabs = computed(() => {
-  const baseTabs = [{ label: "My Goals", value: "my-goals" }];
-  if (showBuddyTab.value) {
-    baseTabs.push({ label: "My Buddies' Goals", value: "buddy-goals" });
-  }
-  return baseTabs;
-});
 
 // Create goal modal state
 const showCreateModal = ref(false);
@@ -276,10 +227,6 @@ watch(showCreateModal, (newValue) => {
 // Refresh handlers
 const handleGoalChange = async () => {
   await refreshGoals();
-};
-
-const handleBuddyGoalChange = async () => {
-  await refreshBuddyGoals();
 };
 
 const handleGoalCreated = async () => {

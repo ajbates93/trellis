@@ -13,6 +13,9 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const query = getQuery(event);
+    const buddyIdFilter = query.buddyId as string | undefined;
+
     // Find all users where current user is their buddy
     const buddyAssignments = await db
       .select({
@@ -29,8 +32,21 @@ export default defineEventHandler(async (event) => {
       return { buddyAssignments: [] };
     }
 
-    // Get IDs of all assigned buddies
-    const buddyIds = buddyAssignments.map((u) => u.id);
+    // If filtering by buddyId, verify it's one of the assigned buddies
+    if (buddyIdFilter) {
+      const isBuddy = buddyAssignments.some((u) => u.id === buddyIdFilter);
+      if (!isBuddy) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view this buddy's feedback",
+        });
+      }
+    }
+
+    // Get IDs of all assigned buddies (or just the filtered one)
+    const buddyIds = buddyIdFilter
+      ? [buddyIdFilter]
+      : buddyAssignments.map((u) => u.id);
 
     // Fetch all unpublished feedback for these users
     const unpublishedFeedback = await db
@@ -63,8 +79,12 @@ export default defineEventHandler(async (event) => {
         )
       );
 
-    // Group feedback by reviewee
-    const groupedByReviewee = buddyAssignments.map((user) => {
+    // Group feedback by reviewee (or return single buddy's feedback if filtered)
+    const filteredBuddyAssignments = buddyIdFilter
+      ? buddyAssignments.filter((u) => u.id === buddyIdFilter)
+      : buddyAssignments;
+
+    const groupedByReviewee = filteredBuddyAssignments.map((user) => {
       const userFeedback = unpublishedFeedback.filter(
         (f) => f.revieweeId === user.id
       );

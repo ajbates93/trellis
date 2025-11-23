@@ -13,7 +13,32 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const query = getQuery(event);
+    const buddyIdFilter = query.buddyId as string | undefined;
+
     // Find all users where current user is their buddy
+    const allBuddies = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        image: users.image,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(users)
+      .where(eq(users.buddyId, session.user.id));
+
+    // If filtering by buddyId, verify it's one of the assigned buddies
+    if (buddyIdFilter) {
+      const isBuddy = allBuddies.some((u) => u.id === buddyIdFilter);
+      if (!isBuddy) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view this buddy's goals",
+        });
+      }
+    }
+
     // Then get all their goals (active and completed, exclude archived)
     const buddyGoals = await db
       .select({
@@ -39,7 +64,9 @@ export default defineEventHandler(async (event) => {
       .innerJoin(users, eq(goals.userId, users.id))
       .where(
         and(
-          eq(users.buddyId, session.user.id),
+          buddyIdFilter
+            ? eq(users.id, buddyIdFilter)
+            : eq(users.buddyId, session.user.id),
           or(eq(goals.status, "active"), eq(goals.status, "completed"))
         )
       )

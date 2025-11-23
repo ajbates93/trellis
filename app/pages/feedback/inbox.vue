@@ -13,7 +13,6 @@ const selectedTab = ref("received");
 const tabs = [
   { label: "Received", value: "received" },
   { label: "Given", value: "given" },
-  { label: "For My Buddies", value: "for-buddies" },
 ];
 
 // Fetch received feedback (published only)
@@ -25,14 +24,6 @@ const receivedFeedback = computed(() => receivedData.value?.feedback || []);
 // Fetch given feedback (all)
 const { data: givenData } = await useFetch("/api/feedback/given");
 const givenFeedback = computed(() => givenData.value?.feedback || []);
-
-// Fetch buddy assignments with pending feedback
-const { data: buddyData, refresh: refreshBuddy } = await useFetch(
-  "/api/feedback/for-buddy",
-);
-const buddyAssignments = computed(
-  () => buddyData.value?.buddyAssignments || [],
-);
 
 // Get unread count refresh function
 const { refreshUnreadCount } = useUnreadCount();
@@ -60,119 +51,6 @@ const markAsRead = async (feedbackId: string) => {
   }
 };
 
-// Publish single feedback
-const publishFeedback = async (feedbackId: string) => {
-  try {
-    await $fetch(`/api/feedback/${feedbackId}/publish`, { method: "PATCH" });
-    await refreshBuddy();
-    toast.add({
-      title: "Feedback published",
-      description: "The feedback is now visible to the recipient.",
-      color: "success",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    console.error("Failed to publish feedback:", error);
-    toast.add({
-      title: "Failed to publish feedback",
-      description: "Please try again.",
-      color: "error",
-      icon: "i-heroicons-x-circle",
-    });
-    throw error;
-  }
-};
-
-// Publish batch feedback
-const publishBatch = async (feedbackIds: string[]) => {
-  try {
-    await $fetch("/api/feedback/publish-batch", {
-      method: "POST",
-      body: { feedbackIds },
-    });
-    await refreshBuddy();
-    toast.add({
-      title: `Published ${feedbackIds.length} feedback items`,
-      description: "All feedback is now visible to recipients.",
-      color: "success",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    console.error("Failed to publish batch:", error);
-    toast.add({
-      title: "Failed to publish feedback",
-      description: "Please try again.",
-      color: "error",
-      icon: "i-heroicons-x-circle",
-    });
-    throw error;
-  }
-};
-
-// Publish all for a specific user
-const publishAllForUser = async (userId: string) => {
-  const assignment = buddyAssignments.value.find((a) => a.user.id === userId);
-  if (!assignment || assignment.feedback.length === 0) return;
-
-  const feedbackIds = assignment.feedback.map((f) => f.id);
-  return await publishBatch(feedbackIds);
-};
-
-// Reassign feedback to a different review
-const reassignFeedback = async (
-  feedbackId: string,
-  reviewScheduleId: string | null,
-) => {
-  try {
-    await $fetch(`/api/feedback/${feedbackId}/assign-review`, {
-      method: "PATCH",
-      body: { reviewScheduleId },
-    });
-    await refreshBuddy();
-    toast.add({
-      title: "Feedback reassigned",
-      color: "success",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    console.error("Failed to reassign feedback:", error);
-    toast.add({
-      title: "Failed to reassign",
-      color: "error",
-      icon: "i-heroicons-x-circle",
-    });
-  }
-};
-
-// Fetch reviews for a user (for reassignment dropdown)
-const userReviews = ref<Map<string, any[]>>(new Map());
-const fetchUserReviews = async (userId: string) => {
-  if (userReviews.value.has(userId)) return;
-
-  console.log("Fetching reviews for user:", userId);
-  try {
-    const data = await $fetch(`/api/reviews/upcoming?userId=${userId}`);
-    const data2 = await $fetch(`/api/reviews/past?userId=${userId}`);
-    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])].map((r: any) => ({
-      value: r.id,
-      label: r.name,
-    }));
-    userReviews.value.set(userId, allReviews);
-    console.log("Reviews for", userId, ":", allReviews);
-  } catch (error) {
-    console.error("Failed to fetch reviews:", error);
-  }
-};
-
-// Watch buddyData and fetch reviews when it loads
-watch(buddyData, (data) => {
-  if (data?.buddyAssignments) {
-    console.log("Buddy data loaded, fetching reviews for", data.buddyAssignments.length, "users");
-    data.buddyAssignments.forEach((assignment: any) => {
-      fetchUserReviews(assignment.user.id);
-    });
-  }
-}, { immediate: true });
 
 // Format date helper
 const formatDate = (date: string | Date | null) => {
@@ -265,31 +143,6 @@ const givenColumns = [
   { id: "date", accessorKey: "createdAt", header: "Date" },
   { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "published", header: "Status" },
-];
-
-const buddyFeedbackColumns = [
-  { id: "from", accessorKey: "reviewer", header: "From" },
-  {
-    id: "content",
-    accessorKey: "content",
-    header: "Feedback",
-    meta: {
-      class: {
-        td: "max-w-md",
-      },
-    },
-  },
-  { id: "date", accessorKey: "createdAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
-  {
-    id: "actions",
-    header: "Actions",
-    meta: {
-      class: {
-        td: "min-w-[280px]",
-      },
-    },
-  },
 ];
 </script>
 
@@ -514,167 +367,6 @@ const buddyFeedbackColumns = [
                 </UTable>
               </div>
             </UCard>
-          </div>
-
-          <!-- For My Buddies Tab -->
-          <div v-else-if="selectedTab === 'for-buddies'">
-            <div v-if="buddyAssignments.length === 0">
-              <UCard>
-                <div class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-users"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
-                    You're not assigned as a buddy
-                  </p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Contact your manager to be assigned as a buddy
-                  </p>
-                </div>
-              </UCard>
-            </div>
-
-            <!-- Accordion for each buddy assignment -->
-            <div v-else class="space-y-4">
-              <UCard
-                v-for="assignment in buddyAssignments"
-                :key="assignment.user.id"
-              >
-                <!-- User header -->
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-3">
-                    <UAvatar
-                      :src="
-                        assignment.user.image ||
-                        assignment.user.avatarUrl ||
-                        undefined
-                      "
-                      :alt="assignment.user.name"
-                      size="md"
-                    />
-                    <div>
-                      <p class="font-semibold text-gray-900 dark:text-white">
-                        {{ assignment.user.name }}
-                      </p>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ assignment.pendingCount }} pending feedback
-                      </p>
-                    </div>
-                  </div>
-                  <UButton
-                    v-if="assignment.pendingCount > 0"
-                    loading-auto
-                    size="sm"
-                    color="primary"
-                    @click="publishAllForUser(assignment.user.id)"
-                  >
-                    Publish All ({{ assignment.pendingCount }})
-                  </UButton>
-                </div>
-
-                <!-- Feedback table or empty state -->
-                <div
-                  v-if="assignment.pendingCount === 0"
-                  class="text-center py-8"
-                >
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="text-green-500 text-3xl mb-2"
-                  />
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    All caught up!
-                  </p>
-                </div>
-
-                <UTable
-                  v-else
-                  :columns="buddyFeedbackColumns"
-                  :data="assignment.feedback"
-                >
-                  <template #from-cell="{ row }">
-                    <div class="flex items-center gap-2">
-                      <UAvatar
-                        :src="
-                          row.original.reviewer.image ||
-                          row.original.reviewer.avatarUrl ||
-                          undefined
-                        "
-                        :alt="row.original.reviewer.name"
-                        size="xs"
-                      />
-                      <span>{{ row.original.reviewer.name }}</span>
-                    </div>
-                  </template>
-
-                  <template #content-cell="{ row }">
-                    <UPopover>
-                      <UButton
-                        variant="ghost"
-                        color="neutral"
-                        class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      >
-                        <span class="truncate block">{{
-                          row.original.content
-                        }}</span>
-                      </UButton>
-                      <template #content>
-                        <div class="p-4 max-w-md">
-                          <p class="text-sm whitespace-normal">
-                            {{ row.original.content }}
-                          </p>
-                        </div>
-                      </template>
-                    </UPopover>
-                  </template>
-
-                  <template #date-cell="{ row }">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatDate(row.original.createdAt) }}
-                    </span>
-                  </template>
-
-                  <template #review-cell="{ row }">
-                    <NuxtLink
-                      v-if="row.original.review?.id"
-                      :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                    >
-                      {{ row.original.review.name }}
-                    </NuxtLink>
-                    <span
-                      v-else
-                      class="text-sm text-gray-400 dark:text-gray-600"
-                    >
-                      Not assigned
-                    </span>
-                  </template>
-
-                  <template #actions-cell="{ row }">
-                    <div class="flex items-center gap-2">
-                      <USelect
-                        :model-value="row.original.reviewScheduleId"
-                        :items="userReviews.get(assignment.user.id) || []"
-                        placeholder="Assign to review"
-                        size="xs"
-                        class="w-40"
-                        @update:model-value="(value: any) => reassignFeedback(row.original.id, value)"
-                      />
-                      <UButton
-                        loading-auto
-                        size="xs"
-                        color="primary"
-                        @click="publishFeedback(row.original.id)"
-                      >
-                        Publish
-                      </UButton>
-                    </div>
-                  </template>
-                </UTable>
-              </UCard>
-            </div>
           </div>
         </div>
       </div>
