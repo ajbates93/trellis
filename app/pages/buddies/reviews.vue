@@ -95,6 +95,76 @@ const openReviewModal = (review: any) => {
   showReviewModal.value = true;
 };
 
+// Create review modal state
+const isCreateModalOpen = ref(false);
+const scheduledDate = ref<string>("");
+const reviewName = ref<string>("");
+const notes = ref<string>("");
+const isCreating = ref(false);
+
+// Watch scheduled date to auto-generate review name
+watch(scheduledDate, (newDate) => {
+  if (newDate) {
+    const date = new Date(newDate);
+    reviewName.value = format(date, "MMMM yyyy");
+  }
+});
+
+// Reset create review form
+const resetForm = () => {
+  scheduledDate.value = "";
+  reviewName.value = "";
+  notes.value = "";
+};
+
+// Create review for selected buddy
+const createReview = async () => {
+  if (!selectedBuddyId.value || !scheduledDate.value) {
+    toast.add({
+      title: "Missing required fields",
+      description: "Please select a scheduled date",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+    return;
+  }
+
+  isCreating.value = true;
+
+  try {
+    await $fetch("/api/reviews", {
+      method: "POST",
+      body: {
+        userId: selectedBuddyId.value,
+        scheduledDate: scheduledDate.value,
+        name: reviewName.value,
+        notes: notes.value,
+      },
+    });
+
+    await Promise.all([refreshUpcoming(), refreshPast()]);
+    isCreateModalOpen.value = false;
+    resetForm();
+
+    toast.add({
+      title: "Review created",
+      description: "The review has been scheduled successfully",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to create review:", error);
+    toast.add({
+      title: "Failed to create review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    isCreating.value = false;
+  }
+};
+
 // Complete review
 const completeReview = async (reviewId: string) => {
   try {
@@ -184,12 +254,21 @@ const pastColumns = [
           </p>
         </div>
 
-        <!-- Buddy Selector -->
-        <div class="mb-6">
-          <BuddySelector
-            :buddy-id="selectedBuddyId || undefined"
-            @buddy-selected="handleBuddySelected"
-          />
+        <!-- Buddy Selector and Create Button -->
+        <div class="mb-6 flex items-end justify-between gap-4">
+          <div class="flex-1">
+            <BuddySelector
+              :buddy-id="selectedBuddyId || undefined"
+              @buddy-selected="handleBuddySelected"
+            />
+          </div>
+          <UButton
+            v-if="selectedBuddyId"
+            icon="i-heroicons-plus"
+            @click="isCreateModalOpen = true"
+          >
+            Create Review
+          </UButton>
         </div>
 
         <!-- Reviews Content -->
@@ -383,6 +462,80 @@ const pastColumns = [
           Complete Review
         </UButton>
       </div>
+    </template>
+  </UModal>
+
+  <!-- Create Review Modal -->
+  <UModal
+    v-model:open="isCreateModalOpen"
+    :title="`Create Review for ${buddyInfo?.name}`"
+    class="sm:max-w-2xl"
+    :ui="{
+      footer: 'justify-end',
+    }"
+  >
+    <template #body>
+      <div class="space-y-4">
+        <!-- Scheduled Date -->
+        <div>
+          <label class="block text-sm font-medium mb-2">
+            Scheduled Date <span class="text-red-500">*</span>
+          </label>
+          <UInput
+            v-model="scheduledDate"
+            type="date"
+            :min="new Date().toISOString().split('T')[0]"
+          />
+        </div>
+
+        <!-- Review Name -->
+        <div>
+          <label class="block text-sm font-medium mb-2">
+            Review Name
+          </label>
+          <UInput
+            v-model="reviewName"
+            placeholder="e.g., January 2026"
+            size="lg"
+          />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Auto-generated from date if left empty
+          </p>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-medium mb-2">
+            Notes (Optional)
+          </label>
+          <UTextarea
+            v-model="notes"
+            placeholder="Add any notes about this review..."
+            :rows="4"
+          />
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <UButton
+        color="neutral"
+        variant="ghost"
+        :disabled="isCreating"
+        @click="
+          isCreateModalOpen = false;
+          resetForm();
+        "
+      >
+        Cancel
+      </UButton>
+      <UButton
+        :loading="isCreating"
+        :disabled="!scheduledDate"
+        @click="createReview"
+      >
+        Create Review
+      </UButton>
     </template>
   </UModal>
 </template>
