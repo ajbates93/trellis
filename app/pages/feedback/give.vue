@@ -184,6 +184,7 @@ watch(selectedUser, async (userId) => {
                 placeholder="Search for a colleague..."
                 value-key="id"
                 :search-input="{ placeholder: 'Search colleagues...' }"
+                class="w-80"
               >
                 <template #leading>
                   <UAvatar
@@ -197,7 +198,7 @@ watch(selectedUser, async (userId) => {
                 </template>
 
                 <template #item="{ item }">
-                  <div class="flex items-center gap-3 w-full">
+                  <div class="flex items-center gap-4 w-full">
                     <UAvatar
                       :src="item.image || item.avatarUrl"
                       :alt="item.name"
