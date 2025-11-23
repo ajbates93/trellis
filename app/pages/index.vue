@@ -12,138 +12,6 @@
           </p>
         </div>
 
-        <!-- Stats cards grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <!-- Feedback given this week -->
-          <UCard>
-            <div class="flex items-start justify-between">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Feedback Given
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.feedbackGiven }}
-                </p>
-              </div>
-              <div
-                class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center"
-              >
-                <UIcon
-                  name="i-heroicons-chat-bubble-left"
-                  class="text-primary text-xl"
-                />
-              </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2">
-              <UBadge
-                :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
-                :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'"
-                size="xs"
-              />
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >vs last week</span
-              >
-            </div>
-          </UCard>
-
-          <!-- Feedback received this week -->
-          <UCard>
-            <div class="flex items-start justify-between">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Feedback Received
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.feedbackReceived }}
-                </p>
-              </div>
-              <div
-                class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center"
-              >
-                <UIcon
-                  name="i-heroicons-inbox"
-                  class="text-green-500 text-xl"
-                />
-              </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2">
-              <UBadge
-                :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
-                :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'"
-                size="xs"
-              />
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >vs last week</span
-              >
-            </div>
-          </UCard>
-
-          <!-- Active goals count -->
-          <UCard>
-            <div class="flex items-start justify-between">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Active Goals
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.activeGoals }}
-                </p>
-              </div>
-              <div
-                class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center"
-              >
-                <UIcon name="i-heroicons-flag" class="text-blue-500 text-xl" />
-              </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2">
-              <UBadge
-                :label="`${stats.completedGoals} completed`"
-                color="primary"
-                size="xs"
-              />
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >this month</span
-              >
-            </div>
-          </UCard>
-
-          <!-- Next review countdown -->
-          <UCard>
-            <div class="flex items-start justify-between">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Next Review
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{
-                    stats.daysUntilReview !== null ? stats.daysUntilReview : "—"
-                  }}
-                </p>
-              </div>
-              <div
-                class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center"
-              >
-                <UIcon
-                  name="i-heroicons-calendar-days"
-                  class="text-purple-500 text-xl"
-                />
-              </div>
-            </div>
-            <div class="mt-4 flex items-center gap-2">
-              <UBadge
-                :label="
-                  stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'
-                "
-                :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
-                size="xs"
-              />
-              <span class="text-xs text-gray-600 dark:text-gray-400">
-                {{ stats.daysUntilReview !== null ? "days remaining" : "" }}
-              </span>
-            </div>
-          </UCard>
-        </div>
-
         <!-- Quick actions panel -->
         <UCard class="mb-8">
           <div
@@ -180,6 +48,145 @@
             </div>
           </div>
         </UCard>
+
+        <!-- Stats cards grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <!-- Feedback given this week -->
+          <UCard>
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Feedback Given
+                </p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {{ stats.feedbackGiven }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <UBadge
+                  :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
+                  :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'"
+                  size="xs"
+                />
+                <span class="text-xs text-gray-600 dark:text-gray-400"
+                  >vs last week</span
+                >
+              </div>
+            </div>
+            <UButton
+              to="/feedback/inbox?tab=given"
+              variant="outline"
+              size="sm"
+              class="mt-4 w-full justify-between"
+              trailing-icon="i-heroicons-arrow-right"
+            >
+              View
+            </UButton>
+          </UCard>
+
+          <!-- Feedback received this week -->
+          <UCard>
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Feedback Received
+                </p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {{ stats.feedbackReceived }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <UBadge
+                  :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
+                  :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'"
+                  size="xs"
+                />
+                <span class="text-xs text-gray-600 dark:text-gray-400"
+                  >vs last week</span
+                >
+              </div>
+            </div>
+            <UButton
+              to="/feedback/inbox"
+              variant="outline"
+              size="sm"
+              class="mt-4 w-full justify-between"
+              trailing-icon="i-heroicons-arrow-right"
+            >
+              View
+            </UButton>
+          </UCard>
+
+          <!-- Active goals count -->
+          <UCard>
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Active Goals
+                </p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {{ stats.activeGoals }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <UBadge
+                  :label="`${stats.completedGoals} completed`"
+                  color="primary"
+                  size="xs"
+                />
+                <span class="text-xs text-gray-600 dark:text-gray-400"
+                  >this month</span
+                >
+              </div>
+            </div>
+            <UButton
+              to="/goals"
+              variant="outline"
+              size="sm"
+              class="mt-4 w-full justify-between"
+              trailing-icon="i-heroicons-arrow-right"
+            >
+              View
+            </UButton>
+          </UCard>
+
+          <!-- Next review countdown -->
+          <UCard>
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Next Review
+                </p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {{
+                    stats.daysUntilReview !== null ? stats.daysUntilReview : "—"
+                  }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <UBadge
+                  :label="
+                    stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'
+                  "
+                  :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
+                  size="xs"
+                />
+                <span class="text-xs text-gray-600 dark:text-gray-400">
+                  {{ stats.daysUntilReview !== null ? "days remaining" : "" }}
+                </span>
+              </div>
+            </div>
+            <UButton
+              to="/reviews"
+              variant="outline"
+              size="sm"
+              class="mt-4 w-full justify-between"
+              trailing-icon="i-heroicons-arrow-right"
+            >
+              View
+            </UButton>
+          </UCard>
+        </div>
 
         <!-- Activity chart -->
         <FeedbackActivityChart class="mb-8" />

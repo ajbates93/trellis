@@ -282,7 +282,7 @@ const userMenuItems = [
                   src:
                     user.image ||
                     user.avatarUrl ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=10b981&color=fff`,
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`,
                 }"
                 :label="
                   collapsed ? undefined : user.name || user.email || 'User'
