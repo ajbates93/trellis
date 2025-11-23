@@ -51,7 +51,6 @@ const markAsRead = async (feedbackId: string) => {
   }
 };
 
-
 // Format date helper
 const formatDate = (date: string | Date | null) => {
   if (!date) return "N/A";
@@ -274,7 +273,7 @@ const givenColumns = [
                   Start by giving feedback to your colleagues
                 </p>
                 <UButton to="/feedback/give" color="primary">
-                  Give Feedback
+                  Submit Feedback
                 </UButton>
               </div>
 

@@ -32,7 +32,7 @@
                 size="lg"
                 icon="i-heroicons-chat-bubble-left"
               >
-                Give Feedback
+                Submit Feedback
               </UButton>
               <UButton to="/goals" size="lg" icon="i-heroicons-flag">
                 View Goals
@@ -166,7 +166,9 @@
               <div class="flex items-center gap-2">
                 <UBadge
                   :label="
-                    stats.daysUntilReview !== null ? 'Upcoming' : 'Not scheduled'
+                    stats.daysUntilReview !== null
+                      ? 'Upcoming'
+                      : 'Not scheduled'
                   "
                   :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
                   size="xs"
