@@ -83,6 +83,12 @@ const personalLinks = computed(() => [
     active: route.path === "/goals",
   },
   {
+    label: "Brag Bucket",
+    icon: "i-heroicons-star",
+    to: "/brag-bucket",
+    active: route.path === "/brag-bucket",
+  },
+  {
     label: "Reviews",
     icon: "i-heroicons-calendar-days",
     to: "/reviews",

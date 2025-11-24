@@ -18,6 +18,12 @@ const review = computed(() => reviewData.value?.review);
 const feedback = computed(() => reviewData.value?.feedback || []);
 const goals = computed(() => reviewData.value?.goals || []);
 
+// Fetch achievements for this review
+const { data: achievementsData } = await useFetch(
+  `/api/achievements/for-review/${reviewId}`,
+);
+const achievements = computed(() => achievementsData.value?.achievements || []);
+
 // Tab state
 const selectedTab = ref("feedback");
 
@@ -67,6 +73,7 @@ const openFeedbackModal = (feedbackItem: any) => {
 const tabs = computed(() => [
   { label: `Feedback (${feedback.value.length})`, value: 'feedback' },
   { label: `Goals (${goals.value.length})`, value: 'goals' },
+  { label: `Achievements (${achievements.value.length})`, value: 'achievements' },
 ]);
 
 // Feedback table columns
@@ -237,6 +244,52 @@ const feedbackColumns = [
                           </span>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </UCard>
+            </div>
+
+            <!-- Achievements Tab -->
+            <div v-else-if="selectedTab === 'achievements'">
+              <UCard>
+                <div v-if="achievements.length === 0" class="text-center py-12">
+                  <UIcon
+                    name="i-heroicons-star"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
+                    No achievements recorded
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    Achievements added to the Brag Bucket will appear here
+                  </p>
+                </div>
+
+                <div v-else class="space-y-4">
+                  <div
+                    v-for="achievement in achievements"
+                    :key="achievement.id"
+                    class="p-4 border-l-4 border-l-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-lg"
+                  >
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <p class="font-medium text-gray-900 dark:text-white">
+                          {{ achievement.title }}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {{ formatDate(achievement.achievedDate) }}
+                        </p>
+                        <p
+                          v-if="achievement.description"
+                          class="mt-3 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
+                        >
+                          {{ achievement.description }}
+                        </p>
+                      </div>
+                      <div class="flex-shrink-0 text-2xl ml-4">✨</div>
                     </div>
                   </div>
                 </div>
