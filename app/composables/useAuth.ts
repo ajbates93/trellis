@@ -18,6 +18,21 @@ export const useAuth = () => {
           avatarUrl: {
             type: "string",
           },
+          preferredName: {
+            type: "string",
+          },
+          pronouns: {
+            type: "string",
+          },
+          bio: {
+            type: "string",
+          },
+          reviewPreference: {
+            type: "string",
+          },
+          communicationPreferences: {
+            type: "string",
+          },
         },
       }),
       adminClient(),

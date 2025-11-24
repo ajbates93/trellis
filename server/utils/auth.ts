@@ -41,6 +41,26 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      preferredName: {
+        type: "string",
+        required: false,
+      },
+      pronouns: {
+        type: "string",
+        required: false,
+      },
+      bio: {
+        type: "string",
+        required: false,
+      },
+      reviewPreference: {
+        type: "string",
+        required: false,
+      },
+      communicationPreferences: {
+        type: "string",
+        required: false,
+      },
     },
   },
   plugins: [
