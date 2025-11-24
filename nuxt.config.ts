@@ -25,6 +25,7 @@ export default defineNuxtConfig({
           async: true,
           "data-project-key": "e397035f-a300-4af4-b8db-06a80077f144",
           "data-theme": "auto",
+          "data-debug": true,
         },
       ],
     },
