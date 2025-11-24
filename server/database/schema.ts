@@ -61,6 +61,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   reviewSchedulesAsBuddy: many(reviewSchedules, {
     relationName: "buddy",
   }),
+  checkinsAsBuddy: many(buddyCheckins, {
+    relationName: "checkinsAsBuddy",
+  }),
+  checkinsAsUser: many(buddyCheckins, {
+    relationName: "checkinsAsUser",
+  }),
   onboardingImports: many(onboardingImports),
   feedbackInsights: many(feedbackInsights),
 }));
@@ -186,6 +192,7 @@ export const reviewSchedulesRelations = relations(
       relationName: "buddy",
     }),
     feedback: many(feedback),
+    checkins: many(buddyCheckins),
   }),
 );
 
@@ -221,6 +228,41 @@ export const feedbackPrompts = pgTable("feedback_prompts", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Buddy check-ins table
+// Stores buddy check-in conversations about user progress across all active goals
+// Check-ins are per-user (covering all goals) and can be linked to review schedules
+export const buddyCheckins = pgTable("buddy_checkins", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  buddyId: text("buddy_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  notes: text("notes").notNull(),
+  reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for buddy check-ins
+export const buddyCheckinsRelations = relations(buddyCheckins, ({ one }) => ({
+  buddy: one(users, {
+    fields: [buddyCheckins.buddyId],
+    references: [users.id],
+    relationName: "checkinsAsBuddy",
+  }),
+  user: one(users, {
+    fields: [buddyCheckins.userId],
+    references: [users.id],
+    relationName: "checkinsAsUser",
+  }),
+  reviewSchedule: one(reviewSchedules, {
+    fields: [buddyCheckins.reviewScheduleId],
+    references: [reviewSchedules.id],
+  }),
+}));
 
 // Feedback insights table
 // Stores AI-generated sentiment analysis, recurring themes, and goal suggestions

@@ -7,28 +7,14 @@ definePageMeta({
 });
 
 const toast = useToast();
-const { buddies, hasBuddies, pending } = useBuddies();
-
-// Initialize selected buddy - null until buddies load
-const selectedBuddyId = ref<string | null>(null);
-
-// Auto-select first buddy when they load
-watch(
-  () => pending.value,
-  (isPending) => {
-    if (!isPending && selectedBuddyId.value === null && buddies.value.length > 0) {
-      selectedBuddyId.value = buddies.value[0].id;
-    }
-  },
-  { immediate: true },
-);
+const { buddies, hasBuddies } = useBuddies();
+const { selectedBuddyId } = useSelectedBuddy();
 
 // Tab state
 const selectedTab = ref("received");
 
 const tabs = [
   { label: "Received", value: "received" },
-  { label: "Given", value: "given" },
   { label: "Incoming", value: "incoming" },
 ];
 
@@ -43,14 +29,6 @@ const buddyReceivedFeedback = computed(
   () => buddyReceivedData.value?.feedback || [],
 );
 
-// Fetch buddy given feedback (reactive based on selectedBuddyId)
-const { data: buddyGivenData, refresh: refreshBuddyGiven } = useFetch(() =>
-  selectedBuddyId.value
-    ? `/api/feedback/buddy-given?buddyId=${selectedBuddyId.value}`
-    : null,
-);
-const buddyGivenFeedback = computed(() => buddyGivenData.value?.feedback || []);
-
 // Fetch incoming (unpublished) feedback for all buddies
 const { data: incomingData, refresh: refreshIncoming } = useFetch(
   "/api/feedback/for-buddy",
@@ -60,12 +38,9 @@ const incomingFeedback = computed(() => {
   return assignments.flatMap((assignment: any) => assignment.feedback || []);
 });
 
-// Refresh Received/Given when buddy changes, but Incoming stays the same
+// Refresh Received when buddy changes, but Incoming stays the same
 watch(selectedBuddyId, async () => {
-  await Promise.all([
-    refreshBuddyReceived(),
-    refreshBuddyGiven(),
-  ]);
+  await refreshBuddyReceived();
 });
 
 // Get unread count refresh function
@@ -160,13 +135,19 @@ const reassignFeedback = async (
 
 // Fetch reviews for a user (for reassignment dropdown)
 const userReviews = ref<Map<string, any[]>>(new Map());
-const fetchUserReviews = async (userId: string) => {
-  if (userReviews.value.has(userId)) return;
+const loadingReviews = ref<Set<string>>(new Set());
 
+const fetchUserReviews = async (userId: string) => {
+  if (userReviews.value.has(userId) || loadingReviews.value.has(userId)) return;
+
+  loadingReviews.value.add(userId);
   try {
-    const data = await $fetch(`/api/reviews/upcoming?userId=${userId}`);
-    const data2 = await $fetch(`/api/reviews/past?userId=${userId}`);
-    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])].map(
+    const [upcomingRes, pastRes] = await Promise.all([
+      $fetch(`/api/reviews/upcoming?userId=${userId}`),
+      $fetch(`/api/reviews/past?userId=${userId}`),
+    ]);
+
+    const allReviews = [...(upcomingRes.reviews || []), ...(pastRes.reviews || [])].map(
       (r: any) => ({
         value: r.id,
         label: r.name,
@@ -175,6 +156,8 @@ const fetchUserReviews = async (userId: string) => {
     userReviews.value.set(userId, allReviews);
   } catch (error) {
     console.error("Failed to fetch reviews:", error);
+  } finally {
+    loadingReviews.value.delete(userId);
   }
 };
 
@@ -209,23 +192,6 @@ const receivedColumns = [
   },
   { id: "date", accessorKey: "publishedAt", header: "Date" },
   { id: "review", accessorKey: "review", header: "Review" },
-];
-
-const givenColumns = [
-  { id: "to", accessorKey: "reviewee", header: "To" },
-  {
-    id: "content",
-    accessorKey: "content",
-    header: "Feedback",
-    meta: {
-      class: {
-        td: "max-w-md",
-      },
-    },
-  },
-  { id: "date", accessorKey: "createdAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
-  { id: "status", accessorKey: "published", header: "Status" },
 ];
 
 const incomingColumns = [
@@ -360,84 +326,6 @@ const incomingColumns = [
             </UCard>
           </div>
 
-          <!-- Given Tab -->
-          <div v-else-if="selectedTab === 'given'">
-            <UCard>
-              <div
-                v-if="buddyGivenFeedback.length === 0"
-                class="text-center py-12"
-              >
-                <UIcon
-                  name="i-heroicons-chat-bubble-left"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No feedback given
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  This buddy hasn't given any feedback yet
-                </p>
-              </div>
-
-              <UTable v-else :columns="givenColumns" :data="buddyGivenFeedback">
-                <template #to-cell="{ row }">
-                  <div class="flex items-center gap-2">
-                    <UAvatar
-                      :src="
-                        row.original.reviewee.image ||
-                        row.original.reviewee.avatarUrl ||
-                        undefined
-                      "
-                      :alt="row.original.reviewee.name"
-                      size="xs"
-                    />
-                    <span>{{ row.original.reviewee.name }}</span>
-                  </div>
-                </template>
-
-                <template #content-cell="{ row }">
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)"
-                  >
-                    <span class="truncate block">{{
-                      row.original.content
-                    }}</span>
-                  </UButton>
-                </template>
-
-                <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.createdAt) }}
-                  </span>
-                </template>
-
-                <template #review-cell="{ row }">
-                  <NuxtLink
-                    v-if="row.original.review?.id"
-                    :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    {{ row.original.review.name }}
-                  </NuxtLink>
-                  <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                    Not assigned
-                  </span>
-                </template>
-
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :label="row.original.published ? 'Published' : 'Draft'"
-                    :color="row.original.published ? 'green' : 'gray'"
-                    size="xs"
-                  />
-                </template>
-              </UTable>
-            </UCard>
-          </div>
-
           <!-- Incoming Tab -->
           <div v-else-if="selectedTab === 'incoming'">
             <UCard>
@@ -517,13 +405,23 @@ const incomingColumns = [
                   </template>
 
                   <template #actions-cell="{ row }">
-                    <UButton
-                      loading-auto
-                      size="xs"
-                      @click="publishFeedback(row.original.id)"
-                    >
-                      Publish
-                    </UButton>
+                    <div class="flex gap-2">
+                      <USelectMenu
+                        :model-value="userReviews.get(row.original.revieweeId)?.find((r) => r.value === row.original.reviewScheduleId)"
+                        :items="userReviews.get(row.original.revieweeId) || []"
+                        placeholder="Assign review"
+                        @update:open="(isOpen) => isOpen && fetchUserReviews(row.original.revieweeId)"
+                        @update:model-value="
+                          (item) => reassignFeedback(row.original.id, item?.value || null)
+                        "
+                      />
+                      <UButton
+                        loading-auto
+                        @click="publishFeedback(row.original.id)"
+                      >
+                        Publish
+                      </UButton>
+                    </div>
                   </template>
                 </UTable>
               </div>

@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, desc } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -77,7 +77,8 @@ export default defineEventHandler(async (event) => {
           inArray(feedback.revieweeId, buddyIds),
           eq(feedback.published, false)
         )
-      );
+      )
+      .orderBy(desc(feedback.createdAt));
 
     // Group feedback by reviewee (or return single buddy's feedback if filtered)
     const filteredBuddyAssignments = buddyIdFilter
