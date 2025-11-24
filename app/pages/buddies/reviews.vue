@@ -7,26 +7,8 @@ definePageMeta({
   middleware: "buddy",
 });
 
-const { buddies, pending } = useBuddies();
 const toast = useToast();
-
-// Initialize selected buddy - null until buddies load
-const selectedBuddyId = ref<string | null>(null);
-
-// Auto-select first buddy when they load
-watch(
-  () => pending.value,
-  (isPending) => {
-    if (
-      !isPending &&
-      selectedBuddyId.value === null &&
-      buddies.value.length > 0
-    ) {
-      selectedBuddyId.value = buddies.value[0].id;
-    }
-  },
-  { immediate: true },
-);
+const { selectedBuddyId } = useSelectedBuddy();
 
 // Fetch upcoming reviews for buddy (reactive based on selectedBuddyId)
 const { data: upcomingData, refresh: refreshUpcoming } = useFetch(() =>

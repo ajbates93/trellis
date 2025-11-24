@@ -41,25 +41,7 @@ definePageMeta({
   middleware: "buddy",
 });
 
-const { buddies, pending } = useBuddies();
-
-// Initialize selected buddy - null until buddies load
-const selectedBuddyId = ref<string | null>(null);
-
-// Auto-select first buddy when they load
-watch(
-  () => pending.value,
-  (isPending) => {
-    if (
-      !isPending &&
-      selectedBuddyId.value === null &&
-      buddies.value.length > 0
-    ) {
-      selectedBuddyId.value = buddies.value[0].id;
-    }
-  },
-  { immediate: true },
-);
+const { selectedBuddyId } = useSelectedBuddy();
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId
 const { data: buddyGoalsData, refresh: refreshBuddyGoals } = useFetch(() =>
