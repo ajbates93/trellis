@@ -1,5 +1,5 @@
 import { db } from "../../database/connection";
-import { reviewSchedules, users, feedback } from "../../database/schema";
+import { reviewSchedules, users, feedback, buddyCheckins } from "../../database/schema";
 import { eq, and, or, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
       )
       .orderBy(sql`${reviewSchedules.completedDate} DESC NULLS LAST`);
 
-    // Get buddy info and feedback count for each review
+    // Get buddy info, feedback count, and check-ins for each review
     const reviewsWithDetails = await Promise.all(
       pastReviews.map(async (review) => {
         const [buddy] = await db
@@ -101,10 +101,29 @@ export default defineEventHandler(async (event) => {
           .where(eq(feedback.reviewScheduleId, review.id))
           .then(result => Number(result[0].count));
 
+        // Get check-ins for this review
+        const checkinsForReview = await db
+          .select({
+            id: buddyCheckins.id,
+            buddy: {
+              id: users.id,
+              name: users.name,
+              email: users.email,
+              avatarUrl: users.avatarUrl,
+            },
+            notes: buddyCheckins.notes,
+            createdAt: buddyCheckins.createdAt,
+          })
+          .from(buddyCheckins)
+          .innerJoin(users, eq(buddyCheckins.buddyId, users.id))
+          .where(eq(buddyCheckins.reviewScheduleId, review.id))
+          .orderBy(buddyCheckins.createdAt);
+
         return {
           ...review,
           buddy,
           feedbackCount,
+          checkins: checkinsForReview,
         };
       })
     );

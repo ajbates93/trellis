@@ -17,7 +17,11 @@ const selectedBuddyId = ref<string | null>(null);
 watch(
   () => pending.value,
   (isPending) => {
-    if (!isPending && selectedBuddyId.value === null && buddies.value.length > 0) {
+    if (
+      !isPending &&
+      selectedBuddyId.value === null &&
+      buddies.value.length > 0
+    ) {
       selectedBuddyId.value = buddies.value[0].id;
     }
   },
@@ -25,14 +29,18 @@ watch(
 );
 
 // Fetch upcoming reviews for buddy (reactive based on selectedBuddyId)
-const { data: upcomingData, refresh: refreshUpcoming } = useFetch(
-  () => selectedBuddyId.value ? `/api/reviews/upcoming?userId=${selectedBuddyId.value}` : null
+const { data: upcomingData, refresh: refreshUpcoming } = useFetch(() =>
+  selectedBuddyId.value
+    ? `/api/reviews/upcoming?userId=${selectedBuddyId.value}`
+    : null,
 );
 const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 
 // Fetch past reviews for buddy (reactive based on selectedBuddyId)
-const { data: pastData, refresh: refreshPast } = useFetch(
-  () => selectedBuddyId.value ? `/api/reviews/past?userId=${selectedBuddyId.value}` : null
+const { data: pastData, refresh: refreshPast } = useFetch(() =>
+  selectedBuddyId.value
+    ? `/api/reviews/past?userId=${selectedBuddyId.value}`
+    : null,
 );
 const pastReviews = computed(() => pastData.value?.reviews || []);
 
@@ -76,11 +84,11 @@ const getDaysUntilReview = (scheduledDate: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "scheduled":
-      return "amber";
+      return "warning";
     case "completed":
-      return "green";
+      return "success";
     case "rescheduled":
-      return "blue";
+      return "information";
     default:
       return "gray";
   }
@@ -89,10 +97,13 @@ const getStatusColor = (status: string) => {
 // Modal state for review details
 const showReviewModal = ref(false);
 const selectedReview = ref<any>(null);
+const checkinNotes = ref<string>("");
 
-const openReviewModal = (review: any) => {
+const openReviewModal = async (review: any) => {
   selectedReview.value = review;
   showReviewModal.value = true;
+  // Initialize notes for the modal
+  checkinNotes.value = "";
 };
 
 // Create review modal state
@@ -213,7 +224,7 @@ const upcomingColumns = [
   },
   {
     id: "actions",
-    header: "",
+    header: "Actions",
   },
 ];
 
@@ -275,7 +286,9 @@ const pastColumns = [
         <div v-if="selectedBuddyId && buddyInfo" class="space-y-8">
           <!-- Upcoming Reviews Section -->
           <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <h2
+              class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
+            >
               Upcoming Reviews
             </h2>
             <UCard>
@@ -295,18 +308,18 @@ const pastColumns = [
                 </p>
               </div>
 
-              <UTable
-                v-else
-                :columns="upcomingColumns"
-                :data="upcomingReviews"
-              >
+              <UTable v-else :columns="upcomingColumns" :data="upcomingReviews">
                 <template #date-cell="{ row }">
                   <div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                    <div
+                      class="text-sm font-medium text-gray-900 dark:text-white"
+                    >
                       {{ formatDate(row.original.scheduledDate) }}
                     </div>
                     <div
-                      v-if="getDaysUntilReview(row.original.scheduledDate) !== null"
+                      v-if="
+                        getDaysUntilReview(row.original.scheduledDate) !== null
+                      "
                       class="text-xs text-gray-500 dark:text-gray-400"
                     >
                       {{
@@ -330,23 +343,19 @@ const pastColumns = [
                   <UBadge
                     :label="row.original.status"
                     :color="getStatusColor(row.original.status)"
-                    size="xs"
                   />
                 </template>
 
                 <template #actions-cell="{ row }">
                   <div class="flex items-center gap-2">
-                    <UButton
-                      size="xs"
-                      variant="ghost"
-                      @click="openReviewModal(row.original)"
-                    >
-                      View
+                    <UButton @click="openReviewModal(row.original)">
+                      Preview
                     </UButton>
+                    <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
+                      <UButton color="primary"> View </UButton>
+                    </NuxtLink>
                     <UButton
                       v-if="row.original.status === 'scheduled'"
-                      size="xs"
-                      variant="ghost"
                       color="success"
                       @click="completeReview(row.original.id)"
                     >
@@ -360,14 +369,13 @@ const pastColumns = [
 
           <!-- Past Reviews Section -->
           <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <h2
+              class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
+            >
               Past Reviews
             </h2>
             <UCard>
-              <div
-                v-if="pastReviews.length === 0"
-                class="text-center py-12"
-              >
+              <div v-if="pastReviews.length === 0" class="text-center py-12">
                 <UIcon
                   name="i-heroicons-check-circle"
                   class="text-gray-400 text-4xl mb-2"
@@ -380,11 +388,7 @@ const pastColumns = [
                 </p>
               </div>
 
-              <UTable
-                v-else
-                :columns="pastColumns"
-                :data="pastReviews"
-              >
+              <UTable v-else :columns="pastColumns" :data="pastReviews">
                 <template #date-cell="{ row }">
                   <span class="text-sm text-gray-600 dark:text-gray-400">
                     {{ formatDate(row.original.completedDate) }}
@@ -403,7 +407,6 @@ const pastColumns = [
                   <UBadge
                     :label="row.original.status"
                     :color="getStatusColor(row.original.status)"
-                    size="xs"
                   />
                 </template>
               </UTable>
@@ -415,36 +418,87 @@ const pastColumns = [
   </UDashboardPanel>
 
   <!-- Review Details Modal -->
-  <UModal v-model:open="showReviewModal" :title="`Review: ${selectedReview?.name}`">
+  <UModal
+    v-model:open="showReviewModal"
+    :title="`Review: ${selectedReview?.name}`"
+    size="xl"
+  >
     <template #body>
-      <div v-if="selectedReview" class="space-y-4">
-        <div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Scheduled Date</div>
-          <div class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ formatDate(selectedReview.scheduledDate) }}
-          </div>
-        </div>
-
-        <div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Status</div>
+      <div v-if="selectedReview" class="space-y-6">
+        <!-- Review Details -->
+        <div class="grid grid-cols-2 gap-4">
           <div>
-            <UBadge
-              :label="selectedReview.status"
-              :color="getStatusColor(selectedReview.status)"
-            />
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              Scheduled Date
+            </div>
+            <div class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ formatDate(selectedReview.scheduledDate) }}
+            </div>
+          </div>
+
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Status</div>
+            <div>
+              <UBadge
+                :label="selectedReview.status"
+                :color="getStatusColor(selectedReview.status)"
+              />
+            </div>
           </div>
         </div>
 
         <div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Feedback Items</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Feedback Items
+          </div>
           <div class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ selectedReview.feedbackCount || 0 }} items
           </div>
         </div>
 
         <div v-if="selectedReview.notes">
-          <div class="text-sm text-gray-500 dark:text-gray-400">Notes</div>
-          <div class="text-gray-900 dark:text-gray-100">{{ selectedReview.notes }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Pre-Review Notes
+          </div>
+          <div class="text-gray-900 dark:text-gray-100">
+            {{ selectedReview.notes }}
+          </div>
+        </div>
+
+        <!-- Check-ins Section -->
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            💬 Check-ins
+          </h3>
+          <div
+            v-if="selectedReview.checkins && selectedReview.checkins.length > 0"
+            class="space-y-3"
+          >
+            <div
+              v-for="checkin in selectedReview.checkins"
+              :key="checkin.id"
+              class="bg-gray-50 dark:bg-gray-800 rounded p-3 text-sm"
+            >
+              <div class="flex items-start justify-between mb-2">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{
+                      format(new Date(checkin.createdAt), "MMM d, yyyy h:mm a")
+                    }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    by {{ checkin.buddy.name }}
+                  </p>
+                </div>
+              </div>
+              <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {{ checkin.notes }}
+              </p>
+            </div>
+          </div>
+          <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+            No check-ins recorded for this review.
+          </div>
         </div>
       </div>
     </template>
@@ -490,9 +544,7 @@ const pastColumns = [
 
         <!-- Review Name -->
         <div>
-          <label class="block text-sm font-medium mb-2">
-            Review Name
-          </label>
+          <label class="block text-sm font-medium mb-2"> Review Name </label>
           <UInput
             v-model="reviewName"
             placeholder="e.g., January 2026"
