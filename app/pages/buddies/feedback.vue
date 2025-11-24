@@ -29,7 +29,6 @@ const buddyReceivedFeedback = computed(
   () => buddyReceivedData.value?.feedback || [],
 );
 
-
 // Fetch incoming (unpublished) feedback for all buddies
 const { data: incomingData, refresh: refreshIncoming } = useFetch(
   "/api/feedback/for-buddy",
@@ -136,13 +135,19 @@ const reassignFeedback = async (
 
 // Fetch reviews for a user (for reassignment dropdown)
 const userReviews = ref<Map<string, any[]>>(new Map());
-const fetchUserReviews = async (userId: string) => {
-  if (userReviews.value.has(userId)) return;
+const loadingReviews = ref<Set<string>>(new Set());
 
+const fetchUserReviews = async (userId: string) => {
+  if (userReviews.value.has(userId) || loadingReviews.value.has(userId)) return;
+
+  loadingReviews.value.add(userId);
   try {
-    const data = await $fetch(`/api/reviews/upcoming?userId=${userId}`);
-    const data2 = await $fetch(`/api/reviews/past?userId=${userId}`);
-    const allReviews = [...(data.reviews || []), ...(data2.reviews || [])].map(
+    const [upcomingRes, pastRes] = await Promise.all([
+      $fetch(`/api/reviews/upcoming?userId=${userId}`),
+      $fetch(`/api/reviews/past?userId=${userId}`),
+    ]);
+
+    const allReviews = [...(upcomingRes.reviews || []), ...(pastRes.reviews || [])].map(
       (r: any) => ({
         value: r.id,
         label: r.name,
@@ -151,6 +156,8 @@ const fetchUserReviews = async (userId: string) => {
     userReviews.value.set(userId, allReviews);
   } catch (error) {
     console.error("Failed to fetch reviews:", error);
+  } finally {
+    loadingReviews.value.delete(userId);
   }
 };
 
@@ -398,13 +405,23 @@ const incomingColumns = [
                   </template>
 
                   <template #actions-cell="{ row }">
-                    <UButton
-                      loading-auto
-                      size="xs"
-                      @click="publishFeedback(row.original.id)"
-                    >
-                      Publish
-                    </UButton>
+                    <div class="flex gap-2">
+                      <USelectMenu
+                        :model-value="userReviews.get(row.original.revieweeId)?.find((r) => r.value === row.original.reviewScheduleId)"
+                        :items="userReviews.get(row.original.revieweeId) || []"
+                        placeholder="Assign review"
+                        @update:open="(isOpen) => isOpen && fetchUserReviews(row.original.revieweeId)"
+                        @update:model-value="
+                          (item) => reassignFeedback(row.original.id, item?.value || null)
+                        "
+                      />
+                      <UButton
+                        loading-auto
+                        @click="publishFeedback(row.original.id)"
+                      >
+                        Publish
+                      </UButton>
+                    </div>
                   </template>
                 </UTable>
               </div>
