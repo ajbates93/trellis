@@ -15,7 +15,6 @@ const selectedTab = ref("received");
 
 const tabs = [
   { label: "Received", value: "received" },
-  { label: "Given", value: "given" },
   { label: "Incoming", value: "incoming" },
 ];
 
@@ -30,13 +29,6 @@ const buddyReceivedFeedback = computed(
   () => buddyReceivedData.value?.feedback || [],
 );
 
-// Fetch buddy given feedback (reactive based on selectedBuddyId)
-const { data: buddyGivenData, refresh: refreshBuddyGiven } = useFetch(() =>
-  selectedBuddyId.value
-    ? `/api/feedback/buddy-given?buddyId=${selectedBuddyId.value}`
-    : null,
-);
-const buddyGivenFeedback = computed(() => buddyGivenData.value?.feedback || []);
 
 // Fetch incoming (unpublished) feedback for all buddies
 const { data: incomingData, refresh: refreshIncoming } = useFetch(
@@ -47,12 +39,9 @@ const incomingFeedback = computed(() => {
   return assignments.flatMap((assignment: any) => assignment.feedback || []);
 });
 
-// Refresh Received/Given when buddy changes, but Incoming stays the same
+// Refresh Received when buddy changes, but Incoming stays the same
 watch(selectedBuddyId, async () => {
-  await Promise.all([
-    refreshBuddyReceived(),
-    refreshBuddyGiven(),
-  ]);
+  await refreshBuddyReceived();
 });
 
 // Get unread count refresh function
@@ -198,23 +187,6 @@ const receivedColumns = [
   { id: "review", accessorKey: "review", header: "Review" },
 ];
 
-const givenColumns = [
-  { id: "to", accessorKey: "reviewee", header: "To" },
-  {
-    id: "content",
-    accessorKey: "content",
-    header: "Feedback",
-    meta: {
-      class: {
-        td: "max-w-md",
-      },
-    },
-  },
-  { id: "date", accessorKey: "createdAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
-  { id: "status", accessorKey: "published", header: "Status" },
-];
-
 const incomingColumns = [
   { id: "from", accessorKey: "reviewer", header: "From" },
   {
@@ -342,84 +314,6 @@ const incomingColumns = [
                   <span v-else class="text-sm text-gray-400 dark:text-gray-600">
                     Not assigned
                   </span>
-                </template>
-              </UTable>
-            </UCard>
-          </div>
-
-          <!-- Given Tab -->
-          <div v-else-if="selectedTab === 'given'">
-            <UCard>
-              <div
-                v-if="buddyGivenFeedback.length === 0"
-                class="text-center py-12"
-              >
-                <UIcon
-                  name="i-heroicons-chat-bubble-left"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No feedback given
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  This buddy hasn't given any feedback yet
-                </p>
-              </div>
-
-              <UTable v-else :columns="givenColumns" :data="buddyGivenFeedback">
-                <template #to-cell="{ row }">
-                  <div class="flex items-center gap-2">
-                    <UAvatar
-                      :src="
-                        row.original.reviewee.image ||
-                        row.original.reviewee.avatarUrl ||
-                        undefined
-                      "
-                      :alt="row.original.reviewee.name"
-                      size="xs"
-                    />
-                    <span>{{ row.original.reviewee.name }}</span>
-                  </div>
-                </template>
-
-                <template #content-cell="{ row }">
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)"
-                  >
-                    <span class="truncate block">{{
-                      row.original.content
-                    }}</span>
-                  </UButton>
-                </template>
-
-                <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.createdAt) }}
-                  </span>
-                </template>
-
-                <template #review-cell="{ row }">
-                  <NuxtLink
-                    v-if="row.original.review?.id"
-                    :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    {{ row.original.review.name }}
-                  </NuxtLink>
-                  <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                    Not assigned
-                  </span>
-                </template>
-
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :label="row.original.published ? 'Published' : 'Draft'"
-                    :color="row.original.published ? 'green' : 'gray'"
-                    size="xs"
-                  />
                 </template>
               </UTable>
             </UCard>
