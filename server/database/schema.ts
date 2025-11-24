@@ -22,6 +22,12 @@ export const users = pgTable("users", {
   nextReviewDate: date("next_review_date"),
   avatarUrl: text("avatar_url"),
   lastInsightsDate: timestamp("last_insights_date"),
+  // Profile fields
+  preferredName: varchar("preferred_name", { length: 100 }),
+  pronouns: varchar("pronouns", { length: 50 }),
+  bio: text("bio"),
+  reviewPreference: varchar("review_preference", { length: 20 }), // in-person, remote, hybrid, no-preference
+  communicationPreferences: text("communication_preferences"),
   // Admin plugin fields
   role: varchar("role", { length: 50 }).default("user"),
   banned: boolean("banned").default(false),

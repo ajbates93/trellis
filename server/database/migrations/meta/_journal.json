@@ -15,6 +15,13 @@
       "when": 1763134132054,
       "tag": "0001_curious_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763973456546,
+      "tag": "0002_optimal_vindicator",
+      "breakpoints": true
     }
   ]
 }

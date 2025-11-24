@@ -275,12 +275,17 @@ const userMenuItems = [
               <UButton
                 :avatar="{
                   src:
-                    user.image ||
                     user.avatarUrl ||
+                    user.image ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`,
                 }"
                 :label="
-                  collapsed ? undefined : user.name || user.email || 'User'
+                  collapsed
+                    ? undefined
+                    : user.preferredName ||
+                      user.name?.split(' ')[0] ||
+                      user.email ||
+                      'User'
                 "
                 color="neutral"
                 variant="ghost"
