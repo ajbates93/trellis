@@ -4,8 +4,10 @@
       <div class="p-4 sm:p-6 lg:p-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            🎉 Brag Bucket
+          <h1
+            class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3"
+          >
+            Brag Bucket
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
             Celebrate your achievements and wins throughout the year
@@ -17,45 +19,43 @@
           <UCard
             class="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20"
           >
-            <template #body>
-              <div class="flex items-center justify-between">
-                <div>
-                  <p
-                    class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                  >
-                    Total Achievements
-                  </p>
-                  <p
-                    class="mt-2 text-3xl font-bold text-teal-600 dark:text-teal-400"
-                  >
-                    {{ achievements.length }}
-                  </p>
-                </div>
-                <div class="text-4xl">🏆</div>
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Achievements
+                </p>
+                <p
+                  class="mt-2 text-3xl font-bold text-teal-600 dark:text-teal-400"
+                >
+                  {{ achievements.length }}
+                </p>
               </div>
-            </template>
+              <UIcon
+                name="i-heroicons-trophy"
+                class="w-10 h-10 text-teal-500 dark:text-teal-400"
+              />
+            </div>
           </UCard>
 
           <UCard
             class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
           >
-            <template #body>
-              <div class="flex items-center justify-between">
-                <div>
-                  <p
-                    class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                  >
-                    This Year
-                  </p>
-                  <p
-                    class="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400"
-                  >
-                    {{ thisYearCount }}
-                  </p>
-                </div>
-                <div class="text-4xl">⭐</div>
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  This Year
+                </p>
+                <p
+                  class="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400"
+                >
+                  {{ thisYearCount }}
+                </p>
               </div>
-            </template>
+              <UIcon
+                name="i-heroicons-calendar"
+                class="w-10 h-10 text-blue-500 dark:text-blue-400"
+              />
+            </div>
           </UCard>
         </div>
 
@@ -73,65 +73,187 @@
 
         <!-- Loading State -->
         <div v-if="isLoading" class="space-y-6">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          <h2
+            class="text-xl font-semibold text-gray-900 dark:text-white text-center"
+          >
             Your Achievement Timeline
           </h2>
-          <div class="relative pl-8 space-y-6">
-            <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-green-400 dark:from-teal-600 dark:to-green-600"></div>
-            <div v-for="i in 3" :key="i" class="relative group">
-              <div class="absolute -left-5 top-3 w-4 h-4 bg-teal-500 dark:bg-teal-400 rounded-full border-4 border-white dark:border-gray-900 shadow-md"></div>
-              <UCard class="animate-pulse">
-                <template #body>
-                  <div class="space-y-3">
-                    <div class="h-4 bg-gray-700 dark:bg-gray-600 rounded w-3/4"></div>
-                    <div class="h-3 bg-gray-700 dark:bg-gray-600 rounded w-1/4"></div>
-                    <div class="h-12 bg-gray-700 dark:bg-gray-600 rounded"></div>
+          <div class="relative">
+            <!-- Center line -->
+            <div
+              class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"
+            ></div>
+            <div class="space-y-12">
+              <div v-for="i in 3" :key="i" class="relative">
+                <!-- Timeline dot -->
+                <div
+                  class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10"
+                ></div>
+                <!-- Card container -->
+                <div class="grid grid-cols-2 gap-8">
+                  <div :class="i % 2 === 1 ? 'col-start-1' : 'col-start-2'">
+                    <UCard class="animate-pulse">
+                      <div class="space-y-3">
+                        <div
+                          class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"
+                        ></div>
+                        <div
+                          class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"
+                        ></div>
+                      </div>
+                    </UCard>
                   </div>
-                </template>
-              </UCard>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Timeline View -->
-        <div v-else-if="achievements.length > 0" class="space-y-6">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+        <div v-else-if="sortedAchievements.length > 0" class="space-y-6">
+          <h2
+            class="text-xl font-semibold text-gray-900 dark:text-white text-center"
+          >
             Your Achievement Timeline
           </h2>
 
-          <div class="relative pl-8">
-            <!-- Timeline line -->
+          <div class="relative">
+            <!-- Center timeline line -->
             <div
-              class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-green-400 dark:from-teal-600 dark:to-green-600"
+              class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"
             ></div>
 
-            <!-- Achievement cards -->
-            <div class="space-y-6 pl-8">
-              <div
-                v-for="(achievement, index) in achievements"
-                :key="achievement.id"
-                class="relative group"
+            <!-- Timeline items -->
+            <div class="space-y-12">
+              <template
+                v-for="(item, index) in timelineItems"
+                :key="
+                  item.type === 'year'
+                    ? `year-${item.year}`
+                    : item.achievement.id
+                "
               >
-                <!-- Timeline dot -->
+                <!-- Year marker -->
                 <div
-                  class="absolute -left-5 top-3 w-4 h-4 bg-teal-500 dark:bg-teal-400 rounded-full border-4 border-white dark:border-gray-900 shadow-md group-hover:scale-125 transition-transform duration-200"
-                ></div>
+                  v-if="item.type === 'year'"
+                  class="relative flex justify-center"
+                >
+                  <div
+                    class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-4 py-2 z-10 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 select-none"
+                    @click="toggleYear(item.year)"
+                  >
+                    <span
+                      class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
+                    >
+                      {{ item.year }}
+                      <UIcon
+                        :name="
+                          expandedYears[item.year]
+                            ? 'i-heroicons-chevron-down'
+                            : 'i-heroicons-chevron-right'
+                        "
+                        class="w-4 h-4 transition-transform duration-200"
+                      />
+                    </span>
+                  </div>
+                </div>
 
-                <!-- Achievement card -->
-                <AchievementsAchievementCard
-                  :achievement="achievement"
-                  @updated="refreshAchievements"
-                  @deleted="refreshAchievements"
-                  @edit="editAchievement"
-                />
-              </div>
+                <!-- Achievement item -->
+                <Transition
+                  v-if="item.type === 'achievement'"
+                  name="achievement"
+                  appear
+                >
+                  <div
+                    v-if="
+                      expandedYears[getYearForAchievement(item.achievement)]
+                    "
+                    class="relative group"
+                  >
+                    <!-- Timeline dot -->
+                    <div
+                      class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10 group-hover:scale-150 transition-transform duration-200"
+                    ></div>
+
+                    <!-- Grid for alternating layout -->
+                    <div class="grid grid-cols-2 gap-8 items-start">
+                      <!-- Left side -->
+                      <div class="text-right">
+                        <template v-if="item.displayIndex % 2 === 0">
+                          <!-- Card on left -->
+                          <AchievementsAchievementCard
+                            :achievement="item.achievement"
+                            align="right"
+                            @updated="refreshAchievements"
+                            @deleted="refreshAchievements"
+                            @edit="editAchievement"
+                          />
+                        </template>
+                        <template v-else>
+                          <!-- Date on left -->
+                          <div class="pr-4 pt-4">
+                            <p
+                              class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                            >
+                              {{ formatMonth(item.achievement.achievedDate) }}
+                            </p>
+                            <p
+                              class="text-4xl font-bold text-gray-900 dark:text-white"
+                            >
+                              {{ formatDay(item.achievement.achievedDate) }}
+                            </p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                              {{ formatYear(item.achievement.achievedDate) }}
+                            </p>
+                          </div>
+                        </template>
+                      </div>
+
+                      <!-- Right side -->
+                      <div>
+                        <template v-if="item.displayIndex % 2 === 0">
+                          <!-- Date on right -->
+                          <div class="pl-4 pt-4">
+                            <p
+                              class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                            >
+                              {{ formatMonth(item.achievement.achievedDate) }}
+                            </p>
+                            <p
+                              class="text-4xl font-bold text-gray-900 dark:text-white"
+                            >
+                              {{ formatDay(item.achievement.achievedDate) }}
+                            </p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                              {{ formatYear(item.achievement.achievedDate) }}
+                            </p>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <!-- Card on right -->
+                          <AchievementsAchievementCard
+                            :achievement="item.achievement"
+                            align="left"
+                            @updated="refreshAchievements"
+                            @deleted="refreshAchievements"
+                            @edit="editAchievement"
+                          />
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+              </template>
             </div>
           </div>
         </div>
 
         <!-- Empty state -->
         <div v-else class="text-center py-12">
-          <div class="text-5xl mb-4">🪣</div>
+          <UIcon
+            name="i-heroicons-inbox"
+            class="w-16 h-16 mx-auto text-gray-400 mb-4"
+          />
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Your Brag Bucket is empty
           </h3>
@@ -160,7 +282,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed } from "vue";
+import { format } from "date-fns";
 import type { Ref } from "vue";
 
 interface Achievement {
@@ -173,11 +296,77 @@ interface Achievement {
   updatedAt?: string | Date | null;
 }
 
+type TimelineItem =
+  | { type: "year"; year: number }
+  | { type: "achievement"; achievement: Achievement; displayIndex: number };
+
 const achievements: Ref<Achievement[]> = ref([]);
 const isLoading = ref(true);
 const isModalOpen = ref(false);
 const modalMode = ref<"create" | "edit">("create");
 const selectedAchievement = ref<Achievement | null>(null);
+const expandedYears = ref<Record<number, boolean>>({});
+
+// Date formatting helpers
+const formatMonth = (dateStr: string) => format(new Date(dateStr), "MMM");
+const formatDay = (dateStr: string) => format(new Date(dateStr), "dd");
+const formatYear = (dateStr: string) => format(new Date(dateStr), "yyyy");
+
+// Sort achievements chronologically (oldest first)
+const sortedAchievements = computed(() => {
+  return [...achievements.value].sort((a, b) => {
+    return (
+      new Date(a.achievedDate).getTime() - new Date(b.achievedDate).getTime()
+    );
+  });
+});
+
+// Build timeline items with year markers
+const timelineItems = computed<TimelineItem[]>(() => {
+  const items: TimelineItem[] = [];
+  let currentYear: number | null = null;
+  let displayIndex = 0;
+
+  for (const achievement of sortedAchievements.value) {
+    const year = new Date(achievement.achievedDate).getFullYear();
+
+    // Add year marker if this is a new year
+    if (year !== currentYear) {
+      items.push({ type: "year", year });
+      currentYear = year;
+    }
+
+    items.push({
+      type: "achievement",
+      achievement,
+      displayIndex: displayIndex++,
+    });
+  }
+
+  return items;
+});
+
+// Helper function to get year for an achievement
+const getYearForAchievement = (achievement: Achievement): number => {
+  return new Date(achievement.achievedDate).getFullYear();
+};
+
+// Toggle year expansion
+const toggleYear = (year: number) => {
+  expandedYears.value[year] = !expandedYears.value[year];
+};
+
+// Initialize all years as expanded
+const initializeExpandedYears = () => {
+  const years = new Set(
+    achievements.value.map((a) => new Date(a.achievedDate).getFullYear()),
+  );
+  years.forEach((year) => {
+    if (!(year in expandedYears.value)) {
+      expandedYears.value[year] = true;
+    }
+  });
+};
 
 // Fetch achievements on mount
 const refreshAchievements = async () => {
@@ -186,6 +375,7 @@ const refreshAchievements = async () => {
     const response = await $fetch("/api/achievements");
     if (response) {
       achievements.value = response.achievements || [];
+      initializeExpandedYears();
     }
   } catch (error) {
     console.error("Failed to fetch achievements:", error);
@@ -226,3 +416,29 @@ onMounted(async () => {
   await refreshAchievements();
 });
 </script>
+
+<style scoped>
+/* Transition for achievement items */
+.achievement-enter-active,
+.achievement-leave-active {
+  transition: all 0.3s ease;
+}
+
+.achievement-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.achievement-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+  max-height: 0;
+  margin: 0;
+}
+
+.achievement-enter-to,
+.achievement-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>

@@ -25,12 +25,44 @@ const isOpen = computed({
 });
 
 // Form state
-const title = ref(props.achievement?.title || "");
-const description = ref(props.achievement?.description || "");
-const achievedDate = ref(
-  props.achievement?.achievedDate || new Date().toISOString().split("T")[0],
-);
+const title = ref("");
+const description = ref("");
+const achievedDate = ref(new Date().toISOString().split("T")[0]);
 const isSubmitting = ref(false);
+
+// Reset form to current achievement or defaults
+const resetForm = () => {
+  if (props.mode === "edit" && props.achievement) {
+    title.value = props.achievement.title;
+    description.value = props.achievement.description || "";
+    achievedDate.value = props.achievement.achievedDate;
+  } else {
+    title.value = "";
+    description.value = "";
+    achievedDate.value = new Date().toISOString().split("T")[0];
+  }
+};
+
+// Update form when achievement prop changes
+watch(
+  () => props.achievement,
+  () => {
+    if (props.isOpen) {
+      resetForm();
+    }
+  },
+  { immediate: true }
+);
+
+// Reset form when modal opens
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    if (newValue) {
+      resetForm();
+    }
+  }
+);
 
 // Validation
 const isFormValid = computed(() => {
@@ -98,16 +130,6 @@ const handleSubmit = async () => {
     isSubmitting.value = false;
   }
 };
-
-// Reset form when modal closes
-watch(isOpen, (newValue) => {
-  if (!newValue) {
-    title.value = props.achievement?.title || "";
-    description.value = props.achievement?.description || "";
-    achievedDate.value =
-      props.achievement?.achievedDate || new Date().toISOString().split("T")[0];
-  }
-});
 </script>
 
 <template>

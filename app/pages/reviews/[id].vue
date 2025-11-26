@@ -71,9 +71,12 @@ const openFeedbackModal = (feedbackItem: any) => {
 
 // Tabs with dynamic counts
 const tabs = computed(() => [
-  { label: `Feedback (${feedback.value.length})`, value: 'feedback' },
-  { label: `Goals (${goals.value.length})`, value: 'goals' },
-  { label: `Achievements (${achievements.value.length})`, value: 'achievements' },
+  { label: `Feedback (${feedback.value.length})`, value: "feedback" },
+  { label: `Goals (${goals.value.length})`, value: "goals" },
+  {
+    label: `Achievements (${achievements.value.length})`,
+    value: "achievements",
+  },
 ]);
 
 // Feedback table columns
@@ -279,7 +282,9 @@ const feedbackColumns = [
                         <p class="font-medium text-gray-900 dark:text-white">
                           {{ achievement.title }}
                         </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <p
+                          class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                        >
                           {{ formatDate(achievement.achievedDate) }}
                         </p>
                         <p

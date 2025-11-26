@@ -70,6 +70,12 @@ const personalLinks = computed(() => [
     active: route.path === "/feedback/give",
   },
   {
+    label: "Brag Bucket",
+    icon: "i-heroicons-star",
+    to: "/brag-bucket",
+    active: route.path === "/brag-bucket",
+  },
+  {
     label: "Feedback",
     icon: "i-heroicons-chat-bubble-left-right",
     to: "/feedback/inbox",
@@ -81,12 +87,6 @@ const personalLinks = computed(() => [
     icon: "i-heroicons-flag",
     to: "/goals",
     active: route.path === "/goals",
-  },
-  {
-    label: "Brag Bucket",
-    icon: "i-heroicons-star",
-    to: "/brag-bucket",
-    active: route.path === "/brag-bucket",
   },
   {
     label: "Reviews",
