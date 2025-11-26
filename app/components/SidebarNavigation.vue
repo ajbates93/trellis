@@ -86,77 +86,9 @@ const isItemOrChildActive = (item: NavItem): boolean => {
       <div class="space-y-1">
         <template v-for="item in personalLinks" :key="item.label">
           <!-- Items with children (collapsible) -->
-          <div v-if="item.children && item.children.length > 0">
-            <!-- Parent item -->
-            <button
-              class="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
-              :class="[
-                isItemOrChildActive(item)
-                  ? 'bg-primary/10 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
-              ]"
-              :title="collapsed ? item.label : undefined"
-              @click="toggleExpanded(item.label)"
-            >
-              <UIcon
-                v-if="item.icon"
-                :name="item.icon"
-                class="w-5 h-5 flex-shrink-0"
-              />
-              <span v-if="!collapsed" class="flex-1 text-left text-sm font-medium">
-                {{ item.label }}
-              </span>
-              <UIcon
-                v-if="!collapsed && item.children"
-                :name="
-                  isExpanded(item.label)
-                    ? 'i-heroicons-chevron-down'
-                    : 'i-heroicons-chevron-right'
-                "
-                class="w-4 h-4 flex-shrink-0"
-              />
-            </button>
-
-            <!-- Children (shown when expanded) -->
-            <transition
-              enter-active-class="transition-all duration-200"
-              leave-active-class="transition-all duration-200"
-              enter-from-class="max-h-0 opacity-0"
-              enter-to-class="max-h-96 opacity-100"
-              leave-from-class="max-h-96 opacity-100"
-              leave-to-class="max-h-0 opacity-0"
-            >
-              <div
-                v-if="isExpanded(item.label)"
-                class="space-y-1 overflow-hidden"
-              >
-                <NuxtLink
-                  v-for="child in item.children"
-                  :key="child.label"
-                  :to="child.to || '#'"
-                  class="flex items-center gap-3 px-4 py-1 rounded-lg text-sm transition-colors duration-200 ml-4"
-                  :class="[
-                    child.active
-                      ? 'bg-primary/10 text-primary-600 dark:text-primary-400 font-medium'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
-                  ]"
-                  :title="collapsed ? child.label : undefined"
-                >
-                  <span class="flex-1">{{ child.label }}</span>
-                  <UBadge
-                    v-if="child.badge"
-                    :label="child.badge"
-                    size="xs"
-                    color="error"
-                  />
-                </NuxtLink>
-              </div>
-            </transition>
-          </div>
 
           <!-- Items without children (direct links) -->
           <NuxtLink
-            v-else
             :to="item.to || '#'"
             class="flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
             :class="[
@@ -174,7 +106,12 @@ const isItemOrChildActive = (item: NavItem): boolean => {
             <span v-if="!collapsed" class="flex-1 text-sm font-medium">
               {{ item.label }}
             </span>
-            <UBadge v-if="item.badge && !collapsed" :label="item.badge" size="xs" color="error" />
+            <UBadge
+              v-if="item.badge && !collapsed"
+              :label="item.badge"
+              size="xs"
+              color="error"
+            />
           </NuxtLink>
         </template>
       </div>
@@ -240,7 +177,10 @@ const isItemOrChildActive = (item: NavItem): boolean => {
                 :name="item.icon"
                 class="w-5 h-5 flex-shrink-0"
               />
-              <span v-if="!collapsed" class="flex-1 text-left text-sm font-medium">
+              <span
+                v-if="!collapsed"
+                class="flex-1 text-left text-sm font-medium"
+              >
                 {{ item.label }}
               </span>
               <UIcon

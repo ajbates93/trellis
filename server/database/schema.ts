@@ -69,6 +69,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   onboardingImports: many(onboardingImports),
   feedbackInsights: many(feedbackInsights),
+  achievements: many(achievements),
 }));
 
 // Feedback table
@@ -298,6 +299,27 @@ export const feedbackInsightsRelations = relations(
     }),
   }),
 );
+
+// Achievements table (Brag Bucket)
+export const achievements = pgTable("achievements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"), // Rich text HTML content from TipTap
+  achievedDate: date("achieved_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for achievements
+export const achievementsRelations = relations(achievements, ({ one }) => ({
+  user: one(users, {
+    fields: [achievements.userId],
+    references: [users.id],
+  }),
+}));
 
 // Better-auth tables
 export const sessions = pgTable("session", {
