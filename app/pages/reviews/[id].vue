@@ -294,7 +294,12 @@ const feedbackColumns = [
                           {{ achievement.description }}
                         </p>
                       </div>
-                      <div class="flex-shrink-0 text-2xl ml-4">✨</div>
+                      <div class="flex-shrink-0 text-2xl ml-4">
+                        <UIcon
+                          name="i-heroicons-star"
+                          class="text-gray-400 text-4xl mb-2"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import { db } from "../../database/connection";
-import { feedback, users } from "../../database/schema";
+import { feedback, users, reviewSchedules } from "../../database/schema";
 import { eq, and, gte, lt, desc } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -103,10 +103,25 @@ export default defineEventHandler(async (event) => {
     const feedbackReceivedPrevCount = feedbackReceivedLastWeek.length;
     const feedbackReceivedTrend = calculateTrend(feedbackReceivedCount, feedbackReceivedPrevCount);
 
-    // Calculate days until next review
+    // Calculate days until next review from review_schedules
     let daysUntilReview: number | null = null;
-    if (user.nextReviewDate) {
-      const reviewDate = new Date(user.nextReviewDate);
+
+    // Get the next upcoming review for this user
+    const upcomingReviews = await db
+      .select()
+      .from(reviewSchedules)
+      .where(
+        and(
+          eq(reviewSchedules.userId, session.user.id),
+          eq(reviewSchedules.status, "scheduled"),
+          gte(reviewSchedules.scheduledDate, now.toISOString().split('T')[0])
+        )
+      )
+      .orderBy(reviewSchedules.scheduledDate)
+      .limit(1);
+
+    if (upcomingReviews.length > 0 && upcomingReviews[0].scheduledDate) {
+      const reviewDate = new Date(upcomingReviews[0].scheduledDate);
       const diffTime = reviewDate.getTime() - now.getTime();
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
