@@ -32,7 +32,7 @@
             :pad-angle="0.02"
             :corner-radius="4"
           />
-          <VisTooltip />
+          <VisTooltip :template="template" />
         </VisSingleContainer>
       </div>
 
@@ -68,6 +68,15 @@ const error = ref(false);
 const chartData = ref<Array<{ label: string; value: number }>>([]);
 
 const colors = ["#3b82f6", "#10b981", "#f59e0b", "#A6CC74"]; // blue, green, amber
+
+const template = (d: any) => {
+  return `
+    <div style="padding: 8px;">
+      <div style="font-weight: 600; margin-bottom: 4px; text-transform: capitalize;">${d.label}</div>
+      <div style="color: rgb(59, 130, 246);">Feedback: ${d.value}</div>
+    </div>
+  `;
+};
 
 onMounted(async () => {
   try {

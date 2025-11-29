@@ -32,17 +32,6 @@
               </div>
             </div>
           </UCard>
-
-          <!-- Profile Section (Coming Soon) -->
-          <UCard>
-            <template #header>
-              <h2 class="text-lg font-medium">Profile</h2>
-            </template>
-
-            <div class="text-sm text-gray-500 dark:text-gray-400">
-              Profile customization options coming soon
-            </div>
-          </UCard>
         </div>
       </div>
     </template>
