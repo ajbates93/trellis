@@ -81,11 +81,74 @@ const showReviewModal = ref(false);
 const selectedReview = ref<any>(null);
 const checkinNotes = ref<string>("");
 
+// Edit review modal state
+const isEditModalOpen = ref(false);
+const editReviewId = ref<string>("");
+const editScheduledDate = ref<string>("");
+const editReviewName = ref<string>("");
+const editNotes = ref<string>("");
+const isEditing = ref(false);
+
 const openReviewModal = async (review: any) => {
   selectedReview.value = review;
   showReviewModal.value = true;
   // Initialize notes for the modal
   checkinNotes.value = "";
+};
+
+// Open edit modal
+const openEditModal = (review: any) => {
+  editReviewId.value = review.id;
+  editScheduledDate.value = review.scheduledDate;
+  editReviewName.value = review.name || "";
+  editNotes.value = review.notes || "";
+  isEditModalOpen.value = true;
+};
+
+// Update review
+const updateReview = async () => {
+  if (!editReviewId.value || !editScheduledDate.value) {
+    toast.add({
+      title: "Missing required fields",
+      description: "Please provide a scheduled date",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+    return;
+  }
+
+  isEditing.value = true;
+
+  try {
+    await $fetch(`/api/reviews/${editReviewId.value}`, {
+      method: "PATCH",
+      body: {
+        scheduledDate: editScheduledDate.value,
+        name: editReviewName.value,
+        notes: editNotes.value,
+      },
+    });
+
+    await Promise.all([refreshUpcoming(), refreshPast()]);
+    isEditModalOpen.value = false;
+
+    toast.add({
+      title: "Review updated",
+      description: "The review has been updated successfully",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to update review:", error);
+    toast.add({
+      title: "Failed to update review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    isEditing.value = false;
+  }
 };
 
 // Create review modal state
@@ -338,6 +401,14 @@ const pastColumns = [
                     </NuxtLink>
                     <UButton
                       v-if="row.original.status === 'scheduled'"
+                      color="gray"
+                      variant="outline"
+                      @click="openEditModal(row.original)"
+                    >
+                      Edit
+                    </UButton>
+                    <UButton
+                      v-if="row.original.status === 'scheduled'"
                       color="success"
                       @click="completeReview(row.original.id)"
                     >
@@ -569,6 +640,72 @@ const pastColumns = [
         @click="createReview"
       >
         Create Review
+      </UButton>
+    </template>
+  </UModal>
+
+  <!-- Edit Review Modal -->
+  <UModal
+    v-model:open="isEditModalOpen"
+    title="Edit Review"
+    class="sm:max-w-2xl"
+    :ui="{
+      footer: 'justify-end',
+    }"
+  >
+    <template #body>
+      <div class="space-y-4">
+        <!-- Scheduled Date -->
+        <div>
+          <label class="block text-sm font-medium mb-2">
+            Scheduled Date <span class="text-red-500">*</span>
+          </label>
+          <UInput
+            v-model="editScheduledDate"
+            type="date"
+            :min="new Date().toISOString().split('T')[0]"
+          />
+        </div>
+
+        <!-- Review Name -->
+        <div>
+          <label class="block text-sm font-medium mb-2"> Review Name </label>
+          <UInput
+            v-model="editReviewName"
+            placeholder="e.g., January 2026"
+            size="lg"
+          />
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-medium mb-2">
+            Notes (Optional)
+          </label>
+          <UTextarea
+            v-model="editNotes"
+            placeholder="Add any notes about this review..."
+            :rows="4"
+          />
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <UButton
+        color="neutral"
+        variant="ghost"
+        :disabled="isEditing"
+        @click="isEditModalOpen = false"
+      >
+        Cancel
+      </UButton>
+      <UButton
+        :loading="isEditing"
+        :disabled="!editScheduledDate"
+        @click="updateReview"
+      >
+        Save Changes
       </UButton>
     </template>
   </UModal>

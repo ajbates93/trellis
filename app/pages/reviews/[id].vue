@@ -31,6 +31,77 @@ const selectedTab = ref("feedback");
 const isCompleteModalOpen = ref(false);
 const completionNotes = ref("");
 
+// Edit review modal state
+const isEditModalOpen = ref(false);
+const editScheduledDate = ref<string>("");
+const editReviewName = ref<string>("");
+const editNotes = ref<string>("");
+const isEditing = ref(false);
+
+// Get current user session
+const { data: sessionData } = await useFetch("/api/auth/session");
+const currentUser = computed(() => sessionData.value?.user);
+
+// Check if current user is the buddy for this review
+const isBuddy = computed(() => {
+  return review.value?.buddyId === currentUser.value?.id;
+});
+
+// Open edit modal
+const openEditModal = () => {
+  if (!review.value) return;
+  editScheduledDate.value = review.value.scheduledDate;
+  editReviewName.value = review.value.name || "";
+  editNotes.value = review.value.notes || "";
+  isEditModalOpen.value = true;
+};
+
+// Update review
+const updateReview = async () => {
+  if (!editScheduledDate.value) {
+    toast.add({
+      title: "Missing required fields",
+      description: "Please provide a scheduled date",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+    return;
+  }
+
+  isEditing.value = true;
+
+  try {
+    await $fetch(`/api/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: {
+        scheduledDate: editScheduledDate.value,
+        name: editReviewName.value,
+        notes: editNotes.value,
+      },
+    });
+
+    await refresh();
+    isEditModalOpen.value = false;
+
+    toast.add({
+      title: "Review updated",
+      description: "The review has been updated successfully",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to update review:", error);
+    toast.add({
+      title: "Failed to update review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    isEditing.value = false;
+  }
+};
+
 // Complete review
 const completeReview = async () => {
   try {
@@ -139,12 +210,22 @@ const feedbackColumns = [
               </div>
             </div>
 
-            <UButton
-              v-if="review.status === 'scheduled'"
-              @click="isCompleteModalOpen = true"
-            >
-              Mark as Completed
-            </UButton>
+            <div v-if="isBuddy" class="flex gap-2">
+              <UButton
+                v-if="review.status === 'scheduled'"
+                color="gray"
+                variant="outline"
+                @click="openEditModal"
+              >
+                Edit Review
+              </UButton>
+              <UButton
+                v-if="review.status === 'scheduled'"
+                @click="isCompleteModalOpen = true"
+              >
+                Mark as Completed
+              </UButton>
+            </div>
           </div>
 
           <!-- Review Notes (if present) -->
@@ -354,6 +435,72 @@ const feedbackColumns = [
         :feedback="selectedFeedback"
         :show-mark-as-read="false"
       />
+
+      <!-- Edit Review Modal -->
+      <UModal
+        v-model:open="isEditModalOpen"
+        title="Edit Review"
+        class="sm:max-w-2xl"
+        :ui="{
+          footer: 'justify-end',
+        }"
+      >
+        <template #body>
+          <div class="space-y-4">
+            <!-- Scheduled Date -->
+            <div>
+              <label class="block text-sm font-medium mb-2">
+                Scheduled Date <span class="text-red-500">*</span>
+              </label>
+              <UInput
+                v-model="editScheduledDate"
+                type="date"
+                :min="new Date().toISOString().split('T')[0]"
+              />
+            </div>
+
+            <!-- Review Name -->
+            <div>
+              <label class="block text-sm font-medium mb-2"> Review Name </label>
+              <UInput
+                v-model="editReviewName"
+                placeholder="e.g., January 2026"
+                size="lg"
+              />
+            </div>
+
+            <!-- Notes -->
+            <div>
+              <label class="block text-sm font-medium mb-2">
+                Notes (Optional)
+              </label>
+              <UTextarea
+                v-model="editNotes"
+                placeholder="Add any notes about this review..."
+                :rows="4"
+              />
+            </div>
+          </div>
+        </template>
+
+        <template #footer>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="isEditing"
+            @click="isEditModalOpen = false"
+          >
+            Cancel
+          </UButton>
+          <UButton
+            :loading="isEditing"
+            :disabled="!editScheduledDate"
+            @click="updateReview"
+          >
+            Save Changes
+          </UButton>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>
