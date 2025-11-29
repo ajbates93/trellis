@@ -67,6 +67,20 @@
           />
         </div>
 
+        <!-- AI Insights Row -->
+        <div class="mb-8">
+          <div class="flex items-center gap-2 mb-4">
+            <UIcon name="i-heroicons-sparkles" class="text-purple-500 text-xl" />
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              AI Sentiment Analysis
+            </h2>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminTeamSentimentCard />
+            <AdminUserSentimentCard />
+          </div>
+        </div>
+
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <AdminEngagementChart />
