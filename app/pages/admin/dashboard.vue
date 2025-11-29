@@ -76,15 +76,23 @@
             </h2>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AdminTeamSentimentCard ref="teamSentimentCard" />
-            <AdminUserSentimentCard @analysis-completed="onUserAnalysisCompleted" />
+            <ClientOnly>
+              <AdminTeamSentimentCard ref="teamSentimentCard" @user-selected="onTeamUserSelected" />
+            </ClientOnly>
+            <ClientOnly>
+              <AdminUserSentimentCard ref="userSentimentCard" @analysis-completed="onUserAnalysisCompleted" />
+            </ClientOnly>
           </div>
         </div>
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <AdminEngagementChart />
-          <AdminFeedbackDistribution />
+          <ClientOnly>
+            <AdminEngagementChart />
+          </ClientOnly>
+          <ClientOnly>
+            <AdminFeedbackDistribution />
+          </ClientOnly>
         </div>
 
         <!-- Bottom Row -->
@@ -108,9 +116,17 @@ const stats = ref<any>(null);
 // Reference to team sentiment card for triggering refresh hint
 const teamSentimentCard = ref<{ indicateDataStale: () => void } | null>(null);
 
+// Reference to user sentiment card for selection from team card
+const userSentimentCard = ref<{ selectUser: (userId: string) => void } | null>(null);
+
 // Called when user analysis is completed
 const onUserAnalysisCompleted = () => {
   teamSentimentCard.value?.indicateDataStale();
+};
+
+// Called when user is selected from team sentiment card
+const onTeamUserSelected = (userId: string) => {
+  userSentimentCard.value?.selectUser(userId);
 };
 
 onMounted(async () => {

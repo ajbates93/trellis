@@ -102,6 +102,14 @@ const handleUserSelected = (user: any) => {
   fetchInsights(user.id);
 };
 
+// Expose method to select user from parent
+const selectUser = (userId: string) => {
+  selectedUserId.value = userId;
+  fetchInsights(userId);
+};
+
+defineExpose({ selectUser });
+
 // Chart data for sentiment donut
 const chartData = computed(() => {
   if (!insights.value?.data?.sentimentData) return [];
@@ -123,6 +131,15 @@ const formatDate = (dateString: string) => {
     month: "short",
     year: "numeric",
   });
+};
+
+const template = (d: any) => {
+  return `
+    <div style="padding: 8px;">
+      <div style="font-weight: 600; margin-bottom: 4px; text-transform: capitalize;">${d.label}</div>
+      <div style="color: rgb(59, 130, 246);">${d.value}%</div>
+    </div>
+  `;
 };
 
 // Get sentiment color class
@@ -252,7 +269,7 @@ const getSentimentColor = (sentiment: string) => {
                 :pad-angle="0.02"
                 :corner-radius="4"
               />
-              <VisTooltip />
+              <VisTooltip :template="template" />
             </VisSingleContainer>
           </div>
 

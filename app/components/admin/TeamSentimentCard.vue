@@ -27,6 +27,12 @@ interface TeamSummaryResponse {
   users: UserSummary[];
 }
 
+interface Emits {
+  (e: "user-selected", userId: string, userName: string): void;
+}
+
+const emit = defineEmits<Emits>();
+
 const loading = ref(true);
 const refreshing = ref(false);
 const error = ref(false);
@@ -80,6 +86,15 @@ const chartData = computed(() => {
 });
 
 const colors = ["#10b981", "#f59e0b", "#6b7280"]; // green, amber, gray
+
+const template = (d: any) => {
+  return `
+    <div style="padding: 8px;">
+      <div style="font-weight: 600; margin-bottom: 4px; text-transform: capitalize;">${d.label}</div>
+      <div style="color: rgb(59, 130, 246);">${d.value}%</div>
+    </div>
+  `;
+};
 
 // Get trend icon and color
 const getTrendInfo = (trend: string) => {
@@ -200,7 +215,7 @@ const formatRelativeDate = (dateString: string) => {
               :pad-angle="0.02"
               :corner-radius="4"
             />
-            <VisTooltip />
+            <VisTooltip :template="template" />
           </VisSingleContainer>
         </div>
 
@@ -248,7 +263,8 @@ const formatRelativeDate = (dateString: string) => {
           <div
             v-for="user in teamData.users"
             :key="user.userId"
-            class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+            @click="emit('user-selected', user.userId, user.userName)"
           >
             <div class="flex items-center gap-3">
               <UAvatar
