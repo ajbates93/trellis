@@ -126,19 +126,8 @@ const settingsAndAdminLinks = computed(() => [
   {
     label: "Settings",
     icon: "i-heroicons-cog-6-tooth",
+    to: "/settings/general",
     active: route.path.startsWith("/settings"),
-    children: [
-      {
-        label: "General",
-        to: "/settings/general",
-        active: route.path === "/settings/general",
-      },
-      {
-        label: "Notifications",
-        to: "/settings/notifications",
-        active: route.path === "/settings/notifications",
-      },
-    ],
   },
   {
     label: "Admin",
@@ -164,46 +153,6 @@ const settingsAndAdminLinks = computed(() => [
     ],
   },
 ]);
-
-// Combine all links with section structure
-const navigationLinks = computed(() => {
-  const allPersonalLinks = personalLinks;
-  const allBuddyLinks = buddyLinks.value;
-  const adminLinks = settingsAndAdminLinks.filter(
-    (item) => !item.requiresAdmin || user.value?.role === "admin",
-  );
-
-  // Only include sections if there are links in them
-  const links = [...allPersonalLinks];
-
-  // Add buddy section if user has buddies
-  if (allBuddyLinks.length > 0) {
-    links.push(...allBuddyLinks);
-  }
-
-  // Add settings and admin links
-  links.push(...adminLinks);
-
-  return links;
-});
-
-// User dropdown menu
-const userMenuItems = [
-  [
-    {
-      label: "Profile",
-      icon: "i-heroicons-user-circle",
-      click: () => navigateTo("/profile"),
-    },
-  ],
-  [
-    {
-      label: "Sign out",
-      icon: "i-heroicons-arrow-right-on-rectangle",
-      click: signOut,
-    },
-  ],
-];
 </script>
 
 <template>
@@ -295,7 +244,7 @@ const userMenuItems = [
                 "
                 color="neutral"
                 variant="ghost"
-                class="min-w-0 !w-auto text-left"
+                class="min-w-0 !w-auto text-left px-4"
                 :block="!collapsed"
                 @click="navigateTo('/profile')"
               />
@@ -307,6 +256,7 @@ const userMenuItems = [
                 variant="ghost"
                 size="sm"
                 square
+                class="px-4"
                 @click="isLogoutModalOpen = true"
               />
             </div>
