@@ -76,8 +76,8 @@
             </h2>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AdminTeamSentimentCard />
-            <AdminUserSentimentCard />
+            <AdminTeamSentimentCard ref="teamSentimentCard" />
+            <AdminUserSentimentCard @analysis-completed="onUserAnalysisCompleted" />
           </div>
         </div>
 
@@ -104,6 +104,14 @@ definePageMeta({
 });
 
 const stats = ref<any>(null);
+
+// Reference to team sentiment card for triggering refresh hint
+const teamSentimentCard = ref<{ indicateDataStale: () => void } | null>(null);
+
+// Called when user analysis is completed
+const onUserAnalysisCompleted = () => {
+  teamSentimentCard.value?.indicateDataStale();
+};
 
 onMounted(async () => {
   try {
