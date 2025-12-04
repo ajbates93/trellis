@@ -276,8 +276,8 @@ const upcomingColumns = [
 const pastColumns = [
   {
     id: "date",
-    accessorKey: "completedDate",
-    header: "Completed Date",
+    accessorKey: "scheduledDate",
+    header: "Date",
   },
   {
     id: "name",
@@ -292,6 +292,10 @@ const pastColumns = [
     id: "status",
     accessorKey: "status",
     header: "Status",
+  },
+  {
+    id: "actions",
+    header: "Actions",
   },
 ];
 </script>
@@ -437,15 +441,20 @@ const pastColumns = [
                   No past reviews
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ buddyInfo.name }} hasn't had any completed reviews yet
+                  {{ buddyInfo.name }} has no reviews scheduled in the past
                 </p>
               </div>
 
               <UTable v-else :columns="pastColumns" :data="pastReviews">
                 <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.completedDate) }}
-                  </span>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ formatDate(row.original.scheduledDate) }}
+                    </div>
+                    <div v-if="row.original.completedDate" class="text-xs text-gray-500 dark:text-gray-400">
+                      Completed: {{ formatDate(row.original.completedDate) }}
+                    </div>
+                  </div>
                 </template>
 
                 <template #feedback-cell="{ row }">
@@ -461,6 +470,24 @@ const pastColumns = [
                     :label="row.original.status"
                     :color="getStatusColor(row.original.status)"
                   />
+                </template>
+
+                <template #actions-cell="{ row }">
+                  <div class="flex items-center gap-2">
+                    <UButton @click="openReviewModal(row.original)">
+                      Preview
+                    </UButton>
+                    <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
+                      <UButton color="primary"> View </UButton>
+                    </NuxtLink>
+                    <UButton
+                      v-if="row.original.status === 'scheduled'"
+                      color="success"
+                      @click="completeReview(row.original.id)"
+                    >
+                      Complete
+                    </UButton>
+                  </div>
                 </template>
               </UTable>
             </UCard>

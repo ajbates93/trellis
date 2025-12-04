@@ -76,6 +76,12 @@ const personalLinks = computed(() => [
     active: route.path === "/brag-bucket",
   },
   {
+    label: "Insights",
+    icon: "i-heroicons-chart-bar",
+    to: "/insights",
+    active: route.path === "/insights",
+  },
+  {
     label: "Feedback",
     icon: "i-heroicons-chat-bubble-left-right",
     to: "/feedback/inbox",
@@ -334,5 +340,8 @@ const userMenuItems = [
         <UButton label="Log Out" color="error" @click="handleLogout" />
       </template>
     </UModal>
+
+    <!-- Global Command Palette (Cmd+K) -->
+    <AppCommandPalette />
   </div>
 </template>

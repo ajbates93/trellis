@@ -1,303 +1,136 @@
 <template>
   <UDashboardPanel id="home">
     <template #body>
-      <div class="p-4 sm:p-6 lg:p-8">
-        <!-- Welcome header -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome back,
-            {{
-              user?.preferredName ||
-              user?.name?.split(" ")[0] ||
-              "there"
-            }}
-          </h1>
-          <p class="mt-2 text-gray-600 dark:text-gray-400">
-            Here's what's happening with your feedback and goals
-          </p>
-        </div>
-
-        <!-- Quick actions panel -->
-        <UCard class="mb-8">
+      <div class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+        <!-- Staggered animation container -->
+        <div ref="container" class="space-y-8">
+          <!-- Welcome header -->
           <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4"
+            class="text-center animate-item"
+            :style="{ '--delay': '0ms' }"
           >
-            <div>
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Quick Actions
-              </h2>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Common tasks to help you stay on track
-              </p>
-            </div>
-            <div class="flex flex-wrap gap-3">
-              <UButton
-                to="/feedback/give"
-                color="primary"
-                size="lg"
-                icon="i-heroicons-chat-bubble-left"
-              >
-                Submit Feedback
-              </UButton>
-              <UButton to="/goals" size="lg" icon="i-heroicons-flag">
-                View Goals
-              </UButton>
-              <UButton
-                v-if="user?.role === 'admin'"
-                to="/admin/dashboard"
-                size="lg"
-                icon="i-heroicons-shield-check"
-              >
-                Admin Panel
-              </UButton>
-            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+              Welcome back,
+              {{ user?.preferredName || user?.name?.split(" ")[0] || "there" }}
+            </h1>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">
+              What would you like to do today?
+            </p>
           </div>
-        </UCard>
 
-        <!-- Stats cards grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <!-- Feedback given this week -->
-          <UCard>
-            <div class="space-y-4">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Feedback Given
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.feedbackGiven }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <UBadge
-                  :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
-                  :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >vs last week</span
-                >
-              </div>
-            </div>
-            <UButton
-              to="/feedback/inbox?tab=given"
-              variant="outline"
-              size="sm"
-              class="mt-4 w-full justify-between"
-              trailing-icon="i-heroicons-arrow-right"
+          <!-- Quick Stats -->
+          <div
+            class="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-item"
+            :style="{ '--delay': '100ms' }"
+          >
+            <QuickStatCard
+              :value="stats.feedbackThisWeek"
+              label="Feedback This Week"
+              icon="i-heroicons-chat-bubble-left-right"
+              color="teal"
+            />
+            <QuickStatCard
+              :value="stats.activeGoals"
+              label="Active Goals"
+              icon="i-heroicons-flag"
+              color="purple"
+            />
+            <QuickStatCard
+              :value="stats.daysUntilReview"
+              :label="
+                stats.daysUntilReview !== null ? 'Days to Review' : 'Next Review'
+              "
+              icon="i-heroicons-calendar-days"
+              color="amber"
+            />
+          </div>
+
+          <!-- Command Palette Trigger -->
+          <div
+            class="animate-item"
+            :style="{ '--delay': '200ms' }"
+          >
+            <button
+              class="w-full flex items-center gap-3 px-4 py-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 group"
+              @click="openCommandPalette"
             >
-              View
-            </UButton>
-          </UCard>
-
-          <!-- Feedback received this week -->
-          <UCard>
-            <div class="space-y-4">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Feedback Received
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.feedbackReceived }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <UBadge
-                  :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
-                  :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >vs last week</span
-                >
-              </div>
-            </div>
-            <UButton
-              to="/feedback/inbox"
-              variant="outline"
-              size="sm"
-              class="mt-4 w-full justify-between"
-              trailing-icon="i-heroicons-arrow-right"
-            >
-              View
-            </UButton>
-          </UCard>
-
-          <!-- Active goals count -->
-          <UCard>
-            <div class="space-y-4">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Active Goals
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stats.activeGoals }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <UBadge
-                  :label="`${stats.completedGoals} completed`"
-                  color="primary"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >this month</span
-                >
-              </div>
-            </div>
-            <UButton
-              to="/goals"
-              variant="outline"
-              size="sm"
-              class="mt-4 w-full justify-between"
-              trailing-icon="i-heroicons-arrow-right"
-            >
-              View
-            </UButton>
-          </UCard>
-
-          <!-- Next review countdown -->
-          <UCard>
-            <div class="space-y-4">
-              <div class="space-y-2">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Next Review
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{
-                    stats.daysUntilReview !== null ? stats.daysUntilReview : "—"
-                  }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <UBadge
-                  :label="
-                    stats.daysUntilReview !== null
-                      ? 'Upcoming'
-                      : 'Not scheduled'
-                  "
-                  :color="stats.daysUntilReview !== null ? 'primary' : 'gray'"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400">
-                  {{ stats.daysUntilReview !== null ? "days remaining" : "" }}
-                </span>
-              </div>
-            </div>
-            <UButton
-              to="/reviews"
-              variant="outline"
-              size="sm"
-              class="mt-4 w-full justify-between"
-              trailing-icon="i-heroicons-arrow-right"
-            >
-              View
-            </UButton>
-          </UCard>
-        </div>
-
-        <!-- Activity chart -->
-        <FeedbackActivityChart class="mb-8" />
-
-        <!-- Sentiment Analysis -->
-        <SentimentAnalysis class="mb-8" />
-
-        <!-- Recent feedback -->
-        <UCard>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="flex items-center gap-2">
-                  <h2
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
-                    Recent Feedback
-                  </h2>
-                  <UBadge
-                    v-if="unreadCount > 0"
-                    :label="`${unreadCount} unread`"
-                    color="primary"
-                    size="sm"
-                  />
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Latest feedback you've received
-                </p>
-              </div>
-              <UButton
-                to="/feedback/inbox"
-                size="sm"
-                trailing-icon="i-heroicons-arrow-right"
-              >
-                View All
-              </UButton>
-            </div>
-
-            <UTable
-              v-if="recentFeedback.length > 0"
-              :columns="feedbackColumns"
-              :data="recentFeedback"
-            >
-              <template #from-cell="{ row }">
-                <div class="flex items-center gap-2">
-                  <UAvatar
-                    :src="
-                      row.original.reviewer.image ||
-                      row.original.reviewer.avatarUrl
-                    "
-                    :alt="row.original.reviewer.name"
-                    size="xs"
-                  />
-                  <span>{{ row.original.reviewer.name }}</span>
-                </div>
-              </template>
-
-              <template #content-cell="{ row }">
-                <UButton
-                  variant="ghost"
-                  color="neutral"
-                  class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                  @click="openFeedbackModal(row.original)"
-                >
-                  <span class="truncate block">{{ row.original.content }}</span>
-                </UButton>
-              </template>
-
-              <template #date-cell="{ row }">
-                <span class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ formatDate(row.original.publishedAt) }}
-                </span>
-              </template>
-
-              <template #status-cell="{ row }">
-                <UBadge
-                  :color="row.original.isRead ? 'gray' : 'primary'"
-                  size="xs"
-                >
-                  {{ row.original.isRead ? "Read" : "Unread" }}
-                </UBadge>
-              </template>
-            </UTable>
-
-            <div v-else class="text-center py-12">
               <UIcon
-                name="i-heroicons-chat-bubble-left-right"
-                class="text-gray-400 text-4xl mb-2"
+                name="i-heroicons-magnifying-glass"
+                class="text-xl text-gray-400 dark:text-gray-500"
               />
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                No feedback yet
-              </p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                You haven't received any feedback yet. Check back later!
-              </p>
+              <span class="flex-1 text-left text-gray-500 dark:text-gray-400">
+                Search actions, pages, or type a command...
+              </span>
+              <div class="hidden sm:flex items-center gap-1">
+                <UKbd>{{ metaKey }}</UKbd>
+                <UKbd>K</UKbd>
+              </div>
+            </button>
+          </div>
+
+          <!-- Contextual Suggestions -->
+          <div
+            v-if="suggestions.length > 0"
+            class="animate-item"
+            :style="{ '--delay': '300ms' }"
+          >
+            <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+              Suggested for you
+            </h2>
+            <div class="flex flex-wrap gap-2">
+              <NuxtLink
+                v-for="suggestion in suggestions"
+                :key="suggestion.to"
+                :to="suggestion.to"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 group"
+              >
+                <UIcon
+                  :name="suggestion.icon"
+                  class="text-gray-500 dark:text-gray-400 group-hover:text-primary-500"
+                />
+                <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                  {{ suggestion.label }}
+                </span>
+                <UBadge
+                  v-if="suggestion.badge"
+                  :label="suggestion.badge"
+                  color="primary"
+                  variant="subtle"
+                  size="xs"
+                />
+              </NuxtLink>
             </div>
           </div>
-        </UCard>
+
+          <!-- Recent Activity (placeholder for future) -->
+          <div
+            class="animate-item"
+            :style="{ '--delay': '400ms' }"
+          >
+            <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+              Quick Links
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <NuxtLink
+                v-for="link in quickLinks"
+                :key="link.to"
+                :to="link.to"
+                class="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group"
+              >
+                <UIcon
+                  :name="link.icon"
+                  class="text-2xl text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors"
+                />
+                <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 text-center">
+                  {{ link.label }}
+                </span>
+              </NuxtLink>
+            </div>
+          </div>
+        </div>
       </div>
     </template>
   </UDashboardPanel>
-
-  <!-- Feedback Modal -->
-  <FeedbackModal v-model="isModalOpen" :feedback="selectedFeedback" />
 </template>
 
 <script setup lang="ts">
@@ -306,95 +139,137 @@ definePageMeta({
 });
 
 const { user } = useAuth();
+const { hasBuddies } = useBuddies();
+const { unreadCount } = useUnreadCount();
+const { incomingCount } = useIncomingFeedbackCount();
+
+// Detect OS for keyboard shortcut display
+const metaKey = computed(() => {
+  if (import.meta.client) {
+    return navigator.platform.includes("Mac") ? "⌘" : "Ctrl";
+  }
+  return "⌘";
+});
+
+// Open command palette by emitting a custom event
+const openCommandPalette = () => {
+  // Trigger keyboard shortcut programmatically
+  const event = new KeyboardEvent("keydown", {
+    key: "k",
+    metaKey: true,
+    bubbles: true,
+  });
+  document.dispatchEvent(event);
+};
 
 // Fetch goals data
 const { data: goalsData } = await useFetch("/api/goals");
 const goals = computed(() => goalsData.value?.goals || []);
 
-// Calculate goal stats
+// Calculate active goals count
 const activeGoalsCount = computed(
   () => goals.value.filter((g) => g.status === "active").length,
 );
 
-const completedGoalsThisMonth = computed(() => {
-  const now = new Date();
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  return goals.value.filter((g) => {
-    if (g.status !== "completed" || !g.completedAt) return false;
-    const completedDate = new Date(g.completedAt);
-    return completedDate >= firstDayOfMonth;
-  }).length;
-});
-
 // Fetch dashboard stats
 const { data: dashboardStats } = await useFetch("/api/dashboard/stats");
 
-// Fetch recent feedback (limit to 5)
-const { data: feedbackData } = await useFetch("/api/feedback/received");
-const recentFeedback = computed(() => {
-  const feedback = feedbackData.value?.feedback || [];
-  return feedback.slice(0, 5); // Limit to 5 most recent
+// Combined stats for quick stat cards
+const stats = computed(() => {
+  const given = dashboardStats.value?.feedbackGiven || 0;
+  const received = dashboardStats.value?.feedbackReceived || 0;
+
+  return {
+    feedbackThisWeek: given + received,
+    activeGoals: activeGoalsCount.value,
+    daysUntilReview: dashboardStats.value?.daysUntilReview ?? null,
+  };
 });
 
-// Fetch unread feedback count
-const { unreadCount } = useUnreadCount();
+// Contextual suggestions based on user state
+const suggestions = computed(() => {
+  const items: Array<{
+    label: string;
+    icon: string;
+    to: string;
+    badge?: string;
+    priority: number;
+  }> = [];
 
-// Combine stats with goals data
-const stats = computed(() => ({
-  feedbackGiven: dashboardStats.value?.feedbackGiven || 0,
-  feedbackGivenTrend: dashboardStats.value?.feedbackGivenTrend || 0,
-  feedbackReceived: dashboardStats.value?.feedbackReceived || 0,
-  feedbackReceivedTrend: dashboardStats.value?.feedbackReceivedTrend || 0,
-  activeGoals: activeGoalsCount.value,
-  completedGoals: completedGoalsThisMonth.value,
-  daysUntilReview: dashboardStats.value?.daysUntilReview || null,
-}));
+  // If there's incoming feedback to review (buddy task)
+  if (hasBuddies.value && incomingCount.value > 0) {
+    items.push({
+      label: "Review incoming feedback",
+      icon: "i-heroicons-inbox-arrow-down",
+      to: "/buddies/feedback",
+      badge: `${incomingCount.value} pending`,
+      priority: 1,
+    });
+  }
 
-const feedbackColumns = [
-  {
-    id: "from",
-    accessorKey: "reviewer",
-    header: "From",
-  },
-  {
-    id: "content",
-    accessorKey: "content",
-    header: "Feedback",
-    meta: {
-      class: {
-        td: "max-w-md",
-      },
-    },
-  },
-  {
-    id: "date",
-    accessorKey: "publishedAt",
-    header: "Date",
-  },
-  {
-    id: "status",
-    accessorKey: "isRead",
-    header: "Status",
-  },
-];
+  // If there's unread feedback
+  if (unreadCount.value > 0) {
+    items.push({
+      label: "Read new feedback",
+      icon: "i-heroicons-chat-bubble-left-right",
+      to: "/feedback/inbox",
+      badge: `${unreadCount.value} unread`,
+      priority: 2,
+    });
+  }
 
-const formatDate = (date: string | Date) => {
-  if (!date) return "";
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+  // Always suggest submitting feedback
+  items.push({
+    label: "Submit feedback",
+    icon: "i-heroicons-paper-airplane",
+    to: "/feedback/give",
+    priority: 3,
   });
-};
 
-// Modal state
-const isModalOpen = ref(false);
-const selectedFeedback = ref<any>(null);
+  // If review is coming up soon (within 14 days)
+  if (stats.value.daysUntilReview !== null && stats.value.daysUntilReview <= 14) {
+    items.push({
+      label: "Prepare for your review",
+      icon: "i-heroicons-calendar-days",
+      to: "/reviews",
+      badge: `${stats.value.daysUntilReview} days`,
+      priority: 4,
+    });
+  }
 
-// Open modal with selected feedback
-const openFeedbackModal = (feedback: any) => {
-  selectedFeedback.value = feedback;
-  isModalOpen.value = true;
-};
+  // Sort by priority and limit to 4
+  return items.sort((a, b) => a.priority - b.priority).slice(0, 4);
+});
+
+// Quick links grid
+const quickLinks = computed(() => {
+  const links = [
+    { label: "Insights", icon: "i-heroicons-chart-bar", to: "/insights" },
+    { label: "Goals", icon: "i-heroicons-flag", to: "/goals" },
+    { label: "Brag Bucket", icon: "i-heroicons-star", to: "/brag-bucket" },
+    { label: "Reviews", icon: "i-heroicons-calendar-days", to: "/reviews" },
+  ];
+
+  return links;
+});
 </script>
+
+<style scoped>
+.animate-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
