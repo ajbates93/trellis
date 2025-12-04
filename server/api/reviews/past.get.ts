@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
 import { reviewSchedules, users, feedback, buddyCheckins } from "../../database/schema";
-import { eq, and, or, sql } from "drizzle-orm";
+import { eq, and, or, sql, lt } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -44,9 +44,12 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Get completed reviews where:
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get past reviews where:
     // - User is the reviewee (or specific user if forUserId provided for buddy access)
-    // - Status is 'completed'
+    // - Scheduled date is in the past (before today)
+    // This includes both completed reviews AND overdue scheduled reviews
     const pastReviews = await db
       .select({
         id: reviewSchedules.id,
@@ -74,10 +77,10 @@ export default defineEventHandler(async (event) => {
           forUserId
             ? eq(reviewSchedules.userId, forUserId)
             : eq(reviewSchedules.userId, session.user.id),
-          eq(reviewSchedules.status, 'completed')
+          lt(reviewSchedules.scheduledDate, today)
         )
       )
-      .orderBy(sql`${reviewSchedules.completedDate} DESC NULLS LAST`);
+      .orderBy(sql`${reviewSchedules.scheduledDate} DESC`);
 
     // Get buddy info, feedback count, and check-ins for each review
     const reviewsWithDetails = await Promise.all(

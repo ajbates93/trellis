@@ -165,10 +165,10 @@ const formatDate = (date: string) => {
               class="text-gray-400 text-4xl mb-2"
             />
             <p class="text-lg font-semibold text-gray-900 dark:text-white">
-              No completed reviews
+              No past reviews
             </p>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Past reviews will appear here
+              Reviews scheduled in the past will appear here
             </p>
           </div>
 
@@ -219,15 +219,16 @@ const formatDate = (date: string) => {
                         <p
                           class="text-sm text-gray-600 dark:text-gray-400 mt-1"
                         >
-                          {{
-                            formatDate(
-                              review.completedDate || review.scheduledDate,
-                            )
-                          }}
+                          {{ formatDate(review.scheduledDate) }}
                         </p>
                       </div>
 
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <UBadge
+                          :label="review.status"
+                          :color="review.status === 'completed' ? 'success' : 'warning'"
+                          size="xs"
+                        />
                         <UAvatar
                           :src="review.buddy?.avatarUrl"
                           :alt="review.buddy?.name"
