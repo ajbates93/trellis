@@ -3,6 +3,23 @@ import { users } from "../../../database/schema";
 import { eq, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
+  const session = event.context.session;
+
+  if (!session?.user) {
+    throw createError({
+      statusCode: 401,
+      message: "Unauthorized",
+    });
+  }
+
+  // Check if user is admin
+  if (session.user.role !== "admin") {
+    throw createError({
+      statusCode: 403,
+      message: "Forbidden - Admin access required",
+    });
+  }
+
   // Get query params for filtering
   const query = getQuery(event);
   const filter = query.filter as string | undefined; // 'all', 'active', 'invited'

@@ -35,6 +35,7 @@
             :error="error"
             @edit="openEditModal"
             @impersonate="handleImpersonate"
+            @remove="openRemoveModal"
           />
         </div>
       </div>
@@ -52,6 +53,66 @@
         :all-users="allUsers"
         @success="handleSuccess"
       />
+
+      <!-- Remove User Confirmation Modal -->
+      <UModal
+        v-model:open="showRemoveModal"
+        title="Remove User"
+        :description="`Are you sure you want to remove ${userToRemove?.name}? This action cannot be undone.`"
+        class="sm:max-w-md"
+      >
+        <template #body>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500 text-2xl flex-shrink-0" />
+              <div class="text-sm text-red-700 dark:text-red-300">
+                <p class="font-medium mb-1">This will permanently delete:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>All feedback given and received by this user</li>
+                  <li>All personal goals</li>
+                  <li>All review schedules</li>
+                  <li>Users who had this person as their buddy will be reassigned to an admin</li>
+                </ul>
+              </div>
+            </div>
+
+            <div v-if="userToRemove" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <UAvatar
+                :src="userToRemove.avatarUrl || userToRemove.image"
+                :alt="userToRemove.name"
+                size="sm"
+              />
+              <div>
+                <div class="font-medium text-gray-900 dark:text-white">
+                  {{ userToRemove.name }}
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ userToRemove.email }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex justify-end gap-2">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              @click="showRemoveModal = false"
+              :disabled="removing"
+            >
+              Cancel
+            </UButton>
+            <UButton
+              color="error"
+              @click="handleRemoveUser"
+              :loading="removing"
+            >
+              Remove User
+            </UButton>
+          </div>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>
@@ -75,7 +136,10 @@ const counts = ref({
 
 const showEditModal = ref(false);
 const showAddModal = ref(false);
+const showRemoveModal = ref(false);
 const selectedUser = ref<any>(null);
+const userToRemove = ref<any>(null);
+const removing = ref(false);
 
 // Define tabs with badges
 const tabs = computed(() => [
@@ -169,6 +233,45 @@ const handleImpersonate = async (user: any) => {
       description: "Failed to impersonate user. Please try again.",
       color: "error",
     });
+  }
+};
+
+const openRemoveModal = (user: any) => {
+  userToRemove.value = user;
+  showRemoveModal.value = true;
+};
+
+const handleRemoveUser = async () => {
+  if (!userToRemove.value) return;
+
+  removing.value = true;
+  const toast = useToast();
+
+  try {
+    await $fetch(`/api/admin/users/${userToRemove.value.id}`, {
+      method: "DELETE",
+    });
+
+    toast.add({
+      title: "User removed",
+      description: `${userToRemove.value.name} has been removed successfully`,
+      color: "success",
+    });
+
+    showRemoveModal.value = false;
+    userToRemove.value = null;
+
+    // Refetch users
+    await fetchUsers();
+  } catch (error: any) {
+    console.error("Failed to remove user:", error);
+    toast.add({
+      title: "Failed to remove user",
+      description: error.data?.message || "An error occurred while removing the user",
+      color: "error",
+    });
+  } finally {
+    removing.value = false;
   }
 };
 

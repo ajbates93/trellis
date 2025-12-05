@@ -3,6 +3,23 @@ import { users } from "../../../database/schema";
 import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
+  const session = event.context.session;
+
+  if (!session?.user) {
+    throw createError({
+      statusCode: 401,
+      message: "Unauthorized",
+    });
+  }
+
+  // Check if user is admin
+  if (session.user.role !== "admin") {
+    throw createError({
+      statusCode: 403,
+      message: "Forbidden - Admin access required",
+    });
+  }
+
   const userId = getRouterParam(event, "id");
   if (!userId) {
     throw createError({

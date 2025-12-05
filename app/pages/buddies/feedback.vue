@@ -29,18 +29,21 @@ const buddyReceivedFeedback = computed(
   () => buddyReceivedData.value?.feedback || [],
 );
 
-// Fetch incoming (unpublished) feedback for all buddies
+// Fetch incoming (unpublished) feedback for selected buddy
 const { data: incomingData, refresh: refreshIncoming } = useFetch(
-  "/api/feedback/for-buddy",
+  () =>
+    selectedBuddyId.value
+      ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
+      : null,
 );
 const incomingFeedback = computed(() => {
   const assignments = incomingData.value?.buddyAssignments || [];
   return assignments.flatMap((assignment: any) => assignment.feedback || []);
 });
 
-// Refresh Received when buddy changes, but Incoming stays the same
+// Refresh both tabs when buddy changes
 watch(selectedBuddyId, async () => {
-  await refreshBuddyReceived();
+  await Promise.all([refreshBuddyReceived(), refreshIncoming()]);
 });
 
 // Get unread count refresh function

@@ -9,6 +9,13 @@ definePageMeta({
 
 const toast = useToast();
 const { selectedBuddyId } = useSelectedBuddy();
+const { buddies, getBuddyById } = useBuddies();
+
+// Get selected buddy info
+const selectedBuddy = computed(() => {
+  if (!selectedBuddyId.value) return null;
+  return getBuddyById(selectedBuddyId.value);
+});
 
 // Fetch upcoming reviews for buddy (reactive based on selectedBuddyId)
 const { data: upcomingData, refresh: refreshUpcoming } = useFetch(() =>
@@ -602,7 +609,7 @@ const pastColumns = [
   <!-- Create Review Modal -->
   <UModal
     v-model:open="isCreateModalOpen"
-    :title="`Create Review for ${buddyInfo?.name}`"
+    :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
     class="sm:max-w-2xl"
     :ui="{
       footer: 'justify-end',
@@ -619,6 +626,7 @@ const pastColumns = [
             v-model="scheduledDate"
             type="date"
             :min="new Date().toISOString().split('T')[0]"
+            class="w-auto"
           />
         </div>
 
@@ -629,6 +637,7 @@ const pastColumns = [
             v-model="reviewName"
             placeholder="e.g., January 2026"
             size="lg"
+            class="w-full"
           />
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Auto-generated from date if left empty
@@ -644,6 +653,7 @@ const pastColumns = [
             v-model="notes"
             placeholder="Add any notes about this review..."
             :rows="4"
+            class="w-full"
           />
         </div>
       </div>
@@ -691,6 +701,7 @@ const pastColumns = [
             v-model="editScheduledDate"
             type="date"
             :min="new Date().toISOString().split('T')[0]"
+            class="w-auto"
           />
         </div>
 
@@ -701,6 +712,7 @@ const pastColumns = [
             v-model="editReviewName"
             placeholder="e.g., January 2026"
             size="lg"
+            class="w-full"
           />
         </div>
 
@@ -713,6 +725,7 @@ const pastColumns = [
             v-model="editNotes"
             placeholder="Add any notes about this review..."
             :rows="4"
+            class="w-full"
           />
         </div>
       </div>

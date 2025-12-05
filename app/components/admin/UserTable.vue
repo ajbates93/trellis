@@ -116,6 +116,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [user: any];
   impersonate: [user: any];
+  remove: [user: any];
 }>();
 
 const { user: currentUser } = useAuth();
@@ -149,6 +150,22 @@ const getActionItems = (user: any) => {
         emit("impersonate", user);
       },
     });
+  }
+
+  // Add divider and remove action if not current user
+  if (user.id !== currentUser.value?.id) {
+    return [
+      items,
+      [
+        {
+          label: "Remove User",
+          icon: "i-heroicons-trash",
+          onSelect: () => {
+            emit("remove", user);
+          },
+        },
+      ],
+    ];
   }
 
   return [items];
