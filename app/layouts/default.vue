@@ -333,12 +333,19 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
                 size="lg"
                 class="ring-2 ring-gray-700"
               />
-              <div>
+              <div class="flex-1">
                 <h3 class="text-base font-semibold text-white">
                   {{ user.preferredName || user.name || 'User' }}
                 </h3>
                 <p class="text-sm text-gray-400">Pocketworks</p>
               </div>
+              <button
+                aria-label="Close navigation menu"
+                class="p-2 -mr-2 rounded-lg hover:bg-gray-800 transition-colors"
+                @click="mobileNavOpen = false"
+              >
+                <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-400" />
+              </button>
             </div>
           </div>
 
