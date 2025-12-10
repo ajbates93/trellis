@@ -47,7 +47,7 @@
 
           <!-- Command Palette Trigger -->
           <div
-            class="animate-item"
+            class="animate-item hidden lg:block"
             :style="{ '--delay': '200ms' }"
           >
             <button

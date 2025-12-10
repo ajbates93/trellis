@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { user, signOut, session, authClient, refreshSession } = useAuth();
 const { hasBuddies } = useBuddies();
+const { isOpen: mobileNavOpen, toggle: toggleMobileNav } = useMobileNav();
 
 // Navigation links
 const route = useRoute();
@@ -159,10 +160,58 @@ const settingsAndAdminLinks = computed(() => [
     ],
   },
 ]);
+
+// Mobile navigation links (all personal + buddy links, no admin/settings)
+const mobilePersonalLinks = computed(() => personalLinks.value);
+const mobileBuddyLinks = computed(() => buddyLinks.value);
+
+// Detect mobile screen size (< 1024px to match UDashboardSidebar's lg breakpoint)
+const isMobile = ref(false);
+
+if (import.meta.client) {
+  const updateMobile = () => {
+    isMobile.value = window.innerWidth < 1024;
+  };
+
+  updateMobile();
+  window.addEventListener("resize", updateMobile);
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateMobile);
+  });
+}
 </script>
 
 <template>
   <div class="relative">
+    <!-- Mobile header bar (only renders on mobile) -->
+    <header
+      v-if="isMobile"
+      class="fixed top-0 left-0 right-0 z-30 h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4"
+      :class="{ 'top-12': isImpersonating }"
+    >
+      <button
+        aria-label="Open navigation menu"
+        :aria-expanded="mobileNavOpen"
+        aria-controls="mobile-navigation"
+        class="p-2 -ml-2 rounded-lg hover:bg-gray-800 transition-colors"
+        @click="toggleMobileNav"
+      >
+        <UIcon name="i-heroicons-bars-3" class="w-6 h-6 text-gray-300" />
+      </button>
+
+      <!-- App logo/name -->
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+          <UIcon name="i-heroicons-users" class="text-white text-sm" />
+        </div>
+        <span class="font-semibold text-white">Cohort</span>
+      </div>
+
+      <!-- Spacer to balance the layout -->
+      <div class="w-10" />
+    </header>
+
     <!-- Global loading indicator for page navigation -->
     <UProgress
       v-if="isLoading"
@@ -192,8 +241,16 @@ const settingsAndAdminLinks = computed(() => [
         @click="stopImpersonating"
       />
     </div>
-    <UDashboardGroup unit="rem" :class="{ 'pt-12': isImpersonating }">
+    <UDashboardGroup
+      unit="rem"
+      :class="{
+        'pt-12': isImpersonating && !isMobile,
+        'pt-16': isMobile && !isImpersonating,
+        'pt-28': isMobile && isImpersonating,
+      }"
+    >
       <UDashboardSidebar
+        v-if="!isMobile"
         collapsible
         resizable
         :ui="{
@@ -273,6 +330,119 @@ const settingsAndAdminLinks = computed(() => [
       <!-- Main content area -->
       <slot />
     </UDashboardGroup>
+
+    <!-- Mobile navigation drawer (only renders on mobile) -->
+    <USlideover
+      v-if="isMobile"
+      v-model:open="mobileNavOpen"
+      side="left"
+      :close="false"
+      id="mobile-navigation"
+      :ui="{ header: 'hidden', body: 'p-0' }"
+    >
+      <template #body>
+        <div class="flex flex-col h-full">
+          <!-- User profile section -->
+          <div v-if="user" class="p-6 border-b border-gray-800">
+            <div class="flex flex-col items-center text-center">
+              <UAvatar
+                :src="user.avatarUrl || user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`"
+                :alt="user.name || 'User'"
+                size="xl"
+                class="ring-2 ring-gray-700 mb-3"
+              />
+              <h3 class="text-lg font-semibold text-white">
+                {{ user.preferredName || user.name || 'User' }}
+              </h3>
+              <p class="text-sm text-gray-400">Pocketworks</p>
+            </div>
+          </div>
+
+          <!-- Navigation sections -->
+          <div class="flex-1 overflow-y-auto py-4">
+            <!-- Main Menu Section -->
+            <div class="px-4 mb-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">
+                Main Menu
+              </p>
+              <nav class="space-y-1">
+                <NuxtLink
+                  :to="dashboardLink.to"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+                  :class="dashboardLink.active ? 'bg-primary/10 text-primary-400' : 'text-gray-300 hover:bg-gray-800'"
+                  @click="mobileNavOpen = false"
+                >
+                  <UIcon :name="dashboardLink.icon" class="w-5 h-5" />
+                  <span class="flex-1 font-medium">{{ dashboardLink.label }}</span>
+                  <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-500" />
+                </NuxtLink>
+                <NuxtLink
+                  v-for="link in mobilePersonalLinks"
+                  :key="link.to"
+                  :to="link.to"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+                  :class="link.active ? 'bg-primary/10 text-primary-400' : 'text-gray-300 hover:bg-gray-800'"
+                  @click="mobileNavOpen = false"
+                >
+                  <UIcon :name="link.icon" class="w-5 h-5" />
+                  <span class="flex-1 font-medium">{{ link.label }}</span>
+                  <UBadge v-if="link.badge" :label="link.badge" size="xs" color="error" class="mr-1" />
+                  <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-500" />
+                </NuxtLink>
+              </nav>
+            </div>
+
+            <!-- Buddy Section (if applicable) -->
+            <div v-if="hasBuddies" class="px-4 mb-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">
+                Buddy
+              </p>
+              <nav class="space-y-1">
+                <NuxtLink
+                  v-for="link in mobileBuddyLinks"
+                  :key="link.to"
+                  :to="link.to"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+                  :class="link.active ? 'bg-primary/10 text-primary-400' : 'text-gray-300 hover:bg-gray-800'"
+                  @click="mobileNavOpen = false"
+                >
+                  <UIcon :name="link.icon" class="w-5 h-5" />
+                  <span class="flex-1 font-medium">{{ link.label }}</span>
+                  <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-500" />
+                </NuxtLink>
+              </nav>
+            </div>
+
+            <!-- Account Section -->
+            <div class="px-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">
+                Account
+              </p>
+              <nav class="space-y-1">
+                <NuxtLink
+                  to="/profile"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+                  :class="route.path === '/profile' ? 'bg-primary/10 text-primary-400' : 'text-gray-300 hover:bg-gray-800'"
+                  @click="mobileNavOpen = false"
+                >
+                  <UIcon name="i-heroicons-user" class="w-5 h-5" />
+                  <span class="flex-1 font-medium">My Profile</span>
+                  <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-500" />
+                </NuxtLink>
+                <button
+                  class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors"
+                  @click="isLogoutModalOpen = true"
+                >
+                  <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" />
+                  <span class="flex-1 font-medium text-left">Sign Out</span>
+                  <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-500" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </template>
+    </USlideover>
 
     <!-- Logout confirmation modal -->
     <UModal
