@@ -325,18 +325,20 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
       <template #body>
         <div class="flex flex-col h-full">
           <!-- User profile section -->
-          <div v-if="user" class="p-6 border-b border-gray-800">
-            <div class="flex flex-col items-center text-center">
+          <div v-if="user" class="p-4 border-b border-gray-800">
+            <div class="flex items-center gap-3">
               <UAvatar
                 :src="user.avatarUrl || user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`"
                 :alt="user.name || 'User'"
-                size="xl"
-                class="ring-2 ring-gray-700 mb-3"
+                size="lg"
+                class="ring-2 ring-gray-700"
               />
-              <h3 class="text-lg font-semibold text-white">
-                {{ user.preferredName || user.name || 'User' }}
-              </h3>
-              <p class="text-sm text-gray-400">Pocketworks</p>
+              <div>
+                <h3 class="text-base font-semibold text-white">
+                  {{ user.preferredName || user.name || 'User' }}
+                </h3>
+                <p class="text-sm text-gray-400">Pocketworks</p>
+              </div>
             </div>
           </div>
 
