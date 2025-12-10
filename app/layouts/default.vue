@@ -164,30 +164,13 @@ const settingsAndAdminLinks = computed(() => [
 // Mobile navigation links (all personal + buddy links, no admin/settings)
 const mobilePersonalLinks = computed(() => personalLinks.value);
 const mobileBuddyLinks = computed(() => buddyLinks.value);
-
-// Detect mobile screen size (< 1024px to match UDashboardSidebar's lg breakpoint)
-const isMobile = ref(false);
-
-if (import.meta.client) {
-  const updateMobile = () => {
-    isMobile.value = window.innerWidth < 1024;
-  };
-
-  updateMobile();
-  window.addEventListener("resize", updateMobile);
-
-  onBeforeUnmount(() => {
-    window.removeEventListener("resize", updateMobile);
-  });
-}
 </script>
 
 <template>
   <div class="relative">
-    <!-- Mobile header bar (only renders on mobile) -->
+    <!-- Mobile header bar (hidden on desktop via CSS) -->
     <header
-      v-if="isMobile"
-      class="fixed top-0 left-0 right-0 z-30 h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4"
+      class="fixed top-0 left-0 right-0 z-30 h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 lg:hidden"
       :class="{ 'top-12': isImpersonating }"
     >
       <button
@@ -244,13 +227,12 @@ if (import.meta.client) {
     <UDashboardGroup
       unit="rem"
       :class="{
-        'pt-12': isImpersonating && !isMobile,
-        'pt-16': isMobile && !isImpersonating,
-        'pt-28': isMobile && isImpersonating,
+        'pt-16 lg:pt-0': !isImpersonating,
+        'pt-28 lg:pt-12': isImpersonating,
       }"
     >
       <UDashboardSidebar
-        v-if="!isMobile"
+        class="hidden lg:flex"
         collapsible
         resizable
         :ui="{
@@ -331,9 +313,9 @@ if (import.meta.client) {
       <slot />
     </UDashboardGroup>
 
-    <!-- Mobile navigation drawer (only renders on mobile) -->
+    <!-- Mobile navigation drawer (hidden on desktop via CSS) -->
     <USlideover
-      v-if="isMobile"
+      class="lg:hidden"
       v-model:open="mobileNavOpen"
       side="left"
       :close="false"
