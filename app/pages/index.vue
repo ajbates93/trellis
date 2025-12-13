@@ -45,6 +45,15 @@
             />
           </div>
 
+          <!-- Getting Started Widget -->
+          <div
+            v-if="showOnboarding"
+            class="animate-item flex justify-center"
+            :style="{ '--delay': '150ms' }"
+          >
+            <OnboardingWidget :is-static="true" />
+          </div>
+
           <!-- Command Palette Trigger -->
           <div
             class="animate-item hidden lg:block"
@@ -142,6 +151,7 @@ const { user } = useAuth();
 const { hasBuddies } = useBuddies();
 const { unreadCount } = useUnreadCount();
 const { incomingCount } = useIncomingFeedbackCount();
+const { shouldShow: showOnboarding } = useOnboarding();
 
 // Detect OS for keyboard shortcut display
 const metaKey = computed(() => {

@@ -33,6 +33,9 @@ export const useAuth = () => {
           communicationPreferences: {
             type: "string",
           },
+          onboardingTasks: {
+            type: "string[]",
+          },
         },
       }),
       adminClient(),
@@ -46,6 +49,8 @@ export const useAuth = () => {
     await authClient.signOut();
     await navigateTo("/login");
   };
+
+  console.log(user)
 
   // Method to refresh/refetch the session
   const refreshSession = async () => {

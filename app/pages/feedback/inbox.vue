@@ -7,6 +7,12 @@ definePageMeta({
 
 const toast = useToast();
 
+// Mark onboarding task as complete on page visit
+const { markTaskComplete } = useOnboarding();
+onMounted(() => {
+  markTaskComplete("view-inbox");
+});
+
 // Tab state
 const selectedTab = ref("received");
 

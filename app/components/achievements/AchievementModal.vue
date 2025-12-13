@@ -17,6 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const toast = useToast();
+const { markTaskComplete } = useOnboarding();
 
 // Local computed for v-model
 const isOpen = computed({
@@ -90,6 +91,10 @@ const handleSubmit = async () => {
         },
       });
       emit("success", achievement);
+
+      // Mark onboarding task as complete
+      markTaskComplete("add-achievement");
+
       toast.add({
         title: "Achievement added",
         description: `"${title.value}" has been added to your bucket.`,

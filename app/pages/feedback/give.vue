@@ -5,6 +5,7 @@ definePageMeta({
 
 const { user } = useAuth();
 const toast = useToast();
+const { markTaskComplete } = useOnboarding();
 
 // Form state
 const selectedUser = ref(null);
@@ -73,6 +74,9 @@ const submitFeedback = async () => {
     });
 
     showSuccess.value = true;
+
+    // Mark onboarding task as complete
+    markTaskComplete("submit-feedback");
 
     toast.add({
       title: "Feedback submitted successfully!",

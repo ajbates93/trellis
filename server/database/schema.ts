@@ -28,6 +28,8 @@ export const users = pgTable("users", {
   bio: text("bio"),
   reviewPreference: varchar("review_preference", { length: 20 }), // in-person, remote, hybrid, no-preference
   communicationPreferences: text("communication_preferences"),
+  // Onboarding wizard progress
+  onboardingTasks: text("onboarding_tasks").array().default([]),
   // Admin plugin fields
   role: varchar("role", { length: 50 }).default("user"),
   banned: boolean("banned").default(false),

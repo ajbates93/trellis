@@ -2,9 +2,15 @@
 const { user, signOut, session, authClient, refreshSession } = useAuth();
 const { hasBuddies } = useBuddies();
 const { isOpen: mobileNavOpen, toggle: toggleMobileNav } = useMobileNav();
+const { shouldShow: shouldShowOnboarding } = useOnboarding();
 
 // Navigation links
 const route = useRoute();
+
+// Show onboarding trigger on non-dashboard pages when wizard is incomplete
+const showOnboardingTrigger = computed(() => {
+  return shouldShowOnboarding.value && route.path !== '/';
+});
 
 // Check if currently impersonating
 // Better Auth stores impersonation info in the session's impersonatedBy field
@@ -454,5 +460,8 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
 
     <!-- Global Command Palette (Cmd+K) -->
     <AppCommandPalette />
+
+    <!-- Onboarding Trigger (floating button, not shown on dashboard) -->
+    <OnboardingTrigger v-if="showOnboardingTrigger" />
   </div>
 </template>

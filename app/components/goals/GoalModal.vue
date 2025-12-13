@@ -17,6 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const toast = useToast();
+const { markTaskComplete } = useOnboarding();
 
 // Local computed for v-model
 const isOpen = computed({
@@ -54,6 +55,10 @@ const handleSubmit = async () => {
         },
       });
       emit("success", goal);
+
+      // Mark onboarding task as complete
+      markTaskComplete("create-goal");
+
       toast.add({
         title: "Goal created",
         description: "Your new goal has been added successfully.",
