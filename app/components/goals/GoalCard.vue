@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 
+interface Milestone {
+  id: string;
+  goalId: string;
+  title: string;
+  isCompleted: boolean | null;
+  completedAt: string | null;
+  displayOrder: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 const props = defineProps<{
   goal: {
     id: string;
@@ -11,10 +22,22 @@ const props = defineProps<{
     createdAt: string | null;
     updatedAt: string | null;
     completedAt: string | null;
+    milestones?: Milestone[];
   };
   mode: "owner" | "buddy";
   ownerName?: string;
 }>();
+
+// Computed properties for milestones
+const milestoneCount = computed(() => props.goal.milestones?.length ?? 0);
+const completedMilestones = computed(
+  () => props.goal.milestones?.filter((m) => m.isCompleted).length ?? 0
+);
+const milestoneProgress = computed(() =>
+  milestoneCount.value > 0
+    ? (completedMilestones.value / milestoneCount.value) * 100
+    : 0
+);
 
 const emit = defineEmits<{
   statusChanged: [];
@@ -171,6 +194,22 @@ const actionMenuItems = computed(() => {
               {{ ownerName }}
             </UBadge>
           </div>
+
+          <!-- Milestone Progress -->
+          <div
+            v-if="milestoneCount > 0"
+            class="flex items-center gap-2 mt-2"
+          >
+            <UProgress
+              :model-value="milestoneProgress"
+              size="xs"
+              class="flex-1 max-w-32"
+              :color="milestoneProgress === 100 ? 'success' : 'primary'"
+            />
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              {{ completedMilestones }}/{{ milestoneCount }} milestones
+            </span>
+          </div>
         </div>
 
         <!-- Action Menu (owner mode only) -->
@@ -325,6 +364,36 @@ const actionMenuItems = computed(() => {
           </div>
           <div v-else class="text-sm text-gray-500 italic">
             No description provided
+          </div>
+
+          <!-- Milestones (read-only in view modal) -->
+          <div v-if="milestoneCount > 0">
+            <label class="block text-sm font-medium mb-2">
+              Milestones ({{ completedMilestones }}/{{ milestoneCount }})
+            </label>
+            <div class="space-y-2">
+              <div
+                v-for="milestone in goal.milestones"
+                :key="milestone.id"
+                class="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-900"
+              >
+                <UIcon
+                  v-if="milestone.isCompleted"
+                  name="i-heroicons-check-circle-solid"
+                  class="w-5 h-5 flex-shrink-0 text-green-500"
+                />
+                <div
+                  v-else
+                  class="w-5 h-5 flex-shrink-0 rounded-full border-2 border-gray-400"
+                />
+                <span
+                  :class="milestone.isCompleted ? 'line-through text-gray-500' : ''"
+                  class="text-sm"
+                >
+                  {{ milestone.title }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </template>

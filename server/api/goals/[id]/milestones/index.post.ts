@@ -1,0 +1,91 @@
+import { db } from "../../../../database/connection";
+import { goals, goalMilestones } from "../../../../database/schema";
+import { eq, max } from "drizzle-orm";
+
+export default defineEventHandler(async (event) => {
+  const session = event.context.session;
+
+  if (!session?.user) {
+    throw createError({
+      statusCode: 401,
+      message: "Unauthorized - Please log in",
+    });
+  }
+
+  const goalId = getRouterParam(event, "id");
+
+  if (!goalId) {
+    throw createError({
+      statusCode: 400,
+      message: "Goal ID is required",
+    });
+  }
+
+  try {
+    // Verify the goal exists and belongs to the user
+    const [goal] = await db
+      .select({ id: goals.id, userId: goals.userId })
+      .from(goals)
+      .where(eq(goals.id, goalId));
+
+    if (!goal) {
+      throw createError({
+        statusCode: 404,
+        message: "Goal not found",
+      });
+    }
+
+    if (goal.userId !== session.user.id) {
+      throw createError({
+        statusCode: 403,
+        message: "You can only add milestones to your own goals",
+      });
+    }
+
+    const body = await readBody(event);
+    const { title } = body;
+
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      throw createError({
+        statusCode: 400,
+        message: "Milestone title is required",
+      });
+    }
+
+    if (title.length > 200) {
+      throw createError({
+        statusCode: 400,
+        message: "Milestone title must be 200 characters or less",
+      });
+    }
+
+    // Get the max displayOrder for this goal
+    const [maxOrder] = await db
+      .select({ maxOrder: max(goalMilestones.displayOrder) })
+      .from(goalMilestones)
+      .where(eq(goalMilestones.goalId, goalId));
+
+    const nextOrder = (maxOrder?.maxOrder ?? -1) + 1;
+
+    // Create the milestone
+    const [milestone] = await db
+      .insert(goalMilestones)
+      .values({
+        goalId,
+        title: title.trim(),
+        displayOrder: nextOrder,
+      })
+      .returning();
+
+    return { milestone };
+  } catch (error) {
+    if (error && typeof error === "object" && "statusCode" in error) {
+      throw error;
+    }
+    console.error("Error creating milestone:", error);
+    throw createError({
+      statusCode: 500,
+      message: "Failed to create milestone",
+    });
+  }
+});

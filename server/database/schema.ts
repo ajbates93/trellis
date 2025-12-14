@@ -133,6 +133,29 @@ export const goalsRelations = relations(goals, ({ one, many }) => ({
     references: [users.id],
   }),
   notes: many(goalNotes),
+  milestones: many(goalMilestones),
+}));
+
+// Goal milestones table
+export const goalMilestones = pgTable("goal_milestones", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  goalId: uuid("goal_id")
+    .notNull()
+    .references(() => goals.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  displayOrder: integer("display_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for goal milestones
+export const goalMilestonesRelations = relations(goalMilestones, ({ one }) => ({
+  goal: one(goals, {
+    fields: [goalMilestones.goalId],
+    references: [goals.id],
+  }),
 }));
 
 // Goal notes table

@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
-import { goals, users } from "../../database/schema";
-import { eq, desc } from "drizzle-orm";
+import { goals, goalMilestones } from "../../database/schema";
+import { eq, desc, asc, inArray } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -29,7 +29,34 @@ export default defineEventHandler(async (event) => {
       .where(eq(goals.userId, session.user.id))
       .orderBy(desc(goals.createdAt));
 
-    return { goals: userGoals };
+    // Fetch milestones for all goals
+    const goalIds = userGoals.map((g) => g.id);
+    const milestones =
+      goalIds.length > 0
+        ? await db
+            .select()
+            .from(goalMilestones)
+            .where(inArray(goalMilestones.goalId, goalIds))
+            .orderBy(asc(goalMilestones.displayOrder), asc(goalMilestones.createdAt))
+        : [];
+
+    // Group milestones by goalId
+    const milestonesByGoal = milestones.reduce(
+      (acc, m) => {
+        if (!acc[m.goalId]) acc[m.goalId] = [];
+        acc[m.goalId].push(m);
+        return acc;
+      },
+      {} as Record<string, typeof milestones>
+    );
+
+    // Attach milestones to goals
+    const goalsWithMilestones = userGoals.map((goal) => ({
+      ...goal,
+      milestones: milestonesByGoal[goal.id] || [],
+    }));
+
+    return { goals: goalsWithMilestones };
   } catch (error) {
     console.error("Error fetching goals:", error);
     throw createError({
