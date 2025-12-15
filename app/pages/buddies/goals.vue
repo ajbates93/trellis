@@ -453,22 +453,26 @@ const truncateNotes = (notes: string, length: number = 100): string => {
           </UTabs>
 
           <!-- Check-Ins Section -->
-          <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div class="mt-8">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                💬 Check-Ins
-              </h2>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="w-6 h-6 text-gray-500" />
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                  Check-Ins
+                </h2>
+              </div>
               <UButton
                 v-if="buddyInfo"
                 @click="showCheckinModal = true"
                 icon="i-heroicons-plus"
+                size="sm"
               >
                 New Check-In
               </UButton>
             </div>
 
             <!-- Check-ins Table -->
-            <UCard v-if="checkins.length > 0">
+            <div v-if="checkins.length > 0" class="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <UTable :columns="checkinColumns" :data="checkins">
                 <template #date-cell="{ row }">
                   <div class="text-sm">
@@ -496,24 +500,33 @@ const truncateNotes = (notes: string, length: number = 100): string => {
                   <div v-if="row.original.reviewSchedule">
                     <UBadge
                       :label="row.original.reviewSchedule.name"
-                      :color="
-                        row.original.reviewSchedule.status === 'completed'
-                          ? 'success'
-                          : 'warning'
-                      "
+                      variant="subtle"
                     />
                   </div>
-                  <div v-else class="text-xs text-gray-500">Not assigned</div>
+                  <div v-else class="text-xs text-gray-500">—</div>
                 </template>
               </UTable>
-            </UCard>
+            </div>
 
             <!-- Empty State -->
-            <div v-else class="text-center py-8 text-gray-500">
-              <p class="text-sm">
-                No check-ins recorded yet. Start tracking conversations with
-                {{ buddyInfo?.name }}.
+            <div v-else class="text-center py-12 px-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                No check-ins yet
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Record your monthly conversations with {{ buddyInfo?.name }}.
               </p>
+              <UButton
+                size="sm"
+                variant="outline"
+                icon="i-heroicons-plus"
+                @click="showCheckinModal = true"
+              >
+                Add First Check-In
+              </UButton>
             </div>
           </div>
         </div>
@@ -630,11 +643,7 @@ const truncateNotes = (notes: string, length: number = 100): string => {
           </p>
           <UBadge
             :label="selectedCheckin.reviewSchedule.name"
-            :color="
-              selectedCheckin.reviewSchedule.status === 'completed'
-                ? 'success'
-                : 'warning'
-            "
+            variant="subtle"
           />
         </div>
       </div>
@@ -644,7 +653,9 @@ const truncateNotes = (notes: string, length: number = 100): string => {
       <div class="flex items-center justify-between w-full">
         <UButton
           v-if="!isEditingCheckin"
-          color="error"
+          variant="outline"
+          color="neutral"
+          icon="i-heroicons-trash"
           :disabled="isSubmittingEdit"
           @click="deleteCheckin"
         >
@@ -653,19 +664,18 @@ const truncateNotes = (notes: string, length: number = 100): string => {
         <div v-else></div>
         <div class="flex gap-2">
           <UButton
-            color="primary"
-            :disabled="isSubmittingEdit || isEditingCheckin"
-            @click="showCheckinDetailsModal = false"
-          >
-            Close
-          </UButton>
-          <UButton
             v-if="!isEditingCheckin"
-            color="warning"
+            variant="outline"
             @click="startEditingCheckin"
             :disabled="isSubmittingEdit"
           >
             Edit
+          </UButton>
+          <UButton
+            :disabled="isSubmittingEdit || isEditingCheckin"
+            @click="showCheckinDetailsModal = false"
+          >
+            Done
           </UButton>
         </div>
       </div>
