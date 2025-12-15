@@ -91,17 +91,17 @@ const getDaysUntilReview = (scheduledDate: string) => {
   }
 };
 
-// Get status badge color
+// Get status badge color - using subtle colors to reduce visual noise
 const getStatusColor = (status: string) => {
   switch (status) {
     case "scheduled":
-      return "warning";
+      return "neutral";
     case "completed":
       return "success";
     case "rescheduled":
-      return "information";
+      return "warning";
     default:
-      return "gray";
+      return "neutral";
   }
 };
 
@@ -275,57 +275,70 @@ const completeReview = async (reviewId: string) => {
   }
 };
 
-// Column definitions
+// Column definitions - simplified structure with width hints
 const upcomingColumns = [
   {
-    id: "date",
-    accessorKey: "scheduledDate",
-    header: "Scheduled Date",
-  },
-  {
-    id: "name",
-    accessorKey: "name",
-    header: "Review Name",
+    id: "review",
+    header: "Review",
   },
   {
     id: "feedback",
-    header: "Feedback Items",
+    header: "Feedback",
+    size: 100,
   },
   {
     id: "status",
     accessorKey: "status",
     header: "Status",
+    size: 120,
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "",
+    size: 120,
   },
 ];
 
 const pastColumns = [
   {
-    id: "date",
-    accessorKey: "scheduledDate",
-    header: "Date",
-  },
-  {
-    id: "name",
-    accessorKey: "name",
-    header: "Review Name",
+    id: "review",
+    header: "Review",
   },
   {
     id: "feedback",
-    header: "Feedback Items",
+    header: "Feedback",
+    size: 100,
   },
   {
     id: "status",
     accessorKey: "status",
     header: "Status",
+    size: 120,
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "",
+    size: 120,
   },
+];
+
+// Capitalize first letter helper
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
+// Get dropdown actions for a review
+const getReviewActions = (review: any) => [
+  [
+    {
+      label: 'Edit',
+      icon: 'i-heroicons-pencil-square',
+      onSelect: () => openEditModal(review),
+    },
+    {
+      label: 'Mark Complete',
+      icon: 'i-heroicons-check-circle',
+      onSelect: () => completeReview(review.id),
+    },
+  ],
 ];
 </script>
 
@@ -395,66 +408,58 @@ const pastColumns = [
                   </div>
 
                   <UTable v-else :columns="upcomingColumns" :data="upcomingReviews">
-                    <template #date-cell="{ row }">
+                    <template #review-cell="{ row }">
                       <div>
-                        <div
-                          class="text-sm font-medium text-gray-900 dark:text-white"
-                        >
-                          {{ formatDate(row.original.scheduledDate) }}
+                        <div class="font-medium text-gray-900 dark:text-white">
+                          {{ row.original.name }}
                         </div>
-                        <div
-                          v-if="
-                            getDaysUntilReview(row.original.scheduledDate) !== null
-                          "
-                          class="text-xs text-gray-500 dark:text-gray-400"
-                        >
-                          {{
-                            getDaysUntilReview(row.original.scheduledDate) === 0
-                              ? "Today"
-                              : `${getDaysUntilReview(row.original.scheduledDate)} days away`
-                          }}
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                          {{ formatDate(row.original.scheduledDate) }}
+                          <span v-if="getDaysUntilReview(row.original.scheduledDate) !== null">
+                            ·
+                            {{
+                              getDaysUntilReview(row.original.scheduledDate) === 0
+                                ? "Today"
+                                : `${getDaysUntilReview(row.original.scheduledDate)} days`
+                            }}
+                          </span>
                         </div>
                       </div>
                     </template>
 
                     <template #feedback-cell="{ row }">
-                      <UBadge
-                        :label="`${row.original.feedbackCount || 0} items`"
-                        color="blue"
-                        variant="subtle"
-                      />
+                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
+                        <span>{{ row.original.feedbackCount || 0 }}</span>
+                      </div>
                     </template>
 
                     <template #status-cell="{ row }">
                       <UBadge
-                        :label="row.original.status"
+                        :label="capitalize(row.original.status)"
                         :color="getStatusColor(row.original.status)"
+                        variant="subtle"
                       />
                     </template>
 
                     <template #actions-cell="{ row }">
-                      <div class="flex items-center gap-2">
-                        <UButton @click="openReviewModal(row.original)">
-                          Preview
-                        </UButton>
-                        <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
-                          <UButton color="primary"> View </UButton>
-                        </NuxtLink>
+                      <div class="flex items-center gap-2 justify-end">
                         <UButton
-                          v-if="row.original.status === 'scheduled'"
-                          color="gray"
-                          variant="outline"
-                          @click="openEditModal(row.original)"
+                          :to="`/reviews/${row.original.id}`"
+                          variant="soft"
                         >
-                          Edit
+                          View
                         </UButton>
-                        <UButton
+                        <UDropdownMenu
                           v-if="row.original.status === 'scheduled'"
-                          color="success"
-                          @click="completeReview(row.original.id)"
+                          :items="getReviewActions(row.original)"
                         >
-                          Complete
-                        </UButton>
+                          <UButton
+                            icon="i-heroicons-ellipsis-vertical"
+                            variant="ghost"
+                            color="neutral"
+                          />
+                        </UDropdownMenu>
                       </div>
                     </template>
                   </UTable>
@@ -479,46 +484,42 @@ const pastColumns = [
                   </div>
 
                   <UTable v-else :columns="pastColumns" :data="pastReviews">
-                    <template #date-cell="{ row }">
+                    <template #review-cell="{ row }">
                       <div>
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">
-                          {{ formatDate(row.original.scheduledDate) }}
+                        <div class="font-medium text-gray-900 dark:text-white">
+                          {{ row.original.name }}
                         </div>
-                        <div v-if="row.original.completedDate" class="text-xs text-gray-500 dark:text-gray-400">
-                          Completed: {{ formatDate(row.original.completedDate) }}
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                          {{ formatDate(row.original.scheduledDate) }}
+                          <span v-if="row.original.completedDate">
+                            · Completed {{ formatDate(row.original.completedDate) }}
+                          </span>
                         </div>
                       </div>
                     </template>
 
                     <template #feedback-cell="{ row }">
-                      <UBadge
-                        :label="`${row.original.feedbackCount || 0} items`"
-                        color="blue"
-                        variant="subtle"
-                      />
+                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
+                        <span>{{ row.original.feedbackCount || 0 }}</span>
+                      </div>
                     </template>
 
                     <template #status-cell="{ row }">
                       <UBadge
-                        :label="row.original.status"
+                        :label="capitalize(row.original.status)"
                         :color="getStatusColor(row.original.status)"
+                        variant="subtle"
                       />
                     </template>
 
                     <template #actions-cell="{ row }">
-                      <div class="flex items-center gap-2">
-                        <UButton @click="openReviewModal(row.original)">
-                          Preview
-                        </UButton>
-                        <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
-                          <UButton color="primary"> View </UButton>
-                        </NuxtLink>
+                      <div class="flex items-center justify-end">
                         <UButton
-                          v-if="row.original.status === 'scheduled'"
-                          color="success"
-                          @click="completeReview(row.original.id)"
+                          :to="`/reviews/${row.original.id}`"
+                          variant="soft"
                         >
-                          Complete
+                          View
                         </UButton>
                       </div>
                     </template>
