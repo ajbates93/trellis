@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { format } from "date-fns";
+import { format, differenceInDays, isPast, isToday } from "date-fns";
 
 interface Milestone {
   id: string;
@@ -38,6 +38,38 @@ const milestoneProgress = computed(() =>
     ? (completedMilestones.value / milestoneCount.value) * 100
     : 0
 );
+
+// Date urgency calculation
+type BadgeColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
+
+const dateUrgency = computed<{ color: BadgeColor; label: string; icon: string; daysUntil?: number }>(() => {
+  if (!props.goal.targetDate) return { color: 'neutral', label: 'No target date', icon: 'i-heroicons-calendar' };
+
+  const targetDate = new Date(props.goal.targetDate);
+  const today = new Date();
+  const daysUntil = differenceInDays(targetDate, today);
+
+  if (isPast(targetDate) && !isToday(targetDate)) {
+    return { color: 'error', label: 'Overdue', icon: 'i-heroicons-exclamation-circle', daysUntil };
+  }
+  if (isToday(targetDate)) {
+    return { color: 'warning', label: 'Due today', icon: 'i-heroicons-clock', daysUntil: 0 };
+  }
+  if (daysUntil <= 7) {
+    return { color: 'warning', label: `${daysUntil} days left`, icon: 'i-heroicons-clock', daysUntil };
+  }
+  if (daysUntil <= 30) {
+    return { color: 'primary', label: `${daysUntil} days left`, icon: 'i-heroicons-calendar', daysUntil };
+  }
+  return { color: 'success', label: `${daysUntil} days left`, icon: 'i-heroicons-calendar', daysUntil };
+});
+
+// Strip HTML tags for description preview
+const descriptionPreview = computed(() => {
+  if (!props.goal.description) return null;
+  const stripped = props.goal.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return stripped.length > 100 ? stripped.substring(0, 100) + '...' : stripped;
+});
 
 const emit = defineEmits<{
   statusChanged: [];
@@ -140,10 +172,28 @@ const actionMenuItems = computed(() => {
     items.push({
       label: "Edit",
       icon: "i-heroicons-pencil",
-      click: () => {
+      onSelect: () => {
         showEditModal.value = true;
       },
     });
+
+    // Add Archive option for active/completed goals
+    if (props.goal.status === 'active' || props.goal.status === 'completed') {
+      items.push({
+        label: "Archive",
+        icon: "i-heroicons-archive-box",
+        onSelect: () => changeStatus('archived'),
+      });
+    }
+
+    // Add Reactivate option for archived/completed goals
+    if (props.goal.status === 'archived' || props.goal.status === 'completed') {
+      items.push({
+        label: "Reactivate",
+        icon: "i-heroicons-arrow-path",
+        onSelect: () => changeStatus('active'),
+      });
+    }
 
     items.push({
       label: "Delete",
@@ -158,30 +208,111 @@ const actionMenuItems = computed(() => {
 
 <template>
   <UCard
-    class="hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+    class="hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/30"
   >
-    <div class="space-y-3">
-      <!-- Goal Header -->
-      <div class="flex justify-between items-start gap-2">
-        <div class="flex-1">
-          <button class="text-left w-full group" @click="showViewModal = true">
-            <p
-              class="text-base font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors"
+    <div class="space-y-4">
+      <!-- Goal Header with Progress Ring -->
+      <div class="flex gap-4">
+        <!-- Circular Progress (if milestones exist) -->
+        <div
+          v-if="milestoneCount > 0"
+          class="flex-shrink-0 relative w-14 h-14 cursor-pointer"
+          @click="showViewModal = true"
+        >
+          <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+            <!-- Background circle -->
+            <circle
+              cx="28"
+              cy="28"
+              r="24"
+              stroke="currentColor"
+              stroke-width="4"
+              fill="none"
+              class="text-gray-200 dark:text-gray-700"
+            />
+            <!-- Progress circle -->
+            <circle
+              cx="28"
+              cy="28"
+              r="24"
+              stroke="currentColor"
+              stroke-width="4"
+              fill="none"
+              :stroke-dasharray="150.8"
+              :stroke-dashoffset="150.8 - (150.8 * milestoneProgress) / 100"
+              stroke-linecap="round"
+              :class="milestoneProgress === 100 ? 'text-green-500' : 'text-primary'"
+              class="transition-all duration-500"
+            />
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              {{ Math.round(milestoneProgress) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Goal Info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start gap-2">
+            <button class="text-left flex-1 group" @click="showViewModal = true">
+              <p
+                class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors line-clamp-2"
+              >
+                {{ goal.goalText }}
+              </p>
+            </button>
+
+            <!-- Action Menu (owner mode only) -->
+            <UDropdownMenu
+              v-if="mode === 'owner' && actionMenuItems.length > 0"
+              :items="[actionMenuItems]"
             >
-              {{ goal.goalText }}
-            </p>
-          </button>
-          <div class="flex items-center gap-2 mt-2">
-            <!-- Target Date Badge -->
+              <UButton
+                icon="i-heroicons-ellipsis-vertical"
+                variant="ghost"
+                color="neutral"
+                size="xs"
+              />
+            </UDropdownMenu>
+          </div>
+
+          <!-- Meta info row -->
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <!-- Target Date Badge with urgency colors -->
             <UBadge
-              :color="goal.targetDate ? 'primary' : 'neutral'"
+              :color="dateUrgency.color"
               variant="subtle"
               size="sm"
             >
-              <template #icon>
-                <UIcon name="i-heroicons-calendar" />
+              <template #leading>
+                <UIcon :name="dateUrgency.icon" class="w-3 h-3" />
               </template>
-              {{ formatTargetDate(goal.targetDate) }}
+              {{ goal.targetDate ? formatTargetDate(goal.targetDate) : dateUrgency.label }}
+            </UBadge>
+
+            <!-- Urgency indicator for dates -->
+            <span
+              v-if="goal.targetDate && goal.status === 'active'"
+              class="text-xs"
+              :class="{
+                'text-red-500': dateUrgency.color === 'error',
+                'text-amber-500': dateUrgency.color === 'warning',
+                'text-primary': dateUrgency.color === 'primary',
+                'text-green-500': dateUrgency.color === 'success',
+              }"
+            >
+              {{ dateUrgency.label }}
+            </span>
+
+            <!-- Milestone count (when no progress ring) -->
+            <UBadge
+              v-if="milestoneCount > 0"
+              color="neutral"
+              variant="outline"
+              size="sm"
+            >
+              {{ completedMilestones }}/{{ milestoneCount }} milestones
             </UBadge>
 
             <!-- Owner Badge (buddy mode) -->
@@ -189,125 +320,62 @@ const actionMenuItems = computed(() => {
               v-if="mode === 'buddy' && ownerName"
               color="neutral"
               variant="subtle"
-              size="xs"
+              size="sm"
             >
               {{ ownerName }}
             </UBadge>
           </div>
 
-          <!-- Milestone Progress -->
-          <div
-            v-if="milestoneCount > 0"
-            class="flex items-center gap-2 mt-2"
+          <!-- Description Preview -->
+          <p
+            v-if="descriptionPreview"
+            class="mt-2 text-sm text-gray-500 dark:text-gray-400 line-clamp-2"
           >
-            <UProgress
-              :model-value="milestoneProgress"
-              size="xs"
-              class="flex-1 max-w-32"
-              :color="milestoneProgress === 100 ? 'success' : 'primary'"
-            />
-            <span class="text-xs text-gray-500 dark:text-gray-400">
-              {{ completedMilestones }}/{{ milestoneCount }} milestones
-            </span>
-          </div>
+            {{ descriptionPreview }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Primary Action Button (simplified) -->
+      <div v-if="mode === 'owner'" class="flex items-center gap-3">
+        <!-- Active Goal: Single prominent action -->
+        <UButton
+          v-if="goal.status === 'active'"
+          size="sm"
+          variant="soft"
+          color="success"
+          icon="i-heroicons-check-circle"
+          :loading="isUpdatingStatus"
+          class="transition-all"
+          @click="changeStatus('completed')"
+        >
+          Mark Complete
+        </UButton>
+
+        <!-- Completed Goal: Show completion state -->
+        <div v-else-if="goal.status === 'completed'" class="flex items-center gap-2">
+          <UIcon name="i-heroicons-check-badge" class="w-5 h-5 text-green-500" />
+          <span class="text-sm text-green-600 dark:text-green-400 font-medium">Completed</span>
         </div>
 
-        <!-- Action Menu (owner mode only) -->
-        <UDropdown
-          v-if="mode === 'owner' && actionMenuItems.length > 0"
-          :items="[actionMenuItems]"
-        >
+        <!-- Archived Goal: Muted state -->
+        <div v-else-if="goal.status === 'archived'" class="flex items-center gap-2">
+          <UIcon name="i-heroicons-archive-box" class="w-5 h-5 text-gray-400" />
+          <span class="text-sm text-gray-500 font-medium">Archived</span>
+        </div>
+
+        <!-- Notes toggle moved to right -->
+        <div class="ml-auto">
           <UButton
-            icon="i-heroicons-ellipsis-vertical"
+            size="xs"
             variant="ghost"
             color="neutral"
-            size="xs"
-          />
-        </UDropdown>
-      </div>
-
-      <!-- Action Buttons -->
-      <div v-if="mode === 'owner'" class="flex gap-2 flex-wrap">
-        <!-- Active Goal Actions -->
-        <template v-if="goal.status === 'active'">
-          <UButton
-            size="sm"
-            variant="soft"
-            color="success"
-            icon="i-heroicons-check-circle"
-            :loading="isUpdatingStatus"
-            class="hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
-            @click="changeStatus('completed')"
+            :icon="showNotes ? 'i-heroicons-chevron-up' : 'i-heroicons-chat-bubble-left-ellipsis'"
+            @click="showNotes = !showNotes"
           >
-            Mark Complete
+            {{ showNotes ? "Hide Notes" : "Notes" }}
           </UButton>
-          <UButton
-            size="sm"
-            variant="soft"
-            color="neutral"
-            icon="i-heroicons-archive-box"
-            :loading="isUpdatingStatus"
-            class="hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            @click="changeStatus('archived')"
-          >
-            Archive
-          </UButton>
-        </template>
-
-        <!-- Completed Goal Actions -->
-        <template v-else-if="goal.status === 'completed'">
-          <UButton
-            size="sm"
-            variant="soft"
-            color="primary"
-            icon="i-heroicons-arrow-path"
-            :loading="isUpdatingStatus"
-            class="hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-            @click="changeStatus('active')"
-          >
-            Reactivate
-          </UButton>
-          <UButton
-            size="sm"
-            variant="soft"
-            color="neutral"
-            icon="i-heroicons-archive-box"
-            :loading="isUpdatingStatus"
-            class="hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            @click="changeStatus('archived')"
-          >
-            Archive
-          </UButton>
-        </template>
-
-        <!-- Archived Goal Actions -->
-        <template v-else-if="goal.status === 'archived'">
-          <UButton
-            size="sm"
-            variant="soft"
-            color="primary"
-            icon="i-heroicons-arrow-path"
-            :loading="isUpdatingStatus"
-            class="hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-            @click="changeStatus('active')"
-          >
-            Reactivate
-          </UButton>
-        </template>
-      </div>
-
-      <!-- Toggle Notes Button -->
-      <div>
-        <UButton
-          size="xs"
-          variant="ghost"
-          :icon="
-            showNotes ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'
-          "
-          @click="showNotes = !showNotes"
-        >
-          {{ showNotes ? "Hide" : "Show" }} Notes
-        </UButton>
+        </div>
       </div>
 
       <!-- Notes Section (Expandable) -->
@@ -326,9 +394,9 @@ const actionMenuItems = computed(() => {
       class="sm:max-w-2xl"
     >
       <template #body>
-        <div class="space-y-4">
-          <!-- Status Badge -->
-          <div>
+        <div class="space-y-6">
+          <!-- Header with status and progress -->
+          <div class="flex items-center justify-between">
             <UBadge
               :color="
                 goal.status === 'active'
@@ -337,63 +405,137 @@ const actionMenuItems = computed(() => {
                     ? 'primary'
                     : 'neutral'
               "
-              size="sm"
+              size="md"
             >
-              {{ goal.status }}
+            {{ goal.status.charAt(0).toUpperCase() + goal.status.slice(1) }}
             </UBadge>
+
+            <!-- Progress ring in modal -->
+            <div v-if="milestoneCount > 0" class="flex items-center gap-3">
+              <div class="relative w-12 h-12">
+                <svg class="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    fill="none"
+                    class="text-gray-200 dark:text-gray-700"
+                  />
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    fill="none"
+                    :stroke-dasharray="125.6"
+                    :stroke-dashoffset="125.6 - (125.6 * milestoneProgress) / 100"
+                    stroke-linecap="round"
+                    :class="milestoneProgress === 100 ? 'text-green-500' : 'text-primary'"
+                  />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <span class="text-xs font-bold">{{ Math.round(milestoneProgress) }}%</span>
+                </div>
+              </div>
+              <div class="text-sm">
+                <p class="font-medium">{{ completedMilestones }}/{{ milestoneCount }}</p>
+                <p class="text-gray-500 text-xs">milestones</p>
+              </div>
+            </div>
           </div>
 
-          <!-- Target Date -->
-          <div v-if="goal.targetDate">
-            <label class="block text-sm font-medium mb-1">Target Date</label>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-heroicons-calendar" class="text-gray-500" />
-              <span class="text-sm">{{
-                formatTargetDate(goal.targetDate)
-              }}</span>
+          <!-- Target Date with urgency -->
+          <div
+            v-if="goal.targetDate"
+            class="flex items-center gap-3 p-3 rounded-lg"
+            :class="{
+              'bg-red-50 dark:bg-red-900/20': dateUrgency.color === 'error',
+              'bg-amber-50 dark:bg-amber-900/20': dateUrgency.color === 'warning',
+              'bg-blue-50 dark:bg-blue-900/20': dateUrgency.color === 'primary',
+              'bg-green-50 dark:bg-green-900/20': dateUrgency.color === 'success',
+            }"
+          >
+            <UIcon
+              :name="dateUrgency.icon"
+              class="w-5 h-5"
+              :class="{
+                'text-red-500': dateUrgency.color === 'error',
+                'text-amber-500': dateUrgency.color === 'warning',
+                'text-primary': dateUrgency.color === 'primary',
+                'text-green-500': dateUrgency.color === 'success',
+              }"
+            />
+            <div>
+              <p class="font-medium">{{ formatTargetDate(goal.targetDate) }}</p>
+              <p
+                class="text-sm"
+                :class="{
+                  'text-red-600 dark:text-red-400': dateUrgency.color === 'error',
+                  'text-amber-600 dark:text-amber-400': dateUrgency.color === 'warning',
+                  'text-blue-600 dark:text-blue-400': dateUrgency.color === 'primary',
+                  'text-green-600 dark:text-green-400': dateUrgency.color === 'success',
+                }"
+              >
+                {{ dateUrgency.label }}
+              </p>
             </div>
           </div>
 
           <!-- Description -->
           <div v-if="goal.description">
-            <label class="block text-sm font-medium mb-2">Description</label>
+            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Description</label>
             <div
               class="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
               v-html="goal.description"
             />
           </div>
-          <div v-else class="text-sm text-gray-500 italic">
-            No description provided
-          </div>
 
-          <!-- Milestones (read-only in view modal) -->
+          <!-- Milestones -->
           <div v-if="milestoneCount > 0">
-            <label class="block text-sm font-medium mb-2">
-              Milestones ({{ completedMilestones }}/{{ milestoneCount }})
+            <label class="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+              Milestones
             </label>
             <div class="space-y-2">
               <div
                 v-for="milestone in goal.milestones"
                 :key="milestone.id"
-                class="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-900"
+                class="flex items-center gap-3 p-3 rounded-lg transition-colors"
+                :class="milestone.isCompleted
+                  ? 'bg-green-50 dark:bg-green-900/20'
+                  : 'bg-gray-50 dark:bg-gray-800'"
               >
                 <UIcon
                   v-if="milestone.isCompleted"
                   name="i-heroicons-check-circle-solid"
-                  class="w-5 h-5 flex-shrink-0 text-green-500"
+                  class="w-6 h-6 flex-shrink-0 text-green-500"
                 />
                 <div
                   v-else
-                  class="w-5 h-5 flex-shrink-0 rounded-full border-2 border-gray-400"
+                  class="w-6 h-6 flex-shrink-0 rounded-full border-2 border-gray-300 dark:border-gray-600"
                 />
                 <span
-                  :class="milestone.isCompleted ? 'line-through text-gray-500' : ''"
-                  class="text-sm"
+                  :class="milestone.isCompleted
+                    ? 'line-through text-gray-500 dark:text-gray-400'
+                    : 'text-gray-900 dark:text-gray-100'"
+                  class="text-sm font-medium"
                 >
                   {{ milestone.title }}
                 </span>
               </div>
             </div>
+          </div>
+
+          <!-- Empty state for no description and no milestones -->
+          <div
+            v-if="!goal.description && milestoneCount === 0"
+            class="text-center py-6 text-gray-500"
+          >
+            <UIcon name="i-heroicons-document-text" class="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p class="text-sm">No description or milestones yet.</p>
+            <p class="text-xs mt-1">Click "Edit Goal" to add details.</p>
           </div>
         </div>
       </template>

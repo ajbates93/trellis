@@ -34,11 +34,23 @@
                 <div
                   class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
                 >
+                  <!-- Empty state for active goals -->
                   <div
                     v-if="activeGoals.length === 0"
-                    class="col-span-full text-center py-8 text-gray-500"
+                    class="col-span-full"
                   >
-                    No active goals yet. Create one to get started!
+                    <div class="text-center py-12 px-6 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                      <UIcon name="i-heroicons-rocket-launch" class="w-12 h-12 mx-auto text-primary mb-4" />
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        Set your first goal
+                      </h3>
+                      <p class="text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto">
+                        Goals help you track your professional development. Start with something you want to achieve this quarter.
+                      </p>
+                      <UButton icon="i-heroicons-plus" @click="showCreateModal = true">
+                        Create Your First Goal
+                      </UButton>
+                    </div>
                   </div>
                   <GoalsGoalCard
                     v-for="goal in activeGoals"
@@ -74,11 +86,17 @@
                 <div
                   class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
                 >
+                  <!-- Empty state for completed goals -->
                   <div
                     v-if="completedGoals.length === 0"
-                    class="col-span-full text-center py-8 text-gray-500"
+                    class="col-span-full"
                   >
-                    No completed goals yet
+                    <div class="text-center py-8 px-6 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <UIcon name="i-heroicons-trophy" class="w-10 h-10 mx-auto text-gray-400 mb-3" />
+                      <p class="text-gray-500 dark:text-gray-400">
+                        No completed goals yet. Keep working on your active goals!
+                      </p>
+                    </div>
                   </div>
                   <GoalsGoalCard
                     v-for="goal in completedGoals"
@@ -114,11 +132,17 @@
                 <div
                   class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
                 >
+                  <!-- Empty state for archived goals -->
                   <div
                     v-if="archivedGoals.length === 0"
-                    class="col-span-full text-center py-8 text-gray-500"
+                    class="col-span-full"
                   >
-                    No archived goals
+                    <div class="text-center py-6 px-6 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <UIcon name="i-heroicons-archive-box" class="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        No archived goals
+                      </p>
+                    </div>
                   </div>
                   <GoalsGoalCard
                     v-for="goal in archivedGoals"
