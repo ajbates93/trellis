@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
+import type { TabsItem } from '@nuxt/ui'
 
 definePageMeta({
   layout: "default",
@@ -9,14 +10,6 @@ definePageMeta({
 const toast = useToast();
 const { buddies, hasBuddies } = useBuddies();
 const { selectedBuddyId } = useSelectedBuddy();
-
-// Tab state
-const selectedTab = ref("received");
-
-const tabs = [
-  { label: "Received", value: "received" },
-  { label: "Incoming", value: "incoming" },
-];
 
 // Fetch buddy received feedback (reactive based on selectedBuddyId)
 const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useFetch(
@@ -45,6 +38,26 @@ const incomingFeedback = computed(() => {
 watch(selectedBuddyId, async () => {
   await Promise.all([refreshBuddyReceived(), refreshIncoming()]);
 });
+
+// Tab state
+const selectedTab = ref("received");
+
+const tabs = computed<TabsItem[]>(() => [
+  {
+    label: "Received",
+    icon: "i-heroicons-inbox-arrow-down",
+    badge: buddyReceivedFeedback.value.length > 0 ? buddyReceivedFeedback.value.length : undefined,
+    value: "received",
+    slot: "received",
+  },
+  {
+    label: "Incoming",
+    icon: "i-heroicons-clock",
+    badge: incomingFeedback.value.length > 0 ? incomingFeedback.value.length : undefined,
+    value: "incoming",
+    slot: "incoming",
+  },
+]);
 
 // Get unread count refresh function
 const { refreshUnreadCount } = useUnreadCount();
@@ -250,7 +263,15 @@ const incomingColumns = [
           v-if="selectedBuddyId"
           v-model="selectedTab"
           :items="tabs"
-          class="mb-6"
+          variant="pill"
+          color="neutral"
+          size="lg"
+          class="w-full mb-6"
+          :ui="{
+            list: 'bg-gray-100 dark:bg-gray-800 rounded-xl p-1',
+            trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+            indicator: 'bg-white dark:bg-gray-900 shadow-sm',
+          }"
         />
 
         <!-- Tab Content -->

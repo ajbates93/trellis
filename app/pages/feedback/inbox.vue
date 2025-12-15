@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
+import type { TabsItem } from '@nuxt/ui'
 
 definePageMeta({
   layout: "default",
@@ -16,10 +17,22 @@ onMounted(() => {
 // Tab state
 const selectedTab = ref("received");
 
-const tabs = [
-  { label: "Received", value: "received" },
-  { label: "Given", value: "given" },
-];
+const tabs = computed<TabsItem[]>(() => [
+  {
+    label: "Received",
+    icon: "i-heroicons-inbox-arrow-down",
+    badge: receivedFeedback.value.length > 0 ? receivedFeedback.value.length : undefined,
+    value: "received",
+    slot: "received",
+  },
+  {
+    label: "Given",
+    icon: "i-heroicons-paper-airplane",
+    badge: givenFeedback.value.length > 0 ? givenFeedback.value.length : undefined,
+    value: "given",
+    slot: "given",
+  },
+]);
 
 // Fetch received feedback (published only)
 const { data: receivedData, refresh: refreshReceived } = await useFetch(
@@ -166,7 +179,19 @@ const givenColumns = [
         </div>
 
         <!-- Tabs -->
-        <UTabs v-model="selectedTab" :items="tabs" class="mb-6" />
+        <UTabs
+          v-model="selectedTab"
+          :items="tabs"
+          variant="pill"
+          color="neutral"
+          size="lg"
+          class="w-full mb-6"
+          :ui="{
+            list: 'bg-gray-100 dark:bg-gray-800 rounded-xl p-1',
+            trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+            indicator: 'bg-white dark:bg-gray-900 shadow-sm',
+          }"
+        />
 
         <!-- Tab Content -->
         <div class="mt-6">
