@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
+import type { TabsItem } from '@nuxt/ui'
 
 // Type definitions
 interface Goal {
@@ -85,6 +86,34 @@ const completedGoals = computed(() =>
 const archivedGoals = computed(() =>
   buddyGoals.value.filter((g: Goal) => g.status === "archived"),
 );
+
+// Tab state
+const activeTab = ref('active');
+
+// Tab items with icons and badges
+const tabItems = computed<TabsItem[]>(() => [
+  {
+    label: 'Active',
+    icon: 'i-heroicons-fire',
+    badge: activeGoals.value.length > 0 ? activeGoals.value.length : undefined,
+    value: 'active',
+    slot: 'active',
+  },
+  {
+    label: 'Completed',
+    icon: 'i-heroicons-check-badge',
+    badge: completedGoals.value.length > 0 ? completedGoals.value.length : undefined,
+    value: 'completed',
+    slot: 'completed',
+  },
+  {
+    label: 'Archived',
+    icon: 'i-heroicons-archive-box',
+    badge: archivedGoals.value.length > 0 ? archivedGoals.value.length : undefined,
+    value: 'archived',
+    slot: 'archived',
+  },
+]);
 
 // Modal state
 const showCheckinModal = ref(false);
@@ -286,8 +315,6 @@ const truncateNotes = (notes: string, length: number = 100): string => {
   <UDashboardPanel id="buddy-goals">
     <template #body>
       <div class="p-4 sm:p-6 lg:p-8">
-        <input type="text" v-model="checkinNotes" />
-        <pre>{{ checkinNotes }}</pre>
         <!-- Page header -->
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -308,122 +335,122 @@ const truncateNotes = (notes: string, length: number = 100): string => {
 
         <!-- Goals Content -->
         <div v-if="selectedBuddyId && buddyInfo" class="space-y-6">
-          <!-- Active Goals Accordion -->
-          <UAccordion
-            :items="[
-              {
-                label: `🎯 Active Goals (${activeGoals.length})`,
-                slot: 'active-goals',
-                defaultOpen: true,
-              },
-            ]"
+          <!-- Tabbed Goals Interface -->
+          <UTabs
+            v-model="activeTab"
+            :items="tabItems"
+            variant="pill"
+            color="neutral"
+            size="lg"
+            class="w-full"
             :ui="{
-              item: {
-                base: 'mb-4',
-                label:
-                  'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer',
-              },
+              list: 'bg-gray-100 dark:bg-gray-800 rounded-xl p-1',
+              trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+              indicator: 'bg-white dark:bg-gray-900 shadow-sm',
             }"
           >
-            <template #active-goals>
-              <div
-                class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
-              >
-                <div
-                  v-if="activeGoals.length === 0"
-                  class="col-span-full text-center py-8 text-gray-500"
-                >
-                  {{ buddyInfo.name }} doesn't have any active goals yet
+            <!-- Active Goals Tab -->
+            <template #active>
+              <div class="pt-6">
+                <!-- Empty state -->
+                <div v-if="activeGoals.length === 0">
+                  <div class="text-center py-16 px-6 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <UIcon name="i-heroicons-rocket-launch" class="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      No active goals
+                    </h3>
+                    <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                      {{ buddyInfo.name }} doesn't have any active goals yet.
+                    </p>
+                  </div>
                 </div>
-                <GoalsGoalCard
-                  v-for="goal in activeGoals"
-                  :key="goal.id"
-                  :goal="goal"
-                  mode="buddy"
-                  @status-changed="handleGoalChange"
-                  @updated="handleGoalChange"
-                />
-              </div>
-            </template>
-          </UAccordion>
 
-          <!-- Completed Goals Accordion -->
-          <UAccordion
-            :items="[
-              {
-                label: `✅ Completed Goals (${completedGoals.length})`,
-                slot: 'completed-goals',
-                defaultOpen: false,
-              },
-            ]"
-            :ui="{
-              item: {
-                base: 'mb-4',
-                label:
-                  'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer',
-              },
-            }"
-          >
-            <template #completed-goals>
-              <div
-                class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
-              >
+                <!-- Goals grid -->
                 <div
-                  v-if="completedGoals.length === 0"
-                  class="col-span-full text-center py-8 text-gray-500"
+                  v-else
+                  class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"
                 >
-                  No completed goals yet
+                  <GoalsGoalCard
+                    v-for="goal in activeGoals"
+                    :key="goal.id"
+                    :goal="goal"
+                    mode="buddy"
+                    @status-changed="handleGoalChange"
+                    @updated="handleGoalChange"
+                  />
                 </div>
-                <GoalsGoalCard
-                  v-for="goal in completedGoals"
-                  :key="goal.id"
-                  :goal="goal"
-                  mode="buddy"
-                  @status-changed="handleGoalChange"
-                  @updated="handleGoalChange"
-                />
               </div>
             </template>
-          </UAccordion>
 
-          <!-- Archived Goals Accordion -->
-          <UAccordion
-            :items="[
-              {
-                label: `📦 Archived Goals (${archivedGoals.length})`,
-                slot: 'archived-goals',
-                defaultOpen: false,
-              },
-            ]"
-            :ui="{
-              item: {
-                base: 'mb-4',
-                label:
-                  'text-lg font-semibold bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer',
-              },
-            }"
-          >
-            <template #archived-goals>
-              <div
-                class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 py-3"
-              >
-                <div
-                  v-if="archivedGoals.length === 0"
-                  class="col-span-full text-center py-8 text-gray-500"
-                >
-                  No archived goals
+            <!-- Completed Goals Tab -->
+            <template #completed>
+              <div class="pt-6">
+                <!-- Empty state -->
+                <div v-if="completedGoals.length === 0">
+                  <div class="text-center py-16 px-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                      <UIcon name="i-heroicons-trophy" class="w-8 h-8 text-amber-500" />
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      No completed goals yet
+                    </h3>
+                    <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                      {{ buddyInfo.name }} hasn't completed any goals yet.
+                    </p>
+                  </div>
                 </div>
-                <GoalsGoalCard
-                  v-for="goal in archivedGoals"
-                  :key="goal.id"
-                  :goal="goal"
-                  mode="buddy"
-                  @status-changed="handleGoalChange"
-                  @updated="handleGoalChange"
-                />
+
+                <!-- Goals grid -->
+                <div
+                  v-else
+                  class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+                >
+                  <GoalsGoalCard
+                    v-for="goal in completedGoals"
+                    :key="goal.id"
+                    :goal="goal"
+                    mode="buddy"
+                    @status-changed="handleGoalChange"
+                    @updated="handleGoalChange"
+                  />
+                </div>
               </div>
             </template>
-          </UAccordion>
+
+            <!-- Archived Goals Tab -->
+            <template #archived>
+              <div class="pt-6">
+                <!-- Empty state -->
+                <div v-if="archivedGoals.length === 0">
+                  <div class="text-center py-12 px-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <UIcon name="i-heroicons-archive-box" class="w-6 h-6 text-gray-400" />
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400">
+                      No archived goals
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Goals grid -->
+                <div
+                  v-else
+                  class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+                >
+                  <GoalsGoalCard
+                    v-for="goal in archivedGoals"
+                    :key="goal.id"
+                    :goal="goal"
+                    mode="buddy"
+                    @status-changed="handleGoalChange"
+                    @updated="handleGoalChange"
+                  />
+                </div>
+              </div>
+            </template>
+          </UTabs>
 
           <!-- Check-Ins Section -->
           <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
