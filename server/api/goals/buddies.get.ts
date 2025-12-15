@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
-import { goals, users } from "../../database/schema";
-import { eq, desc, and, or } from "drizzle-orm";
+import { goals, users, goalMilestones } from "../../database/schema";
+import { eq, desc, and, or, asc, inArray } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -72,18 +72,51 @@ export default defineEventHandler(async (event) => {
       )
       .orderBy(desc(goals.createdAt));
 
-    // Group goals by user
-    const groupedByUser = buddyGoals.reduce((acc, item) => {
-      const userId = item.user.id;
-      if (!acc[userId]) {
-        acc[userId] = {
-          user: item.user,
-          goals: [],
-        };
-      }
-      acc[userId].goals.push(item.goal);
-      return acc;
-    }, {} as Record<string, { user: typeof item.user; goals: typeof item.goal[] }>);
+    // Fetch milestones for all goals
+    const goalIds = buddyGoals.map((g) => g.goal.id);
+    const milestones =
+      goalIds.length > 0
+        ? await db
+            .select()
+            .from(goalMilestones)
+            .where(inArray(goalMilestones.goalId, goalIds))
+            .orderBy(asc(goalMilestones.displayOrder), asc(goalMilestones.createdAt))
+        : [];
+
+    // Group milestones by goalId
+    const milestonesByGoal = milestones.reduce(
+      (acc, m) => {
+        if (!acc[m.goalId]) acc[m.goalId] = [];
+        acc[m.goalId].push(m);
+        return acc;
+      },
+      {} as Record<string, typeof milestones>
+    );
+
+    // Group goals by user (with milestones attached)
+    const groupedByUser = buddyGoals.reduce(
+      (acc, item) => {
+        const userId = item.user.id;
+        if (!acc[userId]) {
+          acc[userId] = {
+            user: item.user,
+            goals: [],
+          };
+        }
+        acc[userId].goals.push({
+          ...item.goal,
+          milestones: milestonesByGoal[item.goal.id] || [],
+        });
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          user: (typeof buddyGoals)[0]["user"];
+          goals: ((typeof buddyGoals)[0]["goal"] & { milestones: typeof milestones })[];
+        }
+      >
+    );
 
     // Convert to array
     const buddyAssignments = Object.values(groupedByUser);

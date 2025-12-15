@@ -80,7 +80,7 @@ const formatRelativeTime = (dateString: string) => {
 <template>
   <div class="space-y-4">
     <!-- Notes List -->
-    <div v-if="notes.length > 0" class="space-y-3">
+    <div v-if="notes.length > 0" class="space-y-3 max-h-[200px] overflow-auto">
       <div
         v-for="note in notes"
         :key="note.id"

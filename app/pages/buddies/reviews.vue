@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import { differenceInDays } from "date-fns";
+import type { TabsItem } from '@nuxt/ui'
 
 definePageMeta({
   layout: "default",
@@ -53,6 +54,27 @@ watch(selectedBuddyId, async () => {
 const handleBuddySelected = (buddyId: string) => {
   selectedBuddyId.value = buddyId;
 };
+
+// Tab state
+const activeTab = ref('upcoming');
+
+// Tab items
+const tabItems = computed<TabsItem[]>(() => [
+  {
+    label: 'Upcoming',
+    icon: 'i-heroicons-calendar-days',
+    badge: upcomingReviews.value.length > 0 ? upcomingReviews.value.length : undefined,
+    value: 'upcoming',
+    slot: 'upcoming',
+  },
+  {
+    label: 'Past',
+    icon: 'i-heroicons-archive-box',
+    badge: pastReviews.value.length > 0 ? pastReviews.value.length : undefined,
+    value: 'past',
+    slot: 'past',
+  },
+]);
 
 // Format date helper
 const formatDate = (date: string | Date | null) => {
@@ -312,7 +334,7 @@ const pastColumns = [
     <template #body>
       <div class="p-4 sm:p-6 lg:p-8">
         <!-- Page header -->
-        <div class="mb-8">
+        <div class="mb-6">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             Buddy Reviews
           </h1>
@@ -338,167 +360,173 @@ const pastColumns = [
           </UButton>
         </div>
 
-        <!-- Reviews Content -->
-        <div v-if="selectedBuddyId && buddyInfo" class="space-y-8">
-          <!-- Upcoming Reviews Section -->
-          <div>
-            <h2
-              class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
-            >
-              Upcoming Reviews
-            </h2>
-            <UCard>
-              <div
-                v-if="upcomingReviews.length === 0"
-                class="text-center py-12"
-              >
-                <UIcon
-                  name="i-heroicons-calendar"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No upcoming reviews
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ buddyInfo.name }} has no scheduled reviews coming up
-                </p>
+        <!-- Tabbed Reviews Interface -->
+        <div v-if="selectedBuddyId && buddyInfo">
+          <UTabs
+            v-model="activeTab"
+            :items="tabItems"
+            variant="pill"
+            color="neutral"
+            size="lg"
+            class="w-full"
+            :ui="{
+              list: 'bg-gray-100 dark:bg-gray-800 rounded-xl p-1',
+              trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+              indicator: 'bg-white dark:bg-gray-900 shadow-sm',
+            }"
+          >
+            <!-- Upcoming Reviews Tab -->
+            <template #upcoming>
+              <div class="pt-6">
+                <UCard>
+                  <div
+                    v-if="upcomingReviews.length === 0"
+                    class="text-center py-12"
+                  >
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <UIcon name="i-heroicons-calendar-days" class="w-8 h-8 text-primary" />
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                      No upcoming reviews
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ buddyInfo.name }} has no scheduled reviews coming up
+                    </p>
+                  </div>
+
+                  <UTable v-else :columns="upcomingColumns" :data="upcomingReviews">
+                    <template #date-cell="{ row }">
+                      <div>
+                        <div
+                          class="text-sm font-medium text-gray-900 dark:text-white"
+                        >
+                          {{ formatDate(row.original.scheduledDate) }}
+                        </div>
+                        <div
+                          v-if="
+                            getDaysUntilReview(row.original.scheduledDate) !== null
+                          "
+                          class="text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          {{
+                            getDaysUntilReview(row.original.scheduledDate) === 0
+                              ? "Today"
+                              : `${getDaysUntilReview(row.original.scheduledDate)} days away`
+                          }}
+                        </div>
+                      </div>
+                    </template>
+
+                    <template #feedback-cell="{ row }">
+                      <UBadge
+                        :label="`${row.original.feedbackCount || 0} items`"
+                        color="blue"
+                        variant="subtle"
+                      />
+                    </template>
+
+                    <template #status-cell="{ row }">
+                      <UBadge
+                        :label="row.original.status"
+                        :color="getStatusColor(row.original.status)"
+                      />
+                    </template>
+
+                    <template #actions-cell="{ row }">
+                      <div class="flex items-center gap-2">
+                        <UButton @click="openReviewModal(row.original)">
+                          Preview
+                        </UButton>
+                        <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
+                          <UButton color="primary"> View </UButton>
+                        </NuxtLink>
+                        <UButton
+                          v-if="row.original.status === 'scheduled'"
+                          color="gray"
+                          variant="outline"
+                          @click="openEditModal(row.original)"
+                        >
+                          Edit
+                        </UButton>
+                        <UButton
+                          v-if="row.original.status === 'scheduled'"
+                          color="success"
+                          @click="completeReview(row.original.id)"
+                        >
+                          Complete
+                        </UButton>
+                      </div>
+                    </template>
+                  </UTable>
+                </UCard>
               </div>
+            </template>
 
-              <UTable v-else :columns="upcomingColumns" :data="upcomingReviews">
-                <template #date-cell="{ row }">
-                  <div>
-                    <div
-                      class="text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      {{ formatDate(row.original.scheduledDate) }}
+            <!-- Past Reviews Tab -->
+            <template #past>
+              <div class="pt-6">
+                <UCard>
+                  <div v-if="pastReviews.length === 0" class="text-center py-12">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <UIcon name="i-heroicons-archive-box" class="w-8 h-8 text-gray-400" />
                     </div>
-                    <div
-                      v-if="
-                        getDaysUntilReview(row.original.scheduledDate) !== null
-                      "
-                      class="text-xs text-gray-500 dark:text-gray-400"
-                    >
-                      {{
-                        getDaysUntilReview(row.original.scheduledDate) === 0
-                          ? "Today"
-                          : `${getDaysUntilReview(row.original.scheduledDate)} days away`
-                      }}
-                    </div>
+                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                      No past reviews
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ buddyInfo.name }} has no reviews scheduled in the past
+                    </p>
                   </div>
-                </template>
 
-                <template #feedback-cell="{ row }">
-                  <UBadge
-                    :label="`${row.original.feedbackCount || 0} items`"
-                    color="blue"
-                    variant="subtle"
-                  />
-                </template>
+                  <UTable v-else :columns="pastColumns" :data="pastReviews">
+                    <template #date-cell="{ row }">
+                      <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          {{ formatDate(row.original.scheduledDate) }}
+                        </div>
+                        <div v-if="row.original.completedDate" class="text-xs text-gray-500 dark:text-gray-400">
+                          Completed: {{ formatDate(row.original.completedDate) }}
+                        </div>
+                      </div>
+                    </template>
 
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :label="row.original.status"
-                    :color="getStatusColor(row.original.status)"
-                  />
-                </template>
+                    <template #feedback-cell="{ row }">
+                      <UBadge
+                        :label="`${row.original.feedbackCount || 0} items`"
+                        color="blue"
+                        variant="subtle"
+                      />
+                    </template>
 
-                <template #actions-cell="{ row }">
-                  <div class="flex items-center gap-2">
-                    <UButton @click="openReviewModal(row.original)">
-                      Preview
-                    </UButton>
-                    <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
-                      <UButton color="primary"> View </UButton>
-                    </NuxtLink>
-                    <UButton
-                      v-if="row.original.status === 'scheduled'"
-                      color="gray"
-                      variant="outline"
-                      @click="openEditModal(row.original)"
-                    >
-                      Edit
-                    </UButton>
-                    <UButton
-                      v-if="row.original.status === 'scheduled'"
-                      color="success"
-                      @click="completeReview(row.original.id)"
-                    >
-                      Complete
-                    </UButton>
-                  </div>
-                </template>
-              </UTable>
-            </UCard>
-          </div>
+                    <template #status-cell="{ row }">
+                      <UBadge
+                        :label="row.original.status"
+                        :color="getStatusColor(row.original.status)"
+                      />
+                    </template>
 
-          <!-- Past Reviews Section -->
-          <div>
-            <h2
-              class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
-            >
-              Past Reviews
-            </h2>
-            <UCard>
-              <div v-if="pastReviews.length === 0" class="text-center py-12">
-                <UIcon
-                  name="i-heroicons-check-circle"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No past reviews
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ buddyInfo.name }} has no reviews scheduled in the past
-                </p>
+                    <template #actions-cell="{ row }">
+                      <div class="flex items-center gap-2">
+                        <UButton @click="openReviewModal(row.original)">
+                          Preview
+                        </UButton>
+                        <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
+                          <UButton color="primary"> View </UButton>
+                        </NuxtLink>
+                        <UButton
+                          v-if="row.original.status === 'scheduled'"
+                          color="success"
+                          @click="completeReview(row.original.id)"
+                        >
+                          Complete
+                        </UButton>
+                      </div>
+                    </template>
+                  </UTable>
+                </UCard>
               </div>
-
-              <UTable v-else :columns="pastColumns" :data="pastReviews">
-                <template #date-cell="{ row }">
-                  <div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ formatDate(row.original.scheduledDate) }}
-                    </div>
-                    <div v-if="row.original.completedDate" class="text-xs text-gray-500 dark:text-gray-400">
-                      Completed: {{ formatDate(row.original.completedDate) }}
-                    </div>
-                  </div>
-                </template>
-
-                <template #feedback-cell="{ row }">
-                  <UBadge
-                    :label="`${row.original.feedbackCount || 0} items`"
-                    color="blue"
-                    variant="subtle"
-                  />
-                </template>
-
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :label="row.original.status"
-                    :color="getStatusColor(row.original.status)"
-                  />
-                </template>
-
-                <template #actions-cell="{ row }">
-                  <div class="flex items-center gap-2">
-                    <UButton @click="openReviewModal(row.original)">
-                      Preview
-                    </UButton>
-                    <NuxtLink :to="`/reviews/${row.original.id}`" class="block">
-                      <UButton color="primary"> View </UButton>
-                    </NuxtLink>
-                    <UButton
-                      v-if="row.original.status === 'scheduled'"
-                      color="success"
-                      @click="completeReview(row.original.id)"
-                    >
-                      Complete
-                    </UButton>
-                  </div>
-                </template>
-              </UTable>
-            </UCard>
-          </div>
+            </template>
+          </UTabs>
         </div>
       </div>
     </template>

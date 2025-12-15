@@ -1,4 +1,15 @@
 <script setup lang="ts">
+interface Milestone {
+  id: string;
+  goalId: string;
+  title: string;
+  isCompleted: boolean | null;
+  completedAt: string | null;
+  displayOrder: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 const props = defineProps<{
   isOpen: boolean;
   goal?: {
@@ -6,6 +17,7 @@ const props = defineProps<{
     goalText: string;
     description: string | null;
     targetDate: string | null;
+    milestones?: Milestone[];
   } | null;
   mode: "create" | "edit";
 }>();
@@ -29,7 +41,33 @@ const isOpen = computed({
 const goalText = ref(props.goal?.goalText || "");
 const description = ref(props.goal?.description || "");
 const targetDate = ref(props.goal?.targetDate || null);
+const milestones = ref<Milestone[]>(props.goal?.milestones || []);
 const isSubmitting = ref(false);
+
+interface GoalWithMilestones {
+  id: string;
+  goalText: string;
+  description: string | null;
+  targetDate: string | null;
+  milestones?: Milestone[];
+}
+
+// Handle milestone updates (refetch goal data)
+const handleMilestonesUpdated = async () => {
+  if (!props.goal?.id) return;
+
+  try {
+    const { goals } = await $fetch<{ goals: GoalWithMilestones[] }>("/api/goals");
+    const updatedGoal = goals.find((g) => g.id === props.goal?.id);
+    if (updatedGoal?.milestones) {
+      milestones.value = updatedGoal.milestones;
+    }
+    // Also emit success to update the parent
+    emit("success", updatedGoal);
+  } catch (error) {
+    console.error("Failed to refresh milestones:", error);
+  }
+};
 
 // Validation
 const isFormValid = computed(() => {
@@ -108,6 +146,7 @@ watch(
       goalText.value = newGoal.goalText || "";
       description.value = newGoal.description || "";
       targetDate.value = newGoal.targetDate || null;
+      milestones.value = newGoal.milestones || [];
     }
   },
   { immediate: true }
@@ -120,11 +159,13 @@ watch(isOpen, (newVal, oldVal) => {
     goalText.value = props.goal?.goalText || "";
     description.value = props.goal?.description || "";
     targetDate.value = props.goal?.targetDate || null;
+    milestones.value = props.goal?.milestones || [];
   } else if (!newVal && oldVal) {
     // Modal closing - reset to empty for create mode, or original values for edit mode
     goalText.value = props.goal?.goalText || "";
     description.value = props.goal?.description || "";
     targetDate.value = props.goal?.targetDate || null;
+    milestones.value = props.goal?.milestones || [];
   }
 });
 </script>
@@ -189,6 +230,15 @@ watch(isOpen, (newVal, oldVal) => {
             v-model="targetDate"
             type="date"
             placeholder="Select a target date"
+          />
+        </div>
+
+        <!-- Milestones (only in edit mode) -->
+        <div v-if="mode === 'edit' && goal?.id" class="pt-2">
+          <GoalsMilestoneList
+            :goal-id="goal.id"
+            :milestones="milestones"
+            @updated="handleMilestonesUpdated"
           />
         </div>
       </div>
