@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { achievements, reviewSchedules } from "../../../database/schema";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -84,7 +86,10 @@ export default defineEventHandler(async (event) => {
       return a.achievedDate >= startDateStr && a.achievedDate <= endDateStr;
     });
 
-    return { achievements: reviewAchievements };
+    return validateResponse(
+      { achievements: reviewAchievements },
+      apiSchemas.GetAchievementsResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching achievements for review:", error);
 

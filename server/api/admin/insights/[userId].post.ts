@@ -2,6 +2,8 @@ import { db } from "../../../database/connection";
 import { feedback, users, feedbackInsights } from "../../../database/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { analyzeFeedback } from "../../../services/anthropicClient";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -120,22 +122,25 @@ export default defineEventHandler(async (event) => {
       .set({ lastInsightsDate: new Date() })
       .where(eq(users.id, userId));
 
-    return {
-      status: "completed",
-      message: `Feedback analyzed successfully for ${userName}`,
-      userName,
-      lastAnalyzed: insertedInsight.analysisDate,
-      data: {
-        sentimentData: analysisResult.sentimentData,
-        themes: analysisResult.themes,
-        suggestedGoals: analysisResult.suggestedGoals.map((goal) => ({
-          ...goal,
-          dismissed: false,
-          actedUpon: false,
-        })),
-        feedbackCount: validFeedback.length,
+    return validateResponse(
+      {
+        status: "completed",
+        message: `Feedback analyzed successfully for ${userName}`,
+        userName,
+        lastAnalyzed: insertedInsight.analysisDate,
+        data: {
+          sentimentData: analysisResult.sentimentData,
+          themes: analysisResult.themes,
+          suggestedGoals: analysisResult.suggestedGoals.map((goal) => ({
+            ...goal,
+            dismissed: false,
+            actedUpon: false,
+          })),
+          feedbackCount: validFeedback.length,
+        },
       },
-    };
+      apiSchemas.AnalyzeInsightsResponseSchema
+    );
   } catch (error: any) {
     console.error("Error analyzing feedback for admin:", error);
 

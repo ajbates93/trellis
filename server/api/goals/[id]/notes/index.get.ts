@@ -1,6 +1,8 @@
 import { db } from "../../../../database/connection";
 import { goals, goalNotes, users } from "../../../../database/schema";
 import { eq, desc, or, and } from "drizzle-orm";
+import { validateResponse } from "../../../../utils/validation";
+import { apiSchemas } from "../../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -76,7 +78,10 @@ export default defineEventHandler(async (event) => {
       .where(eq(goalNotes.goalId, goalId))
       .orderBy(desc(goalNotes.createdAt));
 
-    return { notes };
+    return validateResponse(
+      { notes },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     console.error("Error fetching goal notes:", error);
 

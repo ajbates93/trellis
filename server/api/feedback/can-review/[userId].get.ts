@@ -2,6 +2,8 @@ import { db } from "../../../database/connection";
 import { feedback } from "../../../database/schema";
 import { and, eq } from "drizzle-orm";
 import { format } from "date-fns";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   // Get session/user from better-auth
@@ -43,13 +45,16 @@ export default defineEventHandler(async (event) => {
 
     const alreadyReviewed = existingFeedback.length > 0;
 
-    return {
-      canReview: true, // Always allow, but warn if already reviewed
-      alreadyReviewedThisWeek: alreadyReviewed,
-      message: alreadyReviewed
-        ? "You've already given feedback to this person this week"
-        : "You can give feedback to this person",
-    };
+    return validateResponse(
+      {
+        canReview: true, // Always allow, but warn if already reviewed
+        alreadyReviewedThisWeek: alreadyReviewed,
+        message: alreadyReviewed
+          ? "You've already given feedback to this person this week"
+          : "You can give feedback to this person",
+      },
+      apiSchemas.CanReviewResponseSchema
+    );
   } catch (error) {
     console.error("Failed to check review status:", error);
     throw createError({

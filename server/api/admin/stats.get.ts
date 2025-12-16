@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { users, feedback, goals } from "../../database/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -51,15 +53,18 @@ export default defineEventHandler(async (event) => {
       .where(sql`${users.nextReviewDate} IS NOT NULL AND ${users.nextReviewDate} >= CURRENT_DATE`);
     const pendingReviews = pendingReviewsResult[0]?.count || 0;
 
-    return {
-      totalUsers,
-      activeUsers,
-      invitedUsers,
-      feedbackThisWeek,
-      totalFeedback,
-      activeGoals,
-      pendingReviews,
-    };
+    return validateResponse(
+      {
+        totalUsers,
+        activeUsers,
+        invitedUsers,
+        feedbackThisWeek,
+        totalFeedback,
+        activeGoals,
+        pendingReviews,
+      },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     console.error("Error fetching admin stats:", error);
     throw createError({

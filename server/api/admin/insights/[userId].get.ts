@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { feedbackInsights, feedback, users } from "../../../database/schema";
 import { eq, and, desc, gt } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -61,24 +63,30 @@ export default defineEventHandler(async (event) => {
 
     if (!analysis) {
       // No analysis exists yet
-      return {
-        hasAnalysis: false,
-        userName: targetUser[0]?.name,
-        message:
-          'No analysis available for this user. Click "Analyze Now" to generate insights.',
-        data: null,
-      };
+      return validateResponse(
+        {
+          hasAnalysis: false,
+          userName: targetUser[0]?.name,
+          message:
+            'No analysis available for this user. Click "Analyze Now" to generate insights.',
+          data: null,
+        },
+        apiSchemas.GetUserInsightsSummaryResponseSchema
+      );
     }
 
     // Count new feedback since last analysis
     const analysisDate = analysis.analysisDate;
     if (!analysisDate) {
-      return {
-        hasAnalysis: false,
-        userName: targetUser[0]?.name,
-        message: "No valid analysis available.",
-        data: null,
-      };
+      return validateResponse(
+        {
+          hasAnalysis: false,
+          userName: targetUser[0]?.name,
+          message: "No valid analysis available.",
+          data: null,
+        },
+        apiSchemas.GetUserInsightsSummaryResponseSchema
+      );
     }
 
     const newFeedbackCount = await db
@@ -99,18 +107,21 @@ export default defineEventHandler(async (event) => {
       ? JSON.parse(analysis.suggestedGoals)
       : [];
 
-    return {
-      hasAnalysis: true,
-      userName: targetUser[0]?.name,
-      lastAnalyzed: analysis.analysisDate,
-      feedbackCount: analysis.feedbackCount,
-      newFeedbackSinceAnalysis: newFeedbackCount.length,
-      data: {
-        sentimentData,
-        themes,
-        suggestedGoals,
+    return validateResponse(
+      {
+        hasAnalysis: true,
+        userName: targetUser[0]?.name,
+        lastAnalyzed: analysis.analysisDate,
+        feedbackCount: analysis.feedbackCount,
+        newFeedbackSinceAnalysis: newFeedbackCount.length,
+        data: {
+          sentimentData,
+          themes,
+          suggestedGoals,
+        },
       },
-    };
+      apiSchemas.GetUserInsightsSummaryResponseSchema
+    );
   } catch (error: any) {
     console.error("Error fetching admin feedback insights:", error);
 

@@ -1,5 +1,7 @@
 import { db } from "../../database/connection";
 import { achievements } from "../../database/schema";
+import { validateBody, validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -12,29 +14,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const body = await readBody(event);
-
-    // Validation
-    if (!body.title || body.title.trim().length < 5) {
-      throw createError({
-        statusCode: 400,
-        message: "Achievement title must be at least 5 characters",
-      });
-    }
-
-    if (body.title.length > 255) {
-      throw createError({
-        statusCode: 400,
-        message: "Achievement title must be less than 255 characters",
-      });
-    }
-
-    if (!body.achievedDate) {
-      throw createError({
-        statusCode: 400,
-        message: "Achievement date is required",
-      });
-    }
+    const body = await validateBody(event, apiSchemas.CreateAchievementRequestSchema);
 
     // Create the achievement
     const newAchievement = await db
@@ -47,7 +27,10 @@ export default defineEventHandler(async (event) => {
       })
       .returning();
 
-    return { achievement: newAchievement[0] };
+    return validateResponse(
+      { achievement: newAchievement[0] },
+      apiSchemas.CreateAchievementResponseSchema
+    );
   } catch (error) {
     console.error("Error creating achievement:", error);
 

@@ -2,6 +2,8 @@ import { db } from "../../database/connection";
 import { users } from "../../database/schema";
 import { eq } from "drizzle-orm";
 import { uploadAvatarToS3 } from "../../utils/s3";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -129,7 +131,10 @@ export default defineEventHandler(async (event) => {
     }
 
     console.log("Profile updated successfully");
-    return updatedUser[0];
+    return validateResponse(
+      updatedUser[0],
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     if (error instanceof Error && error.message.includes("Unauthorized")) {
       throw error;

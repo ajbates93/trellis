@@ -2,6 +2,8 @@ import { defineEventHandler, createError, readBody, getRouterParam } from "h3";
 import { eq } from "drizzle-orm";
 import { db } from "../../../database/connection";
 import { buddyCheckins, users } from "../../../database/schema";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -21,15 +23,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
+  const body = await validateBody(event, apiSchemas.UpdateBuddyCheckinRequestSchema);
   const { notes } = body;
-
-  if (!notes || notes.trim().length === 0) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Notes are required",
-    });
-  }
 
   try {
     // Get the check-in to verify ownership
@@ -81,7 +76,10 @@ export default defineEventHandler(async (event) => {
       .innerJoin(users, eq(buddyCheckins.buddyId, users.id))
       .where(eq(buddyCheckins.id, id));
 
-    return { checkin: updatedCheckin };
+    return validateResponse(
+      { checkin: updatedCheckin },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     if (error instanceof Error && error.message.includes("401")) {
       throw error;

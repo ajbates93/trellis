@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedbackPrompts } from "../../database/schema";
 import { eq, sql } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -32,7 +34,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return { prompt: randomPrompt };
+    return validateResponse(
+      { prompt: randomPrompt },
+      apiSchemas.GetRandomFeedbackPromptResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching random prompt:", error);
     throw createError({

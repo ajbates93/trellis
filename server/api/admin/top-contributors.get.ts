@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback, users } from "../../database/schema";
 import { eq, sql, desc } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -21,9 +23,10 @@ export default defineEventHandler(async (event) => {
       .orderBy(desc(sql`count(${feedback.id})`))
       .limit(10);
 
-    return {
-      contributors: topContributors,
-    };
+    return validateResponse(
+      { contributors: topContributors },
+      apiSchemas.GetTopContributorsResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching top contributors:", error);
     throw createError({

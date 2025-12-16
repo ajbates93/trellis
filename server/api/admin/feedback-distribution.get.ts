@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback, users } from "../../database/schema";
 import { eq, sql } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -29,7 +31,10 @@ export default defineEventHandler(async (event) => {
     if (!result.design) result.design = 0;
     if (!result.qa) result.qa = 0;
 
-    return result;
+    return validateResponse(
+      result,
+      apiSchemas.GetFeedbackDistributionResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching feedback distribution:", error);
     throw createError({

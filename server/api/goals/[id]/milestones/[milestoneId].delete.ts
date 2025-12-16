@@ -1,6 +1,8 @@
 import { db } from "../../../../database/connection";
 import { goals, goalMilestones } from "../../../../database/schema";
 import { eq, and } from "drizzle-orm";
+import { validateResponse } from "../../../../utils/validation";
+import { apiSchemas } from "../../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -60,7 +62,10 @@ export default defineEventHandler(async (event) => {
 
     await db.delete(goalMilestones).where(eq(goalMilestones.id, milestoneId));
 
-    return { success: true };
+    return validateResponse(
+      { success: true },
+      apiSchemas.SuccessResponseSchema
+    );
   } catch (error) {
     if (error && typeof error === "object" && "statusCode" in error) {
       throw error;

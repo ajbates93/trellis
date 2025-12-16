@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { achievements } from "../../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -42,23 +44,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const body = await readBody(event);
-
-    // Validation for title if provided
-    if (body.title !== undefined) {
-      if (body.title.trim().length < 5) {
-        throw createError({
-          statusCode: 400,
-          message: "Achievement title must be at least 5 characters",
-        });
-      }
-      if (body.title.length > 255) {
-        throw createError({
-          statusCode: 400,
-          message: "Achievement title must be less than 255 characters",
-        });
-      }
-    }
+    const body = await validateBody(event, apiSchemas.UpdateAchievementRequestSchema);
 
     // Update the achievement
     const existingAchievement = achievement[0]!;
@@ -73,7 +59,10 @@ export default defineEventHandler(async (event) => {
       .where(eq(achievements.id, achievementId))
       .returning();
 
-    return { achievement: updated[0] };
+    return validateResponse(
+      { achievement: updated[0] },
+      apiSchemas.UpdateAchievementResponseSchema
+    );
   } catch (error) {
     console.error("Error updating achievement:", error);
 

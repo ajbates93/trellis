@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { users } from "../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -25,7 +27,10 @@ export default defineEventHandler(async (event) => {
       .from(users)
       .where(eq(users.buddyId, session.user.id));
 
-    return { users: myBuddies };
+    return validateResponse(
+      { buddies: myBuddies },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     console.error("Error fetching buddies:", error);
     throw createError({

@@ -6,6 +6,8 @@ import {
   reviewSchedules,
   users,
 } from "../../../database/schema";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -26,7 +28,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
+  const body = await validateBody(event, apiSchemas.AssignReviewRequestSchema);
   const { reviewScheduleId } = body;
 
   // Fetch check-in
@@ -123,13 +125,16 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  return {
-    id: checkinWithData.id,
-    buddy: checkinWithData.buddy,
-    user: checkinWithData.user,
-    notes: checkinWithData.notes,
-    reviewSchedule: checkinWithData.reviewSchedule,
-    createdAt: checkinWithData.createdAt,
-    updatedAt: checkinWithData.updatedAt,
-  };
+  return validateResponse(
+    {
+      id: checkinWithData.id,
+      buddy: checkinWithData.buddy,
+      user: checkinWithData.user,
+      notes: checkinWithData.notes,
+      reviewSchedule: checkinWithData.reviewSchedule,
+      createdAt: checkinWithData.createdAt,
+      updatedAt: checkinWithData.updatedAt,
+    },
+    apiSchemas.SuccessResponseSchema.passthrough()
+  );
 });

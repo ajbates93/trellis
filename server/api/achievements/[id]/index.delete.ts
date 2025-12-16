@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { achievements } from "../../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -47,7 +49,10 @@ export default defineEventHandler(async (event) => {
       .delete(achievements)
       .where(eq(achievements.id, achievementId));
 
-    return { success: true };
+    return validateResponse(
+      { success: true },
+      apiSchemas.SuccessResponseSchema
+    );
   } catch (error) {
     console.error("Error deleting achievement:", error);
 

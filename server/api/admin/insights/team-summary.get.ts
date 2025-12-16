@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { feedbackInsights, users } from "../../../database/schema";
 import { eq, desc, sql } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 interface SentimentData {
   positive: number;
@@ -167,13 +169,16 @@ export default defineEventHandler(async (event) => {
       return a.userName.localeCompare(b.userName);
     });
 
-    return {
-      totalUsers: allUsers.length,
-      usersWithAnalysis,
-      usersWithoutAnalysis: allUsers.length - usersWithAnalysis,
-      aggregateSentiment,
-      users: userSummaries,
-    };
+    return validateResponse(
+      {
+        totalUsers: allUsers.length,
+        usersWithAnalysis,
+        usersWithoutAnalysis: allUsers.length - usersWithAnalysis,
+        aggregateSentiment,
+        users: userSummaries,
+      },
+      apiSchemas.GetTeamSentimentSummaryResponseSchema
+    );
   } catch (error: any) {
     console.error("Error fetching team sentiment summary:", error);
 

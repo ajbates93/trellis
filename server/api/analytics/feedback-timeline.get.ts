@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback } from "../../database/schema";
 import { eq, and, gte, or } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -82,9 +84,10 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    return {
-      timeline: weeklyData,
-    };
+    return validateResponse(
+      { timeline: weeklyData },
+      apiSchemas.GetFeedbackTimelineResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching feedback timeline:", error);
     throw createError({

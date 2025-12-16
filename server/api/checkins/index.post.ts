@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { db } from "../../database/connection";
 import { users, buddyCheckins, reviewSchedules } from "../../database/schema";
 import { findNextReview } from "../../utils/reviews";
+import { validateBody, validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -14,22 +16,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
+  const body = await validateBody(event, apiSchemas.CreateBuddyCheckinRequestSchema);
   const { userId, notes } = body;
-
-  if (!userId || !notes) {
-    throw createError({
-      statusCode: 400,
-      message: "userId and notes are required",
-    });
-  }
-
-  if (typeof notes !== "string" || notes.trim().length === 0) {
-    throw createError({
-      statusCode: 400,
-      message: "notes must be a non-empty string",
-    });
-  }
 
   // Verify session user is buddy of target user
   const targetUser = await db.query.users.findFirst({
@@ -98,13 +86,16 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  return {
-    id: checkinWithData.id,
-    buddy: checkinWithData.buddy,
-    user: checkinWithData.user,
-    notes: checkinWithData.notes,
-    reviewSchedule: checkinWithData.reviewSchedule,
-    createdAt: checkinWithData.createdAt,
-    updatedAt: checkinWithData.updatedAt,
-  };
+  return validateResponse(
+    {
+      id: checkinWithData.id,
+      buddy: checkinWithData.buddy,
+      user: checkinWithData.user,
+      notes: checkinWithData.notes,
+      reviewSchedule: checkinWithData.reviewSchedule,
+      createdAt: checkinWithData.createdAt,
+      updatedAt: checkinWithData.updatedAt,
+    },
+    apiSchemas.SuccessResponseSchema.passthrough()
+  );
 });

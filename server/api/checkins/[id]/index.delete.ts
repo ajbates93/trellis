@@ -2,6 +2,8 @@ import { defineEventHandler, createError, getRouterParam } from "h3";
 import { eq } from "drizzle-orm";
 import { db } from "../../../database/connection";
 import { buddyCheckins } from "../../../database/schema";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -46,7 +48,10 @@ export default defineEventHandler(async (event) => {
     // Delete the check-in
     await db.delete(buddyCheckins).where(eq(buddyCheckins.id, id));
 
-    return { success: true };
+    return validateResponse(
+      { success: true },
+      apiSchemas.SuccessResponseSchema
+    );
   } catch (error) {
     if (error instanceof Error && error.message.includes("401")) {
       throw error;
