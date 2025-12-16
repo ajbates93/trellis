@@ -268,7 +268,7 @@ const incomingColumns = [
           size="lg"
           class="w-full mb-6"
           :ui="{
-            list: 'bg-gray-100 dark:bg-gray-800 rounded-xl p-1',
+            list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
             trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
             indicator: 'bg-white dark:bg-gray-900 shadow-sm',
           }"
