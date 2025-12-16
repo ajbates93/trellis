@@ -1,4 +1,4 @@
 // Central export point for all Zod schemas
-export * from './base';
-export * from './computed';
-export * from './api';
+export * as baseSchemas from './base';
+export * as computedSchemas from './computed';
+export * as apiSchemas from './api';

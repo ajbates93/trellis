@@ -1,7 +1,9 @@
 import { db } from "../../../database/connection";
 import { feedback, users } from "../../../database/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { assignFeedbackToReview } from "../../../utils/reviews";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -21,6 +23,9 @@ export default defineEventHandler(async (event) => {
       message: "Feedback ID is required",
     });
   }
+
+  // Validate request body
+  await validateBody(event, apiSchemas.PublishFeedbackRequestSchema);
 
   try {
     // Get the feedback item
@@ -92,7 +97,8 @@ export default defineEventHandler(async (event) => {
       );
     }
 
-    return { success: true, feedback: updatedFeedback };
+    const response = { success: true, feedback: updatedFeedback };
+    return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error publishing feedback:", error);
     if (error.statusCode) {

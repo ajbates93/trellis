@@ -1,7 +1,9 @@
 import { db } from "../../database/connection";
 import { feedback, users } from "../../database/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { assignFeedbackToReview } from "../../utils/reviews";
+import { validateBody, validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -13,15 +15,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
-  const { feedbackIds } = body;
-
-  if (!feedbackIds || !Array.isArray(feedbackIds) || feedbackIds.length === 0) {
-    throw createError({
-      statusCode: 400,
-      message: "feedbackIds array is required",
-    });
-  }
+  // Validate request body
+  const body = await validateBody(event, apiSchemas.PublishBatchFeedbackRequestSchema);
 
   try {
     // Get all feedback items
@@ -33,7 +28,7 @@ export default defineEventHandler(async (event) => {
         createdAt: feedback.createdAt,
       })
       .from(feedback)
-      .where(inArray(feedback.id, feedbackIds));
+      .where(inArray(feedback.id, body.feedbackIds));
 
     if (feedbackItems.length === 0) {
       throw createError({
@@ -84,7 +79,7 @@ export default defineEventHandler(async (event) => {
         publishedAt: new Date(),
         publishedBy: session.user.id,
       })
-      .where(inArray(feedback.id, feedbackIds))
+      .where(inArray(feedback.id, body.feedbackIds))
       .returning();
 
     // Automatically assign each feedback to appropriate review
@@ -98,11 +93,13 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    return {
+    const response = {
       success: true,
       publishedCount: updated.length,
       feedback: updated,
     };
+
+    return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error batch publishing feedback:", error);
     if (error.statusCode) {

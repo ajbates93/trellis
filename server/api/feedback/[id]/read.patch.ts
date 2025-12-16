@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { feedback } from "../../../database/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -20,6 +22,9 @@ export default defineEventHandler(async (event) => {
       message: "Feedback ID is required",
     });
   }
+
+  // Validate request body
+  await validateBody(event, apiSchemas.MarkFeedbackAsReadRequestSchema);
 
   try {
     // Get the feedback item
@@ -59,7 +64,7 @@ export default defineEventHandler(async (event) => {
 
     // Already read, no need to update
     if (feedbackItem.isRead) {
-      return { success: true, feedback: feedbackItem };
+      return validateResponse({ success: true, feedback: feedbackItem }, apiSchemas.SuccessResponseSchema);
     }
 
     // Mark as read
@@ -69,7 +74,8 @@ export default defineEventHandler(async (event) => {
       .where(eq(feedback.id, feedbackId))
       .returning();
 
-    return { success: true, feedback: updatedFeedback };
+    const response = { success: true, feedback: updatedFeedback };
+    return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error marking feedback as read:", error);
     if (error.statusCode) {
