@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { users } from "../../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -28,17 +30,20 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
-  const { role, buddyId, roleType, nextReviewDate } = body;
+  // Validate request body
+  const body = await validateBody(event, apiSchemas.UpdateUserRequestSchema);
 
   // Build update object with only provided fields
   const updateData: any = {};
-  if (role !== undefined) updateData.role = role;
-  if (buddyId !== undefined) updateData.buddyId = buddyId;
-  if (roleType !== undefined) updateData.roleType = roleType;
-  if (nextReviewDate !== undefined) {
-    updateData.nextReviewDate = nextReviewDate ? new Date(nextReviewDate) : null;
+  if (body.role !== undefined) updateData.role = body.role;
+  if (body.buddyEmail !== undefined) updateData.buddyId = body.buddyEmail ? null : null;
+  if (body.roleType !== undefined) updateData.roleType = body.roleType;
+  if (body.nextReviewDate !== undefined) {
+    updateData.nextReviewDate = body.nextReviewDate ? new Date(body.nextReviewDate) : null;
   }
+  if (body.name !== undefined) updateData.name = body.name;
+  if (body.email !== undefined) updateData.email = body.email;
+  if (body.banned !== undefined) updateData.banned = body.banned;
 
   // Update user
   const [updatedUser] = await db
@@ -54,8 +59,13 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return {
+  const response = {
     success: true,
-    user: updatedUser,
+    user: {
+      ...updatedUser,
+      buddyName: null,
+      status: updatedUser.emailVerified ? "active" : "invited" as const,
+    },
   };
+  return validateResponse(response, apiSchemas.UpdateUserResponseSchema);
 });

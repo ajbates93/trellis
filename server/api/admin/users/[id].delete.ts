@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { users, feedback, goals, reviewSchedules } from "../../../database/schema";
 import { eq, or } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -84,10 +86,8 @@ export default defineEventHandler(async (event) => {
     // Finally, delete the user
     await db.delete(users).where(eq(users.id, userId));
 
-    return {
-      success: true,
-      message: "User deleted successfully",
-    };
+    const response = { success: true };
+    return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Failed to delete user:", error);
     throw createError({
