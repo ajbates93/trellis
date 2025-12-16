@@ -107,16 +107,18 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '~/types';
+
 const props = defineProps<{
-  users: any[];
+  users: User[];
   loading: boolean;
   error: boolean;
 }>();
 
 const emit = defineEmits<{
-  edit: [user: any];
-  impersonate: [user: any];
-  remove: [user: any];
+  edit: [user: User];
+  impersonate: [user: User];
+  remove: [user: User];
 }>();
 
 const { user: currentUser } = useAuth();
@@ -130,7 +132,7 @@ const columns = [
   { id: "actions", header: "" },
 ];
 
-const getActionItems = (user: any) => {
+const getActionItems = (user: User) => {
   const items = [
     {
       label: "Edit",

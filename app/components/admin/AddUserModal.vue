@@ -94,9 +94,11 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '~/types';
+
 const props = defineProps<{
   modelValue: boolean;
-  allUsers: any[];
+  allUsers: User[];
 }>();
 
 const emit = defineEmits<{
@@ -173,11 +175,11 @@ const onSubmit = async () => {
   try {
     // Extract value property if object, otherwise use as-is
     const roleTypeValue = typeof formData.value.roleType === 'object' && formData.value.roleType !== null
-      ? (formData.value.roleType as any).value
+      ? (formData.value.roleType as { value: string }).value
       : formData.value.roleType;
 
     const buddyIdValue = typeof formData.value.buddyId === 'object' && formData.value.buddyId !== null
-      ? (formData.value.buddyId as any).value
+      ? (formData.value.buddyId as { value: string }).value
       : formData.value.buddyId;
 
     await $fetch("/api/admin/users", {
@@ -192,9 +194,9 @@ const onSubmit = async () => {
 
     emit("success");
     close();
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to create user:", error);
-    errorMessage.value = error.data?.message || "Failed to create user";
+    errorMessage.value = (error as { data?: { message?: string } }).data?.message || "Failed to create user";
   } finally {
     saving.value = false;
   }

@@ -53,8 +53,8 @@ const activeGoalSuggestions = computed(() => {
   return suggestedGoals.value.filter(goal => !goal.dismissed)
 })
 
-const value = (d: any) => d.value
-const color = (d: any) => d.color
+const value = (d: { category: string; value: number; color: string }) => d.value
+const color = (d: { category: string; value: number; color: string }) => d.color
 
 const getSentimentColor = (sentiment: string) => {
   switch (sentiment) {

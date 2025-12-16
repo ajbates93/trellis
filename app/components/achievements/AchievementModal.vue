@@ -12,7 +12,12 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
-  success: [achievement: any];
+  success: [achievement: {
+    id: string;
+    title: string;
+    description?: string | null;
+    achievedDate: string;
+  }];
   "update:isOpen": [value: boolean];
 }>();
 

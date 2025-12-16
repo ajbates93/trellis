@@ -1,32 +1,10 @@
 <script setup lang="ts">
 import { format } from "date-fns";
-
-interface Feedback {
-  id: string;
-  content: string;
-  createdAt: string;
-  publishedAt?: string;
-  isRead?: boolean;
-  published?: boolean;
-  reviewer?: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string;
-    avatarUrl?: string;
-  };
-  reviewee?: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string;
-    avatarUrl?: string;
-  };
-}
+import type { FeedbackWithReviewer } from "~/types";
 
 interface Props {
   modelValue: boolean;
-  feedback: Feedback | null;
+  feedback: FeedbackWithReviewer | null;
   showMarkAsRead?: boolean;
 }
 

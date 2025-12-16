@@ -1,10 +1,5 @@
 <script setup lang="ts">
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string | null;
-}
+import type { User } from "~/types";
 
 interface Props {
   modelValue: boolean;

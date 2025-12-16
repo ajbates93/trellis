@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import type { User } from "#auth-utils";
-
-interface BuddyUser extends Partial<User> {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string;
-  image?: string;
-}
+import type { User } from "~/types";
 
 interface Props {
   buddyId?: string;
@@ -26,7 +18,7 @@ const { data: buddyData } = await useFetch("/api/users/my-buddies");
 const buddies = computed(() => buddyData.value?.users || []);
 
 const selectedBuddy = computed(() => {
-  return buddies.value.find((b: BuddyUser) => b.id === props.buddyId);
+  return buddies.value.find((b: User) => b.id === props.buddyId);
 });
 
 // Handle buddy selection from dropdown
@@ -35,7 +27,7 @@ const handleBuddySelect = (buddyId: string) => {
 };
 
 // Get avatar for buddy
-const getBuddyAvatar = (buddy: BuddyUser) => {
+const getBuddyAvatar = (buddy: User) => {
   return buddy.avatarUrl || buddy.image;
 };
 </script>

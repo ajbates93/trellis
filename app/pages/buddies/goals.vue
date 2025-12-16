@@ -1,41 +1,11 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import type { TabsItem } from '@nuxt/ui'
+import type { GoalWithMilestones, User, BuddyCheckinWithUsers } from "~/types";
 
 // Type definitions
-interface Goal {
-  id: string;
-  goalText: string;
-  description: string | null;
-  status: string | null;
-  targetDate: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-  completedAt: string | null;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  avatarUrl: string | null;
-}
-
-interface Checkin {
-  id: string;
-  buddy: User;
-  user: User;
-  notes: string;
-  reviewSchedule: {
-    id: string;
-    scheduledDate: string;
-    name: string;
-    status: string;
-  } | null;
-  createdAt: string;
-  updatedAt: string;
-}
+type Goal = GoalWithMilestones;
+type Checkin = BuddyCheckinWithUsers;
 
 definePageMeta({
   layout: "default",

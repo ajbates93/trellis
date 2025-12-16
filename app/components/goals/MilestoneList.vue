@@ -1,18 +1,9 @@
 <script setup lang="ts">
-interface Milestone {
-  id: string;
-  goalId: string;
-  title: string;
-  isCompleted: boolean | null;
-  completedAt: string | null;
-  displayOrder: number | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import type { GoalMilestone } from "~/types";
 
 const props = defineProps<{
   goalId: string;
-  milestones: Milestone[];
+  milestones: GoalMilestone[];
   readonly?: boolean;
 }>();
 
@@ -55,7 +46,7 @@ const addMilestone = async () => {
 };
 
 // Toggle milestone completion
-const toggleMilestone = async (milestone: Milestone) => {
+const toggleMilestone = async (milestone: GoalMilestone) => {
   if (props.readonly || updatingIds.value.has(milestone.id)) return;
 
   updatingIds.value.add(milestone.id);
@@ -81,7 +72,7 @@ const toggleMilestone = async (milestone: Milestone) => {
 };
 
 // Delete milestone
-const deleteMilestone = async (milestone: Milestone) => {
+const deleteMilestone = async (milestone: GoalMilestone) => {
   if (props.readonly || updatingIds.value.has(milestone.id)) return;
 
   updatingIds.value.add(milestone.id);

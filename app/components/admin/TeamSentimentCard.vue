@@ -27,11 +27,9 @@ interface TeamSummaryResponse {
   users: UserSummary[];
 }
 
-interface Emits {
-  (e: "user-selected", userId: string, userName: string): void;
-}
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  "user-selected": [userId: string, userName: string];
+}>();
 
 const loading = ref(true);
 const refreshing = ref(false);
@@ -87,7 +85,7 @@ const chartData = computed(() => {
 
 const colors = ["#10b981", "#f59e0b", "#6b7280"]; // green, amber, gray
 
-const template = (d: any) => {
+const template = (d: { label: string; value: number }) => {
   return `
     <div style="padding: 8px;">
       <div style="font-weight: 600; margin-bottom: 4px; text-transform: capitalize;">${d.label}</div>

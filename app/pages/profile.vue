@@ -303,6 +303,7 @@
 
 <script setup lang="ts">
 import { useAuth } from "~/composables/useAuth";
+import type { User } from '~/types';
 
 definePageMeta({
   layout: "default",
@@ -314,7 +315,7 @@ const fileInput = ref<HTMLInputElement>();
 const isSaving = ref(false);
 const uploadingAvatar = ref(false);
 const previewAvatar = ref<string | null>(null);
-const buddy = ref<any>(null);
+const buddy = ref<User | null>(null);
 
 const form = reactive({
   name: "",
@@ -357,8 +358,8 @@ watch(
   async (buddyId) => {
     if (buddyId) {
       try {
-        const allUsers = await $fetch("/api/users");
-        buddy.value = allUsers.users.find((u: any) => u.id === buddyId);
+        const allUsers = await $fetch<{ users: User[] }>("/api/users");
+        buddy.value = allUsers.users.find((u) => u.id === buddyId) || null;
       } catch (error) {
         console.error("Error fetching buddy:", error);
       }
@@ -482,7 +483,15 @@ const saveProfile = async () => {
   isSaving.value = true;
 
   try {
-    const updateData: any = {
+    const updateData: {
+      name: string;
+      preferredName?: string;
+      pronouns?: string;
+      bio?: string;
+      reviewPreference: string;
+      communicationPreferences?: string;
+      avatarUrl?: string;
+    } = {
       name: form.name,
       preferredName: form.preferredName || undefined,
       pronouns: form.pronouns || undefined,

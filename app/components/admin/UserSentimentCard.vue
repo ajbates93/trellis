@@ -14,6 +14,12 @@ interface Theme {
   confidence: number;
 }
 
+interface SuggestedGoal {
+  goal: string;
+  rationale: string;
+  priority: string;
+}
+
 interface InsightsResponse {
   hasAnalysis: boolean;
   userName?: string;
@@ -24,15 +30,13 @@ interface InsightsResponse {
   data?: {
     sentimentData: SentimentData;
     themes: Theme[];
-    suggestedGoals: any[];
+    suggestedGoals: SuggestedGoal[];
   };
 }
 
-interface Emits {
-  (e: "analysis-completed"): void;
-}
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  "analysis-completed": [];
+}>();
 
 const selectedUserId = ref<string>("");
 const loading = ref(false);
@@ -55,9 +59,9 @@ const fetchInsights = async (userId: string) => {
       `/api/admin/insights/${userId}`
     );
     insights.value = data;
-  } catch (e: any) {
+  } catch (e) {
     console.error("Failed to fetch insights:", e);
-    error.value = e.data?.message || "Failed to fetch insights";
+    error.value = (e as { data?: { message?: string } }).data?.message || "Failed to fetch insights";
     insights.value = null;
   } finally {
     loading.value = false;
@@ -72,7 +76,7 @@ const triggerAnalysis = async () => {
   error.value = null;
 
   try {
-    const data = await $fetch<any>(`/api/admin/insights/${selectedUserId.value}`, {
+    const data = await $fetch<InsightsResponse & { data: { feedbackCount: number } }>(`/api/admin/insights/${selectedUserId.value}`, {
       method: "POST",
     });
 
@@ -81,23 +85,23 @@ const triggerAnalysis = async () => {
       hasAnalysis: true,
       userName: data.userName,
       lastAnalyzed: data.lastAnalyzed,
-      feedbackCount: data.data.feedbackCount,
+      feedbackCount: data.data?.feedbackCount,
       newFeedbackSinceAnalysis: 0,
       data: data.data,
     };
 
     // Notify parent that analysis was completed
     emit("analysis-completed");
-  } catch (e: any) {
+  } catch (e) {
     console.error("Failed to analyze:", e);
-    error.value = e.data?.message || "Failed to analyze feedback";
+    error.value = (e as { data?: { message?: string } }).data?.message || "Failed to analyze feedback";
   } finally {
     analyzing.value = false;
   }
 };
 
 // Handle user selection
-const handleUserSelected = (user: any) => {
+const handleUserSelected = (user: { id: string }) => {
   selectedUserId.value = user.id;
   fetchInsights(user.id);
 };
@@ -133,7 +137,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const template = (d: any) => {
+const template = (d: { label: string; value: number }) => {
   return `
     <div style="padding: 8px;">
       <div style="font-weight: 600; margin-bottom: 4px; text-transform: capitalize;">${d.label}</div>

@@ -115,10 +115,12 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '~/types';
+
 const props = defineProps<{
   modelValue: boolean;
-  user: any;
-  allUsers: any[];
+  user: User;
+  allUsers: User[];
 }>();
 
 const emit = defineEmits<{
@@ -212,15 +214,15 @@ const onSubmit = async () => {
   try {
     // Extract value property if object, otherwise use as-is
     const roleValue = typeof localUser.value.role === 'object' && localUser.value.role !== null
-      ? (localUser.value.role as any).value
+      ? (localUser.value.role as { value: string }).value
       : localUser.value.role;
 
     const roleTypeValue = typeof localUser.value.roleType === 'object' && localUser.value.roleType !== null
-      ? (localUser.value.roleType as any).value
+      ? (localUser.value.roleType as { value: string }).value
       : localUser.value.roleType;
 
     const buddyIdValue = typeof localUser.value.buddyId === 'object' && localUser.value.buddyId !== null
-      ? (localUser.value.buddyId as any).value
+      ? (localUser.value.buddyId as { value: string }).value
       : localUser.value.buddyId;
 
     await $fetch(`/api/admin/users/${localUser.value.id}`, {
@@ -235,9 +237,9 @@ const onSubmit = async () => {
 
     emit("success");
     close();
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update user:", error);
-    errorMessage.value = error.data?.message || "Failed to update user";
+    errorMessage.value = (error as { data?: { message?: string } }).data?.message || "Failed to update user";
   } finally {
     saving.value = false;
   }

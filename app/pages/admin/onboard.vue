@@ -587,7 +587,7 @@ const importCSV = async () => {
         });
 
         importResult.value = result as ImportResult;
-      } catch (error: any) {
+      } catch (error) {
         importResult.value = {
           success: false,
           imported: 0,
@@ -595,11 +595,11 @@ const importCSV = async () => {
             {
               row: 0,
               field: "system",
-              message: error.message || "Failed to import CSV",
+              message: (error as Error).message || "Failed to import CSV",
             },
           ],
         };
-      } finally {
+      } finally{
         importing.value = false;
       }
     };
@@ -627,7 +627,7 @@ const downloadTemplate = async () => {
     });
 
     // Create download link
-    const url = window.URL.createObjectURL(new Blob([blob as any]));
+    const url = window.URL.createObjectURL(new Blob([blob as string]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "cohort-user-import-template.csv");
@@ -644,9 +644,9 @@ const downloadTemplate = async () => {
 const fetchHistory = async () => {
   loadingHistory.value = true;
   try {
-    const data = await $fetch("/api/admin/onboard/history");
+    const data = await $fetch<{ imports: ImportHistoryItem[] }>("/api/admin/onboard/history");
     if (data) {
-      importHistory.value = (data as any).imports;
+      importHistory.value = data.imports;
     }
   } catch (error) {
     console.error("Failed to fetch import history:", error);

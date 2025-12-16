@@ -118,6 +118,8 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '~/types';
+
 definePageMeta({
   layout: "default",
   middleware: ["auth", "admin"],
@@ -127,7 +129,7 @@ const selectedTab = ref("all");
 const loading = ref(true);
 const error = ref(false);
 
-const allUsers = ref<any[]>([]);
+const allUsers = ref<User[]>([]);
 const counts = ref({
   all: 0,
   active: 0,
@@ -137,8 +139,8 @@ const counts = ref({
 const showEditModal = ref(false);
 const showAddModal = ref(false);
 const showRemoveModal = ref(false);
-const selectedUser = ref<any>(null);
-const userToRemove = ref<any>(null);
+const selectedUser = ref<User | null>(null);
+const userToRemove = ref<User | null>(null);
 const removing = ref(false);
 
 // Define tabs with badges
@@ -194,12 +196,12 @@ const fetchUsers = async (filter?: string) => {
   }
 };
 
-const openEditModal = (user: any) => {
+const openEditModal = (user: User) => {
   selectedUser.value = user;
   showEditModal.value = true;
 };
 
-const handleImpersonate = async (user: any) => {
+const handleImpersonate = async (user: User) => {
   try {
     const { authClient } = useAuth();
 
@@ -236,7 +238,7 @@ const handleImpersonate = async (user: any) => {
   }
 };
 
-const openRemoveModal = (user: any) => {
+const openRemoveModal = (user: User) => {
   userToRemove.value = user;
   showRemoveModal.value = true;
 };
@@ -263,11 +265,11 @@ const handleRemoveUser = async () => {
 
     // Refetch users
     await fetchUsers();
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to remove user:", error);
     toast.add({
       title: "Failed to remove user",
-      description: error.data?.message || "An error occurred while removing the user",
+      description: (error as { data?: { message?: string } }).data?.message || "An error occurred while removing the user",
       color: "error",
     });
   } finally {

@@ -1,29 +1,9 @@
 <script setup lang="ts">
 import { format, differenceInDays, isPast, isToday } from "date-fns";
-
-interface Milestone {
-  id: string;
-  goalId: string;
-  title: string;
-  isCompleted: boolean | null;
-  completedAt: string | null;
-  displayOrder: number | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import type { GoalMilestone, GoalWithMilestones } from "~/types";
 
 const props = defineProps<{
-  goal: {
-    id: string;
-    goalText: string;
-    description: string | null;
-    status: string | null;
-    targetDate: string | null;
-    createdAt: string | null;
-    updatedAt: string | null;
-    completedAt: string | null;
-    milestones?: Milestone[];
-  };
+  goal: GoalWithMilestones;
   mode: "owner" | "buddy";
   ownerName?: string;
 }>();
