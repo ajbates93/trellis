@@ -1,5 +1,7 @@
 import { db } from "../../database/connection";
 import { goals } from "../../database/schema";
+import { validateBody, validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -12,22 +14,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const body = await readBody(event);
-
-    // Validation
-    if (!body.goalText || body.goalText.trim().length < 10) {
-      throw createError({
-        statusCode: 400,
-        message: "Goal text must be at least 10 characters",
-      });
-    }
-
-    if (body.goalText.length > 500) {
-      throw createError({
-        statusCode: 400,
-        message: "Goal text must be less than 500 characters",
-      });
-    }
+    // Validate request body
+    const body = await validateBody(event, apiSchemas.CreateGoalRequestSchema);
 
     // Create the goal
     const newGoal = await db
@@ -41,7 +29,14 @@ export default defineEventHandler(async (event) => {
       })
       .returning();
 
-    return { goal: newGoal[0] };
+    const response = {
+      success: true,
+      goal: {
+        ...newGoal[0],
+        milestones: [],
+      },
+    };
+    return validateResponse(response, apiSchemas.CreateGoalResponseSchema);
   } catch (error) {
     console.error("Error creating goal:", error);
 

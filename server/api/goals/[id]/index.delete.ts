@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { goals } from "../../../database/schema";
 import { eq, and } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -36,7 +38,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return { success: true, goal: deletedGoal[0] };
+    const response = { success: true, goal: deletedGoal[0] };
+    return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error deleting goal:", error);
 

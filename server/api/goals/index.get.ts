@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { goals, goalMilestones } from "../../database/schema";
 import { eq, desc, asc, inArray } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -56,7 +58,8 @@ export default defineEventHandler(async (event) => {
       milestones: milestonesByGoal[goal.id] || [],
     }));
 
-    return { goals: goalsWithMilestones };
+    const response = { goals: goalsWithMilestones };
+    return validateResponse(response, apiSchemas.GetGoalsResponseSchema);
   } catch (error) {
     console.error("Error fetching goals:", error);
     throw createError({
