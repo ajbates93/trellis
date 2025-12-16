@@ -60,6 +60,11 @@ export default defineEventHandler(async (event) => {
           email: users.email,
           image: users.image,
           avatarUrl: users.avatarUrl,
+          preferredName: users.preferredName,
+          pronouns: users.pronouns,
+          bio: users.bio,
+          roleType: users.roleType,
+          createdAt: users.createdAt,
         },
       })
       .from(goals)
@@ -125,7 +130,7 @@ export default defineEventHandler(async (event) => {
 
     return validateResponse(
       { buddyAssignments },
-      apiSchemas.SuccessResponseSchema.passthrough()
+      apiSchemas.GetBuddyGoalsResponseSchema
     );
   } catch (error) {
     console.error("Error fetching buddy goals:", error);

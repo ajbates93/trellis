@@ -5,6 +5,7 @@ import {
   FeedbackWithReviewerSchema,
   FeedbackWithRevieweeSchema,
   UserWithBuddySchema,
+  UserPublicSchema,
   ReviewScheduleWithUsersSchema,
   BuddyCheckinWithUsersSchema,
 } from './computed';
@@ -151,6 +152,13 @@ export const UpdateGoalStatusRequestSchema = z.object({
 
 export const GetGoalsResponseSchema = z.object({
   goals: z.array(GoalWithMilestonesSchema),
+});
+
+export const GetBuddyGoalsResponseSchema = z.object({
+  buddyAssignments: z.array(z.object({
+    user: UserPublicSchema,
+    goals: z.array(GoalWithMilestonesSchema),
+  })),
 });
 
 export const CreateGoalResponseSchema = z.object({
@@ -410,6 +418,8 @@ export const CreateBuddyCheckinRequestSchema = z.object({
 export const GetBuddyCheckinsResponseSchema = z.object({
   checkins: z.array(BuddyCheckinWithUsersSchema),
 });
+
+export const GetBuddyCheckinsArrayResponseSchema = z.array(BuddyCheckinWithUsersSchema);
 
 export const CreateBuddyCheckinResponseSchema = z.object({
   success: z.boolean(),

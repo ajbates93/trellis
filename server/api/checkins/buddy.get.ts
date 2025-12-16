@@ -85,6 +85,9 @@ export default defineEventHandler(async (event) => {
     return validateResponse(
       checkins.map((c) => ({
         id: c.id,
+        buddyId: c.buddyId,
+        userId: c.userId,
+        reviewScheduleId: c.reviewScheduleId,
         buddy: c.buddy,
         user: c.user,
         notes: c.notes,
@@ -92,7 +95,7 @@ export default defineEventHandler(async (event) => {
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
       })),
-      apiSchemas.SuccessResponseSchema.passthrough()
+      apiSchemas.GetBuddyCheckinsArrayResponseSchema
     );
   }
 
@@ -149,6 +152,9 @@ export default defineEventHandler(async (event) => {
   return validateResponse(
     checkins.map((c) => ({
       id: c.id,
+      buddyId: c.buddyId,
+      userId: c.userId,
+      reviewScheduleId: c.reviewScheduleId,
       buddy: c.buddy,
       user: c.user,
       notes: c.notes,
@@ -156,6 +162,6 @@ export default defineEventHandler(async (event) => {
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     })),
-    apiSchemas.SuccessResponseSchema.passthrough()
+    apiSchemas.GetBuddyCheckinsArrayResponseSchema
   );
 });

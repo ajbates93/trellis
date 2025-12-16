@@ -64,6 +64,7 @@ export type GetGivenFeedbackResponse = z.infer<typeof apiSchemas.GetGivenFeedbac
 export type GetReceivedCountResponse = z.infer<typeof apiSchemas.GetReceivedCountResponseSchema>;
 
 export type GetGoalsResponse = z.infer<typeof apiSchemas.GetGoalsResponseSchema>;
+export type GetBuddyGoalsResponse = z.infer<typeof apiSchemas.GetBuddyGoalsResponseSchema>;
 export type CreateGoalResponse = z.infer<typeof apiSchemas.CreateGoalResponseSchema>;
 export type UpdateGoalResponse = z.infer<typeof apiSchemas.UpdateGoalResponseSchema>;
 
@@ -80,6 +81,7 @@ export type GetReviewSchedulesResponse = z.infer<typeof apiSchemas.GetReviewSche
 export type CreateReviewScheduleResponse = z.infer<typeof apiSchemas.CreateReviewScheduleResponseSchema>;
 
 export type GetBuddyCheckinsResponse = z.infer<typeof apiSchemas.GetBuddyCheckinsResponseSchema>;
+export type GetBuddyCheckinsArrayResponse = z.infer<typeof apiSchemas.GetBuddyCheckinsArrayResponseSchema>;
 export type CreateBuddyCheckinResponse = z.infer<typeof apiSchemas.CreateBuddyCheckinResponseSchema>;
 
 export type SuccessResponse = z.infer<typeof apiSchemas.SuccessResponseSchema>;
