@@ -31,7 +31,7 @@ const { data: incomingData, refresh: refreshIncoming } = useFetch(
 );
 const incomingFeedback = computed(() => {
   const assignments = incomingData.value?.buddyAssignments || [];
-  return assignments.flatMap((assignment: any) => assignment.feedback || []);
+  return assignments.flatMap((assignment: { feedback?: unknown[] }) => assignment.feedback || []);
 });
 
 // Refresh both tabs when buddy changes

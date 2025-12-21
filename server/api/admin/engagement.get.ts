@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback } from "../../database/schema";
 import { sql } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -49,9 +51,12 @@ export default defineEventHandler(async (event) => {
       count: countMap.get(week) || 0,
     }));
 
-    return {
-      timeline,
-    };
+    return validateResponse(
+      {
+        timeline,
+      },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     console.error("Error fetching engagement data:", error);
     throw createError({

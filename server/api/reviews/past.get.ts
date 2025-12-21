@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { reviewSchedules, users, feedback, buddyCheckins } from "../../database/schema";
 import { eq, and, or, sql, lt } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -131,7 +133,10 @@ export default defineEventHandler(async (event) => {
       })
     );
 
-    return { reviews: reviewsWithDetails };
+    return validateResponse(
+      { reviews: reviewsWithDetails },
+      apiSchemas.GetReviewsWithDetailsResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching past reviews:", error);
     throw createError({

@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { users } from "../../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -20,22 +22,14 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
-  const { name, email, roleType, buddyId } = body;
-
-  // Validation
-  if (!name || !email) {
-    throw createError({
-      statusCode: 400,
-      message: "Name and email are required",
-    });
-  }
+  // Validate request body
+  const body = await validateBody(event, apiSchemas.CreateUserRequestSchema);
 
   // Check if user already exists
   const existingUser = await db
     .select()
     .from(users)
-    .where(eq(users.email, email))
+    .where(eq(users.email, body.email))
     .limit(1);
 
   if (existingUser.length > 0) {
@@ -50,19 +44,24 @@ export default defineEventHandler(async (event) => {
     .insert(users)
     .values({
       id: crypto.randomUUID(),
-      name,
-      email,
+      name: body.name,
+      email: body.email,
       role: "user", // Default to user role
-      roleType: roleType || null,
-      buddyId: buddyId || null,
+      roleType: body.roleType || null,
+      buddyId: body.buddyEmail ? null : null, // Will be resolved separately if needed
       emailVerified: false, // Mark as invited/pre-created
       createdAt: new Date(),
       updatedAt: new Date(),
     })
     .returning();
 
-  return {
+  const response = {
     success: true,
-    user: newUser,
+    user: {
+      ...newUser,
+      buddyName: null,
+      status: "invited" as const,
+    },
   };
+  return validateResponse(response, apiSchemas.CreateUserResponseSchema);
 });

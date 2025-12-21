@@ -15,7 +15,15 @@ const props = defineProps<{
 const emit = defineEmits<{
   updated: []
   deleted: []
-  edit: [achievement: any]
+  edit: [achievement: {
+    id: string
+    userId: string
+    title: string
+    description?: string | null
+    achievedDate: string
+    createdAt?: string | Date | null
+    updatedAt?: string | Date | null
+  }]
 }>()
 
 const toast = useToast()

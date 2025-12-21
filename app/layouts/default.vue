@@ -321,11 +321,11 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
 
     <!-- Mobile navigation drawer (hidden on desktop via CSS) -->
     <USlideover
-      class="lg:hidden"
+      id="mobile-navigation"
       v-model:open="mobileNavOpen"
+      class="lg:hidden"
       side="left"
       :close="false"
-      id="mobile-navigation"
       :ui="{ header: 'hidden', body: 'p-0' }"
     >
       <template #body>

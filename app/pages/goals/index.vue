@@ -164,18 +164,7 @@
 
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-
-// Type definitions
-interface Goal {
-  id: string;
-  goalText: string;
-  description: string | null;
-  status: string | null;
-  targetDate: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-  completedAt: string | null;
-}
+import type { GoalWithMilestones } from "~/types";
 
 definePageMeta({
   layout: "default",
@@ -183,17 +172,17 @@ definePageMeta({
 
 // Fetch user's own goals
 const { data: goalsData, refresh: refreshGoals } = await useFetch("/api/goals");
-const myGoals = computed(() => (goalsData.value?.goals || []) as Goal[]);
+const myGoals = computed(() => (goalsData.value?.goals || []) as GoalWithMilestones[]);
 
 // Group goals by status
 const activeGoals = computed(() =>
-  myGoals.value.filter((g: Goal) => g.status === "active"),
+  myGoals.value.filter((g) => g.status === "active"),
 );
 const completedGoals = computed(() =>
-  myGoals.value.filter((g: Goal) => g.status === "completed"),
+  myGoals.value.filter((g) => g.status === "completed"),
 );
 const archivedGoals = computed(() =>
-  myGoals.value.filter((g: Goal) => g.status === "archived"),
+  myGoals.value.filter((g) => g.status === "archived"),
 );
 
 // Tab state

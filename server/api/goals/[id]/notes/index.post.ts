@@ -1,6 +1,8 @@
 import { db } from "../../../../database/connection";
 import { goals, goalNotes, users } from "../../../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../../utils/validation";
+import { apiSchemas } from "../../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -23,21 +25,6 @@ export default defineEventHandler(async (event) => {
 
   try {
     const body = await readBody(event);
-
-    // Validation
-    if (!body.noteText || body.noteText.trim().length === 0) {
-      throw createError({
-        statusCode: 400,
-        message: "Note text is required",
-      });
-    }
-
-    if (body.noteText.length > 2000) {
-      throw createError({
-        statusCode: 400,
-        message: "Note text must be less than 2000 characters",
-      });
-    }
 
     // First, verify that the user has permission to add notes to this goal
     // User must be either the goal owner OR the buddy of the goal owner
@@ -103,7 +90,10 @@ export default defineEventHandler(async (event) => {
       .where(eq(goalNotes.id, newNote[0].id))
       .limit(1);
 
-    return { note: noteWithAuthor[0] };
+    return validateResponse(
+      { note: noteWithAuthor[0] },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     console.error("Error creating goal note:", error);
 

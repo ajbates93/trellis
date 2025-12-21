@@ -1,5 +1,7 @@
 import { db } from "../../database/connection";
 import { users } from "../../database/schema";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -24,7 +26,10 @@ export default defineEventHandler(async (event) => {
       })
       .from(users);
 
-    return { users: allUsers };
+    return validateResponse(
+      { users: allUsers },
+      apiSchemas.GetAllUsersResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching users:", error);
     throw createError({

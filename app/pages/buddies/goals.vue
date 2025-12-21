@@ -1,41 +1,16 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import type { TabsItem } from '@nuxt/ui'
+import type {
+  GoalWithMilestones,
+  BuddyCheckinWithUsers,
+  GetBuddyGoalsResponse,
+  GetBuddyCheckinsArrayResponse
+} from "~/types";
 
 // Type definitions
-interface Goal {
-  id: string;
-  goalText: string;
-  description: string | null;
-  status: string | null;
-  targetDate: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-  completedAt: string | null;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  avatarUrl: string | null;
-}
-
-interface Checkin {
-  id: string;
-  buddy: User;
-  user: User;
-  notes: string;
-  reviewSchedule: {
-    id: string;
-    scheduledDate: string;
-    name: string;
-    status: string;
-  } | null;
-  createdAt: string;
-  updatedAt: string;
-}
+type Goal = GoalWithMilestones;
+type Checkin = BuddyCheckinWithUsers;
 
 definePageMeta({
   layout: "default",
@@ -45,36 +20,44 @@ definePageMeta({
 const { selectedBuddyId } = useSelectedBuddy();
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId
-const { data: buddyGoalsData, refresh: refreshBuddyGoals } = useFetch(() =>
-  selectedBuddyId.value
-    ? `/api/goals/buddies?buddyId=${selectedBuddyId.value}`
-    : null,
+const { data: buddyGoalsData, refresh: refreshBuddyGoals } = useFetch<GetBuddyGoalsResponse>(() =>
+  `/api/goals/buddies?buddyId=${selectedBuddyId.value || ''}`,
+  {
+    lazy: true,
+    immediate: !!selectedBuddyId.value,
+    watch: [selectedBuddyId],
+  }
 );
 
 // Fetch buddy check-ins (filtered by buddyId)
-const { data: checkinsData, refresh: refreshCheckins } = useFetch(() =>
-  selectedBuddyId.value
-    ? `/api/checkins/buddy?buddyId=${selectedBuddyId.value}&limit=10`
-    : null,
+const { data: checkinsData, refresh: refreshCheckins } = useFetch<GetBuddyCheckinsArrayResponse>(() =>
+  `/api/checkins/buddy?buddyId=${selectedBuddyId.value || ''}&limit=10`,
+  {
+    lazy: true,
+    immediate: !!selectedBuddyId.value,
+    watch: [selectedBuddyId],
+  }
 );
 
 const buddyGoals = computed(() => {
   const assignments = buddyGoalsData.value?.buddyAssignments || [];
-  if (assignments.length > 0) {
-    return (assignments[0].goals || []) as Goal[];
+  if (assignments.length > 0 && assignments[0]) {
+    return assignments[0].goals || [];
   }
   return [];
 });
 
 const buddyInfo = computed(() => {
   const assignments = buddyGoalsData.value?.buddyAssignments || [];
-  if (assignments.length > 0) {
-    return assignments[0].user as User;
+  if (assignments.length > 0 && assignments[0]) {
+    return assignments[0].user;
   }
   return null;
 });
 
-const checkins = computed(() => checkinsData.value || []) as Ref<Checkin[]>;
+const checkins = computed(() => {
+  return checkinsData.value || [];
+});
 
 // Group goals by status
 const activeGoals = computed(() =>
@@ -165,14 +148,14 @@ const saveEditedCheckin = async () => {
   isSubmittingEdit.value = true;
 
   try {
-    const response = await $fetch(`/api/checkins/${selectedCheckin.value.id}`, {
+    const response = await $fetch<{ checkin: Checkin }>(`/api/checkins/${selectedCheckin.value.id}`, {
       method: "PATCH",
       body: {
         notes: editingNotes.value.trim(),
       },
     });
 
-    if (response.checkin) {
+    if (response?.checkin) {
       selectedCheckin.value = {
         ...selectedCheckin.value,
         notes: response.checkin.notes,
@@ -194,7 +177,7 @@ const saveEditedCheckin = async () => {
     useToast().add({
       title: "Failed to update check-in",
       description: "An error occurred while updating the check-in.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -238,7 +221,7 @@ const deleteCheckin = async () => {
     useToast().add({
       title: "Failed to delete check-in",
       description: "An error occurred while deleting the check-in.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -259,11 +242,6 @@ const handleBuddySelected = (buddyId: string) => {
 // Refresh handler for goal changes
 const handleGoalChange = async () => {
   await refreshBuddyGoals();
-};
-
-// Handle check-in created
-const handleCheckinCreated = async () => {
-  await refreshCheckins();
 };
 
 // Submit check-in
@@ -296,7 +274,7 @@ const submitCheckin = async (notes: string) => {
     useToast().add({
       title: "Failed to create check-in",
       description: "An error occurred while creating the check-in.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-x-circle",
     });
   } finally {
@@ -304,11 +282,6 @@ const submitCheckin = async (notes: string) => {
   }
 };
 
-// Truncate notes for table display
-const truncateNotes = (notes: string, length: number = 100): string => {
-  if (notes.length <= length) return notes;
-  return notes.substring(0, length) + "...";
-};
 </script>
 
 <template>
@@ -463,9 +436,9 @@ const truncateNotes = (notes: string, length: number = 100): string => {
               </div>
               <UButton
                 v-if="buddyInfo"
-                @click="showCheckinModal = true"
                 icon="i-heroicons-plus"
                 size="sm"
+                @click="showCheckinModal = true"
               >
                 New Check-In
               </UButton>
@@ -477,11 +450,17 @@ const truncateNotes = (notes: string, length: number = 100): string => {
                 <template #date-cell="{ row }">
                   <div class="text-sm">
                     {{
-                      format(new Date(row.original.createdAt), "MMM d, yyyy")
+                      row.original.createdAt
+                        ? format(new Date(row.original.createdAt), "MMM d, yyyy")
+                        : "—"
                     }}
                   </div>
                   <div class="text-xs text-gray-500">
-                    {{ format(new Date(row.original.createdAt), "h:mm a") }}
+                    {{
+                      row.original.createdAt
+                        ? format(new Date(row.original.createdAt), "h:mm a")
+                        : ""
+                    }}
                   </div>
                 </template>
 
@@ -497,7 +476,7 @@ const truncateNotes = (notes: string, length: number = 100): string => {
                 </template>
 
                 <template #review-cell="{ row }">
-                  <div v-if="row.original.reviewSchedule">
+                  <div v-if="row.original.reviewSchedule && row.original.reviewSchedule.name">
                     <UBadge
                       :label="row.original.reviewSchedule.name"
                       variant="subtle"
@@ -557,10 +536,12 @@ const truncateNotes = (notes: string, length: number = 100): string => {
           </h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {{
-              format(
-                new Date(selectedCheckin.createdAt),
-                "MMM d, yyyy 'at' h:mm a",
-              )
+              selectedCheckin.createdAt
+                ? format(
+                    new Date(selectedCheckin.createdAt),
+                    "MMM d, yyyy 'at' h:mm a",
+                  )
+                : "—"
             }}
           </p>
         </div>
@@ -577,7 +558,7 @@ const truncateNotes = (notes: string, length: number = 100): string => {
           </p>
           <div class="flex items-center gap-2">
             <UAvatar
-              :src="selectedCheckin.buddy.avatarUrl"
+              :src="selectedCheckin.buddy.avatarUrl || undefined"
               :alt="selectedCheckin.buddy.name"
               size="sm"
             />
@@ -633,7 +614,7 @@ const truncateNotes = (notes: string, length: number = 100): string => {
         </div>
 
         <div
-          v-if="selectedCheckin.reviewSchedule"
+          v-if="selectedCheckin.reviewSchedule && selectedCheckin.reviewSchedule.name"
           class="border-t border-gray-200 dark:border-gray-700 pt-4"
         >
           <p
@@ -661,13 +642,13 @@ const truncateNotes = (notes: string, length: number = 100): string => {
         >
           Delete
         </UButton>
-        <div v-else></div>
+        <div v-else/>
         <div class="flex gap-2">
           <UButton
             v-if="!isEditingCheckin"
             variant="outline"
-            @click="startEditingCheckin"
             :disabled="isSubmittingEdit"
+            @click="startEditingCheckin"
           >
             Edit
           </UButton>

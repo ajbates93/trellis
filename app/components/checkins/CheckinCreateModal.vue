@@ -106,8 +106,9 @@ const handleSubmit = async () => {
 
 <template>
   <UModal
-    v-model:open="open"
+    :open="open"
     :title="`Check-in with ${buddy.name}`"
+    @update:open="emit('update:open', $event)"
   >
     <template #body>
       <div class="space-y-4">
@@ -137,15 +138,15 @@ const handleSubmit = async () => {
       <div class="flex gap-2 justify-end">
         <UButton
           variant="ghost"
-          @click="emit('update:open', false)"
           :disabled="isSubmitting"
+          @click="emit('update:open', false)"
         >
           Cancel
         </UButton>
         <UButton
-          @click="handleSubmit"
           :loading="isSubmitting"
           :disabled="!notes.trim() || isSubmitting"
+          @click="handleSubmit"
         >
           Save Check-in
         </UButton>

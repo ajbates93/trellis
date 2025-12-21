@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
 import { eq, and, inArray, desc } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -97,7 +99,10 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    return { buddyAssignments: groupedByReviewee };
+    return validateResponse(
+      { buddyAssignments: groupedByReviewee },
+      apiSchemas.GetForBuddyResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching buddy feedback:", error);
     throw createError({

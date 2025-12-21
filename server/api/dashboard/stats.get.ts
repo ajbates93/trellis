@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
 import { eq, and, gte, lt, desc } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -126,13 +128,16 @@ export default defineEventHandler(async (event) => {
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    return {
-      feedbackGiven: feedbackGivenCount,
-      feedbackGivenTrend,
-      feedbackReceived: feedbackReceivedCount,
-      feedbackReceivedTrend,
-      daysUntilReview,
-    };
+    return validateResponse(
+      {
+        feedbackGiven: feedbackGivenCount,
+        feedbackGivenTrend,
+        feedbackReceived: feedbackReceivedCount,
+        feedbackReceivedTrend,
+        daysUntilReview,
+      },
+      apiSchemas.GetDashboardStatsResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     throw createError({

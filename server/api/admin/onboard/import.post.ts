@@ -2,20 +2,8 @@ import { db } from "../../../database/connection";
 import { users, onboardingImports } from "../../../database/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "../../../utils/auth";
-
-interface CSVRow {
-  email: string;
-  name: string;
-  roleType?: string;
-  buddyEmail?: string;
-  nextReviewDate?: string;
-}
-
-interface ValidationError {
-  row: number;
-  field: string;
-  message: string;
-}
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -31,16 +19,10 @@ export default defineEventHandler(async (event) => {
 
     const adminId = session.user.id;
 
-    // Get CSV content from request body
-    const body = await readBody(event);
-    const { csvContent, filename } = body;
-
-    if (!csvContent || typeof csvContent !== "string") {
-      throw createError({
-        statusCode: 400,
-        message: "CSV content is required",
-      });
-    }
+    // Validate request body
+    const body = await validateBody(event, apiSchemas.OnboardingImportRequestSchema);
+    const csvContent = body.csv;
+    const filename = body.filename;
 
     // Parse CSV (simple parsing - split by lines and commas)
     const lines = csvContent.trim().split("\n");
@@ -163,11 +145,12 @@ export default defineEventHandler(async (event) => {
         errorLog: JSON.stringify(errors),
       });
 
-      return {
+      const response = {
         success: false,
-        imported: 0,
+        rowsImported: 0,
         errors,
       };
+      return validateResponse(response, apiSchemas.OnboardingImportResponseSchema);
     }
 
     // Create users using Better Auth (or direct DB insert with emailVerified=false)
@@ -239,11 +222,12 @@ export default defineEventHandler(async (event) => {
       errorLog: errors.length > 0 ? JSON.stringify(errors) : null,
     });
 
-    return {
+    const response = {
       success: true,
-      imported: importedUsers.length,
-      errors: errors.length > 0 ? errors : undefined,
+      rowsImported: importedUsers.length,
+      errors: errors.length > 0 ? errors : [],
     };
+    return validateResponse(response, apiSchemas.OnboardingImportResponseSchema);
   } catch (error) {
     console.error("CSV import error:", error);
     throw createError({

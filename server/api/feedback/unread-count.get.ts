@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback } from "../../database/schema";
 import { eq, and } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -25,9 +27,10 @@ export default defineEventHandler(async (event) => {
         )
       );
 
-    return {
-      count: unreadFeedback.length,
-    };
+    return validateResponse(
+      { count: unreadFeedback.length },
+      apiSchemas.GetUnreadCountResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching unread count:", error);
     throw createError({

@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { goals, users, goalMilestones } from "../../database/schema";
 import { eq, desc, and, or, asc, inArray } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -44,6 +46,7 @@ export default defineEventHandler(async (event) => {
       .select({
         goal: {
           id: goals.id,
+          userId: goals.userId,
           goalText: goals.goalText,
           description: goals.description,
           status: goals.status,
@@ -58,6 +61,11 @@ export default defineEventHandler(async (event) => {
           email: users.email,
           image: users.image,
           avatarUrl: users.avatarUrl,
+          preferredName: users.preferredName,
+          pronouns: users.pronouns,
+          bio: users.bio,
+          roleType: users.roleType,
+          createdAt: users.createdAt,
         },
       })
       .from(goals)
@@ -121,7 +129,10 @@ export default defineEventHandler(async (event) => {
     // Convert to array
     const buddyAssignments = Object.values(groupedByUser);
 
-    return { buddyAssignments };
+    return validateResponse(
+      { buddyAssignments },
+      apiSchemas.GetBuddyGoalsResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching buddy goals:", error);
     throw createError({

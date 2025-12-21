@@ -1,12 +1,5 @@
 <script setup lang="ts">
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string | null;
-  image?: string | null;
-  roleType?: string | null;
-}
+import type { User } from "~/types";
 
 interface Props {
   modelValue?: string;
@@ -15,11 +8,12 @@ interface Props {
 
 interface Emits {
   (e: "update:modelValue", userId: string): void;
-  (e: "user-selected", user: any): void;
+  (e: "user-selected", user: User): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: "Select a user...",
+  modelValue: undefined,
 });
 const emit = defineEmits<Emits>();
 
@@ -29,17 +23,17 @@ const { data: userData } = await useFetch("/api/users");
 const users = computed(() => userData.value?.users || []);
 
 const selectedUser = computed(() => {
-  return users.value.find((u: any) => u.id === props.modelValue);
+  return users.value.find((u: User) => u.id === props.modelValue);
 });
 
 // Handle user selection from dropdown
-const handleUserSelect = (user: any) => {
+const handleUserSelect = (user: User) => {
   emit("update:modelValue", user.id);
   emit("user-selected", user);
 };
 
 // Get avatar for user
-const getUserAvatar = (user: any): string | undefined => {
+const getUserAvatar = (user: User): string | undefined => {
   return user.avatarUrl || user.image || undefined;
 };
 </script>
@@ -56,11 +50,11 @@ const getUserAvatar = (user: any): string | undefined => {
       class="w-full"
       @update:model-value="(user) => handleUserSelect(user)"
     >
-      <template #leading="{ modelValue, ui }">
+      <template #leading="{ modelValue: selectedValue, ui }">
         <UAvatar
-          v-if="modelValue"
-          :src="getUserAvatar(modelValue)"
-          :alt="modelValue.name"
+          v-if="selectedValue"
+          :src="getUserAvatar(selectedValue)"
+          :alt="selectedValue.name"
           :size="ui.leadingAvatarSize()"
           :class="ui.leadingAvatar()"
         />

@@ -1,6 +1,8 @@
 import { db } from "../../../../database/connection";
 import { goals, goalMilestones } from "../../../../database/schema";
 import { eq, and } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../../utils/validation";
+import { apiSchemas } from "../../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -58,32 +60,20 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const body = await readBody(event);
-    const { title, isCompleted } = body;
+    // Validate request body
+    const body = await validateBody(event, apiSchemas.UpdateMilestoneRequestSchema);
 
     const updates: Partial<typeof goalMilestones.$inferInsert> = {
       updatedAt: new Date(),
     };
 
-    if (title !== undefined) {
-      if (typeof title !== "string" || title.trim().length === 0) {
-        throw createError({
-          statusCode: 400,
-          message: "Milestone title cannot be empty",
-        });
-      }
-      if (title.length > 200) {
-        throw createError({
-          statusCode: 400,
-          message: "Milestone title must be 200 characters or less",
-        });
-      }
-      updates.title = title.trim();
+    if (body.title !== undefined) {
+      updates.title = body.title.trim();
     }
 
-    if (isCompleted !== undefined) {
-      updates.isCompleted = Boolean(isCompleted);
-      updates.completedAt = isCompleted ? new Date() : null;
+    if (body.isCompleted !== undefined) {
+      updates.isCompleted = Boolean(body.isCompleted);
+      updates.completedAt = body.isCompleted ? new Date() : null;
     }
 
     const [milestone] = await db
@@ -92,7 +82,11 @@ export default defineEventHandler(async (event) => {
       .where(eq(goalMilestones.id, milestoneId))
       .returning();
 
-    return { milestone };
+    const response = {
+      success: true,
+      milestone,
+    };
+    return validateResponse(response, apiSchemas.UpdateMilestoneResponseSchema);
   } catch (error) {
     if (error && typeof error === "object" && "statusCode" in error) {
       throw error;

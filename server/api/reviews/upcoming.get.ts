@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { reviewSchedules, users, feedback, buddyCheckins } from "../../database/schema";
 import { eq, and, or, gte, sql } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -56,9 +58,11 @@ export default defineEventHandler(async (event) => {
         userId: reviewSchedules.userId,
         buddyId: reviewSchedules.buddyId,
         scheduledDate: reviewSchedules.scheduledDate,
+        completedDate: reviewSchedules.completedDate,
         status: reviewSchedules.status,
         name: reviewSchedules.name,
         notes: reviewSchedules.notes,
+        completionNotes: reviewSchedules.completionNotes,
         createdAt: reviewSchedules.createdAt,
         user: {
           id: users.id,
@@ -130,7 +134,10 @@ export default defineEventHandler(async (event) => {
       })
     );
 
-    return { reviews: reviewsWithBuddy };
+    return validateResponse(
+      { reviews: reviewsWithBuddy },
+      apiSchemas.GetReviewsWithDetailsResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching upcoming reviews:", error);
     throw createError({

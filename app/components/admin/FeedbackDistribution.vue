@@ -69,7 +69,7 @@ const chartData = ref<Array<{ label: string; value: number }>>([]);
 
 const colors = ["#3b82f6", "#10b981", "#f59e0b", "#A6CC74"]; // blue, green, amber
 
-const template = (d: any) => {
+const template = (d: { label: string; value: number }) => {
   return `
     <div style="padding: 8px;">
       <div style="font-weight: 600; margin-bottom: 4px; text-transform: capitalize;">${d.label}</div>

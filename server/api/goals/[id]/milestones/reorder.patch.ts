@@ -1,6 +1,8 @@
 import { db } from "../../../../database/connection";
 import { goals, goalMilestones } from "../../../../database/schema";
 import { eq, inArray } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../../utils/validation";
+import { apiSchemas } from "../../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -42,23 +44,16 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const body = await readBody(event);
-    const { milestoneIds } = body;
-
-    if (!Array.isArray(milestoneIds) || milestoneIds.length === 0) {
-      throw createError({
-        statusCode: 400,
-        message: "milestoneIds array is required",
-      });
-    }
+    // Validate request body
+    const body = await validateBody(event, apiSchemas.ReorderMilestonesRequestSchema);
 
     // Verify all milestones exist and belong to this goal
     const existingMilestones = await db
       .select({ id: goalMilestones.id })
       .from(goalMilestones)
-      .where(inArray(goalMilestones.id, milestoneIds));
+      .where(inArray(goalMilestones.id, body.milestones.map(m => m.id)));
 
-    if (existingMilestones.length !== milestoneIds.length) {
+    if (existingMilestones.length !== body.milestones.length) {
       throw createError({
         statusCode: 400,
         message: "Some milestone IDs are invalid",
@@ -67,15 +62,16 @@ export default defineEventHandler(async (event) => {
 
     // Update display order for each milestone
     await Promise.all(
-      milestoneIds.map((id, index) =>
+      body.milestones.map((m) =>
         db
           .update(goalMilestones)
-          .set({ displayOrder: index, updatedAt: new Date() })
-          .where(eq(goalMilestones.id, id))
+          .set({ displayOrder: m.displayOrder, updatedAt: new Date() })
+          .where(eq(goalMilestones.id, m.id))
       )
     );
 
-    return { success: true };
+    const response = { success: true };
+    return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     if (error && typeof error === "object" && "statusCode" in error) {
       throw error;

@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { onboardingImports, users } from "../../../database/schema";
 import { eq, desc } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -21,9 +23,10 @@ export default defineEventHandler(async (event) => {
       .orderBy(desc(onboardingImports.createdAt))
       .limit(50); // Last 50 imports
 
-    return {
-      imports,
-    };
+    return validateResponse(
+      { imports },
+      apiSchemas.GetOnboardingHistoryResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching import history:", error);
     throw createError({

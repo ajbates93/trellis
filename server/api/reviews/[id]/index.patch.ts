@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { reviewSchedules } from "../../../database/schema";
 import { eq } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -21,7 +23,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
+  const body = await validateBody(event, apiSchemas.UpdateReviewScheduleRequestSchema);
   const { scheduledDate, name, notes } = body;
 
   try {
@@ -74,10 +76,13 @@ export default defineEventHandler(async (event) => {
       .where(eq(reviewSchedules.id, reviewId))
       .returning();
 
-    return {
-      success: true,
-      review: updatedReview,
-    };
+    return validateResponse(
+      {
+        success: true,
+        review: updatedReview,
+      },
+      apiSchemas.UpdateReviewScheduleResponseSchema
+    );
   } catch (error) {
     console.error("Error updating review:", error);
     if (error.statusCode) {

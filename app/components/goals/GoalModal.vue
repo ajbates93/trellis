@@ -1,30 +1,15 @@
 <script setup lang="ts">
-interface Milestone {
-  id: string;
-  goalId: string;
-  title: string;
-  isCompleted: boolean | null;
-  completedAt: string | null;
-  displayOrder: number | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import type { GoalWithMilestones, GoalMilestone } from "~/types";
 
 const props = defineProps<{
   isOpen: boolean;
-  goal?: {
-    id: string;
-    goalText: string;
-    description: string | null;
-    targetDate: string | null;
-    milestones?: Milestone[];
-  } | null;
+  goal?: GoalWithMilestones | null;
   mode: "create" | "edit";
 }>();
 
 const emit = defineEmits<{
   close: [];
-  success: [goal: any];
+  success: [goal: GoalWithMilestones];
   "update:isOpen": [value: boolean];
 }>();
 
@@ -41,16 +26,8 @@ const isOpen = computed({
 const goalText = ref(props.goal?.goalText || "");
 const description = ref(props.goal?.description || "");
 const targetDate = ref(props.goal?.targetDate || null);
-const milestones = ref<Milestone[]>(props.goal?.milestones || []);
+const milestones = ref<GoalMilestone[]>(props.goal?.milestones || []);
 const isSubmitting = ref(false);
-
-interface GoalWithMilestones {
-  id: string;
-  goalText: string;
-  description: string | null;
-  targetDate: string | null;
-  milestones?: Milestone[];
-}
 
 // Handle milestone updates (refetch goal data)
 const handleMilestonesUpdated = async () => {

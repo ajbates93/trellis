@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback, goals, users } from "../../database/schema";
 import { eq, sql, desc, or } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -67,9 +69,10 @@ export default defineEventHandler(async (event) => {
       })
       .slice(0, 20); // Get top 20 most recent
 
-    return {
-      activity: allActivity,
-    };
+    return validateResponse(
+      { activity: allActivity },
+      apiSchemas.GetRecentActivityResponseSchema
+    );
   } catch (error) {
     console.error("Error fetching recent activity:", error);
     throw createError({

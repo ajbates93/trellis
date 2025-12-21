@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { users } from "../../../database/schema";
 import { eq, sql } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -88,7 +90,7 @@ export default defineEventHandler(async (event) => {
     .from(users)
     .where(eq(users.emailVerified, false));
 
-  return {
+  const response = {
     users: usersWithBuddies,
     counts: {
       all: totalUsers[0].count,
@@ -96,4 +98,5 @@ export default defineEventHandler(async (event) => {
       invited: invitedUsers[0].count,
     },
   };
+  return validateResponse(response, apiSchemas.GetUsersResponseSchema);
 });

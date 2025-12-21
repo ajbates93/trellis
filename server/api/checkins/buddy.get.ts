@@ -2,6 +2,8 @@ import { defineEventHandler, createError, getQuery } from "h3";
 import { eq, desc, and } from "drizzle-orm";
 import { db } from "../../database/connection";
 import { users, buddyCheckins } from "../../database/schema";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -80,15 +82,21 @@ export default defineEventHandler(async (event) => {
       limit,
     });
 
-    return checkins.map((c) => ({
-      id: c.id,
-      buddy: c.buddy,
-      user: c.user,
-      notes: c.notes,
-      reviewSchedule: c.reviewSchedule,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-    }));
+    return validateResponse(
+      checkins.map((c) => ({
+        id: c.id,
+        buddyId: c.buddyId,
+        userId: c.userId,
+        reviewScheduleId: c.reviewScheduleId,
+        buddy: c.buddy,
+        user: c.user,
+        notes: c.notes,
+        reviewSchedule: c.reviewSchedule,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
+      apiSchemas.GetBuddyCheckinsArrayResponseSchema
+    );
   }
 
   // If no filter, get all buddies of session user and their check-ins
@@ -141,13 +149,19 @@ export default defineEventHandler(async (event) => {
     limit,
   });
 
-  return checkins.map((c) => ({
-    id: c.id,
-    buddy: c.buddy,
-    user: c.user,
-    notes: c.notes,
-    reviewSchedule: c.reviewSchedule,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-  }));
+  return validateResponse(
+    checkins.map((c) => ({
+      id: c.id,
+      buddyId: c.buddyId,
+      userId: c.userId,
+      reviewScheduleId: c.reviewScheduleId,
+      buddy: c.buddy,
+      user: c.user,
+      notes: c.notes,
+      reviewSchedule: c.reviewSchedule,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    })),
+    apiSchemas.GetBuddyCheckinsArrayResponseSchema
+  );
 });

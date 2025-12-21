@@ -65,10 +65,10 @@ const error = ref(false);
 const weeks = ref<string[]>([]);
 const chartData = ref<Array<{ index: number; count: number; week: string }>>([]);
 
-const x = (_: any, i: number) => i;
-const y = (d: any) => d.count;
+const x = (_: { index: number; count: number; week: string }, i: number) => i;
+const y = (d: { index: number; count: number; week: string }) => d.count;
 
-const template = (d: any) => {
+const template = (d: { week: string; count: number }) => {
   return `
     <div style="padding: 8px;">
       <div style="font-weight: 600; margin-bottom: 4px;">${d.week}</div>
@@ -82,8 +82,8 @@ onMounted(async () => {
     const data = await $fetch("/api/admin/engagement");
 
     if (data) {
-      weeks.value = data.timeline.map((item: any) => item.week);
-      chartData.value = data.timeline.map((item: any, index: number) => ({
+      weeks.value = data.timeline.map((item: { week: string }) => item.week);
+      chartData.value = data.timeline.map((item: { week: string; count: number }, index: number) => ({
         index,
         count: item.count,
         week: item.week,

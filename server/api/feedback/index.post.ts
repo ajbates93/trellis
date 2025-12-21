@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback } from "../../database/schema";
 import { format } from "date-fns";
+import { validateBody, validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   // Get session/user from better-auth
@@ -13,26 +15,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
-  const { revieweeId, content } = body;
-
-  // Validation
-  if (!revieweeId || !content) {
-    throw createError({
-      statusCode: 400,
-      message: "Missing required fields: revieweeId and content",
-    });
-  }
-
-  if (content.trim().length < 10) {
-    throw createError({
-      statusCode: 400,
-      message: "Feedback must be at least 10 characters long",
-    });
-  }
+  // Validate request body
+  const body = await validateBody(event, apiSchemas.CreateFeedbackRequestSchema);
 
   // Prevent self-review
-  if (revieweeId === session.user.id) {
+  if (body.revieweeId === session.user.id) {
     throw createError({
       statusCode: 400,
       message: "You cannot give feedback to yourself",
@@ -49,17 +36,20 @@ export default defineEventHandler(async (event) => {
       .insert(feedback)
       .values({
         reviewerId: session.user.id,
-        revieweeId,
-        content: content.trim(),
+        revieweeId: body.revieweeId,
+        content: body.content.trim(),
         weekYear,
         isRead: false,
       })
       .returning();
 
-    return {
+    // Validate response
+    const response = {
       success: true,
       feedback: newFeedback,
     };
+
+    return validateResponse(response, apiSchemas.CreateFeedbackResponseSchema);
   } catch (error) {
     console.error("Failed to submit feedback:", error);
     throw createError({

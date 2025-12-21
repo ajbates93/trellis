@@ -1,29 +1,9 @@
 <script setup lang="ts">
 import { format, differenceInDays, isPast, isToday } from "date-fns";
-
-interface Milestone {
-  id: string;
-  goalId: string;
-  title: string;
-  isCompleted: boolean | null;
-  completedAt: string | null;
-  displayOrder: number | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import type { GoalMilestone, GoalWithMilestones } from "~/types";
 
 const props = defineProps<{
-  goal: {
-    id: string;
-    goalText: string;
-    description: string | null;
-    status: string | null;
-    targetDate: string | null;
-    createdAt: string | null;
-    updatedAt: string | null;
-    completedAt: string | null;
-    milestones?: Milestone[];
-  };
+  goal: GoalWithMilestones;
   mode: "owner" | "buddy";
   ownerName?: string;
 }>();
@@ -487,6 +467,7 @@ const actionMenuItems = computed(() => {
           <!-- Description -->
           <div v-if="goal.description">
             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Description</label>
+            <!-- eslint-disable-next-line vue/no-v-html -->
             <div
               class="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
               v-html="goal.description"

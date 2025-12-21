@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { format } from "date-fns";
-import { differenceInDays } from "date-fns";
+import { format, differenceInDays  } from "date-fns";
 import type { TabsItem } from '@nuxt/ui'
 
 definePageMeta({

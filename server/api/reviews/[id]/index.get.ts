@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { reviewSchedules, users, feedback, goals } from "../../../database/schema";
 import { eq, and, sql } from "drizzle-orm";
+import { validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -112,7 +114,7 @@ export default defineEventHandler(async (event) => {
       .where(eq(goals.userId, review.userId))
       .orderBy(goals.createdAt);
 
-    return {
+    const response = {
       review: {
         ...review,
         user,
@@ -122,6 +124,8 @@ export default defineEventHandler(async (event) => {
       goals: userGoals,
       feedbackCount: reviewFeedback.length,
     };
+
+    return validateResponse(response, apiSchemas.GetReviewDetailsResponseSchema);
   } catch (error) {
     console.error("Error fetching review:", error);
     if (error.statusCode) {

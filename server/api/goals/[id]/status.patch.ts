@@ -1,6 +1,8 @@
 import { db } from "../../../database/connection";
 import { goals } from "../../../database/schema";
 import { eq, and } from "drizzle-orm";
+import { validateBody, validateResponse } from "../../../utils/validation";
+import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -22,16 +24,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const body = await readBody(event);
-
-    // Validation
-    const validStatuses = ["active", "completed", "archived"];
-    if (!body.status || !validStatuses.includes(body.status)) {
-      throw createError({
-        statusCode: 400,
-        message: "Status must be one of: active, completed, archived",
-      });
-    }
+    // Validate request body
+    const body = await validateBody(event, apiSchemas.UpdateGoalStatusRequestSchema);
 
     // Update the goal status (only if user is the owner)
     const updatedGoal = await db
@@ -52,7 +46,14 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return { goal: updatedGoal[0] };
+    const response = {
+      success: true,
+      goal: {
+        ...updatedGoal[0],
+        milestones: [],
+      },
+    };
+    return validateResponse(response, apiSchemas.UpdateGoalResponseSchema);
   } catch (error) {
     console.error("Error updating goal status:", error);
 

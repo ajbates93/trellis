@@ -82,13 +82,13 @@
             <!-- Center line -->
             <div
               class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"
-            ></div>
+            />
             <div class="space-y-12">
               <div v-for="i in 3" :key="i" class="relative">
                 <!-- Timeline dot -->
                 <div
                   class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10"
-                ></div>
+                />
                 <!-- Card container -->
                 <div class="grid grid-cols-2 gap-8">
                   <div :class="i % 2 === 1 ? 'col-start-1' : 'col-start-2'">
@@ -96,10 +96,10 @@
                       <div class="space-y-3">
                         <div
                           class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"
-                        ></div>
+                        />
                         <div
                           class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"
-                        ></div>
+                        />
                       </div>
                     </UCard>
                   </div>
@@ -121,12 +121,12 @@
             <!-- Center timeline line -->
             <div
               class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"
-            ></div>
+            />
 
             <!-- Timeline items -->
             <div class="space-y-12">
               <template
-                v-for="(item, index) in timelineItems"
+                v-for="item in timelineItems"
                 :key="
                   item.type === 'year'
                     ? `year-${item.year}`
@@ -173,7 +173,7 @@
                     <!-- Timeline dot -->
                     <div
                       class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10 group-hover:scale-150 transition-transform duration-200"
-                    ></div>
+                    />
 
                     <!-- Grid for alternating layout -->
                     <div class="grid grid-cols-2 gap-8 items-start">
@@ -271,7 +271,7 @@
         </div>
         <!-- Achievement Modal -->
         <AchievementsAchievementModal
-          v-model:isOpen="isModalOpen"
+          v-model:is-open="isModalOpen"
           :mode="modalMode"
           :achievement="selectedAchievement"
           @success="onModalSuccess"

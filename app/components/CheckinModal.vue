@@ -1,14 +1,9 @@
 <script setup lang="ts">
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string | null;
-}
+import type { UserPublic } from "~/types";
 
 interface Props {
   modelValue: boolean;
-  buddy: User | null;
+  buddy: UserPublic | null;
   isLoading?: boolean;
 }
 

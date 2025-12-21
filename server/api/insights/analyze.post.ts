@@ -2,6 +2,8 @@ import { db } from "../../database/connection";
 import { feedback, users, feedbackInsights } from "../../database/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 import { analyzeFeedback } from "../../services/anthropicClient";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -41,19 +43,22 @@ export default defineEventHandler(async (event) => {
         });
       }
 
-      return {
-        status: "cached",
-        message: "Analysis from last 24 hours returned",
-        lastAnalyzed: cached.analysisDate,
-        data: {
-          sentimentData: JSON.parse(cached.sentimentData),
-          themes: JSON.parse(cached.themes),
-          suggestedGoals: cached.suggestedGoals
-            ? JSON.parse(cached.suggestedGoals)
-            : [],
-          feedbackCount: cached.feedbackCount,
+      return validateResponse(
+        {
+          status: "cached",
+          message: "Analysis from last 24 hours returned",
+          lastAnalyzed: cached.analysisDate,
+          data: {
+            sentimentData: JSON.parse(cached.sentimentData),
+            themes: JSON.parse(cached.themes),
+            suggestedGoals: cached.suggestedGoals
+              ? JSON.parse(cached.suggestedGoals)
+              : [],
+            feedbackCount: cached.feedbackCount,
+          },
         },
-      };
+        apiSchemas.AnalyzeInsightsResponseSchema
+      );
     }
 
     // Fetch user's published feedback for analysis
@@ -137,21 +142,24 @@ export default defineEventHandler(async (event) => {
       .set({ lastInsightsDate: new Date() })
       .where(eq(users.id, userId));
 
-    return {
-      status: "completed",
-      message: "Feedback analyzed successfully",
-      lastAnalyzed: insertedInsight.analysisDate,
-      data: {
-        sentimentData: analysisResult.sentimentData,
-        themes: analysisResult.themes,
-        suggestedGoals: analysisResult.suggestedGoals.map((goal) => ({
-          ...goal,
-          dismissed: false,
-          actedUpon: false,
-        })),
-        feedbackCount: validFeedback.length,
+    return validateResponse(
+      {
+        status: "completed",
+        message: "Feedback analyzed successfully",
+        lastAnalyzed: insertedInsight.analysisDate,
+        data: {
+          sentimentData: analysisResult.sentimentData,
+          themes: analysisResult.themes,
+          suggestedGoals: analysisResult.suggestedGoals.map((goal) => ({
+            ...goal,
+            dismissed: false,
+            actedUpon: false,
+          })),
+          feedbackCount: validFeedback.length,
+        },
       },
-    };
+      apiSchemas.AnalyzeInsightsResponseSchema
+    );
   } catch (error: any) {
     console.error("Error analyzing feedback:", error);
 

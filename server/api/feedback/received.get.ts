@@ -1,6 +1,8 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -46,7 +48,8 @@ export default defineEventHandler(async (event) => {
       )
       .orderBy(desc(feedback.publishedAt));
 
-    return { feedback: receivedFeedback };
+    const response = { feedback: receivedFeedback };
+    return validateResponse(response, apiSchemas.GetReceivedFeedbackResponseSchema);
   } catch (error) {
     console.error("Error fetching received feedback:", error);
     throw createError({

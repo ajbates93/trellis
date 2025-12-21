@@ -2,6 +2,8 @@ import { db } from "../../database/connection";
 import { reviewSchedules, users } from "../../database/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
+import { validateBody, validateResponse } from "../../utils/validation";
+import { apiSchemas } from "../../schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -14,16 +16,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const body = await readBody(event);
+    const body = await validateBody(event, apiSchemas.CreateReviewScheduleRequestSchema);
     const { userId, scheduledDate, name, notes } = body;
-
-    // Validate required fields
-    if (!userId || !scheduledDate) {
-      throw createError({
-        statusCode: 400,
-        message: "userId and scheduledDate are required",
-      });
-    }
 
     // Validate cannot create review for yourself
     if (userId === session.user.id) {
@@ -84,7 +78,10 @@ export default defineEventHandler(async (event) => {
       })
       .returning();
 
-    return { review: newReview };
+    return validateResponse(
+      { review: newReview },
+      apiSchemas.SuccessResponseSchema.passthrough()
+    );
   } catch (error) {
     console.error("Error creating review:", error);
 

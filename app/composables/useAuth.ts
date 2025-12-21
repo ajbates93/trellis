@@ -50,8 +50,6 @@ export const useAuth = () => {
     await navigateTo("/login");
   };
 
-  console.log(user)
-
   // Method to refresh/refetch the session
   const refreshSession = async () => {
     // Better Auth's useSession returns reactive data that updates automatically

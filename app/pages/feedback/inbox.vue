@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import type { TabsItem } from '@nuxt/ui'
+import type { FeedbackWithReviewer } from "~/types";
 
 definePageMeta({
   layout: "default",
@@ -113,10 +114,10 @@ const clearRecipientFilter = () => {
 
 // Modal state
 const isModalOpen = ref(false);
-const selectedFeedback = ref<any>(null);
+const selectedFeedback = ref<FeedbackWithReviewer | null>(null);
 
 // Open modal with selected feedback
-const openFeedbackModal = (feedback: any) => {
+const openFeedbackModal = (feedback: FeedbackWithReviewer) => {
   selectedFeedback.value = feedback;
   isModalOpen.value = true;
 };
