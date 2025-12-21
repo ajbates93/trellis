@@ -65,6 +65,7 @@ export default defineEventHandler(async (event) => {
       weekEnd.setDate(weekEnd.getDate() + 7);
 
       const feedbackInWeek = allFeedback.filter(fb => {
+        if (!fb.createdAt) return false;
         const fbDate = new Date(fb.createdAt);
         return fbDate >= weekStart && fbDate < weekEnd;
       });
