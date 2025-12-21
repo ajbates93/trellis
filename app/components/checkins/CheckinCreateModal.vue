@@ -106,8 +106,9 @@ const handleSubmit = async () => {
 
 <template>
   <UModal
-    v-model:open="open"
+    :open="open"
     :title="`Check-in with ${buddy.name}`"
+    @update:open="emit('update:open', $event)"
   >
     <template #body>
       <div class="space-y-4">

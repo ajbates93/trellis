@@ -126,7 +126,7 @@
             <!-- Timeline items -->
             <div class="space-y-12">
               <template
-                v-for="(item, index) in timelineItems"
+                v-for="item in timelineItems"
                 :key="
                   item.type === 'year'
                     ? `year-${item.year}`

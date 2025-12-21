@@ -55,6 +55,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   color: 'primary',
+  badge: undefined,
 })
 
 const colorMap = {

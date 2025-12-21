@@ -13,6 +13,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: "Select a user...",
+  modelValue: undefined,
 });
 const emit = defineEmits<Emits>();
 
@@ -49,11 +50,11 @@ const getUserAvatar = (user: User): string | undefined => {
       class="w-full"
       @update:model-value="(user) => handleUserSelect(user)"
     >
-      <template #leading="{ modelValue, ui }">
+      <template #leading="{ modelValue: selectedValue, ui }">
         <UAvatar
-          v-if="modelValue"
-          :src="getUserAvatar(modelValue)"
-          :alt="modelValue.name"
+          v-if="selectedValue"
+          :src="getUserAvatar(selectedValue)"
+          :alt="selectedValue.name"
           :size="ui.leadingAvatarSize()"
           :class="ui.leadingAvatar()"
         />
