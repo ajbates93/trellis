@@ -2,6 +2,9 @@ import "dotenv/config";
 import { db } from "../connection";
 import { users, reviewSchedules } from "../schema";
 
+// Import sql from drizzle-orm
+import { sql } from "drizzle-orm";
+
 /**
  * Create sample review schedules for all users
  */
@@ -65,8 +68,5 @@ async function createSampleReviews() {
     process.exit(0);
   }
 }
-
-// Import sql from drizzle-orm
-import { sql } from "drizzle-orm";
 
 createSampleReviews();

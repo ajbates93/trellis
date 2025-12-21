@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import * as baseSchemas from '../schemas/base';
 import * as computedSchemas from '../schemas/computed';
 import * as apiSchemas from '../schemas/api';

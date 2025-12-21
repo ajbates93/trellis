@@ -137,15 +137,15 @@ const handleSubmit = async () => {
       <div class="flex gap-2 justify-end">
         <UButton
           variant="ghost"
-          @click="emit('update:open', false)"
           :disabled="isSubmitting"
+          @click="emit('update:open', false)"
         >
           Cancel
         </UButton>
         <UButton
-          @click="handleSubmit"
           :loading="isSubmitting"
           :disabled="!notes.trim() || isSubmitting"
+          @click="handleSubmit"
         >
           Save Check-in
         </UButton>

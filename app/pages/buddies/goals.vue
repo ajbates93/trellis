@@ -436,9 +436,9 @@ const submitCheckin = async (notes: string) => {
               </div>
               <UButton
                 v-if="buddyInfo"
-                @click="showCheckinModal = true"
                 icon="i-heroicons-plus"
                 size="sm"
+                @click="showCheckinModal = true"
               >
                 New Check-In
               </UButton>
@@ -642,13 +642,13 @@ const submitCheckin = async (notes: string) => {
         >
           Delete
         </UButton>
-        <div v-else></div>
+        <div v-else/>
         <div class="flex gap-2">
           <UButton
             v-if="!isEditingCheckin"
             variant="outline"
-            @click="startEditingCheckin"
             :disabled="isSubmittingEdit"
+            @click="startEditingCheckin"
           >
             Edit
           </UButton>

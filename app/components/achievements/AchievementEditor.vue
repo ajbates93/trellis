@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
       </button>
 
       <!-- Separator -->
-      <div class="w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
+      <div class="w-px bg-gray-300 dark:bg-gray-700 mx-1"/>
 
       <!-- Heading 1 -->
       <button
@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
       </button>
 
       <!-- Separator -->
-      <div class="w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
+      <div class="w-px bg-gray-300 dark:bg-gray-700 mx-1"/>
 
       <!-- Clear -->
       <button

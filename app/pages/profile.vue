@@ -31,7 +31,7 @@
                     "
                     :alt="user?.name || 'User avatar'"
                     class="w-32 h-32 rounded-lg object-cover"
-                  />
+                  >
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ user?.name }}
@@ -55,23 +55,23 @@
                       accept="image/*"
                       class="hidden"
                       @change="onAvatarSelected"
-                    />
+                    >
                     <UButton
-                      @click="$refs.fileInput.click()"
                       class="flex-1"
                       variant="outline"
                       size="sm"
                       :loading="uploadingAvatar"
+                      @click="$refs.fileInput.click()"
                     >
                       {{ user?.avatarUrl ? "Change Avatar" : "Upload Avatar" }}
                     </UButton>
                     <UButton
                       v-if="user?.avatarUrl"
-                      @click="removeAvatar"
                       variant="outline"
                       size="sm"
                       color="red"
                       icon="i-heroicons-trash"
+                      @click="removeAvatar"
                     />
                   </div>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
@@ -127,7 +127,7 @@
 
           <!-- Right column: Edit form -->
           <div class="lg:col-span-2">
-            <form @submit.prevent="saveProfile" class="space-y-6">
+            <form class="space-y-6" @submit.prevent="saveProfile">
               <!-- Basic Information -->
               <UCard>
                 <template #header>
@@ -286,9 +286,9 @@
                   type="button"
                   variant="outline"
                   size="lg"
-                  @click="resetForm"
                   :disabled="isSaving"
                   class="flex-1"
+                  @click="resetForm"
                 >
                   Cancel
                 </UButton>

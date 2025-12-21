@@ -98,15 +98,15 @@
             <UButton
               color="neutral"
               variant="ghost"
-              @click="showRemoveModal = false"
               :disabled="removing"
+              @click="showRemoveModal = false"
             >
               Cancel
             </UButton>
             <UButton
               color="error"
-              @click="handleRemoveUser"
               :loading="removing"
+              @click="handleRemoveUser"
             >
               Remove User
             </UButton>
