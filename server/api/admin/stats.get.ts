@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
         activeGoals,
         pendingReviews,
       },
-      apiSchemas.SuccessResponseSchema.passthrough()
+      apiSchemas.GetAdminStatsResponseSchema
     );
   } catch (error) {
     console.error("Error fetching admin stats:", error);

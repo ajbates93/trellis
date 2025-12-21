@@ -33,21 +33,15 @@ export default defineEventHandler(async (event) => {
           image: users.image,
           avatarUrl: users.avatarUrl,
         },
-        review: {
-          id: reviewSchedules.id,
-          name: reviewSchedules.name,
-          scheduledDate: reviewSchedules.scheduledDate,
-        },
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.revieweeId, users.id))
-      .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
       .where(eq(feedback.reviewerId, session.user.id))
       .orderBy(desc(feedback.createdAt));
 
     return validateResponse(
       { feedback: givenFeedback },
-      apiSchemas.GetBuddyGivenFeedbackResponseSchema
+      apiSchemas.GetGivenFeedbackResponseSchema
     );
   } catch (error) {
     console.error("Error fetching given feedback:", error);

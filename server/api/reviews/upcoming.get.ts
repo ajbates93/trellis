@@ -58,9 +58,11 @@ export default defineEventHandler(async (event) => {
         userId: reviewSchedules.userId,
         buddyId: reviewSchedules.buddyId,
         scheduledDate: reviewSchedules.scheduledDate,
+        completedDate: reviewSchedules.completedDate,
         status: reviewSchedules.status,
         name: reviewSchedules.name,
         notes: reviewSchedules.notes,
+        completionNotes: reviewSchedules.completionNotes,
         createdAt: reviewSchedules.createdAt,
         user: {
           id: users.id,

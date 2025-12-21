@@ -493,11 +493,12 @@ export const CreateGoalNoteResponseSchema = z.object({
 export const GetAdminStatsResponseSchema = z.object({
   totalUsers: z.int().nonnegative(),
   activeUsers: z.int().nonnegative(),
+  invitedUsers: z.int().nonnegative(),
   totalFeedback: z.int().nonnegative(),
-  totalGoals: z.int().nonnegative(),
   feedbackThisWeek: z.int().nonnegative(),
-  feedbackThisMonth: z.int().nonnegative(),
-}).passthrough(); // Allow additional fields
+  activeGoals: z.int().nonnegative(),
+  pendingReviews: z.int().nonnegative(),
+});
 
 export const GetEngagementResponseSchema = z.object({
   weeklyActivity: z.array(z.object({

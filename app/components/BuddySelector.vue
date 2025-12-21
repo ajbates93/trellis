@@ -15,7 +15,7 @@ const emit = defineEmits<Emits>();
 // Fetch buddies
 const { data: buddyData } = await useFetch("/api/users/my-buddies");
 
-const buddies = computed(() => buddyData.value?.users || []);
+const buddies = computed(() => buddyData.value?.buddies || []);
 
 const selectedBuddy = computed(() => {
   return buddies.value.find((b: User) => b.id === props.buddyId);

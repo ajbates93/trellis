@@ -60,8 +60,21 @@ export const GoalWithMilestonesSchema = GoalSchema.extend({
 
 // ===== USER SCHEMAS =====
 
-// For /api/admin/users - users with buddy info and computed status
-export const UserWithBuddySchema = UserSchema.extend({
+// For /api/admin/users - users with buddy info and computed status (lighter version)
+export const UserWithBuddySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.email(),
+  role: z.string().nullable(),
+  roleType: z.string().nullable(),
+  buddyId: z.string().nullable(),
+  emailVerified: z.boolean(),
+  createdAt: z.coerce.date(),
+  avatarUrl: z.string().nullable(),
+  image: z.string().nullable(),
+  banned: z.boolean(),
+  banReason: z.string().nullable(),
+  nextReviewDate: z.string().nullable(),
   buddyName: z.string().nullable(),
   status: z.enum(['active', 'invited']),
 });

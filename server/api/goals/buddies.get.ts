@@ -46,6 +46,7 @@ export default defineEventHandler(async (event) => {
       .select({
         goal: {
           id: goals.id,
+          userId: goals.userId,
           goalText: goals.goalText,
           description: goals.description,
           status: goals.status,

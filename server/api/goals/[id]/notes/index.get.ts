@@ -62,9 +62,10 @@ export default defineEventHandler(async (event) => {
     const notes = await db
       .select({
         id: goalNotes.id,
+        goalId: goalNotes.goalId,
+        authorId: goalNotes.authorId,
         noteText: goalNotes.noteText,
         createdAt: goalNotes.createdAt,
-        updatedAt: goalNotes.updatedAt,
         author: {
           id: users.id,
           name: users.name,
@@ -80,7 +81,7 @@ export default defineEventHandler(async (event) => {
 
     return validateResponse(
       { notes },
-      apiSchemas.SuccessResponseSchema.passthrough()
+      apiSchemas.GetGoalNotesResponseSchema
     );
   } catch (error) {
     console.error("Error fetching goal notes:", error);
