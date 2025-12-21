@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
     const userGoals = await db
       .select({
         id: goals.id,
+        userId: goals.userId,
         goalText: goals.goalText,
         description: goals.description,
         status: goals.status,

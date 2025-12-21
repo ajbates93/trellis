@@ -366,7 +366,7 @@ export const GetReviewsWithDetailsResponseSchema = z.object({
     userId: z.string(),
     buddyId: z.string(),
     scheduledDate: z.string(),
-    completedDate: z.string().nullable().optional(),
+    completedDate: z.string().nullable(),
     status: z.string().nullable(),
     name: z.string().nullable(),
     notes: z.string().nullable(),
@@ -437,7 +437,13 @@ export const UpdateBuddyCheckinRequestSchema = z.object({
 // ===== USER PROFILE SCHEMAS =====
 
 export const GetMyBuddiesResponseSchema = z.object({
-  buddies: z.array(UserWithBuddySchema),
+  buddies: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+    avatarUrl: z.string().nullable(),
+    roleType: z.string().nullable(),
+  })),
 });
 
 export const UpdateProfileRequestSchema = z.object({
@@ -453,7 +459,7 @@ export const GetGoalNotesResponseSchema = z.object({
     id: z.uuid(),
     goalId: z.uuid(),
     authorId: z.string(),
-    content: z.string(),
+    noteText: z.string(),
     createdAt: z.date(),
     author: z.object({
       id: z.string(),
@@ -466,7 +472,7 @@ export const GetGoalNotesResponseSchema = z.object({
 });
 
 export const CreateGoalNoteRequestSchema = z.object({
-  content: z.string()
+  noteText: z.string()
     .min(1, 'Note content is required')
     .max(2000, 'Note content must be less than 2000 characters'),
 });
@@ -477,7 +483,7 @@ export const CreateGoalNoteResponseSchema = z.object({
     id: z.uuid(),
     goalId: z.uuid(),
     authorId: z.string(),
-    content: z.string(),
+    noteText: z.string(),
     createdAt: z.date(),
   }),
 });

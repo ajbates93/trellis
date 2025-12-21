@@ -21,8 +21,10 @@ export default defineEventHandler(async (event) => {
         id: feedback.id,
         content: feedback.content,
         createdAt: feedback.createdAt,
-        published: feedback.published,
         publishedAt: feedback.publishedAt,
+        isRead: feedback.isRead,
+        published: feedback.published,
+        weekYear: feedback.weekYear,
         reviewScheduleId: feedback.reviewScheduleId,
         reviewee: {
           id: users.id,

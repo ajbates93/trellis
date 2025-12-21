@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
     return validateResponse(
       { buddies: myBuddies },
-      apiSchemas.SuccessResponseSchema.passthrough()
+      apiSchemas.GetMyBuddiesResponseSchema
     );
   } catch (error) {
     console.error("Error fetching buddies:", error);

@@ -55,10 +55,19 @@ export function validateResponse<T extends z.ZodType>(
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('Response validation failed:', {
-        errors: error.errors,
-        data,
+      // Log each error individually for better visibility
+      console.error('❌ Response validation failed!');
+      console.error('Number of errors:', error.errors.length);
+      error.errors.forEach((err, index) => {
+        console.error(`\nError ${index + 1}:`, {
+          path: err.path.join('.'),
+          message: err.message,
+          code: err.code,
+          expected: 'expected' in err ? err.expected : undefined,
+          received: 'received' in err ? err.received : undefined,
+        });
       });
+      console.error('\nData being validated:', JSON.stringify(data, null, 2));
       throw createError({
         statusCode: 500,
         message: 'Internal server error: Invalid response shape',
