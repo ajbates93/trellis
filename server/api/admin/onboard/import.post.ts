@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "../../../utils/auth";
 import { validateBody, validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
+import { getWorkspaceId } from "../../../utils/workspace";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -18,6 +19,9 @@ export default defineEventHandler(async (event) => {
     }
 
     const adminId = session.user.id;
+
+    // Get workspace ID from current admin
+    const workspaceId = getWorkspaceId(event);
 
     // Validate request body
     const body = await validateBody(event, apiSchemas.OnboardingImportRequestSchema);
@@ -159,6 +163,7 @@ export default defineEventHandler(async (event) => {
     for (const row of rows) {
       try {
         // Direct DB insert for pre-created users
+        // Assign to the same workspace as the admin importing them
         const [newUser] = await db
           .insert(users)
           .values({
@@ -169,6 +174,7 @@ export default defineEventHandler(async (event) => {
             roleType: row.roleType || null,
             nextReviewDate: row.nextReviewDate || null,
             role: "user", // All imports default to 'user'
+            workspaceId, // Assign to admin's workspace
             createdAt: new Date(),
             updatedAt: new Date(),
           })

@@ -1,8 +1,9 @@
 import { db } from "../../../database/connection";
 import { users } from "../../../database/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 import { validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
+import { getWorkspaceId } from "../../../utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -22,18 +23,29 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // Get workspace ID from current user
+  const workspaceId = getWorkspaceId(event);
+
   // Get query params for filtering
   const query = getQuery(event);
   const filter = query.filter as string | undefined; // 'all', 'active', 'invited'
 
-  // Build query based on filter
+  // Build query based on filter - always include workspace filter
   let whereClause;
   if (filter === "active") {
-    whereClause = eq(users.emailVerified, true);
+    whereClause = and(
+      eq(users.workspaceId, workspaceId),
+      eq(users.emailVerified, true)
+    );
   } else if (filter === "invited") {
-    whereClause = eq(users.emailVerified, false);
+    whereClause = and(
+      eq(users.workspaceId, workspaceId),
+      eq(users.emailVerified, false)
+    );
+  } else {
+    // 'all' or undefined = just workspace filter
+    whereClause = eq(users.workspaceId, workspaceId);
   }
-  // 'all' or undefined = no filter
 
   // Fetch users with their buddy information
   const usersList = await db
@@ -77,18 +89,19 @@ export default defineEventHandler(async (event) => {
     })
   );
 
-  // Get counts for each filter
+  // Get counts for each filter (scoped to workspace)
   const totalUsers = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(users);
+    .from(users)
+    .where(eq(users.workspaceId, workspaceId));
   const activeUsers = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
-    .where(eq(users.emailVerified, true));
+    .where(and(eq(users.workspaceId, workspaceId), eq(users.emailVerified, true)));
   const invitedUsers = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
-    .where(eq(users.emailVerified, false));
+    .where(and(eq(users.workspaceId, workspaceId), eq(users.emailVerified, false)));
 
   const response = {
     users: usersWithBuddies,

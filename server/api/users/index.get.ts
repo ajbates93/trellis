@@ -1,7 +1,9 @@
 import { db } from "../../database/connection";
 import { users } from "../../database/schema";
+import { eq } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
+import { getWorkspaceId } from "../../utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -14,7 +16,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Fetch all users, selecting only necessary fields
+    // Get workspace ID from current user
+    const workspaceId = getWorkspaceId(event);
+
+    // Fetch all users in the same workspace, selecting only necessary fields
     const allUsers = await db
       .select({
         id: users.id,
@@ -24,7 +29,8 @@ export default defineEventHandler(async (event) => {
         avatarUrl: users.avatarUrl,
         roleType: users.roleType,
       })
-      .from(users);
+      .from(users)
+      .where(eq(users.workspaceId, workspaceId));
 
     return validateResponse(
       { users: allUsers },

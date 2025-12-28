@@ -1,4 +1,7 @@
 import { auth } from "../utils/auth";
+import { db } from "../database/connection";
+import { workspaces } from "../database/schema";
+import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   // Skip auth check for public routes
@@ -29,4 +32,15 @@ export default defineEventHandler(async (event) => {
   // Attach user to event context
   event.context.user = session?.user;
   event.context.session = session;
+
+  // Attach workspace to event context if user has one
+  if (session?.user?.workspaceId) {
+    const [workspace] = await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.id, session.user.workspaceId))
+      .limit(1);
+
+    event.context.workspace = workspace || null;
+  }
 });

@@ -45,6 +45,9 @@
                 <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
                   {{ user?.email }}
                 </p>
+                <p v-if="workspace" class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  {{ workspace.name }}
+                </p>
 
                 <!-- Avatar upload -->
                 <div class="mt-6 space-y-3">
@@ -316,6 +319,10 @@ const isSaving = ref(false);
 const uploadingAvatar = ref(false);
 const previewAvatar = ref<string | null>(null);
 const buddy = ref<User | null>(null);
+
+// Fetch current workspace
+const { data: workspaceData } = useFetch("/api/workspace/current");
+const workspace = computed(() => workspaceData.value?.workspace);
 
 const form = reactive({
   name: "",

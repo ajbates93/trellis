@@ -36,6 +36,12 @@ export const useAuth = () => {
           onboardingTasks: {
             type: "string[]",
           },
+          workspaceId: {
+            type: "string",
+          },
+          isSuperAdmin: {
+            type: "boolean",
+          },
         },
       }),
       adminClient(),
@@ -44,6 +50,12 @@ export const useAuth = () => {
   const sessionData = authClient.useSession();
   const user = computed(() => sessionData.value.data?.user);
   const session = computed(() => sessionData.value.data?.session);
+
+  // Check if user is a super admin (platform-level)
+  const isSuperAdmin = computed(() => user.value?.isSuperAdmin === true);
+
+  // Check if user is a workspace admin
+  const isAdmin = computed(() => user.value?.role === "admin");
 
   const signOut = async () => {
     await authClient.signOut();
@@ -63,5 +75,7 @@ export const useAuth = () => {
     session,
     signOut,
     refreshSession,
+    isSuperAdmin,
+    isAdmin,
   };
 };
