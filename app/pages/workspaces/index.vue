@@ -137,7 +137,7 @@ const createWorkspace = async () => {
                   :src="workspace.logoUrl"
                   :alt="workspace.name"
                   class="w-10 h-10 rounded object-cover"
-                />
+                >
                 <UIcon v-else name="i-heroicons-building-office-2" class="w-6 h-6 text-primary" />
               </div>
               <div class="flex-1 min-w-0">
@@ -171,7 +171,7 @@ const createWorkspace = async () => {
                   :src="previewLogo"
                   alt="Logo preview"
                   class="w-16 h-16 rounded-lg object-cover"
-                />
+                >
                 <UButton
                   variant="outline"
                   color="error"
@@ -191,7 +191,7 @@ const createWorkspace = async () => {
                   accept="image/*"
                   class="hidden"
                   @change="onLogoSelected"
-                />
+                >
                 <UButton
                   variant="outline"
                   icon="i-heroicons-arrow-up-tray"

@@ -187,7 +187,7 @@ const deleteWorkspace = async () => {
                 :src="workspaceData.workspace.logoUrl"
                 :alt="workspaceData.workspace.name"
                 class="w-14 h-14 rounded object-cover"
-              />
+              >
               <UIcon v-else name="i-heroicons-building-office-2" class="w-8 h-8 text-primary" />
             </div>
             <div>
@@ -266,7 +266,7 @@ const deleteWorkspace = async () => {
                   :src="previewLogo"
                   alt="Logo preview"
                   class="w-16 h-16 rounded-lg object-cover"
-                />
+                >
                 <UButton
                   variant="outline"
                   color="error"
@@ -286,7 +286,7 @@ const deleteWorkspace = async () => {
                   accept="image/*"
                   class="hidden"
                   @change="onLogoSelected"
-                />
+                >
                 <UButton
                   variant="outline"
                   icon="i-heroicons-arrow-up-tray"
