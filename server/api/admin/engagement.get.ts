@@ -1,20 +1,29 @@
 import { db } from "../../database/connection";
-import { feedback } from "../../database/schema";
-import { sql } from "drizzle-orm";
+import { feedback, users } from "../../database/schema";
+import { sql, eq, and } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
+import { getWorkspaceId } from "../../utils/workspace";
 
 export default defineEventHandler(async (event) => {
   try {
+    // Get workspace ID from current user
+    const workspaceId = getWorkspaceId(event);
+
     // Get feedback counts for the last 12 weeks
     // Group by week_year and count feedback items
+    // Join through users to filter by workspace
     const engagementData = await db
       .select({
         weekYear: feedback.weekYear,
         count: sql<number>`count(*)::int`,
       })
       .from(feedback)
-      .where(sql`${feedback.weekYear} IS NOT NULL`)
+      .innerJoin(users, eq(feedback.reviewerId, users.id))
+      .where(and(
+        sql`${feedback.weekYear} IS NOT NULL`,
+        eq(users.workspaceId, workspaceId)
+      ))
       .groupBy(feedback.weekYear)
       .orderBy(feedback.weekYear);
 
@@ -39,11 +48,13 @@ export default defineEventHandler(async (event) => {
 
     // Create a map of week counts
     const countMap = new Map<string, number>();
-    engagementData.forEach((item) => {
-      if (item.weekYear) {
-        countMap.set(item.weekYear, item.count);
-      }
-    });
+    if (Array.isArray(engagementData)) {
+      engagementData.forEach((item) => {
+        if (item.weekYear) {
+          countMap.set(item.weekYear, item.count);
+        }
+      });
+    }
 
     // Build response with all 12 weeks (filling in 0 for weeks with no data)
     const timeline = weeks.map((week) => ({
@@ -53,6 +64,7 @@ export default defineEventHandler(async (event) => {
 
     return validateResponse(
       {
+        success: true,
         timeline,
       },
       apiSchemas.SuccessResponseSchema.passthrough()

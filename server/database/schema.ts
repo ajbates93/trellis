@@ -10,6 +10,20 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+// Workspaces table (multi-tenancy)
+export const workspaces = pgTable("workspaces", {
+  id: text("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  logoUrl: text("logo_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for workspaces
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  users: many(users),
+}));
+
 // Users table
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -35,12 +49,19 @@ export const users = pgTable("users", {
   banned: boolean("banned").default(false),
   banReason: varchar("ban_reason", { length: 255 }),
   banExpires: timestamp("ban_expires"),
+  // Multi-tenancy fields
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  isSuperAdmin: boolean("is_super_admin").default(false),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
 
 // Relations for users
 export const usersRelations = relations(users, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [users.workspaceId],
+    references: [workspaces.id],
+  }),
   buddy: one(users, {
     fields: [users.buddyId],
     references: [users.id],

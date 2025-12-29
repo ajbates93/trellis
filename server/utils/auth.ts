@@ -65,6 +65,14 @@ export const auth = betterAuth({
         type: "string[]",
         required: false,
       },
+      workspaceId: {
+        type: "string",
+        required: false,
+      },
+      isSuperAdmin: {
+        type: "boolean",
+        required: false,
+      },
     },
   },
   plugins: [
@@ -190,6 +198,14 @@ export const auth = betterAuth({
           }
           if (seededUser.role) {
             updateData.role = seededUser.role;
+          }
+          // Transfer workspace assignment
+          if (seededUser.workspaceId) {
+            updateData.workspaceId = seededUser.workspaceId;
+          }
+          // Transfer super admin status (in case admin was pre-created)
+          if (seededUser.isSuperAdmin) {
+            updateData.isSuperAdmin = seededUser.isSuperAdmin;
           }
 
           if (Object.keys(updateData).length > 0) {

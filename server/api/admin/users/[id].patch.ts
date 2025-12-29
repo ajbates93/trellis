@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
   // Build update object with only provided fields
   const updateData: any = {};
   if (body.role !== undefined) updateData.role = body.role;
-  if (body.buddyEmail !== undefined) updateData.buddyId = body.buddyEmail ? null : null;
+  if (body.buddyId !== undefined) updateData.buddyId = body.buddyId;
   if (body.roleType !== undefined) updateData.roleType = body.roleType;
   if (body.nextReviewDate !== undefined) {
     updateData.nextReviewDate = body.nextReviewDate ? new Date(body.nextReviewDate) : null;

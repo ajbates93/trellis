@@ -4,6 +4,10 @@ const { hasBuddies } = useBuddies();
 const { isOpen: mobileNavOpen, toggle: toggleMobileNav } = useMobileNav();
 const { shouldShow: shouldShowOnboarding } = useOnboarding();
 
+// Fetch current workspace
+const { data: workspaceData } = useFetch("/api/workspace/current");
+const workspace = computed(() => workspaceData.value?.workspace);
+
 // Navigation links
 const route = useRoute();
 
@@ -265,7 +269,11 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
             :buddy-links="buddyLinks"
             :settings-and-admin-links="
               settingsAndAdminLinks.filter(
-                (item) => !item.requiresAdmin || user?.role === 'admin',
+                (item) => {
+                  // Hide items requiring admin if user is not admin
+                  if (item.requiresAdmin && user?.role !== 'admin') return false;
+                  return true;
+                }
               )
             "
             :has-buddies="hasBuddies"
@@ -278,27 +286,24 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
           <div class="flex flex-col gap-2 w-full">
             <!-- User profile + Sign out row -->
             <div v-if="user" class="flex justify-between items-center gap-2">
-              <UButton
-                :avatar="{
-                  src:
-                    user.avatarUrl ||
-                    user.image ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`,
-                }"
-                :label="
-                  collapsed
-                    ? undefined
-                    : user.preferredName ||
-                      user.name?.split(' ')[0] ||
-                      user.email ||
-                      'User'
-                "
-                color="neutral"
-                variant="ghost"
-                class="min-w-0 !w-auto text-left px-4"
-                :block="!collapsed"
+              <button
+                class="flex items-center gap-3 px-4 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-0 flex-1 text-left"
                 @click="navigateTo('/profile')"
-              />
+              >
+                <UAvatar
+                  :src="user.avatarUrl || user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`"
+                  :alt="user.name || 'User'"
+                  size="sm"
+                />
+                <div v-if="!collapsed" class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {{ user.preferredName || user.name || user.email || 'User' }}
+                  </p>
+                  <p v-if="workspace" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {{ workspace.name }}
+                  </p>
+                </div>
+              </button>
 
               <!-- Sign out icon button -->
               <UButton
@@ -343,7 +348,7 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
                 <h3 class="text-base font-semibold text-white">
                   {{ user.preferredName || user.name || 'User' }}
                 </h3>
-                <p class="text-sm text-gray-400">Pocketworks</p>
+                <p class="text-sm text-gray-400">{{ workspace?.name || 'Workspace' }}</p>
               </div>
               <button
                 aria-label="Close navigation menu"

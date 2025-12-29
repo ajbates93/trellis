@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db, client } from "./connection";
-import { users, feedbackPrompts } from "./schema";
+import { users, feedbackPrompts, workspaces } from "./schema";
 import { eq } from "drizzle-orm";
 
 // Team members data
@@ -145,6 +145,33 @@ async function seed() {
   console.log("🌱 Starting database seed...");
 
   try {
+    // Step 0: Create or get Pocketworks workspace
+    console.log("\n🏢 Creating workspace...");
+
+    let pocketworksWorkspace;
+    const existingWorkspace = await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.name, "Pocketworks"))
+      .limit(1);
+
+    if (existingWorkspace.length > 0) {
+      console.log("   ✓ Pocketworks workspace already exists");
+      pocketworksWorkspace = existingWorkspace[0];
+    } else {
+      const [newWorkspace] = await db
+        .insert(workspaces)
+        .values({
+          id: crypto.randomUUID(),
+          name: "Pocketworks",
+        })
+        .returning();
+      pocketworksWorkspace = newWorkspace;
+      console.log(`   ✓ Created workspace: ${pocketworksWorkspace.name}`);
+    }
+
+    const workspaceId = pocketworksWorkspace.id;
+
     // Step 1: Create all users first (without buddy relationships)
     console.log("\n📝 Creating users...");
 
@@ -162,6 +189,7 @@ async function seed() {
         console.log(`   ✓ User ${member.name} already exists`);
         userIdMap[member.name] = existingUser[0].id;
       } else {
+        const isAlexBates = member.email === "alex.bates@pocketworks.co.uk";
         const [newUser] = await db
           .insert(users)
           .values({
@@ -172,8 +200,10 @@ async function seed() {
             emailVerified: false,
             createdAt: new Date(),
             updatedAt: new Date(),
-            // First user becomes admin
-            role: member.email === "alex.bates@pocketworks.co.uk" ? "admin" : "user",
+            workspaceId, // Assign to Pocketworks workspace
+            // First user becomes admin and super admin
+            role: isAlexBates ? "admin" : "user",
+            isSuperAdmin: isAlexBates,
           })
           .returning();
 

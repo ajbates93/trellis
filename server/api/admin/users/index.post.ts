@@ -3,6 +3,7 @@ import { users } from "../../../database/schema";
 import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
+import { getWorkspaceId } from "../../../utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -22,6 +23,9 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // Get workspace ID from current admin
+  const workspaceId = getWorkspaceId(event);
+
   // Validate request body
   const body = await validateBody(event, apiSchemas.CreateUserRequestSchema);
 
@@ -40,6 +44,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Create new user (pre-created, so emailVerified = false)
+  // Assign to the same workspace as the admin creating them
   const [newUser] = await db
     .insert(users)
     .values({
@@ -50,6 +55,7 @@ export default defineEventHandler(async (event) => {
       roleType: body.roleType || null,
       buddyId: body.buddyEmail ? null : null, // Will be resolved separately if needed
       emailVerified: false, // Mark as invited/pre-created
+      workspaceId, // Assign to admin's workspace
       createdAt: new Date(),
       updatedAt: new Date(),
     })
