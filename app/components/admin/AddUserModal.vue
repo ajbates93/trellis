@@ -29,13 +29,13 @@
           <UInput
             v-model="formData.email"
             type="email"
-            placeholder="john.doe@pocketworks.co.uk"
+            placeholder="john.doe@example.com"
             icon="i-heroicons-envelope"
             :disabled="saving"
             class="w-full"
           />
           <p class="text-xs text-gray-500 mt-1">
-            Must be a @pocketworks.co.uk email
+            User will receive an invitation to log in
           </p>
         </div>
 
@@ -163,11 +163,6 @@ const onSubmit = async () => {
   // Validation
   if (!formData.value.name || !formData.value.email) {
     errorMessage.value = "Name and email are required";
-    return;
-  }
-
-  if (!formData.value.email.endsWith("@pocketworks.co.uk")) {
-    errorMessage.value = "Email must be @pocketworks.co.uk";
     return;
   }
 
