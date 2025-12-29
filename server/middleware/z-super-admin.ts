@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   if (!session.user.isSuperAdmin) {
     throw createError({
       statusCode: 403,
-      message: "Forbidden - Super admin access required",
+      message: "Forbidden",
     });
   }
 });

@@ -218,7 +218,7 @@ export const UpdateUserRequestSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long').optional(),
   email: z.email('Invalid email address').optional(),
   roleType: z.enum(['dev', 'design', 'qa']).optional().nullable(),
-  buddyEmail: z.email('Invalid buddy email').optional().nullable(),
+  buddyId: z.string().uuid().optional().nullable(),
   nextReviewDate: z.string().nullable().optional(),
   role: z.enum(['user', 'admin']).optional(),
   banned: z.boolean().optional(),

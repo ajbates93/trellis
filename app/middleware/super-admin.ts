@@ -11,7 +11,7 @@ export default defineNuxtRouteMiddleware(async () => {
   if (!session.value.user.isSuperAdmin) {
     throw createError({
       statusCode: 403,
-      message: "Super admin access required",
+      message: "Access Denied",
     });
   }
 });
