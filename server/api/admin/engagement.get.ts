@@ -48,8 +48,6 @@ export default defineEventHandler(async (event) => {
 
     // Create a map of week counts
     const countMap = new Map<string, number>();
-    // Ensure engagementData is an array (defensive check)
-    console.log(engagementData)
     if (Array.isArray(engagementData)) {
       engagementData.forEach((item) => {
         if (item.weekYear) {

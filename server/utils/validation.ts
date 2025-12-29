@@ -55,8 +55,6 @@ export function validateResponse<T extends z.ZodType>(
 
   if (!result.success) {
     console.error('❌ Response validation failed!');
-    console.error('Validation errors:');
-    console.error('Data received:', JSON.stringify(data, null, 2));
     if (result.error?.errors) {
       result.error.errors.forEach((err, index) => {
         console.error(`  ${index + 1}. [${err.path.join('.')}]: ${err.message}`);
