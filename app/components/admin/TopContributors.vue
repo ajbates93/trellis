@@ -17,7 +17,7 @@
       <p>Failed to load contributors</p>
     </div>
 
-    <div v-else class="space-y-3">
+    <div v-else class="space-y-3 max-h-96 overflow-y-auto">
       <div
         v-for="(contributor, index) in contributors"
         :key="contributor.userId"

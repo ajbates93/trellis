@@ -557,7 +557,7 @@ export const GetTopContributorsResponseSchema = z.object({
   })),
 });
 
-export const GetFeedbackDistributionResponseSchema = z.record(z.int().nonnegative());
+export const GetFeedbackDistributionResponseSchema = z.record(z.string(), z.int().nonnegative());
 
 export const GetOnboardingHistoryResponseSchema = z.object({
   imports: z.array(z.object({

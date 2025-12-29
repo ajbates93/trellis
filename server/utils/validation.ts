@@ -56,9 +56,14 @@ export function validateResponse<T extends z.ZodType>(
   if (!result.success) {
     console.error('❌ Response validation failed!');
     console.error('Validation errors:');
-    result.error.errors.forEach((err, index) => {
-      console.error(`  ${index + 1}. [${err.path.join('.')}]: ${err.message}`);
-    });
+    console.error('Data received:', JSON.stringify(data, null, 2));
+    if (result.error?.errors) {
+      result.error.errors.forEach((err, index) => {
+        console.error(`  ${index + 1}. [${err.path.join('.')}]: ${err.message}`);
+      });
+    } else {
+      console.error('  Unknown validation error:', result.error);
+    }
 
     throw createError({
       statusCode: 500,
