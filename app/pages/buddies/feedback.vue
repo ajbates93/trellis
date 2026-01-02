@@ -70,7 +70,10 @@ const handleBuddySelected = (buddyId: string) => {
 // Publish single feedback
 const publishFeedback = async (feedbackId: string) => {
   try {
-    await $fetch(`/api/feedback/${feedbackId}/publish`, { method: "PATCH" });
+    await $fetch(`/api/feedback/${feedbackId}/publish`, {
+      method: "PATCH",
+      body: { publish: true },
+    });
     await refreshIncoming();
     toast.add({
       title: "Feedback published",

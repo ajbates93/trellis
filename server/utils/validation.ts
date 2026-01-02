@@ -16,7 +16,13 @@ export async function validateBody<T extends z.ZodType>(
   event: H3Event,
   schema: T
 ): Promise<z.infer<T>> {
-  const body = await readBody(event);
+  let body;
+  try {
+    body = await readBody(event);
+  } catch (error) {
+    // If readBody fails, set body to undefined
+    body = undefined;
+  }
 
   try {
     return schema.parse(body);
