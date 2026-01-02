@@ -16,6 +16,10 @@ export const auth = betterAuth({
       verification: schema.verifications,
     },
   }),
+  session: {
+      expiresIn: 60 * 60 * 24 * 30, // (30 days)
+      updateAge: 60 * 60 * 24 * 7, // Refresh if older than 7 days
+  },
   socialProviders: {
     google: {
       prompt: "select_account",
