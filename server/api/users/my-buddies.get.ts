@@ -23,6 +23,12 @@ export default defineEventHandler(async (event) => {
         email: users.email,
         avatarUrl: users.avatarUrl,
         roleType: users.roleType,
+        preferredName: users.preferredName,
+        pronouns: users.pronouns,
+        bio: users.bio,
+        reviewPreference: users.reviewPreference,
+        communicationPreferences: users.communicationPreferences,
+        createdAt: users.createdAt,
       })
       .from(users)
       .where(eq(users.buddyId, session.user.id));

@@ -95,7 +95,7 @@
                 <div>
                   <p class="text-gray-600 dark:text-gray-400">Role</p>
                   <p class="text-gray-900 dark:text-white font-medium">
-                    {{ user?.roleType || "Not assigned" }}
+                    {{ getRoleLabel(user?.roleType) }}
                   </p>
                 </div>
                 <div>
@@ -111,10 +111,10 @@
                 <div>
                   <p class="text-gray-600 dark:text-gray-400">Next Review</p>
                   <p
-                    v-if="user?.nextReviewDate"
+                    v-if="nextReview"
                     class="text-gray-900 dark:text-white font-medium"
                   >
-                    {{ formatDate(user.nextReviewDate) }}
+                    {{ formatDate(nextReview.scheduledDate) }}
                   </p>
                   <p v-else class="text-gray-500">Not scheduled</p>
                 </div>
@@ -239,7 +239,7 @@
                   >
                     <URadioGroup
                       v-model="form.reviewPreference"
-                      :options="[
+                      :items="[
                         { value: 'in-person', label: 'In-Person' },
                         { value: 'remote', label: 'Remote (Video Call)' },
                         { value: 'hybrid', label: 'Flexible (Both)' },
@@ -375,6 +375,24 @@ watch(
   { immediate: true },
 );
 
+// Fetch next upcoming review
+const { data: upcomingReviewsData } = useFetch("/api/reviews/upcoming");
+const nextReview = computed(() => {
+  const reviews = upcomingReviewsData.value?.reviews || [];
+  return reviews.length > 0 ? reviews[0] : null;
+});
+
+// Helper to format role type for display
+const getRoleLabel = (roleType: string | null | undefined) => {
+  if (!roleType) return "Not assigned";
+  const labels: Record<string, string> = {
+    dev: "Developer",
+    design: "Designer",
+    qa: "QA",
+  };
+  return labels[roleType] || roleType;
+};
+
 // Validation functions
 const validateName = () => {
   errors.name = "";
@@ -482,7 +500,7 @@ const saveProfile = async () => {
     useToast().add({
       title: "Validation Error",
       description: "Please fix the errors above",
-      color: "red",
+      color: "error",
     });
     return;
   }
@@ -524,14 +542,14 @@ const saveProfile = async () => {
     useToast().add({
       title: "Success",
       description: "Profile updated successfully",
-      color: "green",
+      color: "success",
     });
   } catch (error) {
     console.error("Error saving profile:", error);
     useToast().add({
       title: "Error",
       description: "Failed to save profile",
-      color: "red",
+      color: "error",
     });
   } finally {
     isSaving.value = false;

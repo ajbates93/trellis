@@ -443,7 +443,29 @@ export const GetMyBuddiesResponseSchema = z.object({
     email: z.string(),
     avatarUrl: z.string().nullable(),
     roleType: z.string().nullable(),
+    preferredName: z.string().nullable(),
+    pronouns: z.string().nullable(),
+    bio: z.string().nullable(),
+    reviewPreference: z.string().nullable(),
+    communicationPreferences: z.string().nullable(),
+    createdAt: z.coerce.date(),
   })),
+});
+
+export const GetBuddyProfileResponseSchema = z.object({
+  buddy: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+    avatarUrl: z.string().nullable(),
+    roleType: z.string().nullable(),
+    preferredName: z.string().nullable(),
+    pronouns: z.string().nullable(),
+    bio: z.string().nullable(),
+    reviewPreference: z.string().nullable(),
+    communicationPreferences: z.string().nullable(),
+    createdAt: z.coerce.date(),
+  }),
 });
 
 export const UpdateProfileRequestSchema = z.object({

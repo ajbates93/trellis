@@ -132,7 +132,7 @@ export default defineEventHandler(async (event) => {
 
     console.log("Profile updated successfully");
     return validateResponse(
-      updatedUser[0],
+      { success: true, user: updatedUser[0] },
       apiSchemas.SuccessResponseSchema.passthrough()
     );
   } catch (error) {

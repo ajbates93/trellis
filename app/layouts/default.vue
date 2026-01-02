@@ -118,6 +118,12 @@ const buddyLinks = computed(() => {
   if (!hasBuddies.value) return [];
   return [
     {
+      label: "Buddies",
+      icon: "i-heroicons-user-group",
+      to: "/buddies",
+      active: route.path === "/buddies" || (route.path.startsWith("/buddies/") && !route.path.startsWith("/buddies/feedback") && !route.path.startsWith("/buddies/goals") && !route.path.startsWith("/buddies/reviews")),
+    },
+    {
       label: "Feedback",
       icon: "i-heroicons-chat-bubble-left-right",
       to: "/buddies/feedback",
