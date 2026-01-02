@@ -126,7 +126,7 @@ watch(selectedUser, async (userId) => {
         <!-- Two-column layout -->
         <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
           <!-- Left Column: Form -->
-          <div class="flex-1 max-w-2xl space-y-6">
+          <div class="flex-1 space-y-6">
             <!-- Header -->
             <div class="animate-item" :style="{ '--delay': '0ms' }">
               <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -157,45 +157,6 @@ watch(selectedUser, async (userId) => {
                     Your feedback will be shared with
                     {{ selectedUserObject?.name }} during their next buddy review.
                   </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Random Question Prompt -->
-            <div
-              v-if="currentPrompt"
-              class="animate-item bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200/50 dark:border-primary-700/30 rounded-xl p-4"
-              :style="{ '--delay': '100ms' }"
-            >
-              <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary-100 dark:bg-primary-900/40">
-                  <UIcon
-                    name="i-heroicons-light-bulb"
-                    class="w-4 h-4 text-primary-600 dark:text-primary-400"
-                  />
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    Question to consider:
-                  </p>
-                  <div class="flex items-start justify-between gap-4">
-                    <p class="text-base font-semibold text-gray-900 dark:text-white">
-                      {{ currentPrompt.question }}
-                    </p>
-                    <button
-                      type="button"
-                      class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-100/50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg transition-colors flex-shrink-0"
-                      :disabled="isRefreshingPrompt"
-                      @click="randomizePrompt"
-                    >
-                      <UIcon
-                        name="i-heroicons-arrow-path"
-                        class="w-3.5 h-3.5"
-                        :class="{ 'animate-spin': isRefreshingPrompt }"
-                      />
-                      <span>New question</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -321,7 +282,7 @@ watch(selectedUser, async (userId) => {
           </div>
 
           <!-- Right Column: Tips Sidebar (Sticky) -->
-          <div class="lg:w-80 xl:w-96 flex-shrink-0">
+          <div class="lg:w-[400px] flex-shrink-0">
             <div class="lg:sticky lg:top-8 space-y-6 animate-item" :style="{ '--delay': '200ms' }">
               <!-- Tips Header -->
               <div>
@@ -418,6 +379,37 @@ watch(selectedUser, async (userId) => {
                     <UIcon name="i-heroicons-x-circle" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
                     <span class="text-gray-600 dark:text-gray-400">Comparisons with other colleagues</span>
                   </div>
+                </div>
+              </div>
+
+              <!-- Question Generator -->
+              <div v-if="currentPrompt" class="space-y-3">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
+                  Need a Starting Point?
+                </h3>
+                <div class="bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200/50 dark:border-primary-700/30 rounded-xl p-4 space-y-3">
+                  <div class="flex items-start gap-3">
+                    <UIcon
+                      name="i-heroicons-light-bulb"
+                      class="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0"
+                    />
+                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {{ currentPrompt.question }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-200 bg-primary-100/50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
+                    :disabled="isRefreshingPrompt"
+                    @click="randomizePrompt"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-4 h-4"
+                      :class="{ 'animate-spin': isRefreshingPrompt }"
+                    />
+                    <span>Generate new question</span>
+                  </button>
                 </div>
               </div>
             </div>
