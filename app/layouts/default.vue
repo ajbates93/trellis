@@ -242,9 +242,11 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
     </div>
     <UDashboardGroup
       unit="rem"
-      :class="{
-        'pt-16 lg:pt-0': !isImpersonating,
-        'pt-28 lg:pt-12': isImpersonating,
+      :ui="{
+        base: [
+          'flex overflow-hidden',
+          isImpersonating ? 'fixed top-28 lg:top-12 bottom-0 left-0 right-0' : 'fixed top-16 lg:top-0 bottom-0 left-0 right-0'
+        ].join(' ')
       }"
     >
       <UDashboardSidebar
