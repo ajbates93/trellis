@@ -344,7 +344,7 @@ const getReviewActions = (review: any) => [
 <template>
   <UDashboardPanel id="buddy-reviews">
     <template #body>
-      <div class="p-4 sm:p-6 lg:p-8">
+      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-6">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">

@@ -172,7 +172,7 @@ const deleteWorkspace = async () => {
       </template>
     </UDashboardNavbar>
 
-    <UDashboardPanelContent class="p-6">
+    <UDashboardPanelContent class="pt-16 p-6 sm:pt-16 lg:pt-8">
       <div v-if="status === 'pending'" class="flex items-center justify-center py-12">
         <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin text-gray-400" />
       </div>

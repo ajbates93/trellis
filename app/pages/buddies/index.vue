@@ -9,7 +9,7 @@ const { buddies, pending } = useBuddies();
 <template>
   <UDashboardPanel id="buddies">
     <template #body>
-      <div class="p-4 sm:p-6 lg:p-8">
+      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="flex items-start justify-between mb-6">
           <div>

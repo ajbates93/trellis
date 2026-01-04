@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="home">
     <template #body>
-      <div class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8 max-w-4xl mx-auto">
         <!-- Staggered animation container -->
         <div ref="container" class="space-y-8">
           <!-- Welcome header -->

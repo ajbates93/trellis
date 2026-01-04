@@ -170,7 +170,7 @@ const feedbackColumns = [
 <template>
   <UDashboardPanel id="review-detail">
     <template #body>
-      <div class="p-4 sm:p-6 lg:p-8">
+      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <div v-if="!review" class="text-center py-12">
           <p class="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
