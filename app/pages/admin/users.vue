@@ -36,6 +36,8 @@
             @edit="openEditModal"
             @impersonate="handleImpersonate"
             @remove="openRemoveModal"
+            @send-invitation="handleSendInvitation"
+            @send-password-reset="handleSendPasswordReset"
           />
         </div>
       </div>
@@ -280,6 +282,62 @@ const handleRemoveUser = async () => {
 const handleSuccess = async () => {
   // Refetch users after successful operation
   await fetchUsers();
+};
+
+// Send invitation to pre-created user
+const handleSendInvitation = async (user: User) => {
+  const toast = useToast();
+
+  try {
+    await $fetch("/api/admin/onboard/send-invitation", {
+      method: "POST",
+      body: { userId: user.id },
+    });
+
+    toast.add({
+      title: "Invitation Sent",
+      description: `Password setup email sent to ${user.email}`,
+      color: "green",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to send invitation:", error);
+    toast.add({
+      title: "Failed to Send Invitation",
+      description: error.data?.message || "An error occurred while sending the invitation",
+      color: "red",
+      icon: "i-heroicons-exclamation-triangle",
+    });
+  }
+};
+
+// Send password reset to active user
+const handleSendPasswordReset = async (user: User) => {
+  const toast = useToast();
+
+  try {
+    // Use Better Auth's forget password endpoint
+    const { authClient } = useAuth();
+    await authClient.forgetPassword({
+      email: user.email,
+      redirectTo: "/reset-password",
+    });
+
+    toast.add({
+      title: "Password Reset Sent",
+      description: `Password reset email sent to ${user.email}`,
+      color: "green",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to send password reset:", error);
+    toast.add({
+      title: "Failed to Send Password Reset",
+      description: error.message || "An error occurred while sending the password reset email",
+      color: "red",
+      icon: "i-heroicons-exclamation-triangle",
+    });
+  }
 };
 
 // Initial load

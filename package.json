@@ -25,12 +25,15 @@
     "db:drop": "drizzle-kit drop",
     "db:seed": "tsx server/database/seed.ts",
     "db:reset": "tsx server/database/reset.ts",
-    "db:reseed": "npm run db:reset && npm run db:seed"
+    "db:reseed": "npm run db:reset && npm run db:seed",
+    "db:backfill-workspaces": "tsx server/database/scripts/backfill-workspaces.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
     "@aws-sdk/client-s3": "^3.937.0",
     "@aws-sdk/s3-request-presigner": "^3.937.0",
+    "@noble/hashes": "^2.0.1",
+    "@node-rs/argon2": "^2.0.2",
     "@nuxt/eslint": "^1.9.0",
     "@nuxt/ui": "^4.0.1",
     "@unovis/vue": "^1.6.1",
@@ -45,6 +48,7 @@
     "nuxt-mcp": "^0.2.4",
     "nuxt-tiptap-editor": "^2.3.1",
     "postgres": "^3.4.7",
+    "resend": "^6.6.0",
     "typescript": "^5.9.3",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1",

@@ -18,12 +18,69 @@
     </div>
 
     <div class="space-y-6">
+      <!-- Email/Password Sign In Form -->
+      <form @submit.prevent="signInWithEmailPassword" class="space-y-4">
+        <UFormGroup label="Email" name="email">
+          <UInput
+            v-model="emailForm.email"
+            type="email"
+            placeholder="your@email.com"
+            icon="i-heroicons-envelope"
+            :disabled="loading"
+          />
+        </UFormGroup>
+
+        <UFormGroup label="Password" name="password">
+          <UInput
+            v-model="emailForm.password"
+            type="password"
+            placeholder="Enter your password"
+            icon="i-heroicons-lock-closed"
+            :disabled="loading"
+          />
+        </UFormGroup>
+
+        <div class="flex items-center justify-between">
+          <UCheckbox
+            v-model="emailForm.rememberMe"
+            label="Remember me"
+          />
+          <NuxtLink
+            to="/forgot-password"
+            class="text-sm text-primary hover:underline"
+          >
+            Forgot password?
+          </NuxtLink>
+        </div>
+
+        <UButton
+          type="submit"
+          color="primary"
+          size="xl"
+          block
+          :loading="loading"
+        >
+          Sign in
+        </UButton>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-2 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
+        </div>
+      </div>
+
+      <!-- Google OAuth Button -->
       <UButton
         color="primary"
         size="xl"
         block
         :loading="loading"
-        class="border-2 transition-colors cursor-pointer"
+        variant="outline"
         @click="signInWithGoogle"
       >
         <template #leading>
@@ -80,6 +137,9 @@ const authClient = createAuthClient({
         avatarUrl: {
           type: "string",
         },
+        passwordEnabled: {
+          type: "boolean",
+        },
       },
     }),
     adminClient(),
@@ -88,6 +148,13 @@ const authClient = createAuthClient({
 
 const loading = ref(false);
 const toast = useToast();
+
+// Email/Password form
+const emailForm = ref({
+  email: "",
+  password: "",
+  rememberMe: false,
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -115,6 +182,55 @@ onMounted(() => {
     router.replace({ query: {} });
   }
 });
+
+// Email/Password Sign In
+const signInWithEmailPassword = async () => {
+  loading.value = true;
+
+  try {
+    const result = await authClient.signIn.email({
+      email: emailForm.value.email,
+      password: emailForm.value.password,
+      rememberMe: emailForm.value.rememberMe,
+    });
+
+    if (result.error) {
+      throw new Error(result.error.message || "Sign in failed");
+    }
+
+    // Success - redirect to dashboard
+    await navigateTo("/");
+  } catch (error: any) {
+    console.error("Email sign in failed:", error);
+
+    const errorMsg = error?.message || error?.toString() || "Unknown error";
+
+    if (errorMsg.includes("invited") || errorMsg.includes("invitation")) {
+      toast.add({
+        title: "Access Denied",
+        description: "You haven't been invited to this workspace. Please contact your admin.",
+        color: "red",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    } else if (errorMsg.includes("credentials") || errorMsg.includes("password") || errorMsg.includes("Invalid")) {
+      toast.add({
+        title: "Sign In Failed",
+        description: "Invalid email or password. Please try again.",
+        color: "red",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    } else {
+      toast.add({
+        title: "Authentication Failed",
+        description: errorMsg,
+        color: "red",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    }
+
+    loading.value = false;
+  }
+};
 
 const signInWithGoogle = async () => {
   loading.value = true;

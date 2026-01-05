@@ -42,6 +42,9 @@ export const useAuth = () => {
           isSuperAdmin: {
             type: "boolean",
           },
+          passwordEnabled: {
+            type: "boolean",
+          },
         },
       }),
       adminClient(),
@@ -56,6 +59,9 @@ export const useAuth = () => {
 
   // Check if user is a workspace admin
   const isAdmin = computed(() => user.value?.role === "admin");
+
+  // Check if user has password authentication enabled
+  const hasPassword = computed(() => user.value?.passwordEnabled === true);
 
   const signOut = async () => {
     await authClient.signOut();
@@ -77,5 +83,6 @@ export const useAuth = () => {
     refreshSession,
     isSuperAdmin,
     isAdmin,
+    hasPassword,
   };
 };

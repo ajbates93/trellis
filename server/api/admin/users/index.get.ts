@@ -57,6 +57,7 @@ export default defineEventHandler(async (event) => {
       roleType: users.roleType,
       buddyId: users.buddyId,
       emailVerified: users.emailVerified,
+      passwordEnabled: users.passwordEnabled,
       createdAt: users.createdAt,
       avatarUrl: users.avatarUrl,
       image: users.image,

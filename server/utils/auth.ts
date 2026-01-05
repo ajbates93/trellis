@@ -5,6 +5,8 @@ import { db } from "../database/connection";
 import * as schema from "../database/schema";
 import { eq, and } from "drizzle-orm";
 import { APIError } from "better-auth/api";
+import { sendEmail, emailTemplates } from "./email";
+import { hashPassword, verifyPassword } from './password'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -19,6 +21,34 @@ export const auth = betterAuth({
   session: {
       expiresIn: 60 * 60 * 24 * 30, // (30 days)
       updateAge: 60 * 60 * 24 * 7, // Refresh if older than 7 days
+  },
+  emailAndPassword: {
+    enabled: true,
+    password: {
+        hash: hashPassword,
+        verify: verifyPassword,
+    },
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    requireEmailVerification: false, // We handle this via invitation flow
+    sendResetPassword: async ({ user, url }) => {
+      console.log(`📧 Sending password reset email to ${user.email}`);
+
+      // Don't await to prevent timing attacks
+      void sendEmail({
+        to: user.email,
+        subject: "Reset Your Cohort Password",
+        html: emailTemplates.passwordReset(user.name, url),
+      }).catch((error) => {
+        console.error("Failed to send password reset email:", error);
+      });
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"], // Auto-link verified Google accounts
+    },
   },
   socialProviders: {
     google: {
@@ -74,6 +104,10 @@ export const auth = betterAuth({
         required: false,
       },
       isSuperAdmin: {
+        type: "boolean",
+        required: false,
+      },
+      passwordEnabled: {
         type: "boolean",
         required: false,
       },

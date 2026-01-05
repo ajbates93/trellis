@@ -57,6 +57,13 @@
       "when": 1766955753662,
       "tag": "0007_normal_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1767626102970,
+      "tag": "0008_massive_sally_floyd",
+      "breakpoints": true
     }
   ]
 }

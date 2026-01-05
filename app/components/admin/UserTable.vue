@@ -119,6 +119,8 @@ const emit = defineEmits<{
   edit: [user: User];
   impersonate: [user: User];
   remove: [user: User];
+  sendInvitation: [user: User];
+  sendPasswordReset: [user: User];
 }>();
 
 const { user: currentUser } = useAuth();
@@ -142,6 +144,28 @@ const getActionItems = (user: User) => {
       },
     },
   ];
+
+  // Add email action based on user state
+  if (!user.emailVerified) {
+    // Pre-created user - hasn't activated yet
+    items.push({
+      label: "Send Invitation",
+      icon: "i-heroicons-envelope",
+      onSelect: () => {
+        emit("sendInvitation", user);
+      },
+    });
+  } else if (user.passwordEnabled) {
+    // Active user with password - can reset password
+    items.push({
+      label: "Send Password Reset",
+      icon: "i-heroicons-key",
+      onSelect: () => {
+        emit("sendPasswordReset", user);
+      },
+    });
+  }
+  // OAuth-only users (emailVerified=true, passwordEnabled=false) get no email action
 
   // Only show impersonate option if it's not the current user
   if (user.id !== currentUser.value?.id) {
