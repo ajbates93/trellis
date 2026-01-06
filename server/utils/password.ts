@@ -9,9 +9,7 @@ const opts: Options = {
 }
 
 export async function hashPassword(password: string) {
-    console.log(`password: ${password}`)
     const result = await hash(password, opts);
-    console.log(`hashed password: ${result}`)
     return result;
 }
 

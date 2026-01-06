@@ -2,9 +2,8 @@ import { auth } from "../../utils/auth";
 import { db } from "../../database/connection";
 import { users, accounts } from "../../database/schema";
 import { eq, and } from "drizzle-orm";
-import { randomBytes } from "crypto";
-import { scrypt } from "@noble/hashes/scrypt.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
+import { randomUUID } from "crypto";
+import { hashPassword } from "../../utils/password";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -62,26 +61,13 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Hash password using @noble/hashes/scrypt (exact same library as Better Auth)
-    // Better Auth implementation from packages/better-auth/src/crypto/password.ts
-    const normalizedPassword = password.normalize("NFKC");
-    const salt = randomBytes(16);
-
-    // Better Auth scrypt config
-    const config = {
-      N: 16384,
-      r: 16,
-      p: 1,
-      dkLen: 64,
-    };
-
-    const key = scrypt(normalizedPassword, salt, config);
-    const hashedPassword = `${bytesToHex(salt)}:${bytesToHex(key)}`;
+    // Hash password using the same function Better Auth uses (from server/utils/password.ts)
+    const hashedPassword = await hashPassword(password);
 
     // Create credential account
     const now = new Date();
     await db.insert(accounts).values({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       userId: session.user.id,
       accountId: session.user.email,
       providerId: "credential",
