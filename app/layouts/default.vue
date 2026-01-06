@@ -182,9 +182,8 @@ const settingsAndAdminLinks = computed(() => [
   },
 ]);
 
-// Mobile navigation links (all personal + buddy links, no admin/settings)
+// Mobile navigation links (personal links only, no buddy/admin/settings)
 const mobilePersonalLinks = computed(() => personalLinks.value);
-const mobileBuddyLinks = computed(() => buddyLinks.value);
 </script>
 
 <template>
@@ -445,36 +444,6 @@ const mobileBuddyLinks = computed(() => buddyLinks.value);
                     color="error"
                     class="mr-1"
                   />
-                  <UIcon
-                    name="i-heroicons-chevron-right"
-                    class="w-4 h-4 text-gray-500"
-                  />
-                </NuxtLink>
-              </nav>
-            </div>
-
-            <!-- Buddy Section (if applicable) -->
-            <div v-if="hasBuddies" class="px-4 mb-4">
-              <p
-                class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2"
-              >
-                Buddy
-              </p>
-              <nav class="space-y-1">
-                <NuxtLink
-                  v-for="link in mobileBuddyLinks"
-                  :key="link.to"
-                  :to="link.to"
-                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
-                  :class="
-                    link.active
-                      ? 'bg-primary/10 text-primary-400'
-                      : 'text-gray-300 hover:bg-gray-800'
-                  "
-                  @click="mobileNavOpen = false"
-                >
-                  <UIcon :name="link.icon" class="w-5 h-5" />
-                  <span class="flex-1 font-medium">{{ link.label }}</span>
                   <UIcon
                     name="i-heroicons-chevron-right"
                     class="w-4 h-4 text-gray-500"
