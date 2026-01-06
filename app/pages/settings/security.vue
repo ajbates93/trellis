@@ -1,7 +1,6 @@
 <template>
-  <div>
-    <UDashboardPanel id="settings-security">
-      <template #body>
+  <UDashboardPanel id="settings-security">
+    <template #body>
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
@@ -72,7 +71,7 @@
                 <div class="flex items-center gap-3">
                   <UBadge
                     v-if="hasPassword"
-                    color="green"
+                    color="success"
                     variant="soft"
                     size="sm"
                   >
@@ -80,7 +79,7 @@
                   </UBadge>
                   <UBadge
                     v-else
-                    color="gray"
+                    color="warning"
                     variant="soft"
                     size="sm"
                   >
@@ -88,11 +87,19 @@
                   </UBadge>
                   <UButton
                     v-if="!hasPassword"
-                    color="primary"
+                    color="success"
                     size="sm"
                     @click="showAddPasswordModal = true"
                   >
                     Set Password
+                  </UButton>
+                  <UButton
+                    v-else
+                    color="primary"
+                    size="sm"
+                    @click="showChangePasswordModal = true"
+                  >
+                    Change Password
                   </UButton>
                 </div>
               </div>
@@ -130,7 +137,7 @@
                 <div class="flex items-center gap-3">
                   <UBadge
                     v-if="hasGoogleAccount"
-                    color="green"
+                    color="success"
                     variant="soft"
                     size="sm"
                   >
@@ -138,7 +145,7 @@
                   </UBadge>
                   <UBadge
                     v-else
-                    color="gray"
+                    color="warning"
                     variant="soft"
                     size="sm"
                   >
@@ -157,122 +164,45 @@
               </div>
             </div>
           </UCard>
-
-          <!-- Change Password Section (only if password is enabled) -->
-          <UCard v-if="hasPassword">
-            <template #header>
-              <h2 class="text-lg font-medium">Change Password</h2>
-            </template>
-
-            <form @submit.prevent="handleChangePassword" class="space-y-4">
-              <UFormGroup
-                label="Current Password"
-                name="currentPassword"
-                :error="changePasswordErrors.currentPassword"
-              >
-                <UInput
-                  v-model="changePasswordForm.currentPassword"
-                  type="password"
-                  placeholder="Enter current password"
-                  icon="i-heroicons-lock-closed"
-                  :disabled="changingPassword"
-                />
-              </UFormGroup>
-
-              <UFormGroup
-                label="New Password"
-                name="newPassword"
-                :error="changePasswordErrors.newPassword"
-              >
-                <UInput
-                  v-model="changePasswordForm.newPassword"
-                  type="password"
-                  placeholder="Enter new password"
-                  icon="i-heroicons-lock-closed"
-                  :disabled="changingPassword"
-                />
-                <template #hint>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Must be at least 8 characters long
-                  </p>
-                </template>
-              </UFormGroup>
-
-              <UFormGroup
-                label="Confirm New Password"
-                name="confirmPassword"
-                :error="changePasswordErrors.confirmPassword"
-              >
-                <UInput
-                  v-model="changePasswordForm.confirmPassword"
-                  type="password"
-                  placeholder="Confirm new password"
-                  icon="i-heroicons-lock-closed"
-                  :disabled="changingPassword"
-                />
-              </UFormGroup>
-
-              <div class="flex justify-end">
-                <UButton
-                  type="submit"
-                  color="primary"
-                  :loading="changingPassword"
-                  :disabled="!isChangePasswordFormValid"
-                >
-                  Update Password
-                </UButton>
-              </div>
-            </form>
-          </UCard>
         </div>
-      </div>
-      </template>
-    </UDashboardPanel>
-
-    <!-- Add Password Modal -->
-    <UModal v-model:open="showAddPasswordModal">
-    <UCard>
-      <template #header>
-        <h3 class="text-lg font-semibold">Set Your Password</h3>
-      </template>
-
-      <form @submit.prevent="handleAddPassword" class="space-y-4">
-        <UFormGroup
-          label="New Password"
-          name="password"
-          :error="addPasswordErrors.password"
-        >
-          <UInput
-            v-model="addPasswordForm.password"
-            type="password"
-            placeholder="Enter password"
-            icon="i-heroicons-lock-closed"
-            :disabled="addingPassword"
-          />
-          <template #hint>
+<!-- Add Password Modal -->
+    <UModal v-model:open="showAddPasswordModal" title="Set Your Password">
+      <template #body>
+        <div class="space-y-4">
+          <UFormField label="New Password" :required="true">
+            <UInput
+              v-model="addPasswordForm.password"
+              type="password"
+              placeholder="Enter password"
+              icon="i-heroicons-lock-closed"
+              class="w-full"
+              :disabled="addingPassword"
+            />
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Must be at least 8 characters long
             </p>
-          </template>
-        </UFormGroup>
+          </UFormField>
 
-        <UFormGroup
-          label="Confirm Password"
-          name="confirmPassword"
-          :error="addPasswordErrors.confirmPassword"
-        >
-          <UInput
-            v-model="addPasswordForm.confirmPassword"
-            type="password"
-            placeholder="Confirm password"
-            icon="i-heroicons-lock-closed"
-            :disabled="addingPassword"
-          />
-        </UFormGroup>
+          <UFormField label="Confirm Password" :required="true">
+            <UInput
+              v-model="addPasswordForm.confirmPassword"
+              type="password"
+              placeholder="Confirm password"
+              icon="i-heroicons-lock-closed"
+              class="w-full"
+              :disabled="addingPassword"
+            />
+            <p v-if="addPasswordErrors.confirmPassword" class="text-xs text-red-500 mt-1">
+              {{ addPasswordErrors.confirmPassword }}
+            </p>
+          </UFormField>
+        </div>
+      </template>
 
-        <div class="flex justify-end gap-3">
+      <template #footer>
+        <div class="flex justify-between">
           <UButton
-            color="gray"
+            color="neutral"
             variant="ghost"
             @click="showAddPasswordModal = false"
             :disabled="addingPassword"
@@ -280,18 +210,91 @@
             Cancel
           </UButton>
           <UButton
-            type="submit"
-            color="primary"
-            :loading="addingPassword"
             :disabled="!isAddPasswordFormValid"
+            :loading="addingPassword"
+            @click="handleAddPassword"
           >
             Set Password
           </UButton>
         </div>
-      </form>
-    </UCard>
-  </UModal>
-  </div>
+      </template>
+    </UModal>
+
+    <!-- Change Password Modal -->
+    <UModal v-model:open="showChangePasswordModal" title="Change Password">
+      <template #body>
+        <div class="space-y-4">
+          <UFormField label="Current Password" :required="true">
+            <UInput
+              v-model="changePasswordForm.currentPassword"
+              type="password"
+              placeholder="Enter current password"
+              icon="i-heroicons-lock-closed"
+              class="w-full"
+              :disabled="changingPassword"
+            />
+            <p v-if="changePasswordErrors.currentPassword" class="text-xs text-red-500 mt-1">
+              {{ changePasswordErrors.currentPassword }}
+            </p>
+          </UFormField>
+
+          <UFormField label="New Password" :required="true">
+            <UInput
+              v-model="changePasswordForm.newPassword"
+              type="password"
+              placeholder="Enter new password"
+              icon="i-heroicons-lock-closed"
+              class="w-full"
+              :disabled="changingPassword"
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Must be at least 8 characters long
+            </p>
+          </UFormField>
+
+          <UFormField label="Confirm New Password" :required="true">
+            <UInput
+              v-model="changePasswordForm.confirmPassword"
+              type="password"
+              placeholder="Confirm new password"
+              icon="i-heroicons-lock-closed"
+              class="w-full"
+              :disabled="changingPassword"
+            />
+            <p v-if="changePasswordErrors.confirmPassword" class="text-xs text-red-500 mt-1">
+              {{ changePasswordErrors.confirmPassword }}
+            </p>
+          </UFormField>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex justify-between">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            @click="showChangePasswordModal = false"
+            :disabled="changingPassword"
+          >
+            Cancel
+          </UButton>
+          <UButton
+            :disabled="!isChangePasswordFormValid"
+            :loading="changingPassword"
+            @click="handleChangePassword"
+          >
+            Update Password
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+      </div>
+
+    </template>
+
+    
+  </UDashboardPanel>
+
 </template>
 
 <script setup lang="ts">
@@ -342,7 +345,7 @@ const handleLinkGoogle = async () => {
     toast.add({
       title: "Link Failed",
       description: error.message || "Failed to link Google account",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-exclamation-triangle",
     });
     linkingGoogle.value = false;
@@ -359,6 +362,30 @@ const addPasswordForm = ref({
 const addPasswordErrors = ref({
   password: "",
   confirmPassword: "",
+});
+
+// Reset add password errors when modal opens
+watch(showAddPasswordModal, (isOpen) => {
+  if (isOpen) {
+    addPasswordErrors.value = {
+      password: "",
+      confirmPassword: "",
+    };
+  }
+});
+
+// Change Password (for users with password enabled)
+const showChangePasswordModal = ref(false);
+
+// Reset change password errors when modal opens
+watch(showChangePasswordModal, (isOpen) => {
+  if (isOpen) {
+    changePasswordErrors.value = {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    };
+  }
 });
 
 const isAddPasswordFormValid = computed(() => {
@@ -398,7 +425,7 @@ const handleAddPassword = async () => {
     toast.add({
       title: "Password Added",
       description: "You can now sign in with your email and password",
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
 
@@ -418,7 +445,7 @@ const handleAddPassword = async () => {
     toast.add({
       title: "Failed to Add Password",
       description: error.data?.message || "An error occurred",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-exclamation-triangle",
     });
   } finally {
@@ -477,11 +504,12 @@ const handleChangePassword = async () => {
     toast.add({
       title: "Password Changed",
       description: "Your password has been updated successfully",
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
 
-    // Clear form
+    // Close modal and clear form
+    showChangePasswordModal.value = false;
     changePasswordForm.value = {
       currentPassword: "",
       newPassword: "",
@@ -497,7 +525,7 @@ const handleChangePassword = async () => {
       toast.add({
         title: "Failed to Change Password",
         description: error.message || "An error occurred",
-        color: "red",
+        color: "error",
         icon: "i-heroicons-exclamation-triangle",
       });
     }
