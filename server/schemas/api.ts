@@ -211,6 +211,7 @@ export const CreateUserRequestSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
   roleType: z.enum(['dev', 'design', 'qa']).optional(),
   buddyEmail: z.email('Invalid buddy email').optional().nullable(),
+  buddyId: z.string().uuid().optional().nullable(), // Accept buddyId from UI
   nextReviewDate: z.string().nullable().optional(),
 });
 

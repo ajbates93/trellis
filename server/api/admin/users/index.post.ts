@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
       email: body.email,
       role: "user", // Default to user role
       roleType: body.roleType || null,
-      buddyId: body.buddyEmail ? null : null, // Will be resolved separately if needed
+      buddyId: body.buddyId || null, // Use buddyId from request
       emailVerified: false, // Mark as invited/pre-created
       workspaceId, // Assign to admin's workspace
       createdAt: new Date(),
