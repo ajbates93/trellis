@@ -20,25 +20,25 @@
     <div class="space-y-6">
       <!-- Email/Password Sign In Form -->
       <form @submit.prevent="signInWithEmailPassword" class="space-y-4">
-        <UFormGroup label="Email" name="email">
-          <UInput
-            v-model="emailForm.email"
-            type="email"
-            placeholder="your@email.com"
-            icon="i-heroicons-envelope"
-            :disabled="loading"
-          />
-        </UFormGroup>
+        <UInput
+          v-model="emailForm.email"
+          type="email"
+          placeholder="your@email.com"
+          icon="i-heroicons-envelope"
+          size="xl"
+          class="w-full"
+          :disabled="loading"
+        />
 
-        <UFormGroup label="Password" name="password">
-          <UInput
-            v-model="emailForm.password"
-            type="password"
-            placeholder="Enter your password"
-            icon="i-heroicons-lock-closed"
-            :disabled="loading"
-          />
-        </UFormGroup>
+        <UInput
+          v-model="emailForm.password"
+          type="password"
+          placeholder="Enter your password"
+          icon="i-heroicons-lock-closed"
+          size="xl"
+          class="w-full"
+          :disabled="loading"
+        />
 
         <div class="flex items-center justify-between">
           <UCheckbox

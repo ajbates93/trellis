@@ -22,15 +22,15 @@
     />
 
     <form v-if="!success" @submit.prevent="handleForgotPassword" class="space-y-6">
-      <UFormGroup label="Email" name="email">
-        <UInput
-          v-model="email"
-          type="email"
-          placeholder="your@email.com"
-          icon="i-heroicons-envelope"
-          :disabled="loading"
-        />
-      </UFormGroup>
+      <UInput
+        v-model="email"
+        type="email"
+        placeholder="your@email.com"
+        icon="i-heroicons-envelope"
+        size="xl"
+        class="w-full"
+        :disabled="loading"
+      />
 
       <UButton
         type="submit"

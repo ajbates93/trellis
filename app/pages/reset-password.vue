@@ -30,33 +30,31 @@
     />
 
     <form v-if="!success" @submit.prevent="handleResetPassword" class="space-y-6">
-      <UFormGroup
-        label="New Password"
-        name="password"
-        :error="passwordError"
-      >
+      <div>
         <UInput
           v-model="password"
           type="password"
           placeholder="Enter new password"
           icon="i-heroicons-lock-closed"
+          size="xl"
+          class="w-full"
           :disabled="loading"
         />
-      </UFormGroup>
+        <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
+      </div>
 
-      <UFormGroup
-        label="Confirm Password"
-        name="confirmPassword"
-        :error="confirmPasswordError"
-      >
+      <div>
         <UInput
           v-model="confirmPassword"
           type="password"
           placeholder="Confirm new password"
           icon="i-heroicons-lock-closed"
+          size="xl"
+          class="w-full"
           :disabled="loading"
         />
-      </UFormGroup>
+        <p v-if="confirmPasswordError" class="text-xs text-red-500 mt-1">{{ confirmPasswordError }}</p>
+      </div>
 
       <UButton
         type="submit"

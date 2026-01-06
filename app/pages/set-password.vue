@@ -34,47 +34,43 @@
 
     <!-- Set Password Form -->
     <form v-if="!success" @submit.prevent="handleSetPassword" class="space-y-6">
-      <UFormGroup label="Email" name="email">
-        <UInput
-          v-model="email"
-          type="email"
-          disabled
-          icon="i-heroicons-envelope"
-        />
-      </UFormGroup>
+      <UInput
+        v-model="email"
+        type="email"
+        disabled
+        icon="i-heroicons-envelope"
+        size="xl"
+        class="w-full"
+      />
 
-      <UFormGroup
-        label="Password"
-        name="password"
-        :error="passwordError"
-      >
+      <div>
         <UInput
           v-model="password"
           type="password"
           placeholder="Enter your password"
           icon="i-heroicons-lock-closed"
+          size="xl"
+          class="w-full"
           :disabled="loading"
         />
-        <template #hint>
-          <p class="text-xs text-gray-500 mt-1">
-            Must be at least 8 characters long
-          </p>
-        </template>
-      </UFormGroup>
+        <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
+        <p v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Must be at least 8 characters long
+        </p>
+      </div>
 
-      <UFormGroup
-        label="Confirm Password"
-        name="confirmPassword"
-        :error="confirmPasswordError"
-      >
+      <div>
         <UInput
           v-model="confirmPassword"
           type="password"
           placeholder="Confirm your password"
           icon="i-heroicons-lock-closed"
+          size="xl"
+          class="w-full"
           :disabled="loading"
         />
-      </UFormGroup>
+        <p v-if="confirmPasswordError" class="text-xs text-red-500 mt-1">{{ confirmPasswordError }}</p>
+      </div>
 
       <UButton
         type="submit"
