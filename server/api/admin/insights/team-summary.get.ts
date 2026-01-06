@@ -142,14 +142,47 @@ export default defineEventHandler(async (event) => {
     }
 
     // Calculate aggregate sentiment (average across all users with analysis)
-    const aggregateSentiment: SentimentData | null =
-      usersWithAnalysis > 0
-        ? {
-            positive: Math.round(totalPositive / usersWithAnalysis),
-            constructive: Math.round(totalConstructive / usersWithAnalysis),
-            neutral: Math.round(totalNeutral / usersWithAnalysis),
-          }
-        : null;
+    let aggregateSentiment: SentimentData | null = null;
+
+    if (usersWithAnalysis > 0) {
+      // Calculate raw averages
+      const rawPositive = totalPositive / usersWithAnalysis;
+      const rawConstructive = totalConstructive / usersWithAnalysis;
+      const rawNeutral = totalNeutral / usersWithAnalysis;
+
+      // Round each value
+      let positive = Math.round(rawPositive);
+      let constructive = Math.round(rawConstructive);
+      let neutral = Math.round(rawNeutral);
+
+      // Normalize to ensure they sum to exactly 100%
+      const total = positive + constructive + neutral;
+
+      if (total !== 100) {
+        // Calculate remainders to determine which value to adjust
+        const remainders = [
+          { category: 'positive', remainder: rawPositive - Math.floor(rawPositive), value: positive },
+          { category: 'constructive', remainder: rawConstructive - Math.floor(rawConstructive), value: constructive },
+          { category: 'neutral', remainder: rawNeutral - Math.floor(rawNeutral), value: neutral },
+        ];
+
+        // Sort by remainder (largest remainder gets priority for adjustment)
+        remainders.sort((a, b) => b.remainder - a.remainder);
+
+        // Adjust the value with the largest remainder
+        const difference = 100 - total;
+
+        if (remainders[0].category === 'positive') {
+          positive += difference;
+        } else if (remainders[0].category === 'constructive') {
+          constructive += difference;
+        } else {
+          neutral += difference;
+        }
+      }
+
+      aggregateSentiment = { positive, constructive, neutral };
+    }
 
     // Sort users: those with analysis first, then by last analyzed date
     userSummaries.sort((a, b) => {
