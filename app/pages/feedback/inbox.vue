@@ -198,25 +198,18 @@ const givenColumns = [
         <div class="mt-6">
           <!-- Received Tab -->
           <div v-if="selectedTab === 'received'">
-            <UCard>
-              <div
-                v-if="receivedFeedback.length === 0"
-                class="text-center py-12"
-              >
-                <UIcon
-                  name="i-heroicons-inbox"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No feedback received yet
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Check back later for feedback from your colleagues
-                </p>
-              </div>
+            <EmptyState
+              v-if="receivedFeedback.length === 0"
+              icon="i-heroicons-inbox"
+              icon-color="text-blue-500"
+              icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
+              heading="No feedback received yet"
+              description="Check back later for feedback from your colleagues"
+              variant="secondary"
+            />
 
+            <UCard v-else>
               <UTable
-                v-else
                 :columns="receivedColumns"
                 :data="receivedFeedback"
               >
@@ -292,24 +285,20 @@ const givenColumns = [
 
           <!-- Given Tab -->
           <div v-else-if="selectedTab === 'given'">
-            <UCard>
-              <div v-if="givenFeedback.length === 0" class="text-center py-12">
-                <UIcon
-                  name="i-heroicons-chat-bubble-left"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  You haven't given any feedback yet
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Start by giving feedback to your colleagues
-                </p>
-                <UButton to="/feedback/give" color="primary">
-                  Submit Feedback
-                </UButton>
-              </div>
+            <EmptyState
+              v-if="givenFeedback.length === 0"
+              icon="i-heroicons-chat-bubble-left"
+              icon-color="text-blue-500"
+              icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
+              heading="You haven't given any feedback yet"
+              description="Start by giving feedback to your colleagues"
+              button-text="Submit Feedback"
+              button-to="/feedback/give"
+              variant="primary"
+            />
 
-              <div v-else>
+            <UCard v-else>
+              <div>
                 <!-- Filter Controls -->
                 <div class="mb-4 flex items-center gap-2">
                   <USelect

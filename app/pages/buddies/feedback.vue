@@ -281,25 +281,18 @@ const incomingColumns = [
         <div v-if="selectedBuddyId" class="mt-6">
           <!-- Received Tab -->
           <div v-if="selectedTab === 'received'">
-            <UCard>
-              <div
-                v-if="buddyReceivedFeedback.length === 0"
-                class="text-center py-12"
-              >
-                <UIcon
-                  name="i-heroicons-inbox"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No feedback received
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  This buddy hasn't received any published feedback yet
-                </p>
-              </div>
+            <EmptyState
+              v-if="buddyReceivedFeedback.length === 0"
+              icon="i-heroicons-inbox"
+              icon-color="text-blue-500"
+              icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
+              heading="No feedback received"
+              description="This buddy hasn't received any published feedback yet"
+              variant="secondary"
+            />
 
+            <UCard v-else>
               <UTable
-                v-else
                 :columns="receivedColumns"
                 :data="buddyReceivedFeedback"
               >
@@ -355,24 +348,18 @@ const incomingColumns = [
 
           <!-- Incoming Tab -->
           <div v-else-if="selectedTab === 'incoming'">
-            <UCard>
-              <div
-                v-if="incomingFeedback.length === 0"
-                class="text-center py-12"
-              >
-                <UIcon
-                  name="i-heroicons-check-circle"
-                  class="text-gray-400 text-4xl mb-2"
-                />
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                  No pending feedback
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  All feedback for this buddy has been reviewed and published
-                </p>
-              </div>
+            <EmptyState
+              v-if="incomingFeedback.length === 0"
+              icon="i-heroicons-check-circle"
+              icon-color="text-green-500"
+              icon-bg-color="bg-green-100 dark:bg-green-900/30"
+              heading="No pending feedback"
+              description="All feedback for this buddy has been reviewed and published"
+              variant="secondary"
+            />
 
-              <div v-else>
+            <UCard v-else>
+              <div>
                 <!-- Publish All Button -->
                 <div class="mb-4">
                   <UButton color="success" @click="publishAllIncoming">

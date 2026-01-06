@@ -249,26 +249,18 @@
         </div>
 
         <!-- Empty state -->
-        <div v-else class="text-center py-12">
-          <UIcon
-            name="i-heroicons-inbox"
-            class="w-16 h-16 mx-auto text-gray-400 mb-4"
-          />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Your Brag Bucket is empty
-          </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            Start adding achievements as they happen. At review time, you'll
-            have a complete list to celebrate!
-          </p>
-          <UButton
-            color="primary"
-            icon="i-heroicons-plus-20-solid"
-            @click="openCreateModal"
-          >
-            Add Your First Achievement
-          </UButton>
-        </div>
+        <EmptyState
+          v-else
+          icon="i-heroicons-trophy"
+          icon-color="text-teal-500"
+          icon-bg-color="bg-teal-100 dark:bg-teal-900/30"
+          heading="Your Brag Bucket is empty"
+          description="Start adding achievements as they happen. At review time, you'll have a complete list to celebrate!"
+          button-text="Add Your First Achievement"
+          button-icon="i-heroicons-plus-20-solid"
+          variant="primary"
+          @button-click="openCreateModal"
+        />
         <!-- Achievement Modal -->
         <AchievementsAchievementModal
           v-model:is-open="isModalOpen"

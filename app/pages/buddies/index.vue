@@ -31,19 +31,13 @@ const { buddies, pending } = useBuddies();
         </div>
 
         <!-- Empty state (shouldn't happen due to middleware, but good to have) -->
-        <div v-else-if="buddies.length === 0">
-          <div class="text-center py-16 px-6 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-primary" />
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No buddies assigned
-            </h3>
-            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              You don't have any buddies assigned to you yet. Contact your admin to get buddies assigned.
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          v-else-if="buddies.length === 0"
+          icon="i-heroicons-user-group"
+          heading="No buddies assigned"
+          description="You don't have any buddies assigned to you yet. Contact your admin to get buddies assigned."
+          variant="primary"
+        />
 
         <!-- Buddies grid -->
         <div

@@ -390,23 +390,18 @@ const getReviewActions = (review: any) => [
             <!-- Upcoming Reviews Tab -->
             <template #upcoming>
               <div class="pt-6">
-                <UCard>
-                  <div
-                    v-if="upcomingReviews.length === 0"
-                    class="text-center py-12"
-                  >
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <UIcon name="i-heroicons-calendar-days" class="w-8 h-8 text-primary" />
-                    </div>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      No upcoming reviews
-                    </p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ buddyInfo.name }} has no scheduled reviews coming up
-                    </p>
-                  </div>
+                <EmptyState
+                  v-if="upcomingReviews.length === 0"
+                  icon="i-heroicons-calendar-days"
+                  icon-color="text-primary"
+                  icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
+                  heading="No upcoming reviews"
+                  :description="`${buddyInfo.name} has no scheduled reviews coming up`"
+                  variant="secondary"
+                />
 
-                  <UTable v-else :columns="upcomingColumns" :data="upcomingReviews">
+                <UCard v-else>
+                  <UTable :columns="upcomingColumns" :data="upcomingReviews">
                     <template #review-cell="{ row }">
                       <div>
                         <div class="font-medium text-gray-900 dark:text-white">
@@ -469,20 +464,18 @@ const getReviewActions = (review: any) => [
             <!-- Past Reviews Tab -->
             <template #past>
               <div class="pt-6">
-                <UCard>
-                  <div v-if="pastReviews.length === 0" class="text-center py-12">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                      <UIcon name="i-heroicons-archive-box" class="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      No past reviews
-                    </p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ buddyInfo.name }} has no reviews scheduled in the past
-                    </p>
-                  </div>
+                <EmptyState
+                  v-if="pastReviews.length === 0"
+                  icon="i-heroicons-archive-box"
+                  icon-color="text-gray-400"
+                  icon-bg-color="bg-gray-200 dark:bg-gray-700"
+                  heading="No past reviews"
+                  :description="`${buddyInfo.name} has no reviews scheduled in the past`"
+                  variant="secondary"
+                />
 
-                  <UTable v-else :columns="pastColumns" :data="pastReviews">
+                <UCard v-else>
+                  <UTable :columns="pastColumns" :data="pastReviews">
                     <template #review-cell="{ row }">
                       <div>
                         <div class="font-medium text-gray-900 dark:text-white">

@@ -111,19 +111,15 @@ const tabItems = computed<TabsItem[]>(() => [
           <template #upcoming>
             <div class="pt-6">
               <!-- Empty state -->
-              <div v-if="upcomingReviews.length === 0">
-                <div class="text-center py-16 px-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                  <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <UIcon name="i-heroicons-calendar-days" class="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    No upcoming reviews
-                  </h3>
-                  <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                    Your next review will appear here when scheduled
-                  </p>
-                </div>
-              </div>
+              <EmptyState
+                v-if="upcomingReviews.length === 0"
+                icon="i-heroicons-calendar-days"
+                icon-color="text-primary"
+                icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
+                heading="No upcoming reviews"
+                description="Your next review will appear here when scheduled"
+                variant="secondary"
+              />
 
               <!-- Reviews grid -->
               <div
@@ -194,19 +190,15 @@ const tabItems = computed<TabsItem[]>(() => [
           <template #past>
             <div class="pt-6">
               <!-- Empty state -->
-              <div v-if="pastReviewsByYear.length === 0">
-                <div class="text-center py-16 px-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                  <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <UIcon name="i-heroicons-archive-box" class="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    No past reviews
-                  </h3>
-                  <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                    Reviews scheduled in the past will appear here
-                  </p>
-                </div>
-              </div>
+              <EmptyState
+                v-if="pastReviewsByYear.length === 0"
+                icon="i-heroicons-archive-box"
+                icon-color="text-gray-400"
+                icon-bg-color="bg-gray-200 dark:bg-gray-700"
+                heading="No past reviews"
+                description="Reviews scheduled in the past will appear here"
+                variant="secondary"
+              />
 
               <!-- Past reviews grouped by year -->
               <div v-else class="space-y-6">
