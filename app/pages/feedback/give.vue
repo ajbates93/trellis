@@ -128,7 +128,8 @@ watch(selectedUser, async (userId) => {
           <!-- Left Column: Form -->
           <div class="flex-1 space-y-6">
             <!-- Header -->
-            <div class="animate-item" :style="{ '--delay': '0ms' }">
+            <!-- <div class="animate-item" :style="{ '--delay': '0ms' }"> -->
+            <div>
               <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
                 Submit Feedback
               </h1>
@@ -164,7 +165,8 @@ watch(selectedUser, async (userId) => {
             <!-- Form -->
             <form class="space-y-6" @submit.prevent="submitFeedback">
               <!-- User Selection -->
-              <div class="animate-item" :style="{ '--delay': '200ms' }">
+              <!-- <div class="animate-item" :style="{ '--delay': '200ms' }"> -->
+              <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Who would you like to give feedback to?
                 </label>
@@ -238,7 +240,8 @@ watch(selectedUser, async (userId) => {
               </div>
 
               <!-- Feedback Text Area -->
-              <div class="animate-item" :style="{ '--delay': '300ms' }">
+              <!-- <div class="animate-item" :style="{ '--delay': '300ms' }"> -->
+              <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Your Feedback
                 </label>
@@ -264,7 +267,8 @@ watch(selectedUser, async (userId) => {
               </div>
 
               <!-- Action Buttons -->
-              <div class="animate-item flex items-center justify-between pt-2" :style="{ '--delay': '400ms' }">
+              <!-- <div class="animate-item flex items-center justify-between pt-2" :style="{ '--delay': '400ms' }"> -->
+              <div class="flex items-center justify-between pt-2">
                 <UButton to="/" variant="ghost" color="neutral">
                   Cancel
                 </UButton>
@@ -283,7 +287,8 @@ watch(selectedUser, async (userId) => {
 
           <!-- Right Column: Tips Sidebar (Sticky) -->
           <div class="lg:w-[400px] flex-shrink-0">
-            <div class="lg:sticky lg:top-8 space-y-6 animate-item" :style="{ '--delay': '200ms' }">
+            <!-- <div class="lg:sticky lg:top-8 space-y-6 animate-item" :style="{ '--delay': '200ms' }"> -->
+            <div class="lg:sticky lg:top-8 space-y-6">
               <!-- Tips Header -->
               <div>
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -421,7 +426,8 @@ watch(selectedUser, async (userId) => {
 </template>
 
 <style scoped>
-.animate-item {
+/* Animation styles commented out */
+/* .animate-item {
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.5s ease-out forwards;
@@ -437,5 +443,5 @@ watch(selectedUser, async (userId) => {
     opacity: 1;
     transform: translateY(0);
   }
-}
+} */
 </style>
