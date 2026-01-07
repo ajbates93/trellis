@@ -17,8 +17,17 @@ export default defineNuxtConfig({
 
   eslint: {},
 
+  // TODO: Remove this once light mode is ready
+  colorMode: {
+    preference: "dark",
+    fallback: "dark",
+  },
+
   app: {
     head: {
+      htmlAttrs: {
+        class: "dark", // TODO: Remove when light mode is ready
+      },
       script: [
         // {
         //   src: "https://app.snaggd.io/embed-loader.js",
