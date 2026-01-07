@@ -134,9 +134,16 @@ const formatDate = (date: string) => {
 const isFeedbackModalOpen = ref(false);
 const selectedFeedback = ref<any>(null);
 
-// Open feedback modal
+// Open feedback modal - inject review info since we know the context
 const openFeedbackModal = (feedbackItem: any) => {
-  selectedFeedback.value = feedbackItem;
+  selectedFeedback.value = {
+    ...feedbackItem,
+    review: review.value ? {
+      id: review.value.id,
+      name: review.value.name,
+      scheduledDate: review.value.scheduledDate,
+    } : null,
+  };
   isFeedbackModalOpen.value = true;
 };
 
@@ -178,6 +185,13 @@ const feedbackColumns = [
         <div v-else>
           <!-- Header -->
           <div class="mb-8">
+            <NuxtLink 
+              to="/reviews" 
+              class="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4"
+            >
+              <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+              Back to Reviews
+            </NuxtLink>
             <div class="flex items-start justify-between mb-4">
               <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">

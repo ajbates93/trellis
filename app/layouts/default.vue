@@ -441,7 +441,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                     v-if="link.badge"
                     :label="link.badge"
                     size="xs"
-                    color="error"
+                    color="primary"
                     class="mr-1"
                   />
                   <UIcon

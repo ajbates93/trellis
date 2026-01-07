@@ -155,8 +155,13 @@ const tabItems = computed<TabsItem[]>(() => [
                             {{ formatDate(review.scheduledDate) }}
                           </p>
                         </div>
-                        <UBadge color="primary" size="xs">
-                          {{ daysUntil(review.scheduledDate) }} days
+                        <UBadge 
+                          :color="daysUntil(review.scheduledDate) < 0 ? 'warning' : 'primary'" 
+                          size="xs"
+                        >
+                          {{ daysUntil(review.scheduledDate) < 0 
+                            ? `${Math.abs(daysUntil(review.scheduledDate))} days overdue` 
+                            : `${daysUntil(review.scheduledDate)} days` }}
                         </UBadge>
                       </div>
 

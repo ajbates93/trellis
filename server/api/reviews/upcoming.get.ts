@@ -50,8 +50,8 @@ export default defineEventHandler(async (event) => {
 
     // Get upcoming reviews where:
     // - User is the reviewee (or specific user if forUserId provided for buddy access)
-    // - Status is 'scheduled'
-    // - Scheduled date is today or in the future
+    // - Status is 'scheduled' (includes overdue reviews that haven't been completed yet)
+    // This ensures that overdue reviews still appear in "Upcoming" until they're marked as completed
     const upcomingReviews = await db
       .select({
         id: reviewSchedules.id,
@@ -79,8 +79,7 @@ export default defineEventHandler(async (event) => {
           forUserId
             ? eq(reviewSchedules.userId, forUserId)
             : eq(reviewSchedules.userId, session.user.id),
-          eq(reviewSchedules.status, 'scheduled'),
-          gte(reviewSchedules.scheduledDate, today)
+          eq(reviewSchedules.status, 'scheduled')
         )
       )
       .orderBy(reviewSchedules.scheduledDate);

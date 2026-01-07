@@ -108,6 +108,17 @@ const formatRelativeTime = (date: string | Date | null) => {
   return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
+// Get readable role label
+const getRoleLabel = (roleType: string | null) => {
+  if (!roleType) return null;
+  const labels: Record<string, string> = {
+    dev: "Developer",
+    design: "Designer",
+    qa: "QA",
+  };
+  return labels[roleType] || roleType;
+};
+
 // Filter state for Given tab
 const selectedRecipient = ref<string | null>(null);
 
@@ -248,10 +259,10 @@ const givenColumns = [
                   <button
                     v-for="feedback in spotlightFeedback"
                     :key="feedback.id"
-                    class="group text-left bg-gradient-to-br from-slate-800/50 to-slate-700/30 dark:from-slate-800/40 dark:to-slate-700/20 rounded-xl p-4 border border-slate-600/40 dark:border-slate-500/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-slate-500/60 dark:hover:border-slate-400/40"
+                    class="cursor-pointer group text-left flex flex-col items-stretch bg-gradient-to-br from-slate-800/50 to-slate-700/30 dark:from-slate-800/40 dark:to-slate-700/20 rounded-xl p-4 border border-slate-600/40 dark:border-slate-500/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-slate-500/60 dark:hover:border-slate-400/40"
                     @click="openFeedbackModal(feedback)"
                   >
-                    <div class="flex items-start gap-4">
+                    <div class="flex items-start gap-4 flex-1">
                       <UAvatar
                         :src="feedback.reviewer.image || feedback.reviewer.avatarUrl || undefined"
                         :alt="feedback.reviewer.name"
@@ -260,9 +271,14 @@ const givenColumns = [
                       />
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center justify-between gap-2 mb-1">
-                          <span class="font-semibold text-gray-900 dark:text-white truncate">
-                            {{ feedback.reviewer.name }}
-                          </span>
+                          <div class="min-w-0">
+                            <span class="font-semibold text-gray-900 dark:text-white truncate block">
+                              {{ feedback.reviewer.name }}
+                            </span>
+                            <span v-if="feedback.reviewer.roleType" class="text-xs text-slate-500 dark:text-slate-400">
+                              {{ getRoleLabel(feedback.reviewer.roleType) }}
+                            </span>
+                          </div>
                           <span class="text-xs text-slate-400 dark:text-slate-400 flex-shrink-0">
                             {{ formatRelativeTime(feedback.publishedAt) }}
                           </span>
@@ -276,7 +292,7 @@ const givenColumns = [
                       <UBadge 
                         :label="feedback.isRead ? 'Read' : 'Unread'" 
                         :color="feedback.isRead ? 'neutral' : 'primary'" 
-                        size="xs" 
+                        size="sm" 
                       />
                       <UIcon
                         name="i-heroicons-arrow-right"
@@ -347,7 +363,7 @@ const givenColumns = [
                   <UBadge
                     :label="row.original.isRead ? 'Read' : 'Unread'"
                     :color="row.original.isRead ? 'neutral' : 'primary'"
-                    size="xs"
+                    size="sm"
                   />
                 </template>
 
@@ -439,7 +455,7 @@ const givenColumns = [
                   <UBadge
                     label="Unread"
                     color="primary"
-                    size="xs"
+                    size="sm"
                   />
                 </template>
 

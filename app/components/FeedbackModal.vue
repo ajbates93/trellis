@@ -133,6 +133,42 @@ const modalDescription = computed(() => {
             size="sm"
           />
         </div>
+
+        <!-- Linked Review -->
+        <div v-if="feedback.review" class="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+          <div class="flex items-start gap-3">
+            <UIcon 
+              name="i-heroicons-calendar-days" 
+              class="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" 
+            />
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                Your buddy has linked this feedback to your 
+                <NuxtLink 
+                  :to="`/reviews/${feedback.review.id}`"
+                  class="font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                  @click="isOpen = false"
+                >
+                  {{ feedback.review.name || 'review' }}
+                </NuxtLink>
+                review.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Review Assigned -->
+        <div v-else class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-start gap-3">
+            <UIcon 
+              name="i-heroicons-calendar" 
+              class="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" 
+            />
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Your buddy has not assigned this feedback to any review yet.
+            </p>
+          </div>
+        </div>
       </div>
     </template>
 

@@ -50,8 +50,8 @@ export default defineEventHandler(async (event) => {
 
     // Get past reviews where:
     // - User is the reviewee (or specific user if forUserId provided for buddy access)
-    // - Scheduled date is in the past (before today)
-    // This includes both completed reviews AND overdue scheduled reviews
+    // - Status is 'completed'
+    // Note: Overdue reviews that are still 'scheduled' appear in Upcoming, not here
     const pastReviews = await db
       .select({
         id: reviewSchedules.id,
@@ -79,10 +79,10 @@ export default defineEventHandler(async (event) => {
           forUserId
             ? eq(reviewSchedules.userId, forUserId)
             : eq(reviewSchedules.userId, session.user.id),
-          lt(reviewSchedules.scheduledDate, today)
+          eq(reviewSchedules.status, 'completed')
         )
       )
-      .orderBy(sql`${reviewSchedules.scheduledDate} DESC`);
+      .orderBy(sql`${reviewSchedules.completedDate} DESC`);
 
     // Get buddy info, feedback count, and check-ins for each review
     const reviewsWithDetails = await Promise.all(
