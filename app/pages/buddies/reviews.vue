@@ -370,7 +370,7 @@ const getReviewActions = (review: any) => [
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-6">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Buddy Reviews
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -381,16 +381,9 @@ const getReviewActions = (review: any) => [
         <!-- Buddy Selector and Create Button -->
         <div class="mb-6 flex items-end justify-between gap-4">
           <div class="flex-1">
-            <BuddySelector
-              :buddy-id="selectedBuddyId || undefined"
-              @buddy-selected="handleBuddySelected"
-            />
+            <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
           </div>
-          <UButton
-            v-if="selectedBuddyId"
-            icon="i-heroicons-plus"
-            @click="isCreateModalOpen = true"
-          >
+          <UButton v-if="selectedBuddyId" icon="i-heroicons-plus" @click="isCreateModalOpen = true">
             Create Review
           </UButton>
         </div>
@@ -398,44 +391,25 @@ const getReviewActions = (review: any) => [
         <!-- Tabbed Reviews Interface -->
         <div v-if="selectedBuddyId && selectedBuddy">
           <!-- Empty state when buddy has no reviews at all -->
-          <EmptyState
-            v-if="upcomingReviews.length === 0 && pastReviews.length === 0"
-            icon="i-heroicons-calendar-days"
-            heading="No reviews yet"
-            :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
-            button-text="Create First Review"
-            button-icon="i-heroicons-plus"
-            variant="primary"
-            @button-click="isCreateModalOpen = true"
-          />
+          <EmptyState v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicons-calendar-days"
+            heading="No reviews yet" :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
+            button-text="Create First Review" button-icon="i-heroicons-plus" variant="primary"
+            @button-click="isCreateModalOpen = true" />
 
-          <UTabs
-            v-else
-            v-model="activeTab"
-            :items="tabItems"
-            variant="pill"
-            color="neutral"
-            size="lg"
-            class="w-full"
+          <UTabs v-else v-model="activeTab" :items="tabItems" variant="pill" color="neutral" size="lg" class="w-full"
             :ui="{
               list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
               trigger:
                 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
               indicator: 'bg-white dark:bg-gray-900 shadow-sm',
-            }"
-          >
+            }">
             <!-- Upcoming Reviews Tab -->
             <template #upcoming>
               <div class="pt-6">
-                <EmptyState
-                  v-if="upcomingReviews.length === 0"
-                  icon="i-heroicons-calendar-days"
-                  icon-color="text-primary"
-                  icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
+                <EmptyState v-if="upcomingReviews.length === 0" icon="i-heroicons-calendar-days"
+                  icon-color="text-primary" icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
                   heading="No upcoming reviews"
-                  :description="`${selectedBuddy?.name} has no scheduled reviews coming up`"
-                  variant="secondary"
-                />
+                  :description="`${selectedBuddy?.name} has no scheduled reviews coming up`" variant="secondary" />
 
                 <UCard v-else>
                   <UTable :columns="upcomingColumns" :data="upcomingReviews">
@@ -446,16 +420,14 @@ const getReviewActions = (review: any) => [
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                           {{ formatDate(row.original.scheduledDate) }}
-                          <span
-                            v-if="
-                              getDaysUntilReview(row.original.scheduledDate) !==
-                              null
-                            "
-                          >
+                          <span v-if="
+                            getDaysUntilReview(row.original.scheduledDate) !==
+                            null
+                          ">
                             ·
                             {{
                               getDaysUntilReview(row.original.scheduledDate) ===
-                              0
+                                0
                                 ? "Today"
                                 : `${getDaysUntilReview(row.original.scheduledDate)} days`
                             }}
@@ -465,42 +437,25 @@ const getReviewActions = (review: any) => [
                     </template>
 
                     <template #feedback-cell="{ row }">
-                      <div
-                        class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400"
-                      >
-                        <UIcon
-                          name="i-heroicons-chat-bubble-left"
-                          class="w-4 h-4"
-                        />
+                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
                         <span>{{ row.original.feedbackCount || 0 }}</span>
                       </div>
                     </template>
 
                     <template #status-cell="{ row }">
-                      <UBadge
-                        :label="capitalize(row.original.status)"
-                        :color="getStatusColor(row.original.status)"
-                        variant="subtle"
-                      />
+                      <UBadge :label="capitalize(row.original.status)" :color="getStatusColor(row.original.status)"
+                        variant="subtle" />
                     </template>
 
                     <template #actions-cell="{ row }">
                       <div class="flex items-center gap-2 justify-end">
-                        <UButton
-                          :to="`/reviews/${row.original.id}`"
-                          variant="soft"
-                        >
+                        <UButton :to="`/reviews/${row.original.id}`" variant="soft">
                           View
                         </UButton>
-                        <UDropdownMenu
-                          v-if="row.original.status === 'scheduled'"
-                          :items="getReviewActions(row.original)"
-                        >
-                          <UButton
-                            icon="i-heroicons-ellipsis-vertical"
-                            variant="ghost"
-                            color="neutral"
-                          />
+                        <UDropdownMenu v-if="row.original.status === 'scheduled'"
+                          :items="getReviewActions(row.original)">
+                          <UButton icon="i-heroicons-ellipsis-vertical" variant="ghost" color="neutral" />
                         </UDropdownMenu>
                       </div>
                     </template>
@@ -512,15 +467,9 @@ const getReviewActions = (review: any) => [
             <!-- Past Reviews Tab -->
             <template #past>
               <div class="pt-6">
-                <EmptyState
-                  v-if="pastReviews.length === 0"
-                  icon="i-heroicons-archive-box"
-                  icon-color="text-gray-400"
-                  icon-bg-color="bg-gray-200 dark:bg-gray-700"
-                  heading="No past reviews"
-                  :description="`${selectedBuddy?.name} has no completed reviews yet`"
-                  variant="secondary"
-                />
+                <EmptyState v-if="pastReviews.length === 0" icon="i-heroicons-archive-box" icon-color="text-gray-400"
+                  icon-bg-color="bg-gray-200 dark:bg-gray-700" heading="No past reviews"
+                  :description="`${selectedBuddy?.name} has no completed reviews yet`" variant="secondary" />
 
                 <UCard v-else>
                   <UTable :columns="pastColumns" :data="pastReviews">
@@ -540,31 +489,20 @@ const getReviewActions = (review: any) => [
                     </template>
 
                     <template #feedback-cell="{ row }">
-                      <div
-                        class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400"
-                      >
-                        <UIcon
-                          name="i-heroicons-chat-bubble-left"
-                          class="w-4 h-4"
-                        />
+                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
                         <span>{{ row.original.feedbackCount || 0 }}</span>
                       </div>
                     </template>
 
                     <template #status-cell="{ row }">
-                      <UBadge
-                        :label="capitalize(row.original.status)"
-                        :color="getStatusColor(row.original.status)"
-                        variant="subtle"
-                      />
+                      <UBadge :label="capitalize(row.original.status)" :color="getStatusColor(row.original.status)"
+                        variant="subtle" />
                     </template>
 
                     <template #actions-cell="{ row }">
                       <div class="flex items-center justify-end">
-                        <UButton
-                          :to="`/reviews/${row.original.id}`"
-                          variant="soft"
-                        >
+                        <UButton :to="`/reviews/${row.original.id}`" variant="soft">
                           View
                         </UButton>
                       </div>
@@ -580,11 +518,7 @@ const getReviewActions = (review: any) => [
   </UDashboardPanel>
 
   <!-- Review Details Modal -->
-  <UModal
-    v-model:open="showReviewModal"
-    :title="`Review: ${selectedReview?.name}`"
-    size="xl"
-  >
+  <UModal v-model:open="showReviewModal" :title="`Review: ${selectedReview?.name}`" size="xl">
     <template #body>
       <div v-if="selectedReview" class="space-y-6">
         <!-- Review Details -->
@@ -601,10 +535,7 @@ const getReviewActions = (review: any) => [
           <div>
             <div class="text-sm text-gray-500 dark:text-gray-400">Status</div>
             <div>
-              <UBadge
-                :label="selectedReview.status"
-                :color="getStatusColor(selectedReview.status)"
-              />
+              <UBadge :label="selectedReview.status" :color="getStatusColor(selectedReview.status)" />
             </div>
           </div>
         </div>
@@ -625,15 +556,9 @@ const getReviewActions = (review: any) => [
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
             💬 Check-ins
           </h3>
-          <div
-            v-if="selectedReview.checkins && selectedReview.checkins.length > 0"
-            class="space-y-3"
-          >
-            <div
-              v-for="checkin in selectedReview.checkins"
-              :key="checkin.id"
-              class="bg-gray-50 dark:bg-gray-800 rounded p-3 text-sm"
-            >
+          <div v-if="selectedReview.checkins && selectedReview.checkins.length > 0" class="space-y-3">
+            <div v-for="checkin in selectedReview.checkins" :key="checkin.id"
+              class="bg-gray-50 dark:bg-gray-800 rounded p-3 text-sm">
               <div class="flex items-start justify-between mb-2">
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">
@@ -663,11 +588,8 @@ const getReviewActions = (review: any) => [
         <UButton variant="ghost" @click="showReviewModal = false">
           Close
         </UButton>
-        <UButton
-          v-if="selectedReview?.status === 'scheduled'"
-          color="success"
-          @click="completeReview(selectedReview.id)"
-        >
+        <UButton v-if="selectedReview?.status === 'scheduled'" color="success"
+          @click="completeReview(selectedReview.id)">
           Complete Review
         </UButton>
       </div>
@@ -675,14 +597,10 @@ const getReviewActions = (review: any) => [
   </UModal>
 
   <!-- Create Review Modal -->
-  <UModal
-    v-model:open="isCreateModalOpen"
-    :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
-    class="sm:max-w-2xl"
-    :ui="{
+  <UModal v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
+    class="sm:max-w-2xl" :ui="{
       footer: 'justify-end',
-    }"
-  >
+    }">
     <template #body>
       <div class="space-y-4">
         <!-- Scheduled Date -->
@@ -690,23 +608,13 @@ const getReviewActions = (review: any) => [
           <label class="block text-sm font-medium mb-2">
             Scheduled Date <span class="text-red-500">*</span>
           </label>
-          <UInput
-            v-model="scheduledDate"
-            type="date"
-            :min="new Date().toISOString().split('T')[0]"
-            class="w-auto"
-          />
+          <UInput v-model="scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" class="w-auto" />
         </div>
 
         <!-- Review Name -->
         <div>
           <label class="block text-sm font-medium mb-2"> Review Name </label>
-          <UInput
-            v-model="reviewName"
-            placeholder="e.g., January 2026"
-            size="lg"
-            class="w-full"
-          />
+          <UInput v-model="reviewName" placeholder="e.g., January 2026" size="lg" class="w-full" />
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Auto-generated from date if left empty
           </p>
@@ -717,36 +625,22 @@ const getReviewActions = (review: any) => [
     </template>
 
     <template #footer>
-      <UButton
-        color="neutral"
-        variant="ghost"
-        :disabled="isCreating"
-        @click="
-          isCreateModalOpen = false;
-          resetForm();
-        "
-      >
+      <UButton color="neutral" variant="ghost" :disabled="isCreating" @click="
+        isCreateModalOpen = false;
+      resetForm();
+      ">
         Cancel
       </UButton>
-      <UButton
-        :loading="isCreating"
-        :disabled="!scheduledDate"
-        @click="createReview"
-      >
+      <UButton :loading="isCreating" :disabled="!scheduledDate" @click="createReview">
         Create Review
       </UButton>
     </template>
   </UModal>
 
   <!-- Edit Review Modal -->
-  <UModal
-    v-model:open="isEditModalOpen"
-    title="Edit Review"
-    class="sm:max-w-2xl"
-    :ui="{
-      footer: 'justify-end',
-    }"
-  >
+  <UModal v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
+    footer: 'justify-end',
+  }">
     <template #body>
       <div class="space-y-4">
         <!-- Scheduled Date -->
@@ -754,23 +648,14 @@ const getReviewActions = (review: any) => [
           <label class="block text-sm font-medium mb-2">
             Scheduled Date <span class="text-red-500">*</span>
           </label>
-          <UInput
-            v-model="editingReview.scheduledDate"
-            type="date"
-            :min="new Date().toISOString().split('T')[0]"
-            class="w-auto"
-          />
+          <UInput v-model="editingReview.scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]"
+            class="w-auto" />
         </div>
 
         <!-- Review Name -->
         <div>
           <label class="block text-sm font-medium mb-2"> Review Name </label>
-          <UInput
-            v-model="editingReview.name"
-            placeholder="e.g., January 2026"
-            size="lg"
-            class="w-full"
-          />
+          <UInput v-model="editingReview.name" placeholder="e.g., January 2026" size="lg" class="w-full" />
         </div>
 
 
@@ -778,19 +663,10 @@ const getReviewActions = (review: any) => [
     </template>
 
     <template #footer>
-      <UButton
-        color="neutral"
-        variant="ghost"
-        :disabled="isEditing"
-        @click="isEditModalOpen = false"
-      >
+      <UButton color="neutral" variant="ghost" :disabled="isEditing" @click="isEditModalOpen = false">
         Cancel
       </UButton>
-      <UButton
-        :loading="isEditing"
-        :disabled="!editingReview.scheduledDate"
-        @click="updateReview"
-      >
+      <UButton :loading="isEditing" :disabled="!editingReview.scheduledDate" @click="updateReview">
         Save Changes
       </UButton>
     </template>

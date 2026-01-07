@@ -306,60 +306,40 @@ const feedbackColumns = [
         <div v-else>
           <!-- Hero Header -->
           <div
-            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg"
-          >
+            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg">
             <!-- Background Decoration -->
-            <div
-              class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
-            ></div>
-            <div
-              class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"
-            ></div>
+            <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
 
             <div class="relative z-10">
-              <div
-                class="flex flex-col md:flex-row md:items-start justify-between gap-6"
-              >
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <!-- Title and Date -->
                 <div>
                   <div class="flex items-center gap-3 mb-2">
-                    <UBadge
-                      :label="
-                        review.status === 'completed'
-                          ? 'Completed'
-                          : 'Scheduled'
-                      "
-                      variant="solid"
-                      :class="[
+                    <UBadge :label="review.status === 'completed'
+                        ? 'Completed'
+                        : 'Scheduled'
+                      " variant="solid" :class="[
                         'capitalize',
                         review.status === 'completed'
                           ? '!bg-green-500 !text-white'
                           : '!bg-blue-500 !text-white',
-                      ]"
-                    />
+                      ]" />
                     <span class="text-gray-400 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
-                    }}</span>
+                      }}</span>
                   </div>
-                  <h1 class="text-3xl md:text-4xl font-bold mb-2">
+                  <h1 class="text-3xl sm:text-4xl md:text-4xl font-bold mb-2">
                     {{ review.name || "Quarterly Review" }}
                   </h1>
                 </div>
 
                 <!-- Buddy Card -->
-                <div
-                  class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[240px]"
-                >
-                  <UAvatar
-                    :src="review.buddy?.avatarUrl"
-                    :alt="review.buddy?.name"
-                    size="md"
-                    class="ring-2 ring-white/20"
-                  />
+                <div class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[240px]">
+                  <UAvatar :src="review.buddy?.avatarUrl" :alt="review.buddy?.name" size="md"
+                    class="ring-2 ring-white/20" />
                   <div>
-                    <p
-                      class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5"
-                    >
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
                       Your Buddy
                     </p>
                     <p class="font-medium text-white">
@@ -370,26 +350,14 @@ const feedbackColumns = [
               </div>
 
               <!-- Actions -->
-              <div
-                v-if="isBuddy && review.status === 'scheduled'"
-                class="mt-8 flex gap-3"
-              >
-                <UButton
-                  color="white"
-                  variant="solid"
-                  icon="i-heroicons-check"
+              <div v-if="isBuddy && review.status === 'scheduled'" class="mt-8 flex gap-3">
+                <UButton color="white" variant="solid" icon="i-heroicons-check"
                   class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
-                  @click="isCompleteModalOpen = true"
-                >
+                  @click="isCompleteModalOpen = true">
                   Mark as Completed
                 </UButton>
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-pencil-square"
-                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
-                  @click="openEditModal"
-                >
+                <UButton color="gray" variant="ghost" icon="i-heroicons-pencil-square"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer" @click="openEditModal">
                   Edit Details
                 </UButton>
               </div>
@@ -401,51 +369,30 @@ const feedbackColumns = [
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <UIcon
-                    name="i-heroicons-light-bulb"
-                    class="w-5 h-5 text-primary-500"
-                  />
+                  <UIcon name="i-heroicons-light-bulb" class="w-5 h-5 text-primary-500" />
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     Reflections
                   </h3>
                 </div>
-                <div
-                  v-if="isSavingReflections"
-                  class="flex items-center gap-2 text-sm text-gray-500"
-                >
-                  <UIcon
-                    name="i-heroicons-arrow-path"
-                    class="w-4 h-4 animate-spin"
-                  />
+                <div v-if="isSavingReflections" class="flex items-center gap-2 text-sm text-gray-500">
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
                   Saving...
                 </div>
               </div>
             </template>
 
             <div class="space-y-6">
-              <ReviewsReflectionEditor
-                v-model="reflectionLearnings"
-                label="What have I learnt in the past three months?"
-                icon="i-heroicons-academic-cap"
+              <ReviewsReflectionEditor v-model="reflectionLearnings"
+                label="What have I learnt in the past three months?" icon="i-heroicons-academic-cap"
                 placeholder="Think about technical skills, soft skills, or domain knowledge..."
-                :readonly="!isReviewee"
-              />
+                :readonly="!isReviewee" />
 
-              <ReviewsReflectionEditor
-                v-model="reflectionHighlights"
-                label="Any highlights?"
-                icon="i-heroicons-star"
-                placeholder="Projects delivered, problems solved, or team contributions..."
-                :readonly="!isReviewee"
-              />
+              <ReviewsReflectionEditor v-model="reflectionHighlights" label="Any highlights?" icon="i-heroicons-star"
+                placeholder="Projects delivered, problems solved, or team contributions..." :readonly="!isReviewee" />
 
-              <ReviewsReflectionEditor
-                v-model="reflectionConcerns"
-                label="Are you worried about anything right now?"
+              <ReviewsReflectionEditor v-model="reflectionConcerns" label="Are you worried about anything right now?"
                 icon="i-heroicons-exclamation-triangle"
-                placeholder="Blockers, uncertainties, or support you might need..."
-                :readonly="!isReviewee"
-              />
+                placeholder="Blockers, uncertainties, or support you might need..." :readonly="!isReviewee" />
             </div>
           </UCard>
 
@@ -454,34 +401,20 @@ const feedbackColumns = [
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <UIcon
-                    name="i-heroicons-chat-bubble-bottom-center-text"
-                    class="w-5 h-5 text-primary-500"
-                  />
+                  <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-5 h-5 text-primary-500" />
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     Buddy Comments
                   </h3>
                 </div>
-                <div
-                  v-if="isSavingBuddyComments"
-                  class="flex items-center gap-2 text-sm text-gray-500"
-                >
-                  <UIcon
-                    name="i-heroicons-arrow-path"
-                    class="w-4 h-4 animate-spin"
-                  />
+                <div v-if="isSavingBuddyComments" class="flex items-center gap-2 text-sm text-gray-500">
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
                   Saving...
                 </div>
               </div>
             </template>
 
-            <ReviewsReflectionEditor
-              v-model="buddyComments"
-              label="Notes from your buddy"
-              icon="i-heroicons-user"
-              placeholder="Add comments about the review..."
-              :readonly="!isBuddy"
-            />
+            <ReviewsReflectionEditor v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
+              placeholder="Add comments about the review..." :readonly="!isBuddy" />
           </UCard>
 
           <!-- Supporting Data Header -->
@@ -504,13 +437,8 @@ const feedbackColumns = [
             <div v-if="selectedTab === 'feedback'">
               <UCard>
                 <div v-if="feedback.length === 0" class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-chat-bubble-left"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
+                  <UIcon name="i-heroicons-chat-bubble-left" class="text-gray-400 text-4xl mb-2" />
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
                     No feedback for this review
                   </p>
                 </div>
@@ -518,25 +446,19 @@ const feedbackColumns = [
                 <UTable v-else :columns="feedbackColumns" :data="feedback">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
-                      <UAvatar
-                        :src="row.original.reviewer.avatarUrl || undefined"
-                        :alt="row.original.reviewer.name"
-                        size="xs"
-                      />
+                      <UAvatar :src="row.original.reviewer.avatarUrl || undefined" :alt="row.original.reviewer.name"
+                        size="xs" />
                       <span>{{ row.original.reviewer.name }}</span>
                     </div>
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
+                    <UButton variant="ghost" color="neutral"
                       class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)"
-                    >
+                      @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                      }}</span>
+                        }}</span>
                     </UButton>
                   </template>
 
@@ -553,24 +475,15 @@ const feedbackColumns = [
             <div v-else-if="selectedTab === 'goals'">
               <UCard>
                 <div v-if="goals.length === 0" class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-flag"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
+                  <UIcon name="i-heroicons-flag" class="text-gray-400 text-4xl mb-2" />
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
                     No goals
                   </p>
                 </div>
 
                 <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-                  <NuxtLink
-                    v-for="goal in goals"
-                    :key="goal.id"
-                    :to="isReviewee ? '/goals' : '/buddies/goals'"
-                    class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors -mx-4 first:-mt-4 last:-mb-4"
-                  >
+                  <NuxtLink v-for="goal in goals" :key="goal.id" :to="isReviewee ? '/goals' : '/buddies/goals'"
+                    class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors -mx-4 first:-mt-4 last:-mb-4">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <p class="font-medium text-gray-900 dark:text-white">
@@ -578,18 +491,12 @@ const feedbackColumns = [
                         </p>
                         <div class="flex items-center gap-2 mt-2">
                           <UBadge :label="goal.status" size="xs" />
-                          <span
-                            v-if="goal.targetDate"
-                            class="text-sm text-gray-500 dark:text-gray-400"
-                          >
+                          <span v-if="goal.targetDate" class="text-sm text-gray-500 dark:text-gray-400">
                             Target: {{ formatDate(goal.targetDate) }}
                           </span>
                         </div>
                       </div>
-                      <UIcon
-                        name="i-heroicons-chevron-right"
-                        class="w-5 h-5 text-gray-400"
-                      />
+                      <UIcon name="i-heroicons-chevron-right" class="w-5 h-5 text-gray-400" />
                     </div>
                   </NuxtLink>
                 </div>
@@ -600,13 +507,8 @@ const feedbackColumns = [
             <div v-else-if="selectedTab === 'achievements'">
               <UCard>
                 <div v-if="achievements.length === 0" class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-star"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
+                  <UIcon name="i-heroicons-star" class="text-gray-400 text-4xl mb-2" />
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
                     No achievements recorded
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -615,33 +517,23 @@ const feedbackColumns = [
                 </div>
 
                 <div v-else class="space-y-4">
-                  <div
-                    v-for="achievement in achievements"
-                    :key="achievement.id"
-                    class="p-4 border-l-4 border-l-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-lg"
-                  >
+                  <div v-for="achievement in achievements" :key="achievement.id"
+                    class="p-4 border-l-4 border-l-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <p class="font-medium text-gray-900 dark:text-white">
                           {{ achievement.title }}
                         </p>
-                        <p
-                          class="text-sm text-gray-600 dark:text-gray-400 mt-1"
-                        >
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           {{ formatDate(achievement.achievedDate) }}
                         </p>
-                        <p
-                          v-if="achievement.description"
-                          class="mt-3 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
-                        >
+                        <p v-if="achievement.description"
+                          class="mt-3 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                           {{ achievement.description }}
                         </p>
                       </div>
                       <div class="flex-shrink-0 text-2xl ml-4">
-                        <UIcon
-                          name="i-heroicons-star"
-                          class="text-gray-400 text-4xl mb-2"
-                        />
+                        <UIcon name="i-heroicons-star" class="text-gray-400 text-4xl mb-2" />
                       </div>
                     </div>
                   </div>
@@ -651,26 +543,17 @@ const feedbackColumns = [
           </div>
 
           <!-- Completion Notes (if completed) -->
-          <UCard
-            v-if="review.status === 'completed' && review.completionNotes"
-            class="mt-6 bg-primary-50 dark:bg-primary-900/10 ring-1 ring-primary-200 dark:ring-primary-800"
-          >
+          <UCard v-if="review.status === 'completed' && review.completionNotes"
+            class="mt-6 bg-primary-50 dark:bg-primary-900/10 ring-1 ring-primary-200 dark:ring-primary-800">
             <div class="flex items-start gap-4">
-              <UAvatar
-                :src="review.buddy?.avatarUrl"
-                :alt="review.buddy?.name"
-                size="md"
-                class="ring-2 ring-white dark:ring-gray-900"
-              />
+              <UAvatar :src="review.buddy?.avatarUrl" :alt="review.buddy?.name" size="md"
+                class="ring-2 ring-white dark:ring-gray-900" />
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     Review Summary from {{ review.buddy?.name }}
                   </h3>
-                  <span
-                    v-if="review.completedDate"
-                    class="text-sm text-gray-500 dark:text-gray-400"
-                  >
+                  <span v-if="review.completedDate" class="text-sm text-gray-500 dark:text-gray-400">
                     Review completed on {{ formatDate(review.completedDate) }}
                   </span>
                 </div>
@@ -683,20 +566,11 @@ const feedbackColumns = [
         </div>
       </div>
       <!-- Complete Review Modal -->
-      <UModal
-        v-model:open="isCompleteModalOpen"
-        title="Complete Review"
-        :ui="{
-          footer: 'justify-end',
-        }"
-      >
+      <UModal v-model:open="isCompleteModalOpen" title="Complete Review" :ui="{
+        footer: 'justify-end',
+      }">
         <template #body>
-          <UTextarea
-            v-model="completionNotes"
-            class="w-full"
-            placeholder="Add summary notes (optional)"
-            :rows="6"
-          />
+          <UTextarea v-model="completionNotes" class="w-full" placeholder="Add summary notes (optional)" :rows="6" />
         </template>
 
         <template #footer>
@@ -708,21 +582,12 @@ const feedbackColumns = [
       </UModal>
 
       <!-- Feedback Modal -->
-      <FeedbackModal
-        v-model="isFeedbackModalOpen"
-        :feedback="selectedFeedback"
-        :show-mark-as-read="false"
-      />
+      <FeedbackModal v-model="isFeedbackModalOpen" :feedback="selectedFeedback" :show-mark-as-read="false" />
 
       <!-- Edit Review Modal -->
-      <UModal
-        v-model:open="isEditModalOpen"
-        title="Edit Review"
-        class="sm:max-w-2xl"
-        :ui="{
-          footer: 'justify-end',
-        }"
-      >
+      <UModal v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
+        footer: 'justify-end',
+      }">
         <template #body>
           <div class="space-y-4">
             <!-- Scheduled Date -->
@@ -730,11 +595,7 @@ const feedbackColumns = [
               <label class="block text-sm font-medium mb-2">
                 Scheduled Date <span class="text-red-500">*</span>
               </label>
-              <UInput
-                v-model="editScheduledDate"
-                type="date"
-                :min="new Date().toISOString().split('T')[0]"
-              />
+              <UInput v-model="editScheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" />
             </div>
 
             <!-- Review Name -->
@@ -742,29 +603,16 @@ const feedbackColumns = [
               <label class="block text-sm font-medium mb-2">
                 Review Name
               </label>
-              <UInput
-                v-model="editReviewName"
-                placeholder="e.g., January 2026"
-                size="lg"
-              />
+              <UInput v-model="editReviewName" placeholder="e.g., January 2026" size="lg" />
             </div>
           </div>
         </template>
 
         <template #footer>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            :disabled="isEditing"
-            @click="isEditModalOpen = false"
-          >
+          <UButton color="neutral" variant="ghost" :disabled="isEditing" @click="isEditModalOpen = false">
             Cancel
           </UButton>
-          <UButton
-            :loading="isEditing"
-            :disabled="!editScheduledDate"
-            @click="updateReview"
-          >
+          <UButton :loading="isEditing" :disabled="!editScheduledDate" @click="updateReview">
             Save Changes
           </UButton>
         </template>

@@ -213,7 +213,7 @@ const givenColumns = [
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Feedback Inbox
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -222,32 +222,18 @@ const givenColumns = [
         </div>
 
         <!-- Tabs -->
-        <UTabs
-          v-model="selectedTab"
-          :items="tabs"
-          variant="pill"
-          color="neutral"
-          size="lg"
-          class="w-full mb-6"
-          :ui="{
-            list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-            trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
-            indicator: 'bg-white dark:bg-gray-900 shadow-sm',
-          }"
-        />
+        <UTabs v-model="selectedTab" :items="tabs" variant="pill" color="neutral" size="lg" class="w-full mb-6" :ui="{
+          list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
+          trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+          indicator: 'bg-white dark:bg-gray-900 shadow-sm',
+        }" />
 
         <!-- Tab Content -->
         <div class="mt-6">
           <div v-if="selectedTab === 'received'">
-            <EmptyState
-              v-if="receivedFeedback.length === 0"
-              icon="i-heroicons-inbox"
-              icon-color="text-blue-500"
-              icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
-              heading="No feedback received yet"
-              description="Check back later for feedback from your colleagues"
-              variant="secondary"
-            />
+            <EmptyState v-if="receivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-blue-500"
+              icon-bg-color="bg-blue-100 dark:bg-blue-900/30" heading="No feedback received yet"
+              description="Check back later for feedback from your colleagues" variant="secondary" />
 
             <template v-else>
               <!-- Spotlight Cards for Recent Feedback -->
@@ -256,19 +242,12 @@ const givenColumns = [
                   Recent Feedback
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <button
-                    v-for="feedback in spotlightFeedback"
-                    :key="feedback.id"
+                  <button v-for="feedback in spotlightFeedback" :key="feedback.id"
                     class="cursor-pointer group text-left flex flex-col items-stretch bg-gradient-to-br from-slate-800/50 to-slate-700/30 dark:from-slate-800/40 dark:to-slate-700/20 rounded-xl p-4 border border-slate-600/40 dark:border-slate-500/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-slate-500/60 dark:hover:border-slate-400/40"
-                    @click="openFeedbackModal(feedback)"
-                  >
+                    @click="openFeedbackModal(feedback)">
                     <div class="flex items-start gap-4 flex-1">
-                      <UAvatar
-                        :src="feedback.reviewer.image || feedback.reviewer.avatarUrl || undefined"
-                        :alt="feedback.reviewer.name"
-                        size="lg"
-                        class="flex-shrink-0"
-                      />
+                      <UAvatar :src="feedback.reviewer.image || feedback.reviewer.avatarUrl || undefined"
+                        :alt="feedback.reviewer.name" size="lg" class="flex-shrink-0" />
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center justify-between gap-2 mb-1">
                           <div class="min-w-0">
@@ -289,146 +268,98 @@ const givenColumns = [
                       </div>
                     </div>
                     <div class="mt-3 flex items-center justify-between">
-                      <UBadge 
-                        :label="feedback.isRead ? 'Read' : 'Unread'" 
-                        :color="feedback.isRead ? 'neutral' : 'primary'" 
-                        size="sm" 
-                      />
-                      <UIcon
-                        name="i-heroicons-arrow-right"
-                        class="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform group-hover:translate-x-1"
-                      />
+                      <UBadge :label="feedback.isRead ? 'Read' : 'Unread'"
+                        :color="feedback.isRead ? 'neutral' : 'primary'" size="sm" />
+                      <UIcon name="i-heroicons-arrow-right"
+                        class="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform group-hover:translate-x-1" />
                     </div>
                   </button>
                 </div>
               </div>
 
               <UCard v-if="tableFeedback.length > 0">
-              <UTable
-                :columns="receivedColumns"
-                :data="tableFeedback"
-                :ui="{
+                <UTable :columns="receivedColumns" :data="tableFeedback" :ui="{
                   tr: 'data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
-                }"
-                :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })"
-              >
-                <template #from-cell="{ row }">
-                  <div class="flex items-center gap-2">
-                    <UAvatar
-                      :src="
-                        row.original.reviewer.image ||
+                }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })">
+                  <template #from-cell="{ row }">
+                    <div class="flex items-center gap-2">
+                      <UAvatar :src="row.original.reviewer.image ||
                         row.original.reviewer.avatarUrl ||
                         undefined
-                      "
-                      :alt="row.original.reviewer.name"
-                      size="xs"
-                    />
-                    <span>{{ row.original.reviewer.name }}</span>
-                  </div>
-                </template>
+                        " :alt="row.original.reviewer.name" size="xs" />
+                      <span>{{ row.original.reviewer.name }}</span>
+                    </div>
+                  </template>
 
-                <template #content-cell="{ row }">
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)"
-                  >
-                    <span class="truncate block">{{
-                      row.original.content
-                    }}</span>
-                  </UButton>
-                </template>
+                  <template #content-cell="{ row }">
+                    <UButton variant="ghost" color="neutral"
+                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                      @click="openFeedbackModal(row.original)">
+                      <span class="truncate block">{{
+                        row.original.content
+                        }}</span>
+                    </UButton>
+                  </template>
 
-                <template #date-cell="{ row }">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.publishedAt) }}
-                  </span>
-                </template>
+                  <template #date-cell="{ row }">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ formatDate(row.original.publishedAt) }}
+                    </span>
+                  </template>
 
-                <template #review-cell="{ row }">
-                  <NuxtLink
-                    v-if="row.original.review?.id"
-                    :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    {{ row.original.review.name }}
-                  </NuxtLink>
-                  <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                    Not assigned
-                  </span>
-                </template>
+                  <template #review-cell="{ row }">
+                    <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                      {{ row.original.review.name }}
+                    </NuxtLink>
+                    <span v-else class="text-sm text-gray-400 dark:text-gray-600">
+                      Not assigned
+                    </span>
+                  </template>
 
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :label="row.original.isRead ? 'Read' : 'Unread'"
-                    :color="row.original.isRead ? 'neutral' : 'primary'"
-                    size="sm"
-                  />
-                </template>
+                  <template #status-cell="{ row }">
+                    <UBadge :label="row.original.isRead ? 'Read' : 'Unread'"
+                      :color="row.original.isRead ? 'neutral' : 'primary'" size="sm" />
+                  </template>
 
-                <template #actions-cell="{ row }">
-                  <UButton
-                    v-if="!row.original.isRead"
-                    loading-auto
-                    size="xs"
-                    variant="ghost"
-                    @click="markAsRead(row.original.id)"
-                  >
-                    Mark as Read
-                  </UButton>
-                </template>
-              </UTable>
-            </UCard>
+                  <template #actions-cell="{ row }">
+                    <UButton v-if="!row.original.isRead" loading-auto size="xs" variant="ghost"
+                      @click="markAsRead(row.original.id)">
+                      Mark as Read
+                    </UButton>
+                  </template>
+                </UTable>
+              </UCard>
             </template>
           </div>
 
           <!-- Unread Tab -->
           <div v-else-if="selectedTab === 'unread'">
-            <EmptyState
-              v-if="unreadFeedback.length === 0"
-              icon="i-heroicons-check-circle"
-              icon-color="text-green-500"
-              icon-bg-color="bg-green-100 dark:bg-green-900/30"
-              heading="All caught up!"
-              description="You have no unread feedback"
-              variant="secondary"
-            />
+            <EmptyState v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="text-green-500"
+              icon-bg-color="bg-green-100 dark:bg-green-900/30" heading="All caught up!"
+              description="You have no unread feedback" variant="secondary" />
 
             <UCard v-else>
-              <UTable
-                :columns="receivedColumns"
-                :data="unreadFeedback"
-                :ui="{
-                  tr: 'border-l-2 border-l-primary-500',
-                }"
-                :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })"
-              >
+              <UTable :columns="receivedColumns" :data="unreadFeedback" :ui="{
+                tr: 'border-l-2 border-l-primary-500',
+              }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
-                    <UAvatar
-                      :src="
-                        row.original.reviewer.image ||
-                        row.original.reviewer.avatarUrl ||
-                        undefined
-                      "
-                      :alt="row.original.reviewer.name"
-                      size="xs"
-                    />
+                    <UAvatar :src="row.original.reviewer.image ||
+                      row.original.reviewer.avatarUrl ||
+                      undefined
+                      " :alt="row.original.reviewer.name" size="xs" />
                     <span>{{ row.original.reviewer.name }}</span>
                   </div>
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
+                  <UButton variant="ghost" color="neutral"
                     class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)"
-                  >
+                    @click="openFeedbackModal(row.original)">
                     <span class="truncate block">{{
                       row.original.content
-                    }}</span>
+                      }}</span>
                   </UButton>
                 </template>
 
@@ -439,11 +370,8 @@ const givenColumns = [
                 </template>
 
                 <template #review-cell="{ row }">
-                  <NuxtLink
-                    v-if="row.original.review?.id"
-                    :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                  >
+                  <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                     {{ row.original.review.name }}
                   </NuxtLink>
                   <span v-else class="text-sm text-gray-400 dark:text-gray-600">
@@ -452,20 +380,11 @@ const givenColumns = [
                 </template>
 
                 <template #status-cell="{ row }">
-                  <UBadge
-                    label="Unread"
-                    color="primary"
-                    size="sm"
-                  />
+                  <UBadge label="Unread" color="primary" size="sm" />
                 </template>
 
                 <template #actions-cell="{ row }">
-                  <UButton
-                    loading-auto
-                    size="xs"
-                    variant="ghost"
-                    @click="markAsRead(row.original.id)"
-                  >
+                  <UButton loading-auto size="xs" variant="ghost" @click="markAsRead(row.original.id)">
                     Mark as Read
                   </UButton>
                 </template>
@@ -475,42 +394,22 @@ const givenColumns = [
 
           <!-- Given Tab -->
           <div v-else-if="selectedTab === 'given'">
-            <EmptyState
-              v-if="givenFeedback.length === 0"
-              icon="i-heroicons-chat-bubble-left"
-              icon-color="text-blue-500"
-              icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
-              heading="You haven't given any feedback yet"
-              description="Start by giving feedback to your colleagues"
-              button-text="Submit Feedback"
-              button-to="/feedback/give"
-              variant="primary"
-            />
+            <EmptyState v-if="givenFeedback.length === 0" icon="i-heroicons-chat-bubble-left" icon-color="text-blue-500"
+              icon-bg-color="bg-blue-100 dark:bg-blue-900/30" heading="You haven't given any feedback yet"
+              description="Start by giving feedback to your colleagues" button-text="Submit Feedback"
+              button-to="/feedback/give" variant="primary" />
 
             <UCard v-else>
               <div>
                 <!-- Filter Controls -->
                 <div class="mb-4 flex items-center gap-2">
-                  <USelect
-                    v-model="selectedRecipient"
-                    :items="recipients"
-                    placeholder="Filter by recipient"
-                    class="w-64"
-                  />
-                  <UButton
-                    v-if="selectedRecipient"
-                    variant="ghost"
-                    color="primary"
-                    icon="i-heroicons-x-mark"
-                    size="sm"
-                    @click="clearRecipientFilter"
-                  >
+                  <USelect v-model="selectedRecipient" :items="recipients" placeholder="Filter by recipient"
+                    class="w-64" />
+                  <UButton v-if="selectedRecipient" variant="ghost" color="primary" icon="i-heroicons-x-mark" size="sm"
+                    @click="clearRecipientFilter">
                     Clear
                   </UButton>
-                  <span
-                    v-if="selectedRecipient"
-                    class="text-sm text-gray-500 dark:text-gray-400"
-                  >
+                  <span v-if="selectedRecipient" class="text-sm text-gray-500 dark:text-gray-400">
                     Showing {{ filteredGivenFeedback.length }} of
                     {{ givenFeedback.length }} items
                   </span>
@@ -519,29 +418,21 @@ const givenColumns = [
                 <UTable :columns="givenColumns" :data="filteredGivenFeedback">
                   <template #to-cell="{ row }">
                     <div class="flex items-center gap-2">
-                      <UAvatar
-                        :src="
-                          row.original.reviewee.image ||
-                          row.original.reviewee.avatarUrl ||
-                          undefined
-                        "
-                        :alt="row.original.reviewee.name"
-                        size="xs"
-                      />
+                      <UAvatar :src="row.original.reviewee.image ||
+                        row.original.reviewee.avatarUrl ||
+                        undefined
+                        " :alt="row.original.reviewee.name" size="xs" />
                       <span>{{ row.original.reviewee.name }}</span>
                     </div>
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
+                    <UButton variant="ghost" color="neutral"
                       class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)"
-                    >
+                      @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                      }}</span>
+                        }}</span>
                     </UButton>
                   </template>
 
@@ -552,27 +443,18 @@ const givenColumns = [
                   </template>
 
                   <template #review-cell="{ row }">
-                    <NuxtLink
-                      v-if="row.original.review?.id"
-                      :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                    >
+                    <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                       {{ row.original.review.name }}
                     </NuxtLink>
-                    <span
-                      v-else
-                      class="text-sm text-gray-400 dark:text-gray-600"
-                    >
+                    <span v-else class="text-sm text-gray-400 dark:text-gray-600">
                       Not assigned
                     </span>
                   </template>
 
                   <template #status-cell="{ row }">
-                    <UBadge
-                      :label="row.original.published ? 'Published' : 'Pending'"
-                      :color="row.original.published ? 'success' : 'neutral'"
-                      size="xs"
-                    />
+                    <UBadge :label="row.original.published ? 'Published' : 'Pending'"
+                      :color="row.original.published ? 'success' : 'neutral'" size="xs" />
                   </template>
                 </UTable>
               </div>
@@ -584,10 +466,6 @@ const givenColumns = [
   </UDashboardPanel>
 
   <!-- Feedback Modal -->
-  <FeedbackModal
-    v-model="isModalOpen"
-    :feedback="selectedFeedback"
-    :show-mark-as-read="selectedTab === 'received'"
-    @mark-as-read="handleMarkAsReadFromModal"
-  />
+  <FeedbackModal v-model="isModalOpen" :feedback="selectedFeedback" :show-mark-as-read="selectedTab === 'received'"
+    @mark-as-read="handleMarkAsReadFromModal" />
 </template>
