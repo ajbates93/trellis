@@ -163,11 +163,11 @@ watch(selectedUser, async (userId) => {
             </div>
 
             <!-- Form -->
-            <form class="space-y-6" @submit.prevent="submitFeedback">
+            <form class="space-y-6 bg-gray-100/80 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700/50 rounded-xl p-6" @submit.prevent="submitFeedback">
               <!-- User Selection -->
               <!-- <div class="animate-item" :style="{ '--delay': '200ms' }"> -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Who would you like to give feedback to?
                 </label>
                 <USelectMenu
@@ -178,18 +178,22 @@ watch(selectedUser, async (userId) => {
                   :search-input="{ placeholder: 'Search colleagues...' }"
                   class="w-full"
                 >
-                  <template #leading>
-                    <UAvatar
-                      v-if="selectedUserObject"
-                      :src="selectedUserObject.image || selectedUserObject.avatarUrl"
-                      :alt="selectedUserObject.name"
-                      size="xs"
-                    />
-                    <UIcon
-                      v-else
-                      name="i-heroicons-user-circle"
-                      class="w-5 h-5 text-gray-400 dark:text-gray-500"
-                    />
+                  <template #default>
+                    <div class="flex items-center gap-2">
+                      <UAvatar
+                        v-if="selectedUserObject"
+                        :src="selectedUserObject.image || selectedUserObject.avatarUrl"
+                        :alt="selectedUserObject.name"
+                        size="xs"
+                      />
+                      <UIcon
+                        v-else
+                        name="i-heroicons-user-circle"
+                        class="w-5 h-5 text-gray-400 dark:text-gray-500"
+                      />
+                      <span v-if="selectedUserObject">{{ selectedUserObject.name }}</span>
+                      <span v-else class="text-gray-400 dark:text-gray-500">Search for a colleague...</span>
+                    </div>
                   </template>
 
                   <template #item="{ item }">
@@ -242,7 +246,7 @@ watch(selectedUser, async (userId) => {
               <!-- Feedback Text Area -->
               <!-- <div class="animate-item" :style="{ '--delay': '300ms' }"> -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Your Feedback
                 </label>
                 <UTextarea

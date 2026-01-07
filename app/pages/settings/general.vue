@@ -19,27 +19,33 @@
               <NuxtLink
                 to="/settings/general"
                 class="border-b-2 py-4 px-1 text-sm font-medium"
-                :class="$route.path === '/settings/general'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                :class="
+                  $route.path === '/settings/general'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                "
               >
                 General
               </NuxtLink>
               <NuxtLink
                 to="/settings/security"
                 class="border-b-2 py-4 px-1 text-sm font-medium"
-                :class="$route.path === '/settings/security'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                :class="
+                  $route.path === '/settings/security'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                "
               >
                 Security
               </NuxtLink>
               <NuxtLink
                 to="/settings/notifications"
                 class="border-b-2 py-4 px-1 text-sm font-medium"
-                :class="$route.path === '/settings/notifications'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                :class="
+                  $route.path === '/settings/notifications'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                "
               >
                 Notifications
               </NuxtLink>
@@ -63,7 +69,7 @@
                     Choose between light and dark mode
                   </p>
                 </div>
-                <UColorModeSwitch />
+                <UColorModeSwitch disabled />
               </div>
             </div>
           </UCard>
