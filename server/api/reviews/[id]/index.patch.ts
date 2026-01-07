@@ -27,8 +27,16 @@ export default defineEventHandler(async (event) => {
     event,
     apiSchemas.UpdateReviewScheduleRequestSchema,
   );
-  console.log(body);
-  const { scheduledDate, name, notes } = body;
+  
+  const { 
+    scheduledDate, 
+    name, 
+    notes,
+    reflectionLearnings,
+    reflectionHighlights,
+    reflectionConcerns,
+    buddyComments,
+  } = body;
 
   try {
     // Get the existing review to check authorization
@@ -45,32 +53,51 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // AUTHORIZATION CHECK: Only the buddy or admins can edit reviews
+    // AUTHORIZATION CHECK
+    const isReviewee = existingReview.userId === session.user.id;
     const isBuddy = existingReview.buddyId === session.user.id;
     const isAdmin = session.user.role === "admin";
 
-    if (!isBuddy && !isAdmin) {
+    // Must be either the reviewee, buddy, or admin
+    if (!isReviewee && !isBuddy && !isAdmin) {
       throw createError({
         statusCode: 403,
         message: "You do not have permission to edit this review",
       });
     }
 
-    // Build update object with only provided fields
-    const updateData: any = {
+    // Build update object with role-based field access
+    const updateData: Record<string, unknown> = {
       updatedAt: new Date(),
     };
 
-    if (scheduledDate !== undefined) {
-      updateData.scheduledDate = scheduledDate;
+    // Fields only buddy/admin can update
+    if (isBuddy || isAdmin) {
+      if (scheduledDate !== undefined) {
+        updateData.scheduledDate = scheduledDate;
+      }
+      if (name !== undefined) {
+        updateData.name = name;
+      }
+      if (notes !== undefined) {
+        updateData.notes = notes;
+      }
+      if (buddyComments !== undefined) {
+        updateData.buddyComments = buddyComments;
+      }
     }
 
-    if (name !== undefined) {
-      updateData.name = name;
-    }
-
-    if (notes !== undefined) {
-      updateData.notes = notes;
+    // Fields only reviewee/admin can update
+    if (isReviewee || isAdmin) {
+      if (reflectionLearnings !== undefined) {
+        updateData.reflectionLearnings = reflectionLearnings;
+      }
+      if (reflectionHighlights !== undefined) {
+        updateData.reflectionHighlights = reflectionHighlights;
+      }
+      if (reflectionConcerns !== undefined) {
+        updateData.reflectionConcerns = reflectionConcerns;
+      }
     }
 
     // Update the review
@@ -87,9 +114,9 @@ export default defineEventHandler(async (event) => {
       },
       apiSchemas.UpdateReviewScheduleResponseSchema,
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error updating review:", error);
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error;
     }
     throw createError({

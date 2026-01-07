@@ -39,8 +39,12 @@ const editNotes = ref<string>("");
 const isEditing = ref(false);
 
 // Get current user session
-const { data: sessionData } = await useFetch("/api/auth/session");
-const currentUser = computed(() => sessionData.value?.user);
+const { user: currentUser } = useAuth();
+
+// Check if current user is the reviewee for this review
+const isReviewee = computed(() => {
+  return review.value?.userId === currentUser.value?.id;
+});
 
 // Check if current user is the buddy for this review
 const isBuddy = computed(() => {
@@ -134,18 +138,113 @@ const formatDate = (date: string) => {
 const isFeedbackModalOpen = ref(false);
 const selectedFeedback = ref<any>(null);
 
-// Open feedback modal - inject review info since we know the context
+// Open feedback modal
 const openFeedbackModal = (feedbackItem: any) => {
-  selectedFeedback.value = {
-    ...feedbackItem,
-    review: review.value ? {
-      id: review.value.id,
-      name: review.value.name,
-      scheduledDate: review.value.scheduledDate,
-    } : null,
-  };
+  selectedFeedback.value = feedbackItem;
   isFeedbackModalOpen.value = true;
 };
+
+// Reflection state
+const reflectionLearnings = ref("");
+const reflectionHighlights = ref("");
+const reflectionConcerns = ref("");
+const buddyComments = ref("");
+
+// Initialize reflection state from review data
+watch(
+  () => review.value,
+  (newReview) => {
+    if (newReview) {
+      reflectionLearnings.value = newReview.reflectionLearnings || "";
+      reflectionHighlights.value = newReview.reflectionHighlights || "";
+      reflectionConcerns.value = newReview.reflectionConcerns || "";
+      buddyComments.value = newReview.buddyComments || "";
+    }
+  },
+  { immediate: true }
+);
+
+// Auto-save logic
+const isSavingReflections = ref(false);
+const isSavingBuddyComments = ref(false);
+const saveTimeout = ref<NodeJS.Timeout | null>(null);
+
+const saveReflection = async (field: string, value: string) => {
+  if (!review.value) return;
+
+  const isBuddyComment = field === "buddyComments";
+  if (isBuddyComment) {
+    isSavingBuddyComments.value = true;
+  } else {
+    isSavingReflections.value = true;
+  }
+
+  try {
+    await $fetch(`/api/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: {
+        [field]: value,
+      },
+    });
+  } catch (error) {
+    console.error(`Failed to save ${field}:`, error);
+    toast.add({
+      title: "Failed to save changes",
+      description: "Please check your connection and try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    if (isBuddyComment) {
+      isSavingBuddyComments.value = false;
+    } else {
+      isSavingReflections.value = false;
+    }
+  }
+};
+
+const debouncedSave = (field: string, value: string) => {
+  if (saveTimeout.value) {
+    clearTimeout(saveTimeout.value);
+  }
+
+  const isBuddyComment = field === "buddyComments";
+  if (isBuddyComment) {
+    isSavingBuddyComments.value = true;
+  } else {
+    isSavingReflections.value = true;
+  }
+
+  saveTimeout.value = setTimeout(() => {
+    saveReflection(field, value);
+  }, 1000); // 1 second debounce
+};
+
+// Watch for changes to trigger auto-save
+// Only watch if the user has permission to edit that field to avoid unnecessary saves on load
+watch(reflectionLearnings, (newValue, oldValue) => {
+  if (isReviewee.value && newValue !== (review.value?.reflectionLearnings || "") && oldValue !== "") {
+    debouncedSave("reflectionLearnings", newValue);
+  }
+});
+
+watch(reflectionHighlights, (newValue, oldValue) => {
+  if (isReviewee.value && newValue !== (review.value?.reflectionHighlights || "") && oldValue !== "") {
+    debouncedSave("reflectionHighlights", newValue);
+  }
+});
+
+watch(reflectionConcerns, (newValue, oldValue) => {
+  if (isReviewee.value && newValue !== (review.value?.reflectionConcerns || "") && oldValue !== "") {
+    debouncedSave("reflectionConcerns", newValue);
+  }
+});
+
+watch(buddyComments, (newValue, oldValue) => {
+  if (isBuddy.value && newValue !== (review.value?.buddyComments || "") && oldValue !== "") {
+    debouncedSave("buddyComments", newValue);
+  }
+});
 
 // Tabs with dynamic counts
 const tabs = computed(() => [
@@ -185,13 +284,6 @@ const feedbackColumns = [
         <div v-else>
           <!-- Header -->
           <div class="mb-8">
-            <NuxtLink 
-              to="/reviews" 
-              class="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4"
-            >
-              <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
-              Back to Reviews
-            </NuxtLink>
             <div class="flex items-start justify-between mb-4">
               <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -250,6 +342,76 @@ const feedbackColumns = [
             <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
               {{ review.notes }}
             </p>
+          </UCard>
+
+          <!-- Reflections Section -->
+          <UCard class="mb-6">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-light-bulb" class="w-5 h-5 text-primary-500" />
+                  <h3 class="font-semibold text-gray-900 dark:text-white">
+                    Reflections
+                  </h3>
+                </div>
+                <div v-if="isSavingReflections" class="flex items-center gap-2 text-sm text-gray-500">
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+                  Saving...
+                </div>
+              </div>
+            </template>
+
+            <div class="space-y-6">
+              <ReviewsReflectionEditor
+                v-model="reflectionLearnings"
+                label="What have I learnt in the past three months?"
+                icon="i-heroicons-academic-cap"
+                placeholder="Share what you've learned..."
+                :readonly="!isReviewee"
+              />
+
+              <ReviewsReflectionEditor
+                v-model="reflectionHighlights"
+                label="Any highlights?"
+                icon="i-heroicons-star"
+                placeholder="What are you most proud of?"
+                :readonly="!isReviewee"
+              />
+
+              <ReviewsReflectionEditor
+                v-model="reflectionConcerns"
+                label="Are you worried about anything right now?"
+                icon="i-heroicons-exclamation-triangle"
+                placeholder="Share any concerns..."
+                :readonly="!isReviewee"
+              />
+            </div>
+          </UCard>
+
+          <!-- Buddy Comments Section -->
+          <UCard class="mb-6">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-5 h-5 text-primary-500" />
+                  <h3 class="font-semibold text-gray-900 dark:text-white">
+                    Buddy Comments
+                  </h3>
+                </div>
+                <div v-if="isSavingBuddyComments" class="flex items-center gap-2 text-sm text-gray-500">
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+                  Saving...
+                </div>
+              </div>
+            </template>
+
+            <ReviewsReflectionEditor
+              v-model="buddyComments"
+              label="Notes from your buddy"
+              icon="i-heroicons-user"
+              placeholder="Add comments about the review..."
+              :readonly="!isBuddy"
+            />
           </UCard>
 
           <!-- Tabs -->

@@ -64,6 +64,13 @@
       "when": 1767626102970,
       "tag": "0008_massive_sally_floyd",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1767805739291,
+      "tag": "0009_striped_wolfpack",
+      "breakpoints": true
     }
   ]
 }

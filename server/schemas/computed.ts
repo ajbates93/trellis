@@ -24,7 +24,6 @@ export const FeedbackWithReviewerSchema = z.object({
     email: z.email(),
     image: z.string().nullable(),
     avatarUrl: z.string().nullable(),
-    roleType: z.string().nullable(),
   }),
   review: z.object({
     id: z.uuid(),
