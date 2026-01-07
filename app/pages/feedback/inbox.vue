@@ -248,7 +248,7 @@ const givenColumns = [
                   <button
                     v-for="feedback in spotlightFeedback"
                     :key="feedback.id"
-                    class="group text-left bg-gradient-to-br from-primary-50/50 to-green-50/50 dark:from-primary-900/20 dark:to-green-900/20 rounded-xl p-4 border border-primary-200/50 dark:border-primary-700/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary-300 dark:hover:border-primary-600"
+                    class="group text-left bg-gradient-to-br from-slate-800/50 to-slate-700/30 dark:from-slate-800/40 dark:to-slate-700/20 rounded-xl p-4 border border-slate-600/40 dark:border-slate-500/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-slate-500/60 dark:hover:border-slate-400/40"
                     @click="openFeedbackModal(feedback)"
                   >
                     <div class="flex items-start gap-4">
@@ -263,7 +263,7 @@ const givenColumns = [
                           <span class="font-semibold text-gray-900 dark:text-white truncate">
                             {{ feedback.reviewer.name }}
                           </span>
-                          <span class="text-xs text-primary-600 dark:text-primary-400 flex-shrink-0">
+                          <span class="text-xs text-slate-400 dark:text-slate-400 flex-shrink-0">
                             {{ formatRelativeTime(feedback.publishedAt) }}
                           </span>
                         </div>
