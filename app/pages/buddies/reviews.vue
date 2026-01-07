@@ -9,7 +9,7 @@ definePageMeta({
 
 const toast = useToast();
 const { selectedBuddyId } = useSelectedBuddy();
-const { buddies, getBuddyById } = useBuddies();
+const { getBuddyById } = useBuddies();
 
 // Get selected buddy info
 const selectedBuddy = computed(() => {
@@ -32,17 +32,6 @@ const { data: pastData, refresh: refreshPast } = useFetch(() =>
     : null,
 );
 const pastReviews = computed(() => pastData.value?.reviews || []);
-
-// Get buddy info from either upcoming or past reviews
-const buddyInfo = computed(() => {
-  if (upcomingReviews.value.length > 0) {
-    return upcomingReviews.value[0].user;
-  }
-  if (pastReviews.value.length > 0) {
-    return pastReviews.value[0].user;
-  }
-  return null;
-});
 
 // Refresh when buddy changes
 watch(selectedBuddyId, async () => {
@@ -373,8 +362,21 @@ const getReviewActions = (review: any) => [
         </div>
 
         <!-- Tabbed Reviews Interface -->
-        <div v-if="selectedBuddyId && buddyInfo">
+        <div v-if="selectedBuddyId && selectedBuddy">
+          <!-- Empty state when buddy has no reviews at all -->
+          <EmptyState
+            v-if="upcomingReviews.length === 0 && pastReviews.length === 0"
+            icon="i-heroicons-calendar-days"
+            heading="No reviews yet"
+            :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
+            button-text="Create First Review"
+            button-icon="i-heroicons-plus"
+            variant="primary"
+            @button-click="isCreateModalOpen = true"
+          />
+
           <UTabs
+            v-else
             v-model="activeTab"
             :items="tabItems"
             variant="pill"
@@ -396,7 +398,7 @@ const getReviewActions = (review: any) => [
                   icon-color="text-primary"
                   icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
                   heading="No upcoming reviews"
-                  :description="`${buddyInfo.name} has no scheduled reviews coming up`"
+                  :description="`${selectedBuddy?.name} has no scheduled reviews coming up`"
                   variant="secondary"
                 />
 
@@ -470,7 +472,7 @@ const getReviewActions = (review: any) => [
                   icon-color="text-gray-400"
                   icon-bg-color="bg-gray-200 dark:bg-gray-700"
                   heading="No past reviews"
-                  :description="`${buddyInfo.name} has no reviews scheduled in the past`"
+                  :description="`${selectedBuddy?.name} has no completed reviews yet`"
                   variant="secondary"
                 />
 

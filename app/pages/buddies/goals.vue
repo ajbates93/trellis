@@ -18,6 +18,13 @@ definePageMeta({
 });
 
 const { selectedBuddyId } = useSelectedBuddy();
+const { getBuddyById } = useBuddies();
+
+// Get selected buddy info from composable (independent of goals data)
+const selectedBuddy = computed(() => {
+  if (!selectedBuddyId.value) return null;
+  return getBuddyById(selectedBuddyId.value);
+});
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId
 const { data: buddyGoalsData, refresh: refreshBuddyGoals } = useFetch<GetBuddyGoalsResponse>(() =>
@@ -45,14 +52,6 @@ const buddyGoals = computed(() => {
     return assignments[0].goals || [];
   }
   return [];
-});
-
-const buddyInfo = computed(() => {
-  const assignments = buddyGoalsData.value?.buddyAssignments || [];
-  if (assignments.length > 0 && assignments[0]) {
-    return assignments[0].user;
-  }
-  return null;
 });
 
 const checkins = computed(() => {
@@ -307,9 +306,19 @@ const submitCheckin = async (notes: string) => {
         </div>
 
         <!-- Goals Content -->
-        <div v-if="selectedBuddyId && buddyInfo" class="space-y-6">
+        <div v-if="selectedBuddyId && selectedBuddy" class="space-y-6">
+          <!-- Empty state when buddy has no goals at all -->
+          <EmptyState
+            v-if="buddyGoals.length === 0"
+            icon="i-heroicons-flag"
+            heading="No goals yet"
+            :description="`${selectedBuddy.name} hasn't set any development goals yet.`"
+            variant="primary"
+          />
+
           <!-- Tabbed Goals Interface -->
           <UTabs
+            v-else
             v-model="activeTab"
             :items="tabItems"
             variant="pill"
@@ -330,7 +339,7 @@ const submitCheckin = async (notes: string) => {
                   v-if="activeGoals.length === 0"
                   icon="i-heroicons-rocket-launch"
                   heading="No active goals"
-                  :description="`${buddyInfo.name} doesn't have any active goals yet.`"
+                  :description="`${selectedBuddy?.name} doesn't have any active goals yet.`"
                   variant="primary"
                 />
 
@@ -361,7 +370,7 @@ const submitCheckin = async (notes: string) => {
                   icon-color="text-amber-500"
                   icon-bg-color="bg-amber-100 dark:bg-amber-900/30"
                   heading="No completed goals yet"
-                  :description="`${buddyInfo.name} hasn't completed any goals yet.`"
+                  :description="`${selectedBuddy?.name} hasn't completed any goals yet.`"
                   variant="secondary"
                 />
 
@@ -423,7 +432,7 @@ const submitCheckin = async (notes: string) => {
                 </h2>
               </div>
               <UButton
-                v-if="buddyInfo"
+                v-if="selectedBuddy"
                 icon="i-heroicons-plus"
                 size="sm"
                 @click="showCheckinModal = true"
@@ -482,7 +491,7 @@ const submitCheckin = async (notes: string) => {
               icon-color="text-gray-400"
               icon-bg-color="bg-gray-200 dark:bg-gray-700"
               heading="No check-ins yet"
-              :description="`Record your monthly conversations with ${buddyInfo?.name}.`"
+              :description="`Record your monthly conversations with ${selectedBuddy?.name}.`"
               button-text="Add First Check-In"
               button-icon="i-heroicons-plus"
               button-size="sm"
@@ -499,7 +508,7 @@ const submitCheckin = async (notes: string) => {
   <!-- Check-in Modal -->
   <CheckinModal
     v-model="showCheckinModal"
-    :buddy="buddyInfo"
+    :buddy="selectedBuddy"
     :is-loading="isCreatingCheckin"
     @submit="submitCheckin"
   />
