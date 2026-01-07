@@ -461,7 +461,9 @@ const feedbackColumns = [
 
             <!-- Review Name -->
             <div>
-              <label class="block text-sm font-medium mb-2"> Review Name </label>
+              <label class="block text-sm font-medium mb-2">
+                Review Name
+              </label>
               <UInput
                 v-model="editReviewName"
                 placeholder="e.g., January 2026"

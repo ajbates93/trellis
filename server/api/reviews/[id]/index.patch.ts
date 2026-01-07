@@ -23,7 +23,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await validateBody(event, apiSchemas.UpdateReviewScheduleRequestSchema);
+  const body = await validateBody(
+    event,
+    apiSchemas.UpdateReviewScheduleRequestSchema,
+  );
+  console.log(body);
   const { scheduledDate, name, notes } = body;
 
   try {
@@ -81,7 +85,7 @@ export default defineEventHandler(async (event) => {
         success: true,
         review: updatedReview,
       },
-      apiSchemas.UpdateReviewScheduleResponseSchema
+      apiSchemas.UpdateReviewScheduleResponseSchema,
     );
   } catch (error) {
     console.error("Error updating review:", error);

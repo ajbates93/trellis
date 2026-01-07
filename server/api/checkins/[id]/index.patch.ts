@@ -77,7 +77,7 @@ export default defineEventHandler(async (event) => {
       .where(eq(buddyCheckins.id, id));
 
     return validateResponse(
-      { checkin: updatedCheckin },
+      { success: true, checkin: updatedCheckin },
       apiSchemas.SuccessResponseSchema.passthrough()
     );
   } catch (error) {

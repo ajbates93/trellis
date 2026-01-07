@@ -88,6 +88,7 @@ export default defineEventHandler(async (event) => {
 
   return validateResponse(
     {
+      success: true,
       id: checkinWithData.id,
       buddy: checkinWithData.buddy,
       user: checkinWithData.user,

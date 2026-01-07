@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { format, differenceInDays  } from "date-fns";
-import type { TabsItem } from '@nuxt/ui'
+import { format, differenceInDays } from "date-fns";
+import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
   layout: "default",
@@ -44,23 +44,26 @@ const handleBuddySelected = (buddyId: string) => {
 };
 
 // Tab state
-const activeTab = ref('upcoming');
+const activeTab = ref("upcoming");
 
 // Tab items
 const tabItems = computed<TabsItem[]>(() => [
   {
-    label: 'Upcoming',
-    icon: 'i-heroicons-calendar-days',
-    badge: upcomingReviews.value.length > 0 ? upcomingReviews.value.length : undefined,
-    value: 'upcoming',
-    slot: 'upcoming',
+    label: "Upcoming",
+    icon: "i-heroicons-calendar-days",
+    badge:
+      upcomingReviews.value.length > 0
+        ? upcomingReviews.value.length
+        : undefined,
+    value: "upcoming",
+    slot: "upcoming",
   },
   {
-    label: 'Past',
-    icon: 'i-heroicons-archive-box',
+    label: "Past",
+    icon: "i-heroicons-archive-box",
     badge: pastReviews.value.length > 0 ? pastReviews.value.length : undefined,
-    value: 'past',
-    slot: 'past',
+    value: "past",
+    slot: "past",
   },
 ]);
 
@@ -100,11 +103,13 @@ const checkinNotes = ref<string>("");
 
 // Edit review modal state
 const isEditModalOpen = ref(false);
-const editReviewId = ref<string>("");
-const editScheduledDate = ref<string>("");
-const editReviewName = ref<string>("");
-const editNotes = ref<string>("");
 const isEditing = ref(false);
+const editingReview = reactive({
+  id: "",
+  scheduledDate: "",
+  name: "",
+  notes: "",
+});
 
 const openReviewModal = async (review: any) => {
   selectedReview.value = review;
@@ -115,16 +120,19 @@ const openReviewModal = async (review: any) => {
 
 // Open edit modal
 const openEditModal = (review: any) => {
-  editReviewId.value = review.id;
-  editScheduledDate.value = review.scheduledDate;
-  editReviewName.value = review.name || "";
-  editNotes.value = review.notes || "";
+  // Update reactive properties individually
+  editingReview.id = review.id;
+  editingReview.scheduledDate = review.scheduledDate
+    ? new Date(review.scheduledDate).toISOString().split("T")[0]
+    : "";
+  editingReview.name = review.name || "";
+  editingReview.notes = review.notes || "";
   isEditModalOpen.value = true;
 };
 
 // Update review
 const updateReview = async () => {
-  if (!editReviewId.value || !editScheduledDate.value) {
+  if (!editingReview.id || !editingReview.scheduledDate) {
     toast.add({
       title: "Missing required fields",
       description: "Please provide a scheduled date",
@@ -137,12 +145,12 @@ const updateReview = async () => {
   isEditing.value = true;
 
   try {
-    await $fetch(`/api/reviews/${editReviewId.value}`, {
+    await $fetch(`/api/reviews/${editingReview.id}`, {
       method: "PATCH",
       body: {
-        scheduledDate: editScheduledDate.value,
-        name: editReviewName.value,
-        notes: editNotes.value,
+        scheduledDate: editingReview.scheduledDate,
+        name: editingReview.name,
+        notes: editingReview.notes,
       },
     });
 
@@ -263,6 +271,30 @@ const completeReview = async (reviewId: string) => {
   }
 };
 
+// Delete review
+const deleteReview = async (reviewId: string) => {
+  try {
+    await $fetch(`/api/reviews/${reviewId}`, {
+      method: "DELETE",
+    });
+    await Promise.all([refreshUpcoming(), refreshPast()]);
+    toast.add({
+      title: "Review deleted",
+      description: "The review has been deleted successfully",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to delete review:", error);
+    toast.add({
+      title: "Failed to delete review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
 // Column definitions - simplified structure with width hints
 const upcomingColumns = [
   {
@@ -317,14 +349,22 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 const getReviewActions = (review: any) => [
   [
     {
-      label: 'Edit',
-      icon: 'i-heroicons-pencil-square',
+      label: "Edit",
+      icon: "i-heroicons-pencil-square",
       onSelect: () => openEditModal(review),
     },
     {
-      label: 'Mark Complete',
-      icon: 'i-heroicons-check-circle',
+      label: "Mark Complete",
+      icon: "i-heroicons-check-circle",
       onSelect: () => completeReview(review.id),
+    },
+  ],
+  [
+    {
+      label: "Delete",
+      icon: "i-heroicons-trash",
+      color: "error" as const,
+      onSelect: () => deleteReview(review.id),
     },
   ],
 ];
@@ -385,7 +425,8 @@ const getReviewActions = (review: any) => [
             class="w-full"
             :ui="{
               list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-              trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+              trigger:
+                'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
               indicator: 'bg-white dark:bg-gray-900 shadow-sm',
             }"
           >
@@ -411,10 +452,16 @@ const getReviewActions = (review: any) => [
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                           {{ formatDate(row.original.scheduledDate) }}
-                          <span v-if="getDaysUntilReview(row.original.scheduledDate) !== null">
+                          <span
+                            v-if="
+                              getDaysUntilReview(row.original.scheduledDate) !==
+                              null
+                            "
+                          >
                             ·
                             {{
-                              getDaysUntilReview(row.original.scheduledDate) === 0
+                              getDaysUntilReview(row.original.scheduledDate) ===
+                              0
                                 ? "Today"
                                 : `${getDaysUntilReview(row.original.scheduledDate)} days`
                             }}
@@ -424,8 +471,13 @@ const getReviewActions = (review: any) => [
                     </template>
 
                     <template #feedback-cell="{ row }">
-                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
+                      <div
+                        class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400"
+                      >
+                        <UIcon
+                          name="i-heroicons-chat-bubble-left"
+                          class="w-4 h-4"
+                        />
                         <span>{{ row.original.feedbackCount || 0 }}</span>
                       </div>
                     </template>
@@ -486,15 +538,21 @@ const getReviewActions = (review: any) => [
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                           {{ formatDate(row.original.scheduledDate) }}
                           <span v-if="row.original.completedDate">
-                            · Completed {{ formatDate(row.original.completedDate) }}
+                            · Completed
+                            {{ formatDate(row.original.completedDate) }}
                           </span>
                         </div>
                       </div>
                     </template>
 
                     <template #feedback-cell="{ row }">
-                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
+                      <div
+                        class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400"
+                      >
+                        <UIcon
+                          name="i-heroicons-chat-bubble-left"
+                          class="w-4 h-4"
+                        />
                         <span>{{ row.original.feedbackCount || 0 }}</span>
                       </div>
                     </template>
@@ -721,7 +779,7 @@ const getReviewActions = (review: any) => [
             Scheduled Date <span class="text-red-500">*</span>
           </label>
           <UInput
-            v-model="editScheduledDate"
+            v-model="editingReview.scheduledDate"
             type="date"
             :min="new Date().toISOString().split('T')[0]"
             class="w-auto"
@@ -732,7 +790,7 @@ const getReviewActions = (review: any) => [
         <div>
           <label class="block text-sm font-medium mb-2"> Review Name </label>
           <UInput
-            v-model="editReviewName"
+            v-model="editingReview.name"
             placeholder="e.g., January 2026"
             size="lg"
             class="w-full"
@@ -745,7 +803,7 @@ const getReviewActions = (review: any) => [
             Notes (Optional)
           </label>
           <UTextarea
-            v-model="editNotes"
+            v-model="editingReview.notes"
             placeholder="Add any notes about this review..."
             :rows="4"
             class="w-full"
@@ -765,7 +823,7 @@ const getReviewActions = (review: any) => [
       </UButton>
       <UButton
         :loading="isEditing"
-        :disabled="!editScheduledDate"
+        :disabled="!editingReview.scheduledDate"
         @click="updateReview"
       >
         Save Changes
