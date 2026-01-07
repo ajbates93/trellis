@@ -7,7 +7,9 @@
           <div>
             <div class="flex items-center gap-3 mb-2">
               <UIcon name="i-heroicons-users" class="text-blue-500 text-3xl" />
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1
+                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+              >
                 User Management
               </h1>
             </div>
@@ -65,20 +67,31 @@
       >
         <template #body>
           <div class="space-y-4">
-            <div class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-              <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500 text-2xl flex-shrink-0" />
+            <div
+              class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+            >
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="text-red-500 text-2xl flex-shrink-0"
+              />
               <div class="text-sm text-red-700 dark:text-red-300">
                 <p class="font-medium mb-1">This will permanently delete:</p>
                 <ul class="list-disc list-inside space-y-1">
                   <li>All feedback given and received by this user</li>
                   <li>All personal goals</li>
                   <li>All review schedules</li>
-                  <li>Users who had this person as their buddy will be reassigned to an admin</li>
+                  <li>
+                    Users who had this person as their buddy will be reassigned
+                    to an admin
+                  </li>
                 </ul>
               </div>
             </div>
 
-            <div v-if="userToRemove" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div
+              v-if="userToRemove"
+              class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+            >
               <UAvatar
                 :src="userToRemove.avatarUrl || userToRemove.image"
                 :alt="userToRemove.name"
@@ -120,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/types';
+import type { User } from "~/types";
 
 definePageMeta({
   layout: "default",
@@ -271,7 +284,9 @@ const handleRemoveUser = async () => {
     console.error("Failed to remove user:", error);
     toast.add({
       title: "Failed to remove user",
-      description: (error as { data?: { message?: string } }).data?.message || "An error occurred while removing the user",
+      description:
+        (error as { data?: { message?: string } }).data?.message ||
+        "An error occurred while removing the user",
       color: "error",
     });
   } finally {
@@ -304,7 +319,8 @@ const handleSendInvitation = async (user: User) => {
     console.error("Failed to send invitation:", error);
     toast.add({
       title: "Failed to Send Invitation",
-      description: error.data?.message || "An error occurred while sending the invitation",
+      description:
+        error.data?.message || "An error occurred while sending the invitation",
       color: "red",
       icon: "i-heroicons-exclamation-triangle",
     });
@@ -333,7 +349,9 @@ const handleSendPasswordReset = async (user: User) => {
     console.error("Failed to send password reset:", error);
     toast.add({
       title: "Failed to Send Password Reset",
-      description: error.message || "An error occurred while sending the password reset email",
+      description:
+        error.message ||
+        "An error occurred while sending the password reset email",
       color: "red",
       icon: "i-heroicons-exclamation-triangle",
     });

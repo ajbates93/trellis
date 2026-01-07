@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
-import type { TabsItem } from '@nuxt/ui'
+import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
   layout: "default",
@@ -23,15 +23,16 @@ const buddyReceivedFeedback = computed(
 );
 
 // Fetch incoming (unpublished) feedback for selected buddy
-const { data: incomingData, refresh: refreshIncoming } = useFetch(
-  () =>
-    selectedBuddyId.value
-      ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
-      : null,
+const { data: incomingData, refresh: refreshIncoming } = useFetch(() =>
+  selectedBuddyId.value
+    ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
+    : null,
 );
 const incomingFeedback = computed(() => {
   const assignments = incomingData.value?.buddyAssignments || [];
-  return assignments.flatMap((assignment: { feedback?: unknown[] }) => assignment.feedback || []);
+  return assignments.flatMap(
+    (assignment: { feedback?: unknown[] }) => assignment.feedback || [],
+  );
 });
 
 // Refresh both tabs when buddy changes
@@ -46,14 +47,20 @@ const tabs = computed<TabsItem[]>(() => [
   {
     label: "Received",
     icon: "i-heroicons-inbox-arrow-down",
-    badge: buddyReceivedFeedback.value.length > 0 ? buddyReceivedFeedback.value.length : undefined,
+    badge:
+      buddyReceivedFeedback.value.length > 0
+        ? buddyReceivedFeedback.value.length
+        : undefined,
     value: "received",
     slot: "received",
   },
   {
     label: "Incoming",
     icon: "i-heroicons-clock",
-    badge: incomingFeedback.value.length > 0 ? incomingFeedback.value.length : undefined,
+    badge:
+      incomingFeedback.value.length > 0
+        ? incomingFeedback.value.length
+        : undefined,
     value: "incoming",
     slot: "incoming",
   },
@@ -166,12 +173,13 @@ const fetchUserReviews = async (userId: string) => {
       $fetch(`/api/reviews/past?userId=${userId}`),
     ]);
 
-    const allReviews = [...(upcomingRes.reviews || []), ...(pastRes.reviews || [])].map(
-      (r: any) => ({
-        value: r.id,
-        label: r.name,
-      }),
-    );
+    const allReviews = [
+      ...(upcomingRes.reviews || []),
+      ...(pastRes.reviews || []),
+    ].map((r: any) => ({
+      value: r.id,
+      label: r.name,
+    }));
     userReviews.value.set(userId, allReviews);
   } catch (error) {
     console.error("Failed to fetch reviews:", error);
@@ -245,7 +253,9 @@ const incomingColumns = [
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             Buddy Feedback
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -272,7 +282,8 @@ const incomingColumns = [
           class="w-full mb-6"
           :ui="{
             list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-            trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+            trigger:
+              'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
             indicator: 'bg-white dark:bg-gray-900 shadow-sm',
           }"
         />
@@ -292,10 +303,7 @@ const incomingColumns = [
             />
 
             <UCard v-else>
-              <UTable
-                :columns="receivedColumns"
-                :data="buddyReceivedFeedback"
-              >
+              <UTable :columns="receivedColumns" :data="buddyReceivedFeedback">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
                     <UAvatar
@@ -421,12 +429,25 @@ const incomingColumns = [
                   <template #actions-cell="{ row }">
                     <div class="flex gap-2">
                       <USelectMenu
-                        :model-value="userReviews.get(row.original.revieweeId)?.find((r) => r.value === row.original.reviewScheduleId)"
+                        :model-value="
+                          userReviews
+                            .get(row.original.revieweeId)
+                            ?.find(
+                              (r) => r.value === row.original.reviewScheduleId,
+                            )
+                        "
                         :items="userReviews.get(row.original.revieweeId) || []"
                         placeholder="Assign review"
-                        @update:open="(isOpen) => isOpen && fetchUserReviews(row.original.revieweeId)"
+                        @update:open="
+                          (isOpen) =>
+                            isOpen && fetchUserReviews(row.original.revieweeId)
+                        "
                         @update:model-value="
-                          (item) => reassignFeedback(row.original.id, item?.value || null)
+                          (item) =>
+                            reassignFeedback(
+                              row.original.id,
+                              item?.value || null,
+                            )
                         "
                       />
                       <UButton

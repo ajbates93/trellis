@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format, differenceInDays } from "date-fns";
-import type { TabsItem } from '@nuxt/ui'
+import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
   layout: "default",
@@ -54,23 +54,26 @@ const formatDate = (date: string) => {
 };
 
 // Tab state
-const activeTab = ref('upcoming');
+const activeTab = ref("upcoming");
 
 // Tab items
 const tabItems = computed<TabsItem[]>(() => [
   {
-    label: 'Upcoming',
-    icon: 'i-heroicons-calendar-days',
-    badge: upcomingReviews.value.length > 0 ? upcomingReviews.value.length : undefined,
-    value: 'upcoming',
-    slot: 'upcoming',
+    label: "Upcoming",
+    icon: "i-heroicons-calendar-days",
+    badge:
+      upcomingReviews.value.length > 0
+        ? upcomingReviews.value.length
+        : undefined,
+    value: "upcoming",
+    slot: "upcoming",
   },
   {
-    label: 'Past',
-    icon: 'i-heroicons-archive-box',
+    label: "Past",
+    icon: "i-heroicons-archive-box",
     badge: pastReviews.value.length > 0 ? pastReviews.value.length : undefined,
-    value: 'past',
-    slot: 'past',
+    value: "past",
+    slot: "past",
   },
 ]);
 </script>
@@ -83,7 +86,9 @@ const tabItems = computed<TabsItem[]>(() => [
         <div class="mb-6">
           <div class="flex items-start justify-between">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1
+                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+              >
                 Reviews
               </h1>
               <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -103,7 +108,8 @@ const tabItems = computed<TabsItem[]>(() => [
           class="w-full"
           :ui="{
             list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-            trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+            trigger:
+              'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
             indicator: 'bg-white dark:bg-gray-900 shadow-sm',
           }"
         >
@@ -144,14 +150,18 @@ const tabItems = computed<TabsItem[]>(() => [
                               :alt="review.user?.name"
                               size="xs"
                             />
-                            <h3 class="font-semibold text-gray-900 dark:text-white">
+                            <h3
+                              class="font-semibold text-gray-900 dark:text-white"
+                            >
                               {{ review.user?.name }}
                             </h3>
                           </div>
                           <p class="text-xs text-gray-500 dark:text-gray-500">
                             {{ review.name }}
                           </p>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p
+                            class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                          >
                             {{ formatDate(review.scheduledDate) }}
                           </p>
                         </div>
@@ -242,7 +252,9 @@ const tabItems = computed<TabsItem[]>(() => [
                                   {{ review.user?.name }}
                                 </h3>
                               </div>
-                              <p class="text-xs text-gray-500 dark:text-gray-500">
+                              <p
+                                class="text-xs text-gray-500 dark:text-gray-500"
+                              >
                                 {{ review.name }}
                               </p>
                               <p
@@ -255,7 +267,11 @@ const tabItems = computed<TabsItem[]>(() => [
                             <div class="flex items-center gap-2 flex-wrap">
                               <UBadge
                                 :label="review.status"
-                                :color="review.status === 'completed' ? 'success' : 'warning'"
+                                :color="
+                                  review.status === 'completed'
+                                    ? 'success'
+                                    : 'warning'
+                                "
                                 size="xs"
                               />
                               <UAvatar
@@ -263,7 +279,9 @@ const tabItems = computed<TabsItem[]>(() => [
                                 :alt="review.buddy?.name"
                                 size="xs"
                               />
-                              <span class="text-sm text-gray-600 dark:text-gray-400">
+                              <span
+                                class="text-sm text-gray-600 dark:text-gray-400"
+                              >
                                 Buddy: {{ review.buddy?.name }}
                               </span>
                             </div>
@@ -292,7 +310,6 @@ const tabItems = computed<TabsItem[]>(() => [
           </template>
         </UTabs>
       </div>
-
     </template>
   </UDashboardPanel>
 </template>

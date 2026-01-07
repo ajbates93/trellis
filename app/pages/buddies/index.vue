@@ -13,7 +13,9 @@ const { buddies, pending } = useBuddies();
         <!-- Page header -->
         <div class="flex items-start justify-between mb-6">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1
+              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+            >
               Buddies
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">

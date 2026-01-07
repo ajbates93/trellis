@@ -5,7 +5,9 @@
         <!-- Page header with Add button -->
         <div class="flex items-start justify-between mb-6">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1
+              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+            >
               Goals
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -27,7 +29,8 @@
           class="w-full"
           :ui="{
             list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-            trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+            trigger:
+              'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
             indicator: 'bg-white dark:bg-gray-900 shadow-sm',
           }"
         >
@@ -151,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TabsItem } from '@nuxt/ui'
+import type { TabsItem } from "@nuxt/ui";
 import type { GoalWithMilestones } from "~/types";
 
 definePageMeta({
@@ -160,7 +163,9 @@ definePageMeta({
 
 // Fetch user's own goals
 const { data: goalsData, refresh: refreshGoals } = await useFetch("/api/goals");
-const myGoals = computed(() => (goalsData.value?.goals || []) as GoalWithMilestones[]);
+const myGoals = computed(
+  () => (goalsData.value?.goals || []) as GoalWithMilestones[],
+);
 
 // Group goals by status
 const activeGoals = computed(() =>
@@ -174,30 +179,32 @@ const archivedGoals = computed(() =>
 );
 
 // Tab state
-const activeTab = ref('active');
+const activeTab = ref("active");
 
 // Tab items with icons and badges
 const tabItems = computed<TabsItem[]>(() => [
   {
-    label: 'Active',
-    icon: 'i-heroicons-fire',
+    label: "Active",
+    icon: "i-heroicons-fire",
     badge: activeGoals.value.length > 0 ? activeGoals.value.length : undefined,
-    value: 'active',
-    slot: 'active',
+    value: "active",
+    slot: "active",
   },
   {
-    label: 'Completed',
-    icon: 'i-heroicons-check-badge',
-    badge: completedGoals.value.length > 0 ? completedGoals.value.length : undefined,
-    value: 'completed',
-    slot: 'completed',
+    label: "Completed",
+    icon: "i-heroicons-check-badge",
+    badge:
+      completedGoals.value.length > 0 ? completedGoals.value.length : undefined,
+    value: "completed",
+    slot: "completed",
   },
   {
-    label: 'Archived',
-    icon: 'i-heroicons-archive-box',
-    badge: archivedGoals.value.length > 0 ? archivedGoals.value.length : undefined,
-    value: 'archived',
-    slot: 'archived',
+    label: "Archived",
+    icon: "i-heroicons-archive-box",
+    badge:
+      archivedGoals.value.length > 0 ? archivedGoals.value.length : undefined,
+    value: "archived",
+    slot: "archived",
   },
 ]);
 

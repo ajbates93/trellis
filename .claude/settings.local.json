@@ -10,7 +10,13 @@
       "Bash(npx nuxt typecheck:*)",
       "mcp__nuxt-ui-remote__list_components",
       "mcp__nuxt-ui-remote__get_component",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(grep:*)",
+      "mcp__nuxt-ui-remote__get-component",
+      "Bash(git -C /Users/alexbates/repos/work/cohort show:*)",
+      "mcp__nuxt-ui-remote__get-documentation-page"
     ],
     "deny": [],
     "ask": []

@@ -4,7 +4,9 @@
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             My Profile
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -31,7 +33,7 @@
                     "
                     :alt="user?.name || 'User avatar'"
                     class="w-32 h-32 rounded-lg object-cover"
-                  >
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ user?.name }}
@@ -45,7 +47,10 @@
                 <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
                   {{ user?.email }}
                 </p>
-                <p v-if="workspace" class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <p
+                  v-if="workspace"
+                  class="text-xs text-gray-400 dark:text-gray-500 mt-1"
+                >
                   {{ workspace.name }}
                 </p>
 
@@ -58,7 +63,7 @@
                       accept="image/*"
                       class="hidden"
                       @change="onAvatarSelected"
-                    >
+                    />
                     <UButton
                       class="flex-1"
                       variant="outline"
@@ -165,7 +170,8 @@
                       @blur="validatePreferredName"
                     />
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                      Used for personal greetings. If empty, we'll use your first name.
+                      Used for personal greetings. If empty, we'll use your
+                      first name.
                     </p>
                   </div>
 
@@ -306,7 +312,7 @@
 
 <script setup lang="ts">
 import { useAuth } from "~/composables/useAuth";
-import type { User } from '~/types';
+import type { User } from "~/types";
 
 definePageMeta({
   layout: "default",

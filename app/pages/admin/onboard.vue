@@ -2,31 +2,33 @@
   <UDashboardPanel id="admin-onboard">
     <template #body>
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
-          <!-- Header -->
-          <div class="mb-8 flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-3 mb-2">
-                <UIcon
-                  name="i-heroicons-arrow-up-tray"
-                  class="text-purple-500 text-3xl"
-                />
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                  CSV Onboarding
-                </h1>
-              </div>
-              <p class="mt-2 text-gray-600 dark:text-gray-400">
-                Bulk import users to get your team started quickly
-              </p>
+        <!-- Header -->
+        <div class="mb-8 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <UIcon
+                name="i-heroicons-arrow-up-tray"
+                class="text-purple-500 text-3xl"
+              />
+              <h1
+                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+              >
+                CSV Onboarding
+              </h1>
             </div>
-            <UButton
-              icon="i-heroicons-arrow-down-tray"
-              variant="solid"
-              :loading="downloadingTemplate"
-              @click="downloadTemplate"
-            >
-              Download Template
-            </UButton>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+              Bulk import users to get your team started quickly
+            </p>
           </div>
+          <UButton
+            icon="i-heroicons-arrow-down-tray"
+            variant="solid"
+            :loading="downloadingTemplate"
+            @click="downloadTemplate"
+          >
+            Download Template
+          </UButton>
+        </div>
 
         <!-- Instructions Card -->
         <UCard class="mb-8">
@@ -126,7 +128,7 @@
                 accept=".csv"
                 class="hidden"
                 @change="handleFileSelect"
-              >
+              />
               <UIcon
                 name="i-heroicons-document-arrow-up"
                 class="mx-auto text-4xl text-gray-400 mb-4"
@@ -428,10 +430,7 @@
   <!-- Error Log Modal -->
   <UModal v-model:open="showErrorModal" title="Import Errors">
     <template #body>
-      <div
-        v-if="selectedErrorLog"
-        class="space-y-2 max-h-96 overflow-y-auto"
-      >
+      <div v-if="selectedErrorLog" class="space-y-2 max-h-96 overflow-y-auto">
         <UAlert
           v-for="(error, index) in selectedErrorLog"
           :key="index"
@@ -599,7 +598,7 @@ const importCSV = async () => {
             },
           ],
         };
-      } finally{
+      } finally {
         importing.value = false;
       }
     };
@@ -644,7 +643,9 @@ const downloadTemplate = async () => {
 const fetchHistory = async () => {
   loadingHistory.value = true;
   try {
-    const data = await $fetch<{ imports: ImportHistoryItem[] }>("/api/admin/onboard/history");
+    const data = await $fetch<{ imports: ImportHistoryItem[] }>(
+      "/api/admin/onboard/history",
+    );
     if (data) {
       importHistory.value = data.imports;
     }

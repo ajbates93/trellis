@@ -4,7 +4,9 @@
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             Settings
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -19,27 +21,33 @@
               <NuxtLink
                 to="/settings/general"
                 class="border-b-2 py-4 px-1 text-sm font-medium"
-                :class="$route.path === '/settings/general'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                :class="
+                  $route.path === '/settings/general'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                "
               >
                 General
               </NuxtLink>
               <NuxtLink
                 to="/settings/security"
                 class="border-b-2 py-4 px-1 text-sm font-medium"
-                :class="$route.path === '/settings/security'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                :class="
+                  $route.path === '/settings/security'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                "
               >
                 Security
               </NuxtLink>
               <NuxtLink
                 to="/settings/notifications"
                 class="border-b-2 py-4 px-1 text-sm font-medium"
-                :class="$route.path === '/settings/notifications'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                :class="
+                  $route.path === '/settings/notifications'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                "
               >
                 Notifications
               </NuxtLink>
@@ -56,10 +64,17 @@
 
             <div class="space-y-4">
               <!-- Email/Password Account -->
-              <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div
+                class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+              >
                 <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <UIcon name="i-heroicons-key" class="text-primary text-xl" />
+                  <div
+                    class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-key"
+                      class="text-primary text-xl"
+                    />
                   </div>
                   <div>
                     <h3 class="text-sm font-medium">Email & Password</h3>
@@ -77,12 +92,7 @@
                   >
                     Connected
                   </UBadge>
-                  <UBadge
-                    v-else
-                    color="warning"
-                    variant="soft"
-                    size="sm"
-                  >
+                  <UBadge v-else color="warning" variant="soft" size="sm">
                     Not Connected
                   </UBadge>
                   <UButton
@@ -105,9 +115,13 @@
               </div>
 
               <!-- Google Account -->
-              <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div
+                class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+              >
                 <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div
+                    class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center"
+                  >
                     <svg class="w-5 h-5 text-primary" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
@@ -143,12 +157,7 @@
                   >
                     Connected
                   </UBadge>
-                  <UBadge
-                    v-else
-                    color="warning"
-                    variant="soft"
-                    size="sm"
-                  >
+                  <UBadge v-else color="warning" variant="soft" size="sm">
                     Not Connected
                   </UBadge>
                   <UButton
@@ -165,136 +174,141 @@
             </div>
           </UCard>
         </div>
-<!-- Add Password Modal -->
-    <UModal v-model:open="showAddPasswordModal" title="Set Your Password">
-      <template #body>
-        <div class="space-y-4">
-          <UFormField label="New Password" :required="true">
-            <UInput
-              v-model="addPasswordForm.password"
-              type="password"
-              placeholder="Enter password"
-              icon="i-heroicons-lock-closed"
-              class="w-full"
-              :disabled="addingPassword"
-            />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Must be at least 8 characters long
-            </p>
-          </UFormField>
+        <!-- Add Password Modal -->
+        <UModal v-model:open="showAddPasswordModal" title="Set Your Password">
+          <template #body>
+            <div class="space-y-4">
+              <UFormField label="New Password" :required="true">
+                <UInput
+                  v-model="addPasswordForm.password"
+                  type="password"
+                  placeholder="Enter password"
+                  icon="i-heroicons-lock-closed"
+                  class="w-full"
+                  :disabled="addingPassword"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Must be at least 8 characters long
+                </p>
+              </UFormField>
 
-          <UFormField label="Confirm Password" :required="true">
-            <UInput
-              v-model="addPasswordForm.confirmPassword"
-              type="password"
-              placeholder="Confirm password"
-              icon="i-heroicons-lock-closed"
-              class="w-full"
-              :disabled="addingPassword"
-            />
-            <p v-if="addPasswordErrors.confirmPassword" class="text-xs text-red-500 mt-1">
-              {{ addPasswordErrors.confirmPassword }}
-            </p>
-          </UFormField>
-        </div>
-      </template>
+              <UFormField label="Confirm Password" :required="true">
+                <UInput
+                  v-model="addPasswordForm.confirmPassword"
+                  type="password"
+                  placeholder="Confirm password"
+                  icon="i-heroicons-lock-closed"
+                  class="w-full"
+                  :disabled="addingPassword"
+                />
+                <p
+                  v-if="addPasswordErrors.confirmPassword"
+                  class="text-xs text-red-500 mt-1"
+                >
+                  {{ addPasswordErrors.confirmPassword }}
+                </p>
+              </UFormField>
+            </div>
+          </template>
 
-      <template #footer>
-        <div class="flex justify-between">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            @click="showAddPasswordModal = false"
-            :disabled="addingPassword"
-          >
-            Cancel
-          </UButton>
-          <UButton
-            :disabled="!isAddPasswordFormValid"
-            :loading="addingPassword"
-            @click="handleAddPassword"
-          >
-            Set Password
-          </UButton>
-        </div>
-      </template>
-    </UModal>
+          <template #footer>
+            <div class="flex justify-between">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                @click="showAddPasswordModal = false"
+                :disabled="addingPassword"
+              >
+                Cancel
+              </UButton>
+              <UButton
+                :disabled="!isAddPasswordFormValid"
+                :loading="addingPassword"
+                @click="handleAddPassword"
+              >
+                Set Password
+              </UButton>
+            </div>
+          </template>
+        </UModal>
 
-    <!-- Change Password Modal -->
-    <UModal v-model:open="showChangePasswordModal" title="Change Password">
-      <template #body>
-        <div class="space-y-4">
-          <UFormField label="Current Password" :required="true">
-            <UInput
-              v-model="changePasswordForm.currentPassword"
-              type="password"
-              placeholder="Enter current password"
-              icon="i-heroicons-lock-closed"
-              class="w-full"
-              :disabled="changingPassword"
-            />
-            <p v-if="changePasswordErrors.currentPassword" class="text-xs text-red-500 mt-1">
-              {{ changePasswordErrors.currentPassword }}
-            </p>
-          </UFormField>
+        <!-- Change Password Modal -->
+        <UModal v-model:open="showChangePasswordModal" title="Change Password">
+          <template #body>
+            <div class="space-y-4">
+              <UFormField label="Current Password" :required="true">
+                <UInput
+                  v-model="changePasswordForm.currentPassword"
+                  type="password"
+                  placeholder="Enter current password"
+                  icon="i-heroicons-lock-closed"
+                  class="w-full"
+                  :disabled="changingPassword"
+                />
+                <p
+                  v-if="changePasswordErrors.currentPassword"
+                  class="text-xs text-red-500 mt-1"
+                >
+                  {{ changePasswordErrors.currentPassword }}
+                </p>
+              </UFormField>
 
-          <UFormField label="New Password" :required="true">
-            <UInput
-              v-model="changePasswordForm.newPassword"
-              type="password"
-              placeholder="Enter new password"
-              icon="i-heroicons-lock-closed"
-              class="w-full"
-              :disabled="changingPassword"
-            />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Must be at least 8 characters long
-            </p>
-          </UFormField>
+              <UFormField label="New Password" :required="true">
+                <UInput
+                  v-model="changePasswordForm.newPassword"
+                  type="password"
+                  placeholder="Enter new password"
+                  icon="i-heroicons-lock-closed"
+                  class="w-full"
+                  :disabled="changingPassword"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Must be at least 8 characters long
+                </p>
+              </UFormField>
 
-          <UFormField label="Confirm New Password" :required="true">
-            <UInput
-              v-model="changePasswordForm.confirmPassword"
-              type="password"
-              placeholder="Confirm new password"
-              icon="i-heroicons-lock-closed"
-              class="w-full"
-              :disabled="changingPassword"
-            />
-            <p v-if="changePasswordErrors.confirmPassword" class="text-xs text-red-500 mt-1">
-              {{ changePasswordErrors.confirmPassword }}
-            </p>
-          </UFormField>
-        </div>
-      </template>
+              <UFormField label="Confirm New Password" :required="true">
+                <UInput
+                  v-model="changePasswordForm.confirmPassword"
+                  type="password"
+                  placeholder="Confirm new password"
+                  icon="i-heroicons-lock-closed"
+                  class="w-full"
+                  :disabled="changingPassword"
+                />
+                <p
+                  v-if="changePasswordErrors.confirmPassword"
+                  class="text-xs text-red-500 mt-1"
+                >
+                  {{ changePasswordErrors.confirmPassword }}
+                </p>
+              </UFormField>
+            </div>
+          </template>
 
-      <template #footer>
-        <div class="flex justify-between">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            @click="showChangePasswordModal = false"
-            :disabled="changingPassword"
-          >
-            Cancel
-          </UButton>
-          <UButton
-            :disabled="!isChangePasswordFormValid"
-            :loading="changingPassword"
-            @click="handleChangePassword"
-          >
-            Update Password
-          </UButton>
-        </div>
-      </template>
-    </UModal>
+          <template #footer>
+            <div class="flex justify-between">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                @click="showChangePasswordModal = false"
+                :disabled="changingPassword"
+              >
+                Cancel
+              </UButton>
+              <UButton
+                :disabled="!isChangePasswordFormValid"
+                :loading="changingPassword"
+                @click="handleChangePassword"
+              >
+                Update Password
+              </UButton>
+            </div>
+          </template>
+        </UModal>
       </div>
-
     </template>
-
-    
   </UDashboardPanel>
-
 </template>
 
 <script setup lang="ts">
@@ -407,7 +421,9 @@ const handleAddPassword = async () => {
     return;
   }
 
-  if (addPasswordForm.value.password !== addPasswordForm.value.confirmPassword) {
+  if (
+    addPasswordForm.value.password !== addPasswordForm.value.confirmPassword
+  ) {
     addPasswordErrors.value.confirmPassword = "Passwords do not match";
     return;
   }
@@ -470,7 +486,8 @@ const isChangePasswordFormValid = computed(() => {
   return (
     changePasswordForm.value.currentPassword.length > 0 &&
     changePasswordForm.value.newPassword.length >= 8 &&
-    changePasswordForm.value.newPassword === changePasswordForm.value.confirmPassword
+    changePasswordForm.value.newPassword ===
+      changePasswordForm.value.confirmPassword
   );
 });
 
@@ -483,11 +500,15 @@ const handleChangePassword = async () => {
   };
 
   if (changePasswordForm.value.newPassword.length < 8) {
-    changePasswordErrors.value.newPassword = "Password must be at least 8 characters";
+    changePasswordErrors.value.newPassword =
+      "Password must be at least 8 characters";
     return;
   }
 
-  if (changePasswordForm.value.newPassword !== changePasswordForm.value.confirmPassword) {
+  if (
+    changePasswordForm.value.newPassword !==
+    changePasswordForm.value.confirmPassword
+  ) {
     changePasswordErrors.value.confirmPassword = "Passwords do not match";
     return;
   }
@@ -520,7 +541,8 @@ const handleChangePassword = async () => {
 
     // Handle specific errors
     if (error.message?.includes("Invalid")) {
-      changePasswordErrors.value.currentPassword = "Current password is incorrect";
+      changePasswordErrors.value.currentPassword =
+        "Current password is incorrect";
     } else {
       toast.add({
         title: "Failed to Change Password",

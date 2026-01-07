@@ -5,7 +5,7 @@
         <!-- Page header -->
         <div class="mb-8">
           <h1
-            class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3"
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3"
           >
             Brag Bucket
           </h1>

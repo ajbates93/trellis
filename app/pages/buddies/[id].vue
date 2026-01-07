@@ -9,10 +9,11 @@ const route = useRoute();
 const buddyId = computed(() => route.params.id as string);
 
 // Fetch buddy profile
-const { data: buddyData, pending, error } = useFetch(
-  () => `/api/buddies/${buddyId.value}`,
-  { watch: [buddyId] }
-);
+const {
+  data: buddyData,
+  pending,
+  error,
+} = useFetch(() => `/api/buddies/${buddyId.value}`, { watch: [buddyId] });
 
 const buddy = computed(() => buddyData.value?.buddy);
 
@@ -24,7 +25,8 @@ const formatDate = (date: string | Date | null | undefined) => {
 const getAvatarUrl = (buddyProfile: typeof buddy.value) => {
   if (!buddyProfile) return "";
   if (buddyProfile.avatarUrl) return buddyProfile.avatarUrl;
-  const name = buddyProfile.preferredName || buddyProfile.name || buddyProfile.email;
+  const name =
+    buddyProfile.preferredName || buddyProfile.name || buddyProfile.email;
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=059669&color=fff`;
 };
 
@@ -42,8 +44,8 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
   if (!preference) return "Not set";
   const labels: Record<string, string> = {
     "in-person": "In-Person",
-    "remote": "Remote (Video Call)",
-    "hybrid": "Flexible (Both)",
+    remote: "Remote (Video Call)",
+    hybrid: "Flexible (Both)",
     "no-preference": "No Preference",
   };
   return labels[preference] || preference;
@@ -74,15 +76,27 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
         </div>
 
         <!-- Error state -->
-        <div v-else-if="error" class="text-center py-16 px-6 rounded-xl bg-red-50 dark:bg-red-900/20">
-          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <UIcon name="i-heroicons-exclamation-triangle" class="w-8 h-8 text-red-500" />
+        <div
+          v-else-if="error"
+          class="text-center py-16 px-6 rounded-xl bg-red-50 dark:bg-red-900/20"
+        >
+          <div
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center"
+          >
+            <UIcon
+              name="i-heroicons-exclamation-triangle"
+              class="w-8 h-8 text-red-500"
+            />
           </div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Unable to load profile
           </h3>
           <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-            {{ error.statusCode === 403 ? "You are not authorized to view this buddy's profile." : "Something went wrong loading this profile. Please try again." }}
+            {{
+              error.statusCode === 403
+                ? "You are not authorized to view this buddy's profile."
+                : "Something went wrong loading this profile. Please try again."
+            }}
           </p>
           <NuxtLink to="/buddies">
             <UButton class="mt-6" variant="outline">
@@ -95,7 +109,9 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
         <div v-else-if="buddy">
           <!-- Page header -->
           <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1
+              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+            >
               {{ buddy.preferredName || buddy.name }}'s Profile
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -115,9 +131,11 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
                       :src="getAvatarUrl(buddy)"
                       :alt="buddy.name"
                       class="w-32 h-32 rounded-lg object-cover"
-                    >
+                    />
                   </div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     {{ buddy.preferredName || buddy.name }}
                   </h3>
                   <p
@@ -168,12 +186,20 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
                   </h3>
                 </template>
 
-                <div v-if="buddy.bio" class="prose prose-sm dark:prose-invert max-w-none">
-                  <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                <div
+                  v-if="buddy.bio"
+                  class="prose prose-sm dark:prose-invert max-w-none"
+                >
+                  <p
+                    class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
+                  >
                     {{ buddy.bio }}
                   </p>
                 </div>
-                <p v-else class="text-gray-500 dark:text-gray-400 text-sm italic">
+                <p
+                  v-else
+                  class="text-gray-500 dark:text-gray-400 text-sm italic"
+                >
                   No bio provided
                 </p>
               </UCard>
@@ -191,7 +217,9 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
                 <div class="space-y-6">
                   <!-- Review Preference -->
                   <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <p
+                      class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       Review Preference
                     </p>
                     <p class="text-gray-900 dark:text-white">
@@ -201,7 +229,9 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
 
                   <!-- Communication Preferences -->
                   <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <p
+                      class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       Communication Preferences
                     </p>
                     <p
@@ -210,7 +240,10 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
                     >
                       {{ buddy.communicationPreferences }}
                     </p>
-                    <p v-else class="text-gray-500 dark:text-gray-400 text-sm italic">
+                    <p
+                      v-else
+                      class="text-gray-500 dark:text-gray-400 text-sm italic"
+                    >
                       No communication preferences set
                     </p>
                   </div>

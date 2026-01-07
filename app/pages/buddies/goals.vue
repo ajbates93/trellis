@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { format } from "date-fns";
-import type { TabsItem } from '@nuxt/ui'
+import type { TabsItem } from "@nuxt/ui";
 import type {
   GoalWithMilestones,
   BuddyCheckinWithUsers,
   GetBuddyGoalsResponse,
-  GetBuddyCheckinsArrayResponse
+  GetBuddyCheckinsArrayResponse,
 } from "~/types";
 
 // Type definitions
@@ -27,24 +27,26 @@ const selectedBuddy = computed(() => {
 });
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId
-const { data: buddyGoalsData, refresh: refreshBuddyGoals } = useFetch<GetBuddyGoalsResponse>(() =>
-  `/api/goals/buddies?buddyId=${selectedBuddyId.value || ''}`,
-  {
-    lazy: true,
-    immediate: !!selectedBuddyId.value,
-    watch: [selectedBuddyId],
-  }
-);
+const { data: buddyGoalsData, refresh: refreshBuddyGoals } =
+  useFetch<GetBuddyGoalsResponse>(
+    () => `/api/goals/buddies?buddyId=${selectedBuddyId.value || ""}`,
+    {
+      lazy: true,
+      immediate: !!selectedBuddyId.value,
+      watch: [selectedBuddyId],
+    },
+  );
 
 // Fetch buddy check-ins (filtered by buddyId)
-const { data: checkinsData, refresh: refreshCheckins } = useFetch<GetBuddyCheckinsArrayResponse>(() =>
-  `/api/checkins/buddy?buddyId=${selectedBuddyId.value || ''}&limit=10`,
-  {
-    lazy: true,
-    immediate: !!selectedBuddyId.value,
-    watch: [selectedBuddyId],
-  }
-);
+const { data: checkinsData, refresh: refreshCheckins } =
+  useFetch<GetBuddyCheckinsArrayResponse>(
+    () => `/api/checkins/buddy?buddyId=${selectedBuddyId.value || ""}&limit=10`,
+    {
+      lazy: true,
+      immediate: !!selectedBuddyId.value,
+      watch: [selectedBuddyId],
+    },
+  );
 
 const buddyGoals = computed(() => {
   const assignments = buddyGoalsData.value?.buddyAssignments || [];
@@ -70,30 +72,32 @@ const archivedGoals = computed(() =>
 );
 
 // Tab state
-const activeTab = ref('active');
+const activeTab = ref("active");
 
 // Tab items with icons and badges
 const tabItems = computed<TabsItem[]>(() => [
   {
-    label: 'Active',
-    icon: 'i-heroicons-fire',
+    label: "Active",
+    icon: "i-heroicons-fire",
     badge: activeGoals.value.length > 0 ? activeGoals.value.length : undefined,
-    value: 'active',
-    slot: 'active',
+    value: "active",
+    slot: "active",
   },
   {
-    label: 'Completed',
-    icon: 'i-heroicons-check-badge',
-    badge: completedGoals.value.length > 0 ? completedGoals.value.length : undefined,
-    value: 'completed',
-    slot: 'completed',
+    label: "Completed",
+    icon: "i-heroicons-check-badge",
+    badge:
+      completedGoals.value.length > 0 ? completedGoals.value.length : undefined,
+    value: "completed",
+    slot: "completed",
   },
   {
-    label: 'Archived',
-    icon: 'i-heroicons-archive-box',
-    badge: archivedGoals.value.length > 0 ? archivedGoals.value.length : undefined,
-    value: 'archived',
-    slot: 'archived',
+    label: "Archived",
+    icon: "i-heroicons-archive-box",
+    badge:
+      archivedGoals.value.length > 0 ? archivedGoals.value.length : undefined,
+    value: "archived",
+    slot: "archived",
   },
 ]);
 
@@ -147,12 +151,15 @@ const saveEditedCheckin = async () => {
   isSubmittingEdit.value = true;
 
   try {
-    const response = await $fetch<{ checkin: Checkin }>(`/api/checkins/${selectedCheckin.value.id}`, {
-      method: "PATCH",
-      body: {
-        notes: editingNotes.value.trim(),
+    const response = await $fetch<{ checkin: Checkin }>(
+      `/api/checkins/${selectedCheckin.value.id}`,
+      {
+        method: "PATCH",
+        body: {
+          notes: editingNotes.value.trim(),
+        },
       },
-    });
+    );
 
     if (response?.checkin) {
       selectedCheckin.value = {
@@ -280,7 +287,6 @@ const submitCheckin = async (notes: string) => {
     isCreatingCheckin.value = false;
   }
 };
-
 </script>
 
 <template>
@@ -289,7 +295,9 @@ const submitCheckin = async (notes: string) => {
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             Buddy Goals
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -327,7 +335,8 @@ const submitCheckin = async (notes: string) => {
             class="w-full"
             :ui="{
               list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-              trigger: 'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+              trigger:
+                'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
               indicator: 'bg-white dark:bg-gray-900 shadow-sm',
             }"
           >
@@ -426,7 +435,10 @@ const submitCheckin = async (notes: string) => {
           <div class="mt-8">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
-                <UIcon name="i-heroicons-chat-bubble-left-right" class="w-6 h-6 text-gray-500" />
+                <UIcon
+                  name="i-heroicons-chat-bubble-left-right"
+                  class="w-6 h-6 text-gray-500"
+                />
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                   Check-Ins
                 </h2>
@@ -442,13 +454,19 @@ const submitCheckin = async (notes: string) => {
             </div>
 
             <!-- Check-ins Table -->
-            <div v-if="checkins.length > 0" class="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div
+              v-if="checkins.length > 0"
+              class="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden"
+            >
               <UTable :columns="checkinColumns" :data="checkins">
                 <template #date-cell="{ row }">
                   <div class="text-sm">
                     {{
                       row.original.createdAt
-                        ? format(new Date(row.original.createdAt), "MMM d, yyyy")
+                        ? format(
+                            new Date(row.original.createdAt),
+                            "MMM d, yyyy",
+                          )
                         : "—"
                     }}
                   </div>
@@ -473,7 +491,12 @@ const submitCheckin = async (notes: string) => {
                 </template>
 
                 <template #review-cell="{ row }">
-                  <div v-if="row.original.reviewSchedule && row.original.reviewSchedule.name">
+                  <div
+                    v-if="
+                      row.original.reviewSchedule &&
+                      row.original.reviewSchedule.name
+                    "
+                  >
                     <UBadge
                       :label="row.original.reviewSchedule.name"
                       variant="subtle"
@@ -605,7 +628,10 @@ const submitCheckin = async (notes: string) => {
         </div>
 
         <div
-          v-if="selectedCheckin.reviewSchedule && selectedCheckin.reviewSchedule.name"
+          v-if="
+            selectedCheckin.reviewSchedule &&
+            selectedCheckin.reviewSchedule.name
+          "
           class="border-t border-gray-200 dark:border-gray-700 pt-4"
         >
           <p
@@ -633,7 +659,7 @@ const submitCheckin = async (notes: string) => {
         >
           Delete
         </UButton>
-        <div v-else/>
+        <div v-else />
         <div class="flex gap-2">
           <UButton
             v-if="!isEditingCheckin"

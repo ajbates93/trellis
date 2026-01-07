@@ -4,7 +4,9 @@
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             Your Insights
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -24,7 +26,9 @@
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Feedback Given
                   </p>
-                  <p class="text-3xl font-bold text-teal-600 dark:text-teal-400">
+                  <p
+                    class="text-3xl font-bold text-teal-600 dark:text-teal-400"
+                  >
                     {{ stats.feedbackGiven }}
                   </p>
                 </div>
@@ -56,7 +60,9 @@
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Feedback Received
                   </p>
-                  <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  <p
+                    class="text-3xl font-bold text-blue-600 dark:text-blue-400"
+                  >
                     {{ stats.feedbackReceived }}
                   </p>
                 </div>
@@ -126,7 +132,9 @@
                     class="text-3xl font-bold text-amber-600 dark:text-amber-400"
                   >
                     {{
-                      stats.daysUntilReview !== null ? stats.daysUntilReview : "—"
+                      stats.daysUntilReview !== null
+                        ? stats.daysUntilReview
+                        : "—"
                     }}
                   </p>
                 </div>
@@ -142,7 +150,9 @@
                       ? 'Upcoming'
                       : 'Not scheduled'
                   "
-                  :color="stats.daysUntilReview !== null ? 'primary' : 'neutral'"
+                  :color="
+                    stats.daysUntilReview !== null ? 'primary' : 'neutral'
+                  "
                   size="xs"
                 />
                 <span class="text-xs text-gray-600 dark:text-gray-400">

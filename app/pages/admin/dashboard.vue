@@ -11,7 +11,9 @@
                   name="i-heroicons-shield-check"
                   class="text-purple-500 text-3xl"
                 />
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1
+                  class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+                >
                   Admin Dashboard
                 </h1>
               </div>
@@ -20,11 +22,14 @@
               </p>
             </div>
             <div v-if="stats" class="text-right">
-              <p class="text-sm text-gray-500 dark:text-gray-400">Total Users</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Total Users
+              </p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">
                 {{ stats.totalUsers }}
                 <span class="text-sm font-normal text-gray-500">
-                  ({{ stats.activeUsers }} active, {{ stats.invitedUsers }} invited)
+                  ({{ stats.activeUsers }} active,
+                  {{ stats.invitedUsers }} invited)
                 </span>
               </p>
             </div>
@@ -70,17 +75,26 @@
         <!-- AI Insights Row -->
         <div class="mb-8">
           <div class="flex items-center gap-2 mb-4">
-            <UIcon name="i-heroicons-sparkles" class="text-purple-500 text-xl" />
+            <UIcon
+              name="i-heroicons-sparkles"
+              class="text-purple-500 text-xl"
+            />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
               AI Sentiment Analysis
             </h2>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ClientOnly>
-              <AdminTeamSentimentCard ref="teamSentimentCard" @user-selected="onTeamUserSelected" />
+              <AdminTeamSentimentCard
+                ref="teamSentimentCard"
+                @user-selected="onTeamUserSelected"
+              />
             </ClientOnly>
             <ClientOnly>
-              <AdminUserSentimentCard ref="userSentimentCard" @analysis-completed="onUserAnalysisCompleted" />
+              <AdminUserSentimentCard
+                ref="userSentimentCard"
+                @analysis-completed="onUserAnalysisCompleted"
+              />
             </ClientOnly>
           </div>
         </div>
@@ -117,7 +131,9 @@ const stats = ref<any>(null);
 const teamSentimentCard = ref<{ indicateDataStale: () => void } | null>(null);
 
 // Reference to user sentiment card for selection from team card
-const userSentimentCard = ref<{ selectUser: (userId: string) => void } | null>(null);
+const userSentimentCard = ref<{ selectUser: (userId: string) => void } | null>(
+  null,
+);
 
 // Called when user analysis is completed
 const onUserAnalysisCompleted = () => {
