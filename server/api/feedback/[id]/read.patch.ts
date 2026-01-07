@@ -23,9 +23,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Validate request body
-  await validateBody(event, apiSchemas.MarkFeedbackAsReadRequestSchema);
-
   try {
     // Get the feedback item
     const [feedbackItem] = await db
@@ -64,18 +61,16 @@ export default defineEventHandler(async (event) => {
 
     // Already read, no need to update
     if (feedbackItem.isRead) {
-      return validateResponse({ success: true, feedback: feedbackItem }, apiSchemas.SuccessResponseSchema);
+      return validateResponse({ success: true }, apiSchemas.SuccessResponseSchema);
     }
 
     // Mark as read
-    const [updatedFeedback] = await db
+    await db
       .update(feedback)
       .set({ isRead: true })
-      .where(eq(feedback.id, feedbackId))
-      .returning();
+      .where(eq(feedback.id, feedbackId));
 
-    const response = { success: true, feedback: updatedFeedback };
-    return validateResponse(response, apiSchemas.SuccessResponseSchema);
+    return validateResponse({ success: true }, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error marking feedback as read:", error);
     if (error.statusCode) {
