@@ -66,11 +66,18 @@ onBeforeUnmount(() => {
 <template>
   <div class="space-y-2">
     <!-- Label -->
-    <div class="flex items-center gap-2">
-      <UIcon v-if="icon" :name="icon" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ label }}
-      </label>
+    <div class="flex items-start gap-3 mb-3">
+      <div class="p-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+        <UIcon v-if="icon" :name="icon" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+      </div>
+      <div class="pt-1">
+        <label class="text-base font-semibold text-gray-900 dark:text-white block">
+          {{ label }}
+        </label>
+        <p v-if="placeholder" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          {{ placeholder }}
+        </p>
+      </div>
     </div>
 
     <!-- Editor Container -->

@@ -108,7 +108,6 @@ const editingReview = reactive({
   id: "",
   scheduledDate: "",
   name: "",
-  notes: "",
 });
 
 const openReviewModal = async (review: any) => {
@@ -126,7 +125,6 @@ const openEditModal = (review: any) => {
     ? new Date(review.scheduledDate).toISOString().split("T")[0]
     : "";
   editingReview.name = review.name || "";
-  editingReview.notes = review.notes || "";
   isEditModalOpen.value = true;
 };
 
@@ -150,7 +148,6 @@ const updateReview = async () => {
       body: {
         scheduledDate: editingReview.scheduledDate,
         name: editingReview.name,
-        notes: editingReview.notes,
       },
     });
 
@@ -180,7 +177,6 @@ const updateReview = async () => {
 const isCreateModalOpen = ref(false);
 const scheduledDate = ref<string>("");
 const reviewName = ref<string>("");
-const notes = ref<string>("");
 const isCreating = ref(false);
 
 // Watch scheduled date to auto-generate review name
@@ -195,7 +191,6 @@ watch(scheduledDate, (newDate) => {
 const resetForm = () => {
   scheduledDate.value = "";
   reviewName.value = "";
-  notes.value = "";
 };
 
 // Create review for selected buddy
@@ -219,7 +214,6 @@ const createReview = async () => {
         userId: selectedBuddyId.value,
         scheduledDate: scheduledDate.value,
         name: reviewName.value,
-        notes: notes.value,
       },
     });
 
@@ -624,14 +618,7 @@ const getReviewActions = (review: any) => [
           </div>
         </div>
 
-        <div v-if="selectedReview.notes">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Pre-Review Notes
-          </div>
-          <div class="text-gray-900 dark:text-gray-100">
-            {{ selectedReview.notes }}
-          </div>
-        </div>
+
 
         <!-- Check-ins Section -->
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -725,18 +712,7 @@ const getReviewActions = (review: any) => [
           </p>
         </div>
 
-        <!-- Notes -->
-        <div>
-          <label class="block text-sm font-medium mb-2">
-            Notes (Optional)
-          </label>
-          <UTextarea
-            v-model="notes"
-            placeholder="Add any notes about this review..."
-            :rows="4"
-            class="w-full"
-          />
-        </div>
+
       </div>
     </template>
 
@@ -797,18 +773,7 @@ const getReviewActions = (review: any) => [
           />
         </div>
 
-        <!-- Notes -->
-        <div>
-          <label class="block text-sm font-medium mb-2">
-            Notes (Optional)
-          </label>
-          <UTextarea
-            v-model="editingReview.notes"
-            placeholder="Add any notes about this review..."
-            :rows="4"
-            class="w-full"
-          />
-        </div>
+
       </div>
     </template>
 
