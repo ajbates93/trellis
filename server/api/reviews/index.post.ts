@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
       .returning();
 
     return validateResponse(
-      { review: newReview },
+      { success: true, review: newReview },
       apiSchemas.SuccessResponseSchema.passthrough()
     );
   } catch (error) {
