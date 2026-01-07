@@ -221,6 +221,12 @@ export const reviewSchedules = pgTable("review_schedules", {
   notes: text("notes"),
   name: text("name"), // Custom review name, defaults to "Month YYYY"
   completionNotes: text("completion_notes"), // Summary notes after review
+  // Reflection fields (filled by reviewee - HTML content from TipTap)
+  reflectionLearnings: text("reflection_learnings"), // "What have I learnt in the past three months?"
+  reflectionHighlights: text("reflection_highlights"), // "Any highlights?"
+  reflectionConcerns: text("reflection_concerns"), // "Are you worried about anything right now?"
+  // Buddy comments (filled by buddy - HTML content from TipTap)
+  buddyComments: text("buddy_comments"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

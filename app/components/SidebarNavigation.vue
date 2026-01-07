@@ -110,7 +110,7 @@ const isItemOrChildActive = (item: NavItem): boolean => {
               v-if="item.badge && !collapsed"
               :label="item.badge"
               size="xs"
-              color="error"
+              color="primary"
             />
           </NuxtLink>
         </template>

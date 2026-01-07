@@ -316,6 +316,13 @@ export const UpdateReviewScheduleRequestSchema = z.object({
 
   status: z.enum(["scheduled", "completed", "rescheduled"]).optional(),
   completionNotes: z.string().nullable().optional(),
+  
+  // Reflection fields (editable by reviewee)
+  reflectionLearnings: z.string().nullable().optional(),
+  reflectionHighlights: z.string().nullable().optional(),
+  reflectionConcerns: z.string().nullable().optional(),
+  // Buddy comments (editable by buddy)
+  buddyComments: z.string().nullable().optional(),
 });
 
 export const GetReviewSchedulesResponseSchema = z.object({
@@ -339,6 +346,10 @@ export const UpdateReviewScheduleResponseSchema = z.object({
     notes: z.string().nullable(),
     completionNotes: z.string().nullable(),
     completedDate: z.string().nullable(),
+    reflectionLearnings: z.string().nullable(),
+    reflectionHighlights: z.string().nullable(),
+    reflectionConcerns: z.string().nullable(),
+    buddyComments: z.string().nullable(),
     createdAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
   }),
@@ -355,6 +366,10 @@ export const GetReviewDetailsResponseSchema = z.object({
     name: z.string().nullable(),
     notes: z.string().nullable(),
     completionNotes: z.string().nullable(),
+    reflectionLearnings: z.string().nullable(),
+    reflectionHighlights: z.string().nullable(),
+    reflectionConcerns: z.string().nullable(),
+    buddyComments: z.string().nullable(),
     createdAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
     user: z.object({

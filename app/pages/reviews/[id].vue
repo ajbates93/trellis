@@ -35,12 +35,15 @@ const completionNotes = ref("");
 const isEditModalOpen = ref(false);
 const editScheduledDate = ref<string>("");
 const editReviewName = ref<string>("");
-const editNotes = ref<string>("");
 const isEditing = ref(false);
 
 // Get current user session
-const { data: sessionData } = await useFetch("/api/auth/session");
-const currentUser = computed(() => sessionData.value?.user);
+const { user: currentUser } = useAuth();
+
+// Check if current user is the reviewee for this review
+const isReviewee = computed(() => {
+  return review.value?.userId === currentUser.value?.id;
+});
 
 // Check if current user is the buddy for this review
 const isBuddy = computed(() => {
@@ -52,7 +55,6 @@ const openEditModal = () => {
   if (!review.value) return;
   editScheduledDate.value = review.value.scheduledDate;
   editReviewName.value = review.value.name || "";
-  editNotes.value = review.value.notes || "";
   isEditModalOpen.value = true;
 };
 
@@ -76,7 +78,6 @@ const updateReview = async () => {
       body: {
         scheduledDate: editScheduledDate.value,
         name: editReviewName.value,
-        notes: editNotes.value,
       },
     });
 
@@ -140,13 +141,140 @@ const openFeedbackModal = (feedbackItem: any) => {
   isFeedbackModalOpen.value = true;
 };
 
+// Reflection state
+const reflectionLearnings = ref("");
+const reflectionHighlights = ref("");
+const reflectionConcerns = ref("");
+const buddyComments = ref("");
+
+// Initialize reflection state from review data
+watch(
+  () => review.value,
+  (newReview) => {
+    if (newReview) {
+      reflectionLearnings.value = newReview.reflectionLearnings || "";
+      reflectionHighlights.value = newReview.reflectionHighlights || "";
+      reflectionConcerns.value = newReview.reflectionConcerns || "";
+      buddyComments.value = newReview.buddyComments || "";
+    }
+  },
+  { immediate: true },
+);
+
+// Auto-save logic
+const isSavingReflections = ref(false);
+const isSavingBuddyComments = ref(false);
+const saveTimeout = ref<NodeJS.Timeout | null>(null);
+
+const saveReflection = async (field: string, value: string) => {
+  if (!review.value) return;
+
+  const isBuddyComment = field === "buddyComments";
+  if (isBuddyComment) {
+    isSavingBuddyComments.value = true;
+  } else {
+    isSavingReflections.value = true;
+  }
+
+  try {
+    await $fetch(`/api/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: {
+        [field]: value,
+      },
+    });
+  } catch (error) {
+    console.error(`Failed to save ${field}:`, error);
+    toast.add({
+      title: "Failed to save changes",
+      description: "Please check your connection and try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    if (isBuddyComment) {
+      isSavingBuddyComments.value = false;
+    } else {
+      isSavingReflections.value = false;
+    }
+  }
+};
+
+const debouncedSave = (field: string, value: string) => {
+  if (saveTimeout.value) {
+    clearTimeout(saveTimeout.value);
+  }
+
+  const isBuddyComment = field === "buddyComments";
+  if (isBuddyComment) {
+    isSavingBuddyComments.value = true;
+  } else {
+    isSavingReflections.value = true;
+  }
+
+  saveTimeout.value = setTimeout(() => {
+    saveReflection(field, value);
+  }, 1000); // 1 second debounce
+};
+
+// Watch for changes to trigger auto-save
+// Only watch if the user has permission to edit that field to avoid unnecessary saves on load
+watch(reflectionLearnings, (newValue, oldValue) => {
+  if (
+    isReviewee.value &&
+    newValue !== (review.value?.reflectionLearnings || "") &&
+    oldValue !== ""
+  ) {
+    debouncedSave("reflectionLearnings", newValue);
+  }
+});
+
+watch(reflectionHighlights, (newValue, oldValue) => {
+  if (
+    isReviewee.value &&
+    newValue !== (review.value?.reflectionHighlights || "") &&
+    oldValue !== ""
+  ) {
+    debouncedSave("reflectionHighlights", newValue);
+  }
+});
+
+watch(reflectionConcerns, (newValue, oldValue) => {
+  if (
+    isReviewee.value &&
+    newValue !== (review.value?.reflectionConcerns || "") &&
+    oldValue !== ""
+  ) {
+    debouncedSave("reflectionConcerns", newValue);
+  }
+});
+
+watch(buddyComments, (newValue, oldValue) => {
+  if (
+    isBuddy.value &&
+    newValue !== (review.value?.buddyComments || "") &&
+    oldValue !== ""
+  ) {
+    debouncedSave("buddyComments", newValue);
+  }
+});
+
 // Tabs with dynamic counts
 const tabs = computed(() => [
-  { label: `Feedback (${feedback.value.length})`, value: "feedback" },
-  { label: `Goals (${goals.value.length})`, value: "goals" },
+  {
+    label: `Feedback (${feedback.value.length})`,
+    value: "feedback",
+    icon: "i-heroicons-chat-bubble-left-right",
+  },
+  {
+    label: `Goals (${goals.value.length})`,
+    value: "goals",
+    icon: "i-heroicons-flag",
+  },
   {
     label: `Achievements (${achievements.value.length})`,
     value: "achievements",
+    icon: "i-heroicons-star",
   },
 ]);
 
@@ -176,67 +304,196 @@ const feedbackColumns = [
         </div>
 
         <div v-else>
-          <!-- Header -->
-          <div class="mb-8">
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ review.name }}
-                </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  {{ formatDate(review.scheduledDate) }}
-                </p>
-              </div>
-              <UBadge
-                :label="review.status"
-                :color="review.status === 'completed' ? 'success' : 'primary'"
-                size="lg"
-              />
-            </div>
+          <!-- Hero Header -->
+          <div
+            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg"
+          >
+            <!-- Background Decoration -->
+            <div
+              class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"
+            ></div>
 
-            <div class="flex items-center gap-4 mb-6">
-              <div class="flex items-center gap-2">
-                <UAvatar
-                  :src="review.buddy?.avatarUrl"
-                  :alt="review.buddy?.name"
-                  size="sm"
-                />
+            <div class="relative z-10">
+              <div
+                class="flex flex-col md:flex-row md:items-start justify-between gap-6"
+              >
+                <!-- Title and Date -->
                 <div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ review.buddy?.name }}
-                  </p>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Buddy</p>
+                  <div class="flex items-center gap-3 mb-2">
+                    <UBadge
+                      :label="
+                        review.status === 'completed'
+                          ? 'Completed'
+                          : 'Scheduled'
+                      "
+                      variant="solid"
+                      :class="[
+                        'capitalize',
+                        review.status === 'completed'
+                          ? '!bg-green-500 !text-white'
+                          : '!bg-blue-500 !text-white',
+                      ]"
+                    />
+                    <span class="text-gray-400 text-sm font-medium">{{
+                      formatDate(review.scheduledDate)
+                    }}</span>
+                  </div>
+                  <h1 class="text-3xl md:text-4xl font-bold mb-2">
+                    {{ review.name || "Quarterly Review" }}
+                  </h1>
+                </div>
+
+                <!-- Buddy Card -->
+                <div
+                  class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[240px]"
+                >
+                  <UAvatar
+                    :src="review.buddy?.avatarUrl"
+                    :alt="review.buddy?.name"
+                    size="md"
+                    class="ring-2 ring-white/20"
+                  />
+                  <div>
+                    <p
+                      class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5"
+                    >
+                      Your Buddy
+                    </p>
+                    <p class="font-medium text-white">
+                      {{ review.buddy?.name || "Unassigned" }}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div v-if="isBuddy" class="flex gap-2">
-              <UButton
-                v-if="review.status === 'scheduled'"
-                color="gray"
-                variant="outline"
-                @click="openEditModal"
+              <!-- Actions -->
+              <div
+                v-if="isBuddy && review.status === 'scheduled'"
+                class="mt-8 flex gap-3"
               >
-                Edit Review
-              </UButton>
-              <UButton
-                v-if="review.status === 'scheduled'"
-                @click="isCompleteModalOpen = true"
-              >
-                Mark as Completed
-              </UButton>
+                <UButton
+                  color="white"
+                  variant="solid"
+                  icon="i-heroicons-check"
+                  class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
+                  @click="isCompleteModalOpen = true"
+                >
+                  Mark as Completed
+                </UButton>
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  icon="i-heroicons-pencil-square"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  @click="openEditModal"
+                >
+                  Edit Details
+                </UButton>
+              </div>
             </div>
           </div>
 
-          <!-- Review Notes (if present) -->
-          <UCard v-if="review.notes" class="mb-6">
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
-              Review Notes
-            </h3>
-            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-              {{ review.notes }}
-            </p>
+          <!-- Reflections Section -->
+          <UCard class="mb-6">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon
+                    name="i-heroicons-light-bulb"
+                    class="w-5 h-5 text-primary-500"
+                  />
+                  <h3 class="font-semibold text-gray-900 dark:text-white">
+                    Reflections
+                  </h3>
+                </div>
+                <div
+                  v-if="isSavingReflections"
+                  class="flex items-center gap-2 text-sm text-gray-500"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-4 h-4 animate-spin"
+                  />
+                  Saving...
+                </div>
+              </div>
+            </template>
+
+            <div class="space-y-6">
+              <ReviewsReflectionEditor
+                v-model="reflectionLearnings"
+                label="What have I learnt in the past three months?"
+                icon="i-heroicons-academic-cap"
+                placeholder="Think about technical skills, soft skills, or domain knowledge..."
+                :readonly="!isReviewee"
+              />
+
+              <ReviewsReflectionEditor
+                v-model="reflectionHighlights"
+                label="Any highlights?"
+                icon="i-heroicons-star"
+                placeholder="Projects delivered, problems solved, or team contributions..."
+                :readonly="!isReviewee"
+              />
+
+              <ReviewsReflectionEditor
+                v-model="reflectionConcerns"
+                label="Are you worried about anything right now?"
+                icon="i-heroicons-exclamation-triangle"
+                placeholder="Blockers, uncertainties, or support you might need..."
+                :readonly="!isReviewee"
+              />
+            </div>
           </UCard>
+
+          <!-- Buddy Comments Section -->
+          <UCard class="mb-6">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon
+                    name="i-heroicons-chat-bubble-bottom-center-text"
+                    class="w-5 h-5 text-primary-500"
+                  />
+                  <h3 class="font-semibold text-gray-900 dark:text-white">
+                    Buddy Comments
+                  </h3>
+                </div>
+                <div
+                  v-if="isSavingBuddyComments"
+                  class="flex items-center gap-2 text-sm text-gray-500"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-4 h-4 animate-spin"
+                  />
+                  Saving...
+                </div>
+              </div>
+            </template>
+
+            <ReviewsReflectionEditor
+              v-model="buddyComments"
+              label="Notes from your buddy"
+              icon="i-heroicons-user"
+              placeholder="Add comments about the review..."
+              :readonly="!isBuddy"
+            />
+          </UCard>
+
+          <!-- Supporting Data Header -->
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Supporting Data
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Review feedback, goals, and achievements from this cycle to help
+              write your reflections.
+            </p>
+          </div>
 
           <!-- Tabs -->
           <UTabs v-model="selectedTab" :items="tabs" class="mb-6" />
@@ -307,11 +564,12 @@ const feedbackColumns = [
                   </p>
                 </div>
 
-                <div v-else class="space-y-4">
-                  <div
+                <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <NuxtLink
                     v-for="goal in goals"
                     :key="goal.id"
-                    class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                    :to="isReviewee ? '/goals' : '/buddies/goals'"
+                    class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors -mx-4 first:-mt-4 last:-mb-4"
                   >
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
@@ -328,8 +586,12 @@ const feedbackColumns = [
                           </span>
                         </div>
                       </div>
+                      <UIcon
+                        name="i-heroicons-chevron-right"
+                        class="w-5 h-5 text-gray-400"
+                      />
                     </div>
-                  </div>
+                  </NuxtLink>
                 </div>
               </UCard>
             </div>
@@ -391,41 +653,57 @@ const feedbackColumns = [
           <!-- Completion Notes (if completed) -->
           <UCard
             v-if="review.status === 'completed' && review.completionNotes"
-            class="mt-6"
+            class="mt-6 bg-primary-50 dark:bg-primary-900/10 ring-1 ring-primary-200 dark:ring-primary-800"
           >
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
-              Review Summary
-            </h3>
-            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-              {{ review.completionNotes }}
-            </p>
+            <div class="flex items-start gap-4">
+              <UAvatar
+                :src="review.buddy?.avatarUrl"
+                :alt="review.buddy?.name"
+                size="md"
+                class="ring-2 ring-white dark:ring-gray-900"
+              />
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-semibold text-gray-900 dark:text-white">
+                    Review Summary from {{ review.buddy?.name }}
+                  </h3>
+                  <span
+                    v-if="review.completedDate"
+                    class="text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    Review completed on {{ formatDate(review.completedDate) }}
+                  </span>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  {{ review.completionNotes }}
+                </p>
+              </div>
+            </div>
           </UCard>
         </div>
       </div>
       <!-- Complete Review Modal -->
-      <UModal v-model:open="isCompleteModalOpen">
+      <UModal
+        v-model:open="isCompleteModalOpen"
+        title="Complete Review"
+        :ui="{
+          footer: 'justify-end',
+        }"
+      >
         <template #body>
-          <UCard>
-            <template #header>
-              <h3 class="text-lg font-semibold">Complete Review</h3>
-            </template>
+          <UTextarea
+            v-model="completionNotes"
+            class="w-full"
+            placeholder="Add summary notes (optional)"
+            :rows="6"
+          />
+        </template>
 
-            <UTextarea
-              v-model="completionNotes"
-              placeholder="Add summary notes (optional)"
-              :rows="6"
-              class="mb-4"
-            />
-
-            <template #footer>
-              <div class="flex justify-end gap-2">
-                <UButton variant="ghost" @click="isCompleteModalOpen = false">
-                  Cancel
-                </UButton>
-                <UButton @click="completeReview"> Complete Review </UButton>
-              </div>
-            </template>
-          </UCard>
+        <template #footer>
+          <UButton variant="ghost" @click="isCompleteModalOpen = false">
+            Cancel
+          </UButton>
+          <UButton @click="completeReview"> Complete Review </UButton>
         </template>
       </UModal>
 
@@ -468,18 +746,6 @@ const feedbackColumns = [
                 v-model="editReviewName"
                 placeholder="e.g., January 2026"
                 size="lg"
-              />
-            </div>
-
-            <!-- Notes -->
-            <div>
-              <label class="block text-sm font-medium mb-2">
-                Notes (Optional)
-              </label>
-              <UTextarea
-                v-model="editNotes"
-                placeholder="Add any notes about this review..."
-                :rows="4"
               />
             </div>
           </div>
