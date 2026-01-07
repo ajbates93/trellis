@@ -48,15 +48,13 @@ export default defineEventHandler(async (event) => {
     }
 
     // Delete the review
-    await db
-      .delete(reviewSchedules)
-      .where(eq(reviewSchedules.id, reviewId));
+    await db.delete(reviewSchedules).where(eq(reviewSchedules.id, reviewId));
 
     return {
       success: true,
       message: "Review deleted successfully",
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting review:", error);
     if (error.statusCode) {
       throw error;
