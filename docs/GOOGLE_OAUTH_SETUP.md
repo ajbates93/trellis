@@ -16,7 +16,7 @@ Google requires different redirect URIs for each environment, so you'll need to 
 
 - Access to [Google Cloud Console](https://console.cloud.google.com/)
 - Pocketworks Google Workspace admin account (or access to the project)
-- Your Railway app URL (e.g., `https://cohort-production.up.railway.app`)
+- Your Railway app URL (e.g., `https://trellis-production.up.railway.app`)
 
 ---
 
@@ -24,7 +24,7 @@ Google requires different redirect URIs for each environment, so you'll need to 
 
 1. Go to https://console.cloud.google.com/
 2. Sign in with your Pocketworks Google account
-3. Select your existing project (or create a new one for Cohort)
+3. Select your existing project (or create a new one for Trellis)
 
 **Recommended:** Use the same project for both development and production, but with different OAuth clients or multiple redirect URIs.
 
@@ -46,9 +46,9 @@ These should already be enabled if you've set up development credentials.
 1. Go to **APIs & Services** > **OAuth consent screen**
 2. Choose **Internal** (for Pocketworks workspace only)
 3. Fill in the form:
-   - **App name:** Cohort
+   - **App name:** Trellis
    - **User support email:** Your email
-   - **App logo:** (Optional) Upload Cohort logo
+   - **App logo:** (Optional) Upload Trellis logo
    - **App domain:**
      - Homepage: `https://your-app.railway.app`
      - Privacy policy: `https://your-app.railway.app/privacy` (create later)
@@ -80,7 +80,7 @@ You have two options:
 2. Click **+ CREATE CREDENTIALS** > **OAuth 2.0 Client ID**
 3. Configure:
    - **Application type:** Web application
-   - **Name:** Cohort Production
+   - **Name:** Trellis Production
    - **Authorized JavaScript origins:**
      - `https://your-app.railway.app`
    - **Authorized redirect URIs:**
@@ -109,7 +109,7 @@ You have two options:
 ## Step 5: Configure Railway Environment Variables
 
 1. Go to your Railway project dashboard
-2. Select your Cohort service
+2. Select your Trellis service
 3. Go to **Variables** tab
 4. Add the following environment variables:
 
@@ -146,13 +146,13 @@ Copy the output and paste it as `BETTER_AUTH_SECRET` in Railway.
 
 ## Step 6: Update Railway App URL
 
-Railway generates a URL like `https://cohort-production-abc123.up.railway.app`
+Railway generates a URL like `https://trellis-production-abc123.up.railway.app`
 
 Once you know your exact URL:
 
 1. Update `BETTER_AUTH_URL` in Railway environment variables
 2. Update the Google OAuth redirect URI to match exactly:
-   - `https://cohort-production-abc123.up.railway.app/api/auth/callback/google`
+   - `https://trellis-production-abc123.up.railway.app/api/auth/callback/google`
 
 ---
 
@@ -183,7 +183,7 @@ If you want to restrict OAuth to specific Pocketworks users:
 
 ### Option 2: Application-Level Restriction
 
-The Cohort app already implements invitation-based access control:
+The Trellis app already implements invitation-based access control:
 - Users must be pre-created by admin before they can log in
 - Unauthorized OAuth attempts are automatically rejected
 - See `/server/utils/auth.ts` for implementation
@@ -263,11 +263,11 @@ Save this template securely (e.g., in 1Password, LastPass, or team password mana
 
 ```
 =================================
-COHORT PRODUCTION CREDENTIALS
+TRELLIS PRODUCTION CREDENTIALS
 =================================
 
 Google Cloud Project: [project-name]
-Google OAuth Client Name: Cohort Production
+Google OAuth Client Name: Trellis Production
 
 GOOGLE_CLIENT_ID=
 [paste client ID here]

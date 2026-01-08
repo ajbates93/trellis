@@ -58,10 +58,8 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Back button -->
         <div class="mb-4">
-          <NuxtLink
-            to="/buddies"
-            class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-          >
+          <NuxtLink to="/buddies"
+            class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
             <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
             Back to Buddies
           </NuxtLink>
@@ -69,24 +67,14 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
 
         <!-- Loading state -->
         <div v-if="pending" class="flex justify-center py-16">
-          <UIcon
-            name="i-heroicons-arrow-path"
-            class="w-8 h-8 text-primary animate-spin"
-          />
+          <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-primary animate-spin" />
         </div>
 
         <!-- Error state -->
-        <div
-          v-else-if="error"
-          class="text-center py-16 px-6 rounded-xl bg-red-50 dark:bg-red-900/20"
-        >
+        <div v-else-if="error" class="text-center py-16 px-6 rounded-xl bg-red-50 dark:bg-red-900/20">
           <div
-            class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center"
-          >
-            <UIcon
-              name="i-heroicons-exclamation-triangle"
-              class="w-8 h-8 text-red-500"
-            />
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-8 h-8 text-red-500" />
           </div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Unable to load profile
@@ -109,9 +97,7 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
         <div v-else-if="buddy">
           <!-- Page header -->
           <div class="mb-8">
-            <h1
-              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-            >
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
               {{ buddy.preferredName || buddy.name }}'s Profile
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -127,21 +113,12 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
               <UCard class="mb-6">
                 <div class="text-center">
                   <div class="mb-4 flex justify-center">
-                    <img
-                      :src="getAvatarUrl(buddy)"
-                      :alt="buddy.name"
-                      class="w-32 h-32 rounded-lg object-cover"
-                    />
+                    <img :src="getAvatarUrl(buddy)" :alt="buddy.name" class="w-32 h-32 rounded-lg object-cover" />
                   </div>
-                  <h3
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ buddy.preferredName || buddy.name }}
                   </h3>
-                  <p
-                    v-if="buddy.pronouns"
-                    class="text-sm text-gray-600 dark:text-gray-400 mt-1"
-                  >
+                  <p v-if="buddy.pronouns" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {{ buddy.pronouns }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
@@ -152,9 +129,7 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
 
               <!-- Info card -->
               <UCard>
-                <h3
-                  class="text-sm font-semibold text-gray-900 dark:text-white mb-4"
-                >
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
                   Account Information
                 </h3>
                 <div class="space-y-3 text-sm">
@@ -179,47 +154,33 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
               <!-- About Section -->
               <UCard>
                 <template #header>
-                  <h3
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     About
                   </h3>
                 </template>
 
-                <div
-                  v-if="buddy.bio"
-                  class="prose prose-sm dark:prose-invert max-w-none"
-                >
-                  <p
-                    class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
-                  >
+                <div v-if="buddy.bio" class="prose prose-sm dark:prose-invert max-w-none">
+                  <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                     {{ buddy.bio }}
                   </p>
                 </div>
-                <p
-                  v-else
-                  class="text-gray-500 dark:text-gray-400 text-sm italic"
-                >
+                <p v-else class="text-gray-500 dark:text-gray-400 text-sm italic">
                   No bio provided
                 </p>
               </UCard>
 
-              <!-- Cohort Preferences Section -->
+              <!-- Trellis Preferences Section -->
               <UCard>
                 <template #header>
-                  <h3
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
-                    Cohort Preferences
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Trellis Preferences
                   </h3>
                 </template>
 
                 <div class="space-y-6">
                   <!-- Review Preference -->
                   <div>
-                    <p
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Review Preference
                     </p>
                     <p class="text-gray-900 dark:text-white">
@@ -229,21 +190,13 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
 
                   <!-- Communication Preferences -->
                   <div>
-                    <p
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Communication Preferences
                     </p>
-                    <p
-                      v-if="buddy.communicationPreferences"
-                      class="text-gray-900 dark:text-white whitespace-pre-wrap"
-                    >
+                    <p v-if="buddy.communicationPreferences" class="text-gray-900 dark:text-white whitespace-pre-wrap">
                       {{ buddy.communicationPreferences }}
                     </p>
-                    <p
-                      v-else
-                      class="text-gray-500 dark:text-gray-400 text-sm italic"
-                    >
+                    <p v-else class="text-gray-500 dark:text-gray-400 text-sm italic">
                       No communication preferences set
                     </p>
                   </div>

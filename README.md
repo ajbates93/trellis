@@ -1,4 +1,4 @@
-# Cohort
+# Trellis
 
 A buddy management and peer feedback platform for Pocketworks. Streamlines feedback collection, provides visibility into personal development, and maintains alignment with formal reviews.
 

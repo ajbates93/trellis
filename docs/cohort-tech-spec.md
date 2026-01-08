@@ -1,8 +1,8 @@
-# Cohort - Technical Specification
+# Trellis - Technical Specification
 
 ## Project Overview
 
-**Cohort** is a buddy management and peer feedback platform for Pocketworks, designed to streamline the feedback collection process, provide visibility into personal development, and maintain alignment with Notion-based formal reviews.
+**Trellis** is a buddy management and peer feedback platform for Pocketworks, designed to streamline the feedback collection process, provide visibility into personal development, and maintain alignment with Notion-based formal reviews.
 
 ### Goals
 - Centralize feedback submission and viewing

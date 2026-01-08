@@ -9,7 +9,7 @@ mike.johnson@pocketworks.co.uk,Mike Johnson,management,`;
   // Set headers for CSV download
   setResponseHeaders(event, {
     "Content-Type": "text/csv",
-    "Content-Disposition": 'attachment; filename="cohort-user-import-template.csv"',
+    "Content-Disposition": 'attachment; filename="trellis-user-import-template.csv"',
   });
 
   return template;

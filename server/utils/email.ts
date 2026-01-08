@@ -11,7 +11,7 @@ export interface SendEmailOptions {
 
 export const sendEmail = async (options: SendEmailOptions) => {
   const fromEmail =
-    options.from || process.env.EMAIL_FROM || "noreply@cohort.dev";
+    options.from || process.env.EMAIL_FROM || "noreply@trellis.dev";
 
   try {
     const { data, error } = await resend.emails.send({
@@ -41,17 +41,17 @@ export const emailTemplates = {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Welcome to Cohort</title>
+        <title>Welcome to Trellis</title>
       </head>
       <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #059669;">Welcome to Cohort</h1>
+            <h1 style="color: #059669;">Welcome to Trellis</h1>
           </div>
 
           <p>Hi ${name},</p>
 
-          <p>You've been invited to join Cohort, your team's peer feedback platform.</p>
+          <p>You've been invited to join Trellis, your team's peer feedback platform.</p>
 
           <p>To get started, please set your password by clicking the button below:</p>
 
@@ -73,7 +73,7 @@ export const emailTemplates = {
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
           <p style="color: #999; font-size: 12px; text-align: center;">
-            Cohort - Peer feedback made simple
+            Trellis - Peer feedback made simple
           </p>
         </div>
       </body>
@@ -93,7 +93,7 @@ export const emailTemplates = {
 
           <p>Hi ${name},</p>
 
-          <p>You requested to reset your password for your Cohort account.</p>
+          <p>You requested to reset your password for your Trellis account.</p>
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}"
@@ -113,7 +113,7 @@ export const emailTemplates = {
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
           <p style="color: #999; font-size: 12px; text-align: center;">
-            Cohort - Peer feedback made simple
+            Trellis - Peer feedback made simple
           </p>
         </div>
       </body>
@@ -149,7 +149,7 @@ export const emailTemplates = {
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
           <p style="color: #999; font-size: 12px; text-align: center;">
-            Cohort - Peer feedback made simple
+            Trellis - Peer feedback made simple
           </p>
         </div>
       </body>

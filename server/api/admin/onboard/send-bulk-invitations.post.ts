@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
 
         await sendEmail({
           to: user.email,
-          subject: "Welcome to Cohort - Set Your Password",
+          subject: "Welcome to Trellis - Set Your Password",
           html: emailTemplates.invitation(user.name, setPasswordUrl),
         });
 

@@ -1,8 +1,8 @@
-# Cohort - Wireframes & UI Specification
+# Trellis - Wireframes & UI Specification
 
 ## Design Principles
 
-Following the inspiration from your dashboard examples, Cohort will embody:
+Following the inspiration from your dashboard examples, Trellis will embody:
 - **Clean & Modern**: Minimal clutter, generous whitespace
 - **Data-Forward**: Visualizations are the star
 - **Action-Oriented**: Clear CTAs and next steps
@@ -29,7 +29,7 @@ Following the inspiration from your dashboard examples, Cohort will embody:
 **Layout**: Centered card on gradient background
 
 **Elements**:
-- **Logo/Wordmark**: "Cohort" with tagline "Peer feedback made simple"
+- **Logo/Wordmark**: "Trellis" with tagline "Peer feedback made simple"
 - **Hero Image/Illustration**: Abstract people connected in a circle
 - **Primary CTA**: Large "Sign in with Google" button
   - Google logo icon
@@ -349,7 +349,7 @@ Each feedback item is a card:
 - Real-time stream of actions:
   - "[Name] gave feedback to [Name]" (2m ago)
   - "[Name] completed a goal" (15m ago)
-  - "[Name] joined Cohort" (1h ago)
+  - "[Name] joined Trellis" (1h ago)
 
 ---
 
@@ -357,7 +357,7 @@ Each feedback item is a card:
 
 **Step 1: Welcome**
 - Congratulatory message: "You're the first admin!"
-- Explanation of Cohort
+- Explanation of Trellis
 - "Get Started" button
 
 **Step 2: Upload Team CSV**

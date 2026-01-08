@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Cohort** is a buddy management and peer feedback platform for Pocketworks. It streamlines feedback collection, provides visibility into personal development, and maintains alignment with Notion-based formal reviews. The platform is being built as an internal tool with potential to evolve into a SaaS product.
+**Trellis** is a buddy management and peer feedback platform for Pocketworks. It streamlines feedback collection, provides visibility into personal development, and maintains alignment with Notion-based formal reviews. The platform is being built as an internal tool with potential to evolve into a SaaS product.
 
 ### Primary Goals
 - Centralize feedback submission and viewing
@@ -120,8 +120,8 @@ User sees existing buddy, can give/receive feedback immediately
 ### Core Tables
 
 **users**: Employee profiles and buddy relationships
-- `id` (UUID), `email`, `name`, `role_type` (dev/design/qa)
-- `buddy_id` (self-referential), `next_review_date`, `is_admin`
+- `id` (UUID), `email`, `name`, `role_type` (dev/design/qa/growth/management)
+- `buddy_id` (self-referential), `is_admin`
 - Indexes on email, buddy_id
 
 **feedback**: Peer feedback submissions
@@ -232,10 +232,13 @@ Following Nuxt file-based conventions:
 
 ### CSV Import Format
 ```csv
-email,name,role_type,buddy_email,next_review_date
-john.doe@company.com,John Doe,dev,jane.smith@company.com,2025-03-15
-alice@external-contractor.io,Alice Brown,design,john.doe@company.com,2025-04-01
+email,name,role_type,buddy_email
+john.doe@company.com,John Doe,dev,jane.smith@company.com
+alice@external-contractor.io,Alice Brown,design,john.doe@company.com
+jane.smith@company.com,Jane Smith,management,
 ```
+
+**Valid role types**: `dev`, `design`, `qa`, `growth`, `management`
 
 **Note**: Any email domain is accepted (including external contractors/partners). Access is controlled via invitation only - users must be pre-created by admin before they can authenticate.
 
@@ -293,10 +296,10 @@ alice@external-contractor.io,Alice Brown,design,john.doe@company.com,2025-04-01
 
 ## Multi-Tenancy Strategy (Future Phase 11)
 
-Cohort will support multiple organizations with three potential approaches:
+Trellis will support multiple organizations with three potential approaches:
 
 ### Option A: Workspace Model (Recommended for SMB)
-- **Access:** Single domain `app.cohort.com` with workspace switcher
+- **Access:** Single domain `app.trellis.com` with workspace switcher
 - **UX:** Users can join/create multiple workspaces (like Linear, Slack, Notion)
 - **Authentication:** Global OAuth initially (Google/Microsoft for all workspaces)
 - **Per-Workspace OAuth:** Add later as enterprise feature
@@ -312,12 +315,12 @@ Cohort will support multiple organizations with three potential approaches:
 
 **Technical Considerations:**
 - Workspace context must be threaded through app (session cookie or query param)
-- Deep links need workspace parameter: `app.cohort.com/feedback?workspace=pocketworks`
+- Deep links need workspace parameter: `app.trellis.com/feedback?workspace=pocketworks`
 - RLS policies filter by workspace_id from session context
 - Global OAuth simplifies initial implementation
 
 ### Option B: Subdomain Model (Enterprise-Ready)
-- **Access:** Each organization gets subdomain: `company.cohort.com`
+- **Access:** Each organization gets subdomain: `company.trellis.com`
 - **UX:** Branded access per company, bookmark-based workspace switching
 - **Authentication:** Per-workspace OAuth configuration (company A uses Google, company B uses Okta)
 - **Custom Domains:** `feedback.company.com` → CNAME to subdomain
@@ -362,7 +365,7 @@ Cohort will support multiple organizations with three potential approaches:
 
 ### Environment Strategy
 
-Cohort uses a three-environment deployment strategy:
+Trellis uses a three-environment deployment strategy:
 
 | Environment | Purpose | Git Branch | Auto-Deploy | Database |
 |-------------|---------|------------|-------------|----------|

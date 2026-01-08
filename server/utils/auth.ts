@@ -37,7 +37,7 @@ export const auth = betterAuth({
       // Don't await to prevent timing attacks
       void sendEmail({
         to: user.email,
-        subject: "Reset Your Cohort Password",
+        subject: "Reset Your Trellis Password",
         html: emailTemplates.passwordReset(user.name, url),
       }).catch((error) => {
         console.error("Failed to send password reset email:", error);

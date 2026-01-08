@@ -1,4 +1,4 @@
-# Railway Configuration for Cohort
+# Railway Configuration for Trellis
 
 [build]
 builder = "DOCKERFILE"
