@@ -331,7 +331,7 @@ const feedbackColumns = [
                       ]" />
                     <span class="text-gray-400 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
-                      }}</span>
+                    }}</span>
                   </div>
                   <h1 class="text-3xl sm:text-4xl md:text-4xl font-bold mb-2">
                     {{ review.name || "Quarterly Review" }}
@@ -447,31 +447,34 @@ const feedbackColumns = [
                   </p>
                 </div>
 
-                <UTable v-else :columns="feedbackColumns" :data="feedback">
-                  <template #from-cell="{ row }">
-                    <div class="flex items-center gap-2">
-                      <UAvatar :src="row.original.reviewer.avatarUrl || undefined" :alt="row.original.reviewer.name"
-                        size="xs" />
-                      <span>{{ row.original.reviewer.name }}</span>
-                    </div>
-                  </template>
+                <div v-else class="max-h-[500px] overflow-y-auto">
+                  <UTable :columns="feedbackColumns" :data="feedback"
+                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' } }">
+                    <template #from-cell="{ row }">
+                      <div class="flex items-center gap-2">
+                        <UAvatar :src="row.original.reviewer.avatarUrl || undefined" :alt="row.original.reviewer.name"
+                          size="xs" />
+                        <span>{{ row.original.reviewer.name }}</span>
+                      </div>
+                    </template>
 
-                  <template #content-cell="{ row }">
-                    <UButton variant="ghost" color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)">
-                      <span class="truncate block">{{
-                        row.original.content
+                    <template #content-cell="{ row }">
+                      <UButton variant="ghost" color="neutral"
+                        class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                        @click="openFeedbackModal(row.original)">
+                        <span class="truncate block">{{
+                          row.original.content
                         }}</span>
-                    </UButton>
-                  </template>
+                      </UButton>
+                    </template>
 
-                  <template #date-cell="{ row }">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatDate(row.original.createdAt) }}
-                    </span>
-                  </template>
-                </UTable>
+                    <template #date-cell="{ row }">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ formatDate(row.original.createdAt) }}
+                      </span>
+                    </template>
+                  </UTable>
+                </div>
               </UCard>
             </div>
 

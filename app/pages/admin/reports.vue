@@ -40,7 +40,7 @@
                         <span class="font-medium">{{ option.name }}</span>
                         <span class="text-xs text-gray-500">{{
                           option.email
-                          }}</span>
+                        }}</span>
                       </div>
                     </div>
                   </template>
@@ -435,7 +435,7 @@ const sortedGoals = computed(() => {
 });
 
 const recentFeedback = computed(() => {
-  return feedback.value.slice(0, 10);
+  return feedback.value.slice(0, 9);
 });
 
 const formatDate = (date: string) => {
