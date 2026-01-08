@@ -1,5 +1,5 @@
 import { db } from "../../database/connection";
-import { feedback, users, reviewSchedules } from "../../database/schema";
+import { feedback, users } from "../../database/schema";
 import { eq, and, inArray, desc } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
         content: feedback.content,
         createdAt: feedback.createdAt,
         revieweeId: feedback.revieweeId,
-        reviewScheduleId: feedback.reviewScheduleId,
+        // reviewScheduleId: feedback.reviewScheduleId,
         reviewer: {
           id: users.id,
           name: users.name,
@@ -65,15 +65,15 @@ export default defineEventHandler(async (event) => {
           image: users.image,
           avatarUrl: users.avatarUrl,
         },
-        review: {
-          id: reviewSchedules.id,
-          name: reviewSchedules.name,
-          scheduledDate: reviewSchedules.scheduledDate,
-        },
+        // review: {
+        //   id: reviewSchedules.id,
+        //   name: reviewSchedules.name,
+        //   scheduledDate: reviewSchedules.scheduledDate,
+        // },
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.reviewerId, users.id))
-      .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
+      // .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
       .where(
         and(
           inArray(feedback.revieweeId, buddyIds),

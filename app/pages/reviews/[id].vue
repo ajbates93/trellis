@@ -14,9 +14,9 @@ const { data: reviewData, refresh } = await useFetch(
   `/api/reviews/${reviewId}`,
 );
 
-const review = computed(() => reviewData.value?.review);
-const feedback = computed(() => reviewData.value?.feedback || []);
-const goals = computed(() => reviewData.value?.goals || []);
+const review = computed(() => (reviewData.value as any)?.review);
+const feedback = computed(() => (reviewData.value as any)?.feedback || []);
+const goals = computed(() => (reviewData.value as any)?.goals || []);
 
 // Fetch achievements for this review
 const { data: achievementsData } = await useFetch(
@@ -48,6 +48,10 @@ const isReviewee = computed(() => {
 // Check if current user is the buddy for this review
 const isBuddy = computed(() => {
   return review.value?.buddyId === currentUser.value?.id;
+});
+
+const isAdmin = computed(() => {
+  return currentUser.value?.role === 'admin';
 });
 
 // Open edit modal
@@ -317,8 +321,8 @@ const feedbackColumns = [
                 <div>
                   <div class="flex items-center gap-3 mb-2">
                     <UBadge :label="review.status === 'completed'
-                        ? 'Completed'
-                        : 'Scheduled'
+                      ? 'Completed'
+                      : 'Scheduled'
                       " variant="solid" :class="[
                         'capitalize',
                         review.status === 'completed'
@@ -327,7 +331,7 @@ const feedbackColumns = [
                       ]" />
                     <span class="text-gray-400 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
-                      }}</span>
+                    }}</span>
                   </div>
                   <h1 class="text-3xl sm:text-4xl md:text-4xl font-bold mb-2">
                     {{ review.name || "Quarterly Review" }}
@@ -350,13 +354,13 @@ const feedbackColumns = [
               </div>
 
               <!-- Actions -->
-              <div v-if="isBuddy && review.status === 'scheduled'" class="mt-8 flex gap-3">
-                <UButton color="white" variant="solid" icon="i-heroicons-check"
+              <div v-if="(isBuddy || isAdmin) && review.status === 'scheduled'" class="mt-8 flex gap-3">
+                <UButton color="neutral" variant="solid" icon="i-heroicons-check"
                   class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
                   @click="isCompleteModalOpen = true">
                   Mark as Completed
                 </UButton>
-                <UButton color="gray" variant="ghost" icon="i-heroicons-pencil-square"
+                <UButton color="neutral" variant="ghost" icon="i-heroicons-pencil-square"
                   class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer" @click="openEditModal">
                   Edit Details
                 </UButton>
@@ -443,31 +447,34 @@ const feedbackColumns = [
                   </p>
                 </div>
 
-                <UTable v-else :columns="feedbackColumns" :data="feedback">
-                  <template #from-cell="{ row }">
-                    <div class="flex items-center gap-2">
-                      <UAvatar :src="row.original.reviewer.avatarUrl || undefined" :alt="row.original.reviewer.name"
-                        size="xs" />
-                      <span>{{ row.original.reviewer.name }}</span>
-                    </div>
-                  </template>
+                <div v-else class="max-h-[500px] overflow-y-auto">
+                  <UTable :columns="feedbackColumns" :data="feedback"
+                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' } }">
+                    <template #from-cell="{ row }">
+                      <div class="flex items-center gap-2">
+                        <UAvatar :src="row.original.reviewer.avatarUrl || undefined" :alt="row.original.reviewer.name"
+                          size="xs" />
+                        <span>{{ row.original.reviewer.name }}</span>
+                      </div>
+                    </template>
 
-                  <template #content-cell="{ row }">
-                    <UButton variant="ghost" color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)">
-                      <span class="truncate block">{{
-                        row.original.content
+                    <template #content-cell="{ row }">
+                      <UButton variant="ghost" color="neutral"
+                        class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
+                        @click="openFeedbackModal(row.original)">
+                        <span class="truncate block">{{
+                          row.original.content
                         }}</span>
-                    </UButton>
-                  </template>
+                      </UButton>
+                    </template>
 
-                  <template #date-cell="{ row }">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatDate(row.original.createdAt) }}
-                    </span>
-                  </template>
-                </UTable>
+                    <template #date-cell="{ row }">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ formatDate(row.original.createdAt) }}
+                      </span>
+                    </template>
+                  </UTable>
+                </div>
               </UCard>
             </div>
 

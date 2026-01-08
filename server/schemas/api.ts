@@ -74,29 +74,31 @@ export const AssignReviewRequestSchema = z.object({
 
 export const GetBuddyGivenFeedbackResponseSchema = z.object({
   feedback: z.array(
-    FeedbackWithRevieweeSchema.extend({
-      review: z
-        .object({
-          id: z.uuid(),
-          name: z.string().nullable(),
-          scheduledDate: z.string(),
-        })
-        .nullable(),
-    }),
+    FeedbackWithRevieweeSchema
+    // .extend({
+    //   review: z
+    //     .object({
+    //       id: z.uuid(),
+    //       name: z.string().nullable(),
+    //       scheduledDate: z.string(),
+    //     })
+    //     .nullable(),
+    // }),
   ),
 });
 
 export const GetBuddyReceivedFeedbackResponseSchema = z.object({
   feedback: z.array(
-    FeedbackWithReviewerSchema.extend({
-      review: z
-        .object({
-          id: z.uuid(),
-          name: z.string().nullable(),
-          scheduledDate: z.string(),
-        })
-        .nullable(),
-    }),
+    FeedbackWithReviewerSchema
+    // .extend({
+    //   review: z
+    //     .object({
+    //       id: z.uuid(),
+    //       name: z.string().nullable(),
+    //       scheduledDate: z.string(),
+    //     })
+    //     .nullable(),
+    // }),
   ),
 });
 
@@ -117,7 +119,8 @@ export const GetForBuddyResponseSchema = z.object({
           content: z.string(),
           createdAt: z.coerce.date().nullable(),
           revieweeId: z.string(),
-          reviewScheduleId: z.uuid().nullable(),
+          revieweeId: z.string(),
+          // reviewScheduleId: z.uuid().nullable(),
           reviewer: z.object({
             id: z.string(),
             name: z.string(),
@@ -125,13 +128,13 @@ export const GetForBuddyResponseSchema = z.object({
             image: z.string().nullable(),
             avatarUrl: z.string().nullable(),
           }),
-          review: z
-            .object({
-              id: z.uuid(),
-              name: z.string().nullable(),
-              scheduledDate: z.string(),
-            })
-            .nullable(),
+          // review: z
+          //   .object({
+          //     id: z.uuid(),
+          //     name: z.string().nullable(),
+          //     scheduledDate: z.string(),
+          //   })
+          //   .nullable(),
         }),
       ),
     }),

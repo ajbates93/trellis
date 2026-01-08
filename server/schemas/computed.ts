@@ -17,7 +17,8 @@ export const FeedbackWithReviewerSchema = z.object({
   createdAt: z.coerce.date().nullable(),
   publishedAt: z.coerce.date().nullable(),
   isRead: z.boolean().nullable(),
-  reviewScheduleId: z.uuid().nullable(),
+  isRead: z.boolean().nullable(),
+  // reviewScheduleId: z.uuid().nullable(),
   reviewer: z.object({
     id: z.string(),
     name: z.string(),
@@ -25,11 +26,11 @@ export const FeedbackWithReviewerSchema = z.object({
     image: z.string().nullable(),
     avatarUrl: z.string().nullable(),
   }),
-  review: z.object({
-    id: z.uuid(),
-    name: z.string().nullable(),
-    scheduledDate: z.string(),
-  }).nullable(),
+  // review: z.object({
+  //   id: z.uuid(),
+  //   name: z.string().nullable(),
+  //   scheduledDate: z.string(),
+  // }).nullable(),
 });
 
 // For /api/feedback/given - feedback with reviewee info
@@ -41,7 +42,8 @@ export const FeedbackWithRevieweeSchema = z.object({
   isRead: z.boolean().nullable(),
   published: z.boolean().nullable(),
   weekYear: z.string().nullable(),
-  reviewScheduleId: z.uuid().nullable(),
+  weekYear: z.string().nullable(),
+  // reviewScheduleId: z.uuid().nullable(),
   reviewee: z.object({
     id: z.string(),
     name: z.string(),

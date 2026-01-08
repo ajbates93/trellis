@@ -17,65 +17,16 @@ const { data: pastData } = await useFetch("/api/reviews/past");
 const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 const pastReviews = computed(() => pastData.value?.reviews || []);
 
-// Group past reviews by year
-const pastReviewsByYear = computed(() => {
-  const grouped = new Map<number, any[]>();
-
-  pastReviews.value.forEach((review) => {
-    const year = new Date(
-      review.completedDate || review.scheduledDate,
-    ).getFullYear();
-    if (!grouped.has(year)) {
-      grouped.set(year, []);
-    }
-    grouped.get(year)!.push(review);
-  });
-
-  return Array.from(grouped.entries())
-    .sort((a, b) => b[0] - a[0]) // Sort years descending
-    .map(([year, reviews]) => ({
-      year,
-      reviews: reviews.sort(
-        (a, b) =>
-          new Date(b.completedDate || b.scheduledDate).getTime() -
-          new Date(a.completedDate || a.completedDate).getTime(),
-      ),
-    }));
-});
-
 // Calculate days until review
 const daysUntil = (date: string) => {
   return differenceInDays(new Date(date), new Date());
 };
 
 // Format date
-const formatDate = (date: string) => {
+const formatDate = (date: string | Date | null) => {
+  if (!date) return "N/A";
   return format(new Date(date), "MMM d, yyyy");
 };
-
-// Tab state
-const activeTab = ref("upcoming");
-
-// Tab items
-const tabItems = computed<TabsItem[]>(() => [
-  {
-    label: "Upcoming",
-    icon: "i-heroicons-calendar-days",
-    badge:
-      upcomingReviews.value.length > 0
-        ? upcomingReviews.value.length
-        : undefined,
-    value: "upcoming",
-    slot: "upcoming",
-  },
-  {
-    label: "Past",
-    icon: "i-heroicons-archive-box",
-    badge: pastReviews.value.length > 0 ? pastReviews.value.length : undefined,
-    value: "past",
-    slot: "past",
-  },
-]);
 </script>
 
 <template>
@@ -86,9 +37,7 @@ const tabItems = computed<TabsItem[]>(() => [
         <div class="mb-6">
           <div class="flex items-start justify-between">
             <div>
-              <h1
-                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-              >
+              <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
                 Reviews
               </h1>
               <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -98,217 +47,91 @@ const tabItems = computed<TabsItem[]>(() => [
           </div>
         </div>
 
-        <!-- Tabbed Reviews Interface -->
-        <UTabs
-          v-model="activeTab"
-          :items="tabItems"
-          variant="pill"
-          color="neutral"
-          size="lg"
-          class="w-full"
-          :ui="{
-            list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-            trigger:
-              'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
-            indicator: 'bg-white dark:bg-gray-900 shadow-sm',
-          }"
-        >
-          <!-- Upcoming Reviews Tab -->
-          <template #upcoming>
-            <div class="pt-6">
-              <!-- Empty state -->
-              <EmptyState
-                v-if="upcomingReviews.length === 0"
-                icon="i-heroicons-calendar-days"
-                icon-color="text-primary"
-                icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
-                heading="No upcoming reviews"
-                description="Your next review will appear here when scheduled"
-                variant="secondary"
-              />
+        <!-- Upcoming Review Section -->
+        <section class="mb-12">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-calendar-days" class="text-primary-500" />
+            Upcoming Review
+          </h2>
 
-              <!-- Reviews grid -->
-              <div
-                v-else
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              >
-                <NuxtLink
-                  v-for="review in upcomingReviews"
-                  :key="review.id"
-                  :to="`/reviews/${review.id}`"
-                  class="block"
-                >
-                  <UCard
-                    class="hover:shadow-lg transition-shadow cursor-pointer h-full"
-                  >
-                    <div class="space-y-3">
-                      <div class="flex items-start justify-between">
-                        <div>
-                          <div class="flex items-center gap-2 mb-1">
-                            <UAvatar
-                              :src="review.user?.avatarUrl"
-                              :alt="review.user?.name"
-                              size="xs"
-                            />
-                            <h3
-                              class="font-semibold text-gray-900 dark:text-white"
-                            >
-                              {{ review.user?.name }}
-                            </h3>
-                          </div>
-                          <p class="text-xs text-gray-500 dark:text-gray-500">
-                            {{ review.name }}
-                          </p>
-                          <p
-                            class="text-sm text-gray-600 dark:text-gray-400 mt-1"
-                          >
-                            {{ formatDate(review.scheduledDate) }}
-                          </p>
-                        </div>
-                        <UBadge color="primary" size="xs">
-                          {{ daysUntil(review.scheduledDate) }} days
-                        </UBadge>
+          <div v-if="upcomingReviews.length > 0">
+            <NuxtLink :to="`/reviews/${upcomingReviews[0].id}`" class="block group">
+              <UCard
+                class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                      <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                        {{ upcomingReviews[0].name }}
+                      </h3>
+                      <UBadge :label="upcomingReviews[0].status" color="primary" variant="subtle" />
+                    </div>
+
+                    <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div class="flex items-center gap-1.5">
+                        <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
+                        <span>{{ formatDate(upcomingReviews[0].scheduledDate) }}</span>
                       </div>
-
-                      <div class="flex items-center gap-2">
-                        <UAvatar
-                          :src="review.buddy?.avatarUrl"
-                          :alt="review.buddy?.name"
-                          size="xs"
-                        />
-                        <span class="text-sm text-gray-600 dark:text-gray-400">
-                          Buddy: {{ review.buddy?.name }}
-                        </span>
-                      </div>
-
-                      <div
-                        class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400"
-                      >
-                        <div class="flex items-center gap-1">
-                          <UIcon name="i-heroicons-chat-bubble-left" />
-                          <span>{{ review.feedbackCount }} feedback</span>
-                        </div>
+                      <div class="flex items-center gap-1.5">
+                        <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                        <span>{{ daysUntil(upcomingReviews[0].scheduledDate) }} days left</span>
                       </div>
                     </div>
-                  </UCard>
-                </NuxtLink>
-              </div>
-            </div>
-          </template>
+                  </div>
 
-          <!-- Past Reviews Tab -->
-          <template #past>
-            <div class="pt-6">
-              <!-- Empty state -->
-              <EmptyState
-                v-if="pastReviewsByYear.length === 0"
-                icon="i-heroicons-archive-box"
-                icon-color="text-gray-400"
-                icon-bg-color="bg-gray-200 dark:bg-gray-700"
-                heading="No past reviews"
-                description="Reviews scheduled in the past will appear here"
-                variant="secondary"
-              />
-
-              <!-- Past reviews grouped by year -->
-              <div v-else class="space-y-6">
-                <UAccordion
-                  :items="
-                    pastReviewsByYear.map(({ year, reviews }) => ({
-                      label: `${year} (${reviews.length} reviews)`,
-                      slot: `year-${year}`,
-                      defaultOpen: year === new Date().getFullYear(),
-                    }))
-                  "
-                >
-                  <template
-                    v-for="{ year, reviews } in pastReviewsByYear"
-                    :key="year"
-                    #[`year-${year}`]
-                  >
-                    <div
-                      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4"
-                    >
-                      <NuxtLink
-                        v-for="review in reviews"
-                        :key="review.id"
-                        :to="`/reviews/${review.id}`"
-                        class="block"
-                      >
-                        <UCard
-                          class="hover:shadow-lg transition-shadow cursor-pointer h-full"
-                        >
-                          <div class="space-y-3">
-                            <div>
-                              <div class="flex items-center gap-2 mb-1">
-                                <UAvatar
-                                  :src="review.user?.avatarUrl"
-                                  :alt="review.user?.name"
-                                  size="xs"
-                                />
-                                <h3
-                                  class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                  {{ review.user?.name }}
-                                </h3>
-                              </div>
-                              <p
-                                class="text-xs text-gray-500 dark:text-gray-500"
-                              >
-                                {{ review.name }}
-                              </p>
-                              <p
-                                class="text-sm text-gray-600 dark:text-gray-400 mt-1"
-                              >
-                                {{ formatDate(review.scheduledDate) }}
-                              </p>
-                            </div>
-
-                            <div class="flex items-center gap-2 flex-wrap">
-                              <UBadge
-                                :label="review.status"
-                                :color="
-                                  review.status === 'completed'
-                                    ? 'success'
-                                    : 'warning'
-                                "
-                                size="xs"
-                              />
-                              <UAvatar
-                                :src="review.buddy?.avatarUrl"
-                                :alt="review.buddy?.name"
-                                size="xs"
-                              />
-                              <span
-                                class="text-sm text-gray-600 dark:text-gray-400"
-                              >
-                                Buddy: {{ review.buddy?.name }}
-                              </span>
-                            </div>
-
-                            <div
-                              class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400"
-                            >
-                              <UIcon name="i-heroicons-chat-bubble-left" />
-                              <span>{{ review.feedbackCount }} feedback</span>
-                            </div>
-
-                            <div
-                              v-if="review.completionNotes"
-                              class="text-xs text-gray-500 dark:text-gray-500 truncate"
-                            >
-                              {{ review.completionNotes }}
-                            </div>
-                          </div>
-                        </UCard>
-                      </NuxtLink>
+                  <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                      <UAvatar :src="upcomingReviews[0].buddy?.avatarUrl" :alt="upcomingReviews[0].buddy?.name"
+                        size="sm" />
+                      <div class="text-sm">
+                        <p class="text-gray-500 dark:text-gray-400">Buddy</p>
+                        <p class="font-medium text-gray-900 dark:text-white">{{ upcomingReviews[0].buddy?.name }}</p>
+                      </div>
                     </div>
-                  </template>
-                </UAccordion>
-              </div>
-            </div>
-          </template>
-        </UTabs>
+                    <UIcon name="i-heroicons-chevron-right"
+                      class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                  </div>
+                </div>
+              </UCard>
+            </NuxtLink>
+          </div>
+
+          <EmptyState v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
+            icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
+            description="You're all caught up! Your buddy will schedule your next review." variant="secondary" />
+        </section>
+
+        <!-- Past Reviews Section -->
+        <section>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-archive-box" class="text-gray-500" />
+            Past Reviews
+          </h2>
+
+          <div v-if="pastReviews.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <NuxtLink v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`" class="block group">
+              <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
+                <div class="flex justify-between items-start mb-4">
+                  <UBadge :label="formatDate(review.completedDate || review.scheduledDate)" color="neutral"
+                    variant="solid" />
+                  <UIcon name="i-heroicons-arrow-right" class="text-gray-400 group-hover:text-primary-500" />
+                </div>
+                <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
+                <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                  <UIcon name="i-heroicons-user" class="w-4 h-4" />
+                  <span>Buddy: {{ review.buddy?.name || "Unassigned" }}</span>
+                </div>
+                <div v-if="review.completionNotes" class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                  {{ review.completionNotes }}
+                </div>
+              </UCard>
+            </NuxtLink>
+          </div>
+
+          <EmptyState v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
+            icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No past reviews"
+            description="Your completed reviews will appear here." variant="secondary" />
+        </section>
       </div>
     </template>
   </UDashboardPanel>

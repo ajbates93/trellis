@@ -1,6 +1,6 @@
 import { db } from "../../../database/connection";
 import { reviewSchedules, users, feedback, goals } from "../../../database/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, lte, gte, desc, inArray, ne } from "drizzle-orm";
 import { validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
 
@@ -76,7 +76,28 @@ export default defineEventHandler(async (event) => {
       .where(eq(users.id, review.buddyId))
       .limit(1);
 
-    // Get all feedback assigned to this review
+    // Get previous review's completion date to determine start range for feedback
+    const previousReviews = await db
+      .select()
+      .from(reviewSchedules)
+      .where(
+        and(
+          eq(reviewSchedules.userId, review.userId),
+          lte(reviewSchedules.scheduledDate, review.scheduledDate)
+        )
+      )
+      .orderBy(desc(reviewSchedules.scheduledDate));
+
+    // Find the previous review for this user
+    let startDate = new Date(0); // Beginning of time
+    if (previousReviews.length > 1) {
+      const previousReview = previousReviews[1];
+      if (previousReview) {
+        startDate = new Date(previousReview.scheduledDate);
+      }
+    }
+
+    // Get all feedback received in this period
     const reviewFeedback = await db
       .select({
         id: feedback.id,
@@ -95,13 +116,15 @@ export default defineEventHandler(async (event) => {
       .innerJoin(users, eq(feedback.reviewerId, users.id))
       .where(
         and(
-          eq(feedback.reviewScheduleId, reviewId),
-          eq(feedback.published, true)
+          eq(feedback.revieweeId, review.userId),
+          eq(feedback.published, true),
+          gte(feedback.createdAt, startDate),
+          lte(feedback.createdAt, new Date(review.scheduledDate))
         )
       )
       .orderBy(feedback.createdAt);
 
-    // Get active goals for the user during review period
+    // Get active and completed goals (exclude archived)
     const userGoals = await db
       .select({
         id: goals.id,
@@ -111,7 +134,12 @@ export default defineEventHandler(async (event) => {
         createdAt: goals.createdAt,
       })
       .from(goals)
-      .where(eq(goals.userId, review.userId))
+      .where(
+        and(
+          eq(goals.userId, review.userId),
+          ne(goals.status, "archived")
+        )
+      )
       .orderBy(goals.createdAt);
 
     const response = {
@@ -126,7 +154,7 @@ export default defineEventHandler(async (event) => {
     };
 
     return validateResponse(response, apiSchemas.GetReviewDetailsResponseSchema);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching review:", error);
     if (error.statusCode) {
       throw error;

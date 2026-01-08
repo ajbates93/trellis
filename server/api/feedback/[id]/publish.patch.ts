@@ -1,7 +1,7 @@
 import { db } from "../../../database/connection";
 import { feedback, users } from "../../../database/schema";
 import { eq } from "drizzle-orm";
-import { assignFeedbackToReview } from "../../../utils/reviews";
+// import { assignFeedbackToReview } from "../../../utils/reviews";
 import { validateBody, validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
 
@@ -89,13 +89,13 @@ export default defineEventHandler(async (event) => {
       .returning();
 
     // Automatically assign to next review
-    if (feedbackItem.createdAt) {
-      await assignFeedbackToReview(
-        feedbackId,
-        feedbackItem.revieweeId,
-        feedbackItem.createdAt
-      );
-    }
+    // if (feedbackItem.createdAt) {
+    //   await assignFeedbackToReview(
+    //     feedbackId,
+    //     feedbackItem.revieweeId,
+    //     feedbackItem.createdAt
+    //   );
+    // }
 
     const response = { success: true, feedback: updatedFeedback };
     return validateResponse(response, apiSchemas.SuccessResponseSchema);

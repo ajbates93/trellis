@@ -184,7 +184,7 @@ const receivedColumns = [
     },
   },
   { id: "date", accessorKey: "publishedAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
+  // { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "isRead", header: "Status" },
   { id: "actions", header: "" },
 ];
@@ -202,7 +202,7 @@ const givenColumns = [
     },
   },
   { id: "date", accessorKey: "createdAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
+  // { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "published", header: "Status" },
 ];
 </script>
@@ -297,7 +297,7 @@ const givenColumns = [
                       @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                        }}</span>
+                      }}</span>
                     </UButton>
                   </template>
 
@@ -307,7 +307,7 @@ const givenColumns = [
                     </span>
                   </template>
 
-                  <template #review-cell="{ row }">
+                  <!-- <template #review-cell="{ row }">
                     <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
                       class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                       {{ row.original.review.name }}
@@ -315,7 +315,7 @@ const givenColumns = [
                     <span v-else class="text-sm text-gray-400 dark:text-gray-600">
                       Not assigned
                     </span>
-                  </template>
+                  </template> -->
 
                   <template #status-cell="{ row }">
                     <UBadge :label="row.original.isRead ? 'Read' : 'Unread'"
@@ -359,7 +359,7 @@ const givenColumns = [
                     @click="openFeedbackModal(row.original)">
                     <span class="truncate block">{{
                       row.original.content
-                      }}</span>
+                    }}</span>
                   </UButton>
                 </template>
 
@@ -369,7 +369,7 @@ const givenColumns = [
                   </span>
                 </template>
 
-                <template #review-cell="{ row }">
+                <!-- <template #review-cell="{ row }">
                   <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
                     class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                     {{ row.original.review.name }}
@@ -377,7 +377,7 @@ const givenColumns = [
                   <span v-else class="text-sm text-gray-400 dark:text-gray-600">
                     Not assigned
                   </span>
-                </template>
+                </template> -->
 
                 <template #status-cell="{ row }">
                   <UBadge label="Unread" color="primary" size="sm" />
@@ -432,7 +432,7 @@ const givenColumns = [
                       @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                        }}</span>
+                      }}</span>
                     </UButton>
                   </template>
 
@@ -442,7 +442,7 @@ const givenColumns = [
                     </span>
                   </template>
 
-                  <template #review-cell="{ row }">
+                  <!-- <template #review-cell="{ row }">
                     <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
                       class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                       {{ row.original.review.name }}
@@ -450,7 +450,7 @@ const givenColumns = [
                     <span v-else class="text-sm text-gray-400 dark:text-gray-600">
                       Not assigned
                     </span>
-                  </template>
+                  </template> -->
 
                   <template #status-cell="{ row }">
                     <UBadge :label="row.original.published ? 'Published' : 'Pending'"

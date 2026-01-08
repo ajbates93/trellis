@@ -112,7 +112,7 @@ export const feedback = pgTable("feedback", {
   published: boolean("published").default(false),
   publishedAt: timestamp("published_at"),
   publishedBy: text("published_by").references(() => users.id),
-  reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
+  // reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
 });
 
 // Relations for feedback
@@ -127,10 +127,10 @@ export const feedbackRelations = relations(feedback, ({ one }) => ({
     references: [users.id],
     relationName: "reviewee",
   }),
-  reviewSchedule: one(reviewSchedules, {
-    fields: [feedback.reviewScheduleId],
-    references: [reviewSchedules.id],
-  }),
+  // reviewSchedule: one(reviewSchedules, {
+  //   fields: [feedback.reviewScheduleId],
+  //   references: [reviewSchedules.id],
+  // }),
 }));
 
 // Goals table

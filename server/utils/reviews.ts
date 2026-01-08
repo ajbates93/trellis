@@ -35,25 +35,25 @@ export async function findNextReview(userId: string, afterDate: Date) {
  * @param createdAt - When the feedback was created
  * @returns The review_schedule_id that was assigned, or null
  */
-export async function assignFeedbackToReview(
-  feedbackId: string,
-  revieweeId: string,
-  createdAt: Date
-): Promise<string | null> {
-  const nextReview = await findNextReview(revieweeId, createdAt);
+// export async function assignFeedbackToReview(
+//   feedbackId: string,
+//   revieweeId: string,
+//   createdAt: Date
+// ): Promise<string | null> {
+//   const nextReview = await findNextReview(revieweeId, createdAt);
 
-  if (!nextReview) {
-    console.log(`No review found for feedback ${feedbackId.substring(0, 8)}... (reviewee: ${revieweeId.substring(0, 8)}...)`);
-    return null;
-  }
+//   if (!nextReview) {
+//     console.log(`No review found for feedback ${feedbackId.substring(0, 8)}... (reviewee: ${revieweeId.substring(0, 8)}...)`);
+//     return null;
+//   }
 
-  // Update feedback with review assignment
-  await db
-    .update(feedback)
-    .set({ reviewScheduleId: nextReview.id })
-    .where(eq(feedback.id, feedbackId));
+//   // Update feedback with review assignment
+//   await db
+//     .update(feedback)
+//     .set({ reviewScheduleId: nextReview.id })
+//     .where(eq(feedback.id, feedbackId));
 
-  console.log(`✓ Assigned feedback ${feedbackId.substring(0, 8)}... to review "${nextReview.name}"`);
+//   console.log(`✓ Assigned feedback ${feedbackId.substring(0, 8)}... to review "${nextReview.name}"`);
 
-  return nextReview.id;
-}
+//   return nextReview.id;
+// }

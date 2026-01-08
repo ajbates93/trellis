@@ -133,61 +133,6 @@ const publishAllIncoming = async () => {
   return await publishBatch(feedbackIds);
 };
 
-// Reassign feedback to a different review
-const reassignFeedback = async (
-  feedbackId: string,
-  reviewScheduleId: string | null,
-) => {
-  try {
-    await $fetch(`/api/feedback/${feedbackId}/assign-review`, {
-      method: "PATCH",
-      body: { reviewScheduleId },
-    });
-    await refreshIncoming();
-    toast.add({
-      title: "Feedback reassigned",
-      color: "success",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    console.error("Failed to reassign feedback:", error);
-    toast.add({
-      title: "Failed to reassign",
-      color: "error",
-      icon: "i-heroicons-x-circle",
-    });
-  }
-};
-
-// Fetch reviews for a user (for reassignment dropdown)
-const userReviews = ref<Map<string, any[]>>(new Map());
-const loadingReviews = ref<Set<string>>(new Set());
-
-const fetchUserReviews = async (userId: string) => {
-  if (userReviews.value.has(userId) || loadingReviews.value.has(userId)) return;
-
-  loadingReviews.value.add(userId);
-  try {
-    const [upcomingRes, pastRes] = await Promise.all([
-      $fetch(`/api/reviews/upcoming?userId=${userId}`),
-      $fetch(`/api/reviews/past?userId=${userId}`),
-    ]);
-
-    const allReviews = [
-      ...(upcomingRes.reviews || []),
-      ...(pastRes.reviews || []),
-    ].map((r: any) => ({
-      value: r.id,
-      label: r.name,
-    }));
-    userReviews.value.set(userId, allReviews);
-  } catch (error) {
-    console.error("Failed to fetch reviews:", error);
-  } finally {
-    loadingReviews.value.delete(userId);
-  }
-};
-
 // Format date helper
 const formatDate = (date: string | Date | null) => {
   if (!date) return "N/A";
@@ -218,7 +163,6 @@ const receivedColumns = [
     },
   },
   { id: "date", accessorKey: "publishedAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
 ];
 
 const incomingColumns = [
@@ -234,13 +178,13 @@ const incomingColumns = [
     },
   },
   { id: "date", accessorKey: "createdAt", header: "Date" },
-  { id: "review", accessorKey: "review", header: "Review" },
   {
     id: "actions",
     header: "Actions",
     meta: {
       class: {
-        td: "min-w-[280px]",
+        th: "text-right",
+        td: "min-w-[120px]",
       },
     },
   },
@@ -253,9 +197,7 @@ const incomingColumns = [
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1
-            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-          >
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Buddy Feedback
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -265,67 +207,42 @@ const incomingColumns = [
 
         <!-- Buddy Selector -->
         <div v-if="hasBuddies" class="mb-6">
-          <BuddySelector
-            :buddy-id="selectedBuddyId || undefined"
-            @buddy-selected="handleBuddySelected"
-          />
+          <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
         </div>
 
         <!-- Tabs -->
-        <UTabs
-          v-if="selectedBuddyId"
-          v-model="selectedTab"
-          :items="tabs"
-          variant="pill"
-          color="neutral"
-          size="lg"
-          class="w-full mb-6"
-          :ui="{
+        <UTabs v-if="selectedBuddyId" v-model="selectedTab" :items="tabs" variant="pill" color="neutral" size="lg"
+          class="w-full mb-6" :ui="{
             list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
             trigger:
               'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
             indicator: 'bg-white dark:bg-gray-900 shadow-sm',
-          }"
-        />
+          }" />
 
         <!-- Tab Content -->
         <div v-if="selectedBuddyId" class="mt-6">
           <!-- Received Tab -->
           <div v-if="selectedTab === 'received'">
-            <EmptyState
-              v-if="buddyReceivedFeedback.length === 0"
-              icon="i-heroicons-inbox"
-              icon-color="text-blue-500"
-              icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
-              heading="No feedback received"
-              description="This buddy hasn't received any published feedback yet"
-              variant="secondary"
-            />
+            <EmptyState v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-blue-500"
+              icon-bg-color="bg-blue-100 dark:bg-blue-900/30" heading="No feedback received"
+              description="This buddy hasn't received any published feedback yet" variant="secondary" />
 
             <UCard v-else>
               <UTable :columns="receivedColumns" :data="buddyReceivedFeedback">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
-                    <UAvatar
-                      :src="
-                        row.original.reviewer.image ||
-                        row.original.reviewer.avatarUrl ||
-                        undefined
-                      "
-                      :alt="row.original.reviewer.name"
-                      size="xs"
-                    />
+                    <UAvatar :src="row.original.reviewer.image ||
+                      row.original.reviewer.avatarUrl ||
+                      undefined
+                      " :alt="row.original.reviewer.name" size="xs" />
                     <span>{{ row.original.reviewer.name }}</span>
                   </div>
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
+                  <UButton variant="ghost" color="neutral"
                     class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)"
-                  >
+                    @click="openFeedbackModal(row.original)">
                     <span class="truncate block">{{
                       row.original.content
                     }}</span>
@@ -339,11 +256,8 @@ const incomingColumns = [
                 </template>
 
                 <template #review-cell="{ row }">
-                  <NuxtLink
-                    v-if="row.original.review?.id"
-                    :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                  >
+                  <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                     {{ row.original.review.name }}
                   </NuxtLink>
                   <span v-else class="text-sm text-gray-400 dark:text-gray-600">
@@ -356,15 +270,9 @@ const incomingColumns = [
 
           <!-- Incoming Tab -->
           <div v-else-if="selectedTab === 'incoming'">
-            <EmptyState
-              v-if="incomingFeedback.length === 0"
-              icon="i-heroicons-check-circle"
-              icon-color="text-green-500"
-              icon-bg-color="bg-green-100 dark:bg-green-900/30"
-              heading="No pending feedback"
-              description="All feedback for this buddy has been reviewed and published"
-              variant="secondary"
-            />
+            <EmptyState v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="text-green-500"
+              icon-bg-color="bg-green-100 dark:bg-green-900/30" heading="No pending feedback"
+              description="All feedback for this buddy has been reviewed and published" variant="secondary" />
 
             <UCard v-else>
               <div>
@@ -378,26 +286,18 @@ const incomingColumns = [
                 <UTable :columns="incomingColumns" :data="incomingFeedback">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
-                      <UAvatar
-                        :src="
-                          row.original.reviewer.image ||
-                          row.original.reviewer.avatarUrl ||
-                          undefined
-                        "
-                        :alt="row.original.reviewer.name"
-                        size="xs"
-                      />
+                      <UAvatar :src="row.original.reviewer.image ||
+                        row.original.reviewer.avatarUrl ||
+                        undefined
+                        " :alt="row.original.reviewer.name" size="xs" />
                       <span>{{ row.original.reviewer.name }}</span>
                     </div>
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
+                    <UButton variant="ghost" color="neutral"
                       class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)"
-                    >
+                      @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
                       }}</span>
@@ -411,49 +311,18 @@ const incomingColumns = [
                   </template>
 
                   <template #review-cell="{ row }">
-                    <NuxtLink
-                      v-if="row.original.review?.id"
-                      :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                    >
+                    <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                       {{ row.original.review.name }}
                     </NuxtLink>
-                    <span
-                      v-else
-                      class="text-sm text-gray-400 dark:text-gray-600"
-                    >
+                    <span v-else class="text-sm text-gray-400 dark:text-gray-600">
                       Not assigned
                     </span>
                   </template>
 
                   <template #actions-cell="{ row }">
-                    <div class="flex gap-2">
-                      <USelectMenu
-                        :model-value="
-                          userReviews
-                            .get(row.original.revieweeId)
-                            ?.find(
-                              (r) => r.value === row.original.reviewScheduleId,
-                            )
-                        "
-                        :items="userReviews.get(row.original.revieweeId) || []"
-                        placeholder="Assign review"
-                        @update:open="
-                          (isOpen) =>
-                            isOpen && fetchUserReviews(row.original.revieweeId)
-                        "
-                        @update:model-value="
-                          (item) =>
-                            reassignFeedback(
-                              row.original.id,
-                              item?.value || null,
-                            )
-                        "
-                      />
-                      <UButton
-                        loading-auto
-                        @click="publishFeedback(row.original.id)"
-                      >
+                    <div class="flex gap-2 justify-end">
+                      <UButton loading-auto @click="publishFeedback(row.original.id)">
                         Publish
                       </UButton>
                     </div>

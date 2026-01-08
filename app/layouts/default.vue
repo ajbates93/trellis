@@ -169,6 +169,11 @@ const settingsAndAdminLinks = computed(() => [
         active: route.path === "/admin/dashboard",
       },
       {
+        label: "Reports",
+        to: "/admin/reports",
+        active: route.path === "/admin/reports",
+      },
+      {
         label: "Users",
         to: "/admin/users",
         active: route.path === "/admin/users",

@@ -1,5 +1,5 @@
 import { db } from "../../database/connection";
-import { feedback, users, reviewSchedules } from "../../database/schema";
+import { feedback, users } from "../../database/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
@@ -15,7 +15,23 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Fetch only published feedback for the current user
+    const query = getQuery(event);
+    const forUserId = query.userId as string | undefined;
+
+    // If fetching for a specific user, verify authorization
+    if (forUserId) {
+      const isAdmin = session.user.role === 'admin';
+      if (!isAdmin && forUserId !== session.user.id) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view this feedback",
+        });
+      }
+    }
+
+    const targetUserId = forUserId || session.user.id;
+
+    // Fetch only published feedback for the target user
     const receivedFeedback = await db
       .select({
         id: feedback.id,
@@ -23,7 +39,7 @@ export default defineEventHandler(async (event) => {
         createdAt: feedback.createdAt,
         publishedAt: feedback.publishedAt,
         isRead: feedback.isRead,
-        reviewScheduleId: feedback.reviewScheduleId,
+        // reviewScheduleId: feedback.reviewScheduleId,
         reviewer: {
           id: users.id,
           name: users.name,
@@ -32,18 +48,18 @@ export default defineEventHandler(async (event) => {
           avatarUrl: users.avatarUrl,
           roleType: users.roleType,
         },
-        review: {
-          id: reviewSchedules.id,
-          name: reviewSchedules.name,
-          scheduledDate: reviewSchedules.scheduledDate,
-        },
+        // review: {
+        //   id: reviewSchedules.id,
+        //   name: reviewSchedules.name,
+        //   scheduledDate: reviewSchedules.scheduledDate,
+        // },
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.reviewerId, users.id))
-      .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
+      // .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
       .where(
         and(
-          eq(feedback.revieweeId, session.user.id),
+          eq(feedback.revieweeId, targetUserId),
           eq(feedback.published, true)
         )
       )
