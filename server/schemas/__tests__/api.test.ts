@@ -198,7 +198,7 @@ describe('API Schemas', () => {
     })
 
     it('should accept all valid role types', () => {
-      const roleTypes = ['dev', 'design', 'qa', 'growth']
+      const roleTypes = ['dev', 'design', 'qa', 'growth', 'management']
       roleTypes.forEach((roleType) => {
         const validRequest = {
           email: 'john@example.com',

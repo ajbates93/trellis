@@ -75,7 +75,7 @@
                     class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"
                     >roleType</code
                   >
-                  - dev, design, qa, or growth
+                  - dev, design, qa, growth, or management
                 </li>
                 <li>
                   <code
@@ -83,13 +83,6 @@
                     >buddyEmail</code
                   >
                   - Email of assigned buddy (must exist in system)
-                </li>
-                <li>
-                  <code
-                    class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"
-                    >nextReviewDate</code
-                  >
-                  - Format: YYYY-MM-DD (e.g., 2025-06-15)
                 </li>
               </ul>
             </div>

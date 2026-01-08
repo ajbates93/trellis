@@ -55,9 +55,9 @@
         <template #roleType-cell="{ row }">
           <span
             v-if="row.original.roleType"
-            class="text-sm text-gray-700 dark:text-gray-300 capitalize"
+            class="text-sm text-gray-700 dark:text-gray-300"
           >
-            {{ row.original.roleType }}
+            {{ formatRoleType(row.original.roleType) }}
           </span>
           <span v-else class="text-sm text-gray-400 dark:text-gray-500">—</span>
         </template>
@@ -133,6 +133,17 @@ const columns = [
   { id: "status", accessorKey: "status", header: "Status" },
   { id: "actions", header: "" },
 ];
+
+const formatRoleType = (roleType: string | null): string => {
+  const roleTypeLabels: Record<string, string> = {
+    dev: "Developer",
+    design: "Designer",
+    qa: "QA",
+    growth: "Growth",
+    management: "Management",
+  };
+  return roleType ? roleTypeLabels[roleType] || roleType : "";
+};
 
 const getActionItems = (user: User) => {
   const items = [

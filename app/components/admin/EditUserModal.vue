@@ -70,19 +70,6 @@
           </USelectMenu>
         </div>
 
-        <!-- Next Review Date -->
-        <div>
-          <label class="block text-sm font-medium mb-2">
-            Next Review Date
-          </label>
-          <UInput
-            v-model="localUser.nextReviewDate"
-            type="date"
-            icon="i-heroicons-calendar"
-            class="w-full"
-          />
-        </div>
-
         <!-- Error Message -->
         <UAlert
           v-if="errorMessage"
@@ -151,7 +138,6 @@ const localUser = ref({
   role: "user",
   roleType: null as string | null,
   buddyId: null as string | null,
-  nextReviewDate: null as string | null,
   avatarUrl: null as string | null,
   image: null as string | null,
 });
@@ -168,9 +154,6 @@ watch(
         role: newUser.role || "user",
         roleType: newUser.roleType,
         buddyId: newUser.buddyId,
-        nextReviewDate: newUser.nextReviewDate
-          ? new Date(newUser.nextReviewDate).toISOString().split("T")[0]
-          : null,
         avatarUrl: newUser.avatarUrl,
         image: newUser.image,
       };
@@ -190,6 +173,7 @@ const roleTypeOptions = [
   { value: "design", label: "Designer" },
   { value: "qa", label: "QA" },
   { value: "growth", label: "Growth" },
+  { value: "management", label: "Management" },
 ];
 
 const buddyOptions = computed(() => {
@@ -231,7 +215,6 @@ const onSubmit = async () => {
         role: roleValue,
         roleType: roleTypeValue,
         buddyId: buddyIdValue,
-        nextReviewDate: localUser.value.nextReviewDate,
       },
     });
 

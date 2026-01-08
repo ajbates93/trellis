@@ -141,6 +141,7 @@ const roleTypeOptions = [
   { value: "design", label: "Designer" },
   { value: "qa", label: "QA" },
   { value: "growth", label: "Growth" },
+  { value: "management", label: "Management" },
 ];
 
 const buddyOptions = computed(() => {
