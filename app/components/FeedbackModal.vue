@@ -45,15 +45,9 @@ const modalDescription = computed(() => {
 </script>
 
 <template>
-  <UModal
-    v-model:open="isOpen"
-    :title="modalTitle"
-    :description="modalDescription"
-    class="sm:max-w-2xl"
-    :ui="{
-      footer: 'justify-end',
-    }"
-  >
+  <UModal v-model:open="isOpen" :title="modalTitle" :description="modalDescription" class="sm:max-w-2xl" :ui="{
+    footer: 'justify-end',
+  }">
     <template #body>
       <div v-if="feedback" class="space-y-6">
         <!-- From/To Section -->
@@ -64,11 +58,8 @@ const modalDescription = computed(() => {
               From
             </p>
             <div class="flex items-center gap-3">
-              <UAvatar
-                :src="feedback.reviewer.image || feedback.reviewer.avatarUrl"
-                :alt="feedback.reviewer.name"
-                size="md"
-              />
+              <UAvatar :src="feedback.reviewer.image || feedback.reviewer.avatarUrl" :alt="feedback.reviewer.name"
+                size="md" />
               <div>
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ feedback.reviewer.name }}
@@ -86,11 +77,8 @@ const modalDescription = computed(() => {
               To
             </p>
             <div class="flex items-center gap-3">
-              <UAvatar
-                :src="feedback.reviewee.image || feedback.reviewee.avatarUrl"
-                :alt="feedback.reviewee.name"
-                size="md"
-              />
+              <UAvatar :src="feedback.reviewee.image || feedback.reviewee.avatarUrl" :alt="feedback.reviewee.name"
+                size="md" />
               <div>
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ feedback.reviewee.name }}
@@ -120,71 +108,21 @@ const modalDescription = computed(() => {
 
         <!-- Status Badges -->
         <div class="flex items-center gap-3">
-          <UBadge
-            v-if="feedback.isRead !== undefined"
-            :label="feedback.isRead ? 'Read' : 'Unread'"
-            :color="feedback.isRead ? 'neutral' : 'primary'"
-            size="sm"
-          />
-          <UBadge
-            v-if="feedback.published !== undefined"
-            :label="feedback.published ? 'Published' : 'Pending'"
-            :color="feedback.published ? 'success' : 'neutral'"
-            size="sm"
-          />
+          <UBadge v-if="feedback.isRead !== undefined" :label="feedback.isRead ? 'Read' : 'Unread'"
+            :color="feedback.isRead ? 'neutral' : 'primary'" size="sm" />
+          <UBadge v-if="feedback.published !== undefined" :label="feedback.published ? 'Published' : 'Pending'"
+            :color="feedback.published ? 'success' : 'neutral'" size="sm" />
         </div>
 
-        <!-- Linked Review -->
-        <div v-if="feedback.review" class="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
-          <div class="flex items-start gap-3">
-            <UIcon 
-              name="i-heroicons-calendar-days" 
-              class="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" 
-            />
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Your buddy has linked this feedback to your 
-                <NuxtLink 
-                  :to="`/reviews/${feedback.review.id}`"
-                  class="font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                  @click="isOpen = false"
-                >
-                  {{ feedback.review.name || 'review' }}
-                </NuxtLink>
-                review.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- No Review Assigned -->
-        <div v-else class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div class="flex items-start gap-3">
-            <UIcon 
-              name="i-heroicons-calendar" 
-              class="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" 
-            />
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              Your buddy has not assigned this feedback to any review yet.
-            </p>
-          </div>
-        </div>
+        <!-- Linked Review Section Removed -->
       </div>
     </template>
 
     <template #footer>
-      <UButton
-        color="neutral"
-        variant="outline"
-        @click="isOpen = false"
-      >
+      <UButton color="neutral" variant="outline" @click="isOpen = false">
         Close
       </UButton>
-      <UButton
-        v-if="showMarkAsRead && feedback && feedback.isRead === false"
-        color="primary"
-        @click="handleMarkAsRead"
-      >
+      <UButton v-if="showMarkAsRead && feedback && feedback.isRead === false" color="primary" @click="handleMarkAsRead">
         Mark as Read
       </UButton>
     </template>

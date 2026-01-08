@@ -43,30 +43,6 @@ const handleBuddySelected = (buddyId: string) => {
   selectedBuddyId.value = buddyId;
 };
 
-// Tab state
-const activeTab = ref("upcoming");
-
-// Tab items
-const tabItems = computed<TabsItem[]>(() => [
-  {
-    label: "Upcoming",
-    icon: "i-heroicons-calendar-days",
-    badge:
-      upcomingReviews.value.length > 0
-        ? upcomingReviews.value.length
-        : undefined,
-    value: "upcoming",
-    slot: "upcoming",
-  },
-  {
-    label: "Past",
-    icon: "i-heroicons-archive-box",
-    badge: pastReviews.value.length > 0 ? pastReviews.value.length : undefined,
-    value: "past",
-    slot: "past",
-  },
-]);
-
 // Format date helper
 const formatDate = (date: string | Date | null) => {
   if (!date) return "N/A";
@@ -289,53 +265,6 @@ const deleteReview = async (reviewId: string) => {
   }
 };
 
-// Column definitions - simplified structure with width hints
-const upcomingColumns = [
-  {
-    id: "review",
-    header: "Review",
-  },
-  {
-    id: "feedback",
-    header: "Feedback",
-    size: 100,
-  },
-  {
-    id: "status",
-    accessorKey: "status",
-    header: "Status",
-    size: 120,
-  },
-  {
-    id: "actions",
-    header: "",
-    size: 120,
-  },
-];
-
-const pastColumns = [
-  {
-    id: "review",
-    header: "Review",
-  },
-  {
-    id: "feedback",
-    header: "Feedback",
-    size: 100,
-  },
-  {
-    id: "status",
-    accessorKey: "status",
-    header: "Status",
-    size: 120,
-  },
-  {
-    id: "actions",
-    header: "",
-    size: 120,
-  },
-];
-
 // Capitalize first letter helper
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -383,7 +312,8 @@ const getReviewActions = (review: any) => [
           <div class="flex-1">
             <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
           </div>
-          <UButton v-if="selectedBuddyId" icon="i-heroicons-plus" @click="isCreateModalOpen = true">
+          <UButton v-if="selectedBuddyId && upcomingReviews.length === 0" icon="i-heroicons-plus"
+            @click="isCreateModalOpen = true">
             Create Review
           </UButton>
         </div>
@@ -396,122 +326,87 @@ const getReviewActions = (review: any) => [
             button-text="Create First Review" button-icon="i-heroicons-plus" variant="primary"
             @button-click="isCreateModalOpen = true" />
 
-          <UTabs v-else v-model="activeTab" :items="tabItems" variant="pill" color="neutral" size="lg" class="w-full"
-            :ui="{
-              list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
-              trigger:
-                'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
-              indicator: 'bg-white dark:bg-gray-900 shadow-sm',
-            }">
-            <!-- Upcoming Reviews Tab -->
-            <template #upcoming>
-              <div class="pt-6">
-                <EmptyState v-if="upcomingReviews.length === 0" icon="i-heroicons-calendar-days"
-                  icon-color="text-primary" icon-bg-color="bg-blue-100 dark:bg-blue-900/30"
-                  heading="No upcoming reviews"
-                  :description="`${selectedBuddy?.name} has no scheduled reviews coming up`" variant="secondary" />
+          <div v-else class="space-y-12">
+            <!-- Upcoming Review Section -->
+            <section>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <UIcon name="i-heroicons-calendar-days" class="text-primary-500" />
+                Upcoming Review
+              </h2>
 
-                <UCard v-else>
-                  <UTable :columns="upcomingColumns" :data="upcomingReviews">
-                    <template #review-cell="{ row }">
-                      <div>
-                        <div class="font-medium text-gray-900 dark:text-white">
-                          {{ row.original.name }}
+              <div v-if="upcomingReviews.length > 0">
+                <UCard class="bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="space-y-2">
+                      <div class="flex items-center gap-3">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                          {{ upcomingReviews[0].name }}
+                        </h3>
+                        <UBadge :label="upcomingReviews[0].status" color="primary" variant="subtle" />
+                      </div>
+
+                      <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center gap-1.5">
+                          <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
+                          <span>{{ formatDate(upcomingReviews[0].scheduledDate) }}</span>
                         </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                          {{ formatDate(row.original.scheduledDate) }}
-                          <span v-if="
-                            getDaysUntilReview(row.original.scheduledDate) !==
-                            null
-                          ">
-                            ·
-                            {{
-                              getDaysUntilReview(row.original.scheduledDate) ===
-                                0
-                                ? "Today"
-                                : `${getDaysUntilReview(row.original.scheduledDate)} days`
-                            }}
-                          </span>
+                        <div class="flex items-center gap-1.5">
+                          <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                          <span>{{ getDaysUntilReview(upcomingReviews[0].scheduledDate) }} days left</span>
                         </div>
                       </div>
-                    </template>
+                    </div>
 
-                    <template #feedback-cell="{ row }">
-                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
-                        <span>{{ row.original.feedbackCount || 0 }}</span>
-                      </div>
-                    </template>
-
-                    <template #status-cell="{ row }">
-                      <UBadge :label="capitalize(row.original.status)" :color="getStatusColor(row.original.status)"
-                        variant="subtle" />
-                    </template>
-
-                    <template #actions-cell="{ row }">
-                      <div class="flex items-center gap-2 justify-end">
-                        <UButton :to="`/reviews/${row.original.id}`" variant="soft">
-                          View
-                        </UButton>
-                        <UDropdownMenu v-if="row.original.status === 'scheduled'"
-                          :items="getReviewActions(row.original)">
-                          <UButton icon="i-heroicons-ellipsis-vertical" variant="ghost" color="neutral" />
-                        </UDropdownMenu>
-                      </div>
-                    </template>
-                  </UTable>
+                    <div class="flex items-center gap-2">
+                      <UButton :to="`/reviews/${upcomingReviews[0].id}`" variant="soft">
+                        View Details
+                      </UButton>
+                      <UDropdownMenu :items="getReviewActions(upcomingReviews[0])">
+                        <UButton icon="i-heroicons-ellipsis-vertical" variant="ghost" color="neutral" />
+                      </UDropdownMenu>
+                    </div>
+                  </div>
                 </UCard>
               </div>
-            </template>
 
-            <!-- Past Reviews Tab -->
-            <template #past>
-              <div class="pt-6">
-                <EmptyState v-if="pastReviews.length === 0" icon="i-heroicons-archive-box" icon-color="text-gray-400"
-                  icon-bg-color="bg-gray-200 dark:bg-gray-700" heading="No past reviews"
-                  :description="`${selectedBuddy?.name} has no completed reviews yet`" variant="secondary" />
+              <EmptyState v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
+                icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
+                :description="`${selectedBuddy?.name} has no scheduled reviews coming up`" button-text="Schedule Review"
+                button-icon="i-heroicons-plus" variant="secondary" @button-click="isCreateModalOpen = true" />
+            </section>
 
-                <UCard v-else>
-                  <UTable :columns="pastColumns" :data="pastReviews">
-                    <template #review-cell="{ row }">
-                      <div>
-                        <div class="font-medium text-gray-900 dark:text-white">
-                          {{ row.original.name }}
-                        </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                          {{ formatDate(row.original.scheduledDate) }}
-                          <span v-if="row.original.completedDate">
-                            · Completed
-                            {{ formatDate(row.original.completedDate) }}
-                          </span>
-                        </div>
-                      </div>
-                    </template>
+            <!-- Past Reviews Section -->
+            <section>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <UIcon name="i-heroicons-archive-box" class="text-gray-500" />
+                Past Reviews
+              </h2>
 
-                    <template #feedback-cell="{ row }">
-                      <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
-                        <span>{{ row.original.feedbackCount || 0 }}</span>
-                      </div>
-                    </template>
-
-                    <template #status-cell="{ row }">
-                      <UBadge :label="capitalize(row.original.status)" :color="getStatusColor(row.original.status)"
-                        variant="subtle" />
-                    </template>
-
-                    <template #actions-cell="{ row }">
-                      <div class="flex items-center justify-end">
-                        <UButton :to="`/reviews/${row.original.id}`" variant="soft">
-                          View
-                        </UButton>
-                      </div>
-                    </template>
-                  </UTable>
-                </UCard>
+              <div v-if="pastReviews.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <NuxtLink v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`"
+                  class="block group">
+                  <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                      <UBadge :label="formatDate(review.scheduledDate)" color="neutral" variant="solid" />
+                      <UIcon name="i-heroicons-arrow-right" class="text-gray-400 group-hover:text-primary-500" />
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                      <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-green-500" />
+                      <span>Completed {{ formatDate(review.completedDate) }}</span>
+                    </div>
+                    <div v-if="review.completionNotes" class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                      {{ review.completionNotes }}
+                    </div>
+                  </UCard>
+                </NuxtLink>
               </div>
-            </template>
-          </UTabs>
+
+              <EmptyState v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
+                icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No past reviews"
+                :description="`${selectedBuddy?.name} has no completed reviews yet`" variant="secondary" />
+            </section>
+          </div>
         </div>
       </div>
     </template>

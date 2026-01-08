@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
 import { reviewSchedules, users, feedback, buddyCheckins } from "../../database/schema";
-import { eq, and, or, gte, sql } from "drizzle-orm";
+import { eq, and, or, gte, lt, sql } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
 
@@ -99,12 +99,34 @@ export default defineEventHandler(async (event) => {
           .where(eq(users.id, review.buddyId))
           .limit(1);
 
-        // Count feedback assigned to this review
+        // Find the previous review date to establish the start of the feedback period
+        const [previousReview] = await db
+          .select({ scheduledDate: reviewSchedules.scheduledDate })
+          .from(reviewSchedules)
+          .where(
+            and(
+              eq(reviewSchedules.userId, review.userId),
+              lt(reviewSchedules.scheduledDate, review.scheduledDate)
+            )
+          )
+          .orderBy(sql`${reviewSchedules.scheduledDate} DESC`)
+          .limit(1);
+
+        const startDate = previousReview ? new Date(previousReview.scheduledDate) : new Date(0); // Epoch if no previous review
+
+        // Count feedback received between previous review and this upcoming review
         const feedbackCount = await db
           .select({ count: sql<number>`count(*)` })
           .from(feedback)
-          .where(eq(feedback.reviewScheduleId, review.id))
-          .then(result => Number(result[0].count));
+          .where(
+            and(
+              eq(feedback.revieweeId, review.userId),
+              gte(feedback.createdAt, startDate),
+              // For upcoming reviews, we count everything up to now (or the scheduled date if it's in the future, effectively "until this review happens")
+              // But practically, it's just "everything since the last review"
+            )
+          )
+          .then((result) => Number(result[0].count));
 
         // Get check-ins for this review
         const checkinsForReview = await db

@@ -55,7 +55,8 @@ export default defineEventHandler(async (event) => {
         createdAt: feedback.createdAt,
         published: feedback.published,
         publishedAt: feedback.publishedAt,
-        reviewScheduleId: feedback.reviewScheduleId,
+        publishedAt: feedback.publishedAt,
+        // reviewScheduleId: feedback.reviewScheduleId,
         reviewee: {
           id: users.id,
           name: users.name,
@@ -63,15 +64,15 @@ export default defineEventHandler(async (event) => {
           image: users.image,
           avatarUrl: users.avatarUrl,
         },
-        review: {
-          id: reviewSchedules.id,
-          name: reviewSchedules.name,
-          scheduledDate: reviewSchedules.scheduledDate,
-        },
+        // review: {
+        //   id: reviewSchedules.id,
+        //   name: reviewSchedules.name,
+        //   scheduledDate: reviewSchedules.scheduledDate,
+        // },
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.revieweeId, users.id))
-      .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
+      // .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
       .where(eq(feedback.reviewerId, buddyId))
       .orderBy(desc(feedback.createdAt));
 

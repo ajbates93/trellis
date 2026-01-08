@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
         isRead: feedback.isRead,
         published: feedback.published,
         weekYear: feedback.weekYear,
-        reviewScheduleId: feedback.reviewScheduleId,
+        // reviewScheduleId: feedback.reviewScheduleId,
         reviewee: {
           id: users.id,
           name: users.name,
