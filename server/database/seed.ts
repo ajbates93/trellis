@@ -5,43 +5,73 @@ import { eq } from "drizzle-orm";
 
 // Team members data
 const TEAM_MEMBERS = [
-  { name: "Alex Britten", email: "alex.britten@pocketworks.co.uk", roleType: "qa" },
-  { name: "Alex Bates", email: "alex.bates@pocketworks.co.uk", roleType: "dev" },
-  { name: "Mark", email: "mark.houghton@pocketworks.co.uk", roleType: "dev" },
-  { name: "Rory", email: "rory@pocketworks.co.uk", roleType: "dev" },
-  { name: "Anna", email: "anna@pocketworks.co.uk", roleType: "design" },
-  { name: "Matteo", email: "matteo@pocketworks.co.uk", roleType: "dev" },
-  { name: "Judit", email: "judit@pocketworks.co.uk", roleType: "design" },
-  { name: "Lucy", email: "lucy@pocketworks.co.uk", roleType: "growth" },
-  { name: "Josh", email: "josh@pocketworks.co.uk", roleType: "dev" },
-  { name: "Marcin", email: "marcin@pocketworks.co.uk", roleType: "dev" },
-  { name: "Matej", email: "matej@pocketworks.co.uk", roleType: "dev" },
-  { name: "Matt Chambers", email: "matt.chambers@pocketworks.co.uk", roleType: "qa" },
+  {
+    name: "Alex Britten",
+    email: "alex.britten@pocketworks.co.uk",
+    roleType: "qa",
+  },
+  {
+    name: "Alex Bates",
+    email: "alex.bates@pocketworks.co.uk",
+    roleType: "dev",
+  },
+  {
+    name: "Mark Houghton",
+    email: "mark.houghton@pocketworks.co.uk",
+    roleType: "dev",
+  },
+  { name: "Rory Prior", email: "rory@pocketworks.co.uk", roleType: "dev" },
+  {
+    name: "Anna Scandella",
+    email: "anna@pocketworks.co.uk",
+    roleType: "design",
+  },
+  { name: "Matteo Gheri", email: "matteo@pocketworks.co.uk", roleType: "dev" },
+  {
+    name: "Judit Salvadó",
+    email: "judit@pocketworks.co.uk",
+    roleType: "design",
+  },
+  { name: "Lucy Beldon", email: "lucy@pocketworks.co.uk", roleType: "growth" },
+  { name: "Josh Mustafa", email: "josh@pocketworks.co.uk", roleType: "dev" },
+  {
+    name: "Marcin Przeszlowski",
+    email: "marcin@pocketworks.co.uk",
+    roleType: "dev",
+  },
+  { name: "Matej Képeš", email: "matej@pocketworks.co.uk", roleType: "dev" },
+  {
+    name: "Matt Chambers",
+    email: "matt.chambers@pocketworks.co.uk",
+    roleType: "qa",
+  },
+  { name: "Tobin Harris", email: "tobin@pocketworks.co.uk", roleType: "qa" },
 ];
 
 // Buddy assignments - who receives feedback about whom
 // Format: "Person being reviewed": "Person who receives the feedback (buddy)"
 const BUDDY_ASSIGNMENTS: Record<string, string> = {
   // Anna receives feedback about:
-  Rory: "Anna",
-  Judit: "Anna",
-  Lucy: "Anna",
+  "Rory Prior": "Anna Scandella",
+  "Judit Salvadó": "Anna Scandella",
+  "Lucy Beldon": "Anna Scandella",
+  "Tobin Harris": "Anna Scandella",
 
   // Rory receives feedback about:
-  "Alex Britten": "Rory",
-  Mark: "Rory",
+  "Alex Britten": "Rory Prior",
+  "Mark Houghton": "Rory Prior",
 
   // Mark receives feedback about:
-  Anna: "Mark",
-  Matteo: "Mark",
+  "Anna Scandella": "Mark Houghton",
+  "Matteo Gheri": "Mark Houghton",
 
   // Matteo receives feedback about:
-  Josh: "Matteo",
-  "Alex Bates": "Matteo",
+  "Josh Mustafa": "Matteo Gheri",
+  "Alex Bates": "Matteo Gheri",
 
   // Alex Bates receives feedback about:
-  Marcin: "Alex Bates",
-  Matej: "Alex Bates",
+  "Marcin Przeszlowski": "Alex Bates",
+  "Matej Képeš": "Alex Bates",
 
   // Alex Britten receives feedback about:
   "Matt Chambers": "Alex Britten",
@@ -50,11 +80,13 @@ const BUDDY_ASSIGNMENTS: Record<string, string> = {
 // Feedback questions
 const QUESTIONS = [
   {
-    question: "How effectively does this person share information with the team?",
+    question:
+      "How effectively does this person share information with the team?",
     category: "communication",
   },
   {
-    question: "What could help this person communicate their ideas even better?",
+    question:
+      "What could help this person communicate their ideas even better?",
     category: "communication",
   },
   {
@@ -63,7 +95,8 @@ const QUESTIONS = [
     category: "communication",
   },
   {
-    question: "What would make collaborating with this person even more effective?",
+    question:
+      "What would make collaborating with this person even more effective?",
     category: "collaboration",
   },
   {
@@ -76,7 +109,8 @@ const QUESTIONS = [
     category: "growth",
   },
   {
-    question: "What's one area where this person could focus their learning next?",
+    question:
+      "What's one area where this person could focus their learning next?",
     category: "growth",
   },
   {
@@ -89,11 +123,13 @@ const QUESTIONS = [
     category: "growth",
   },
   {
-    question: "How does this person contribute to team meetings and discussions?",
+    question:
+      "How does this person contribute to team meetings and discussions?",
     category: "collaboration",
   },
   {
-    question: "What does this person do that makes the team work better together?",
+    question:
+      "What does this person do that makes the team work better together?",
     category: "teamwork",
   },
   {
@@ -106,7 +142,8 @@ const QUESTIONS = [
     category: "teamwork",
   },
   {
-    question: "How do you find the way this person approach problems when they arise?",
+    question:
+      "How do you find the way this person approach problems when they arise?",
     category: "problem-solving",
   },
   {
@@ -114,11 +151,13 @@ const QUESTIONS = [
     category: "initiative",
   },
   {
-    question: "How could this person's decision-making process be even stronger?",
+    question:
+      "How could this person's decision-making process be even stronger?",
     category: "problem-solving",
   },
   {
-    question: "What prevents this person from being even more effective in their role?",
+    question:
+      "What prevents this person from being even more effective in their role?",
     category: "general",
   },
   {
@@ -221,7 +260,7 @@ async function seed() {
 
       if (!personId || !buddyId) {
         console.log(
-          `   ⚠️  Skipping buddy assignment: ${personName} -> ${buddyName} (user not found)`
+          `   ⚠️  Skipping buddy assignment: ${personName} -> ${buddyName} (user not found)`,
         );
         continue;
       }
@@ -243,10 +282,14 @@ async function seed() {
         .limit(1);
 
       if (existingPrompt.length > 0) {
-        console.log(`   ✓ Question already exists: ${prompt.question.substring(0, 50)}...`);
+        console.log(
+          `   ✓ Question already exists: ${prompt.question.substring(0, 50)}...`,
+        );
       } else {
         await db.insert(feedbackPrompts).values(prompt);
-        console.log(`   ✓ Created question: ${prompt.question.substring(0, 50)}...`);
+        console.log(
+          `   ✓ Created question: ${prompt.question.substring(0, 50)}...`,
+        );
       }
     }
 
@@ -267,7 +310,9 @@ async function seed() {
     const mattChambersId = userIdMap["Matt Chambers"];
 
     if (!alexBatesId || !marcinId || !matejId) {
-      console.log("   ⚠️  Skipping feedback creation - required users not found");
+      console.log(
+        "   ⚠️  Skipping feedback creation - required users not found",
+      );
     } else {
       const { feedback: feedbackTable } = await import("./schema");
 
@@ -277,12 +322,14 @@ async function seed() {
         d.setHours(0, 0, 0, 0);
         d.setDate(d.getDate() + 4 - (d.getDay() || 7));
         const yearStart = new Date(d.getFullYear(), 0, 1);
-        const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-        return `${d.getFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
+        const weekNo = Math.ceil(
+          ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+        );
+        return `${d.getFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
       };
 
       // Helper to get random items from array
-      const getRandomItems = <T,>(arr: T[], count: number): T[] => {
+      const getRandomItems = <T>(arr: T[], count: number): T[] => {
         const shuffled = [...arr].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, count);
       };
@@ -386,8 +433,18 @@ async function seed() {
 
       // All user IDs for generating diverse feedback
       const allUserIds = [
-        alexBatesId, marcinId, matejId, roryId, juditId, lucyId,
-        annaId, matteoId, alexBrittenId, markId, joshId, mattChambersId
+        alexBatesId,
+        marcinId,
+        matejId,
+        roryId,
+        juditId,
+        lucyId,
+        annaId,
+        matteoId,
+        alexBrittenId,
+        markId,
+        joshId,
+        mattChambersId,
       ].filter(Boolean);
 
       // Generate feedback across 12 weeks with realistic distribution
@@ -397,46 +454,71 @@ async function seed() {
 
       // Week distribution (target count per week)
       const weeklyDistribution = [
-        4, 3, 5, 7, 8, 6, 9, 5, 6, 7, 8, 10  // Total: ~78 items
+        4,
+        3,
+        5,
+        7,
+        8,
+        6,
+        9,
+        5,
+        6,
+        7,
+        8,
+        10, // Total: ~78 items
       ];
 
       for (let weekOffset = 11; weekOffset >= 0; weekOffset--) {
         const targetCount = weeklyDistribution[11 - weekOffset];
-        const weekStart = now - (weekOffset * oneWeek);
+        const weekStart = now - weekOffset * oneWeek;
 
         for (let i = 0; i < targetCount; i++) {
           // Random day within the week (0-6 days offset)
           const dayOffset = Math.floor(Math.random() * 7);
           const hourOffset = Math.floor(Math.random() * 24);
-          const createdAt = new Date(weekStart + (dayOffset * 24 * 60 * 60 * 1000) + (hourOffset * 60 * 60 * 1000));
+          const createdAt = new Date(
+            weekStart +
+              dayOffset * 24 * 60 * 60 * 1000 +
+              hourOffset * 60 * 60 * 1000,
+          );
           const weekYear = getWeekYear(createdAt);
 
           // Random reviewer and reviewee (ensure they're different)
-          const reviewerId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
-          let revieweeId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
+          const reviewerId =
+            allUserIds[Math.floor(Math.random() * allUserIds.length)];
+          let revieweeId =
+            allUserIds[Math.floor(Math.random() * allUserIds.length)];
 
           // Ensure reviewer and reviewee are different
           while (reviewerId === revieweeId) {
-            revieweeId = allUserIds[Math.floor(Math.random() * allUserIds.length)];
+            revieweeId =
+              allUserIds[Math.floor(Math.random() * allUserIds.length)];
           }
 
           // Random theme and content
-          const themes = Object.keys(feedbackTemplates) as Array<keyof typeof feedbackTemplates>;
+          const themes = Object.keys(feedbackTemplates) as Array<
+            keyof typeof feedbackTemplates
+          >;
           const theme = themes[Math.floor(Math.random() * themes.length)];
           const templates = feedbackTemplates[theme];
-          const content = templates[Math.floor(Math.random() * templates.length)];
+          const content =
+            templates[Math.floor(Math.random() * templates.length)];
 
           // 70% published, 30% unpublished
           const isPublished = Math.random() < 0.7;
 
           // For published feedback, published 1-2 days after creation
           const publishedAt = isPublished
-            ? new Date(createdAt.getTime() + (1 + Math.random()) * 24 * 60 * 60 * 1000)
+            ? new Date(
+                createdAt.getTime() + (1 + Math.random()) * 24 * 60 * 60 * 1000,
+              )
             : undefined;
 
           // Random publisher (usually a buddy or admin)
           const publishedBy = isPublished
-            ? [annaId, roryId, markId, matteoId, alexBatesId][Math.floor(Math.random() * 5)]
+            ? [annaId, roryId, markId, matteoId, alexBatesId][
+                Math.floor(Math.random() * 5)
+              ]
             : undefined;
 
           // Random read status (80% of published feedback is read)
@@ -463,7 +545,8 @@ async function seed() {
         {
           reviewerId: roryId,
           revieweeId: alexBatesId,
-          content: "Great job communicating complex technical concepts in team meetings. Very clear and easy to understand.",
+          content:
+            "Great job communicating complex technical concepts in team meetings. Very clear and easy to understand.",
           published: true,
           publishedAt: new Date(now - 2 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -474,7 +557,8 @@ async function seed() {
         {
           reviewerId: juditId,
           revieweeId: alexBatesId,
-          content: "Really appreciate the regular updates on project progress. Helps everyone stay aligned.",
+          content:
+            "Really appreciate the regular updates on project progress. Helps everyone stay aligned.",
           published: true,
           publishedAt: new Date(now - 5 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -485,7 +569,8 @@ async function seed() {
         {
           reviewerId: annaId,
           revieweeId: alexBatesId,
-          content: "The documentation you wrote for the new feature was exceptionally clear and helpful.",
+          content:
+            "The documentation you wrote for the new feature was exceptionally clear and helpful.",
           published: true,
           publishedAt: new Date(now - 8 * 24 * 60 * 60 * 1000),
           publishedBy: markId,
@@ -497,7 +582,8 @@ async function seed() {
         {
           reviewerId: matteoId,
           revieweeId: alexBatesId,
-          content: "Could improve on sharing blockers earlier - would help the team provide support sooner.",
+          content:
+            "Could improve on sharing blockers earlier - would help the team provide support sooner.",
           published: true,
           publishedAt: new Date(now - 11 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -508,7 +594,8 @@ async function seed() {
         {
           reviewerId: markId,
           revieweeId: alexBatesId,
-          content: "Documentation is thorough but could use more examples for clarity.",
+          content:
+            "Documentation is thorough but could use more examples for clarity.",
           published: true,
           publishedAt: new Date(now - 15 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -520,7 +607,8 @@ async function seed() {
         {
           reviewerId: marcinId,
           revieweeId: alexBatesId,
-          content: "Your code quality has been consistently excellent. Clean, well-tested, and maintainable.",
+          content:
+            "Your code quality has been consistently excellent. Clean, well-tested, and maintainable.",
           published: true,
           publishedAt: new Date(now - 18 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -531,7 +619,8 @@ async function seed() {
         {
           reviewerId: matejId,
           revieweeId: alexBatesId,
-          content: "Really impressed with how quickly you picked up the new framework. Exceptional technical skills.",
+          content:
+            "Really impressed with how quickly you picked up the new framework. Exceptional technical skills.",
           published: true,
           publishedAt: new Date(now - 22 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -542,7 +631,8 @@ async function seed() {
         {
           reviewerId: joshId,
           revieweeId: alexBatesId,
-          content: "The refactoring work you did really improved the codebase architecture. Great problem-solving skills.",
+          content:
+            "The refactoring work you did really improved the codebase architecture. Great problem-solving skills.",
           published: true,
           publishedAt: new Date(now - 25 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -554,7 +644,8 @@ async function seed() {
         {
           reviewerId: alexBrittenId,
           revieweeId: alexBatesId,
-          content: "Test coverage has been slipping lately. Would be good to prioritize writing tests alongside features.",
+          content:
+            "Test coverage has been slipping lately. Would be good to prioritize writing tests alongside features.",
           published: true,
           publishedAt: new Date(now - 28 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -565,7 +656,8 @@ async function seed() {
         {
           reviewerId: mattChambersId,
           revieweeId: alexBatesId,
-          content: "Some recent code needs better comments explaining the reasoning behind complex logic.",
+          content:
+            "Some recent code needs better comments explaining the reasoning behind complex logic.",
           published: true,
           publishedAt: new Date(now - 32 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -577,7 +669,8 @@ async function seed() {
         {
           reviewerId: lucyId,
           revieweeId: alexBatesId,
-          content: "Always willing to help teammates when they're stuck. Great team player!",
+          content:
+            "Always willing to help teammates when they're stuck. Great team player!",
           published: true,
           publishedAt: new Date(now - 35 * 24 * 60 * 60 * 1000),
           publishedBy: annaId,
@@ -588,7 +681,8 @@ async function seed() {
         {
           reviewerId: roryId,
           revieweeId: alexBatesId,
-          content: "Your code reviews are thorough and educational. I learn something new each time.",
+          content:
+            "Your code reviews are thorough and educational. I learn something new each time.",
           published: true,
           publishedAt: new Date(now - 38 * 24 * 60 * 60 * 1000),
           publishedBy: markId,
@@ -599,7 +693,8 @@ async function seed() {
         {
           reviewerId: matteoId,
           revieweeId: alexBatesId,
-          content: "Excellent at pairing with junior developers and helping them level up. Really appreciate how you share knowledge.",
+          content:
+            "Excellent at pairing with junior developers and helping them level up. Really appreciate how you share knowledge.",
           published: true,
           publishedAt: new Date(now - 42 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -611,7 +706,8 @@ async function seed() {
         {
           reviewerId: annaId,
           revieweeId: alexBatesId,
-          content: "Could be more responsive to Slack messages, especially when teammates are blocked.",
+          content:
+            "Could be more responsive to Slack messages, especially when teammates are blocked.",
           published: true,
           publishedAt: new Date(now - 45 * 24 * 60 * 60 * 1000),
           publishedBy: markId,
@@ -623,7 +719,8 @@ async function seed() {
         {
           reviewerId: juditId,
           revieweeId: alexBatesId,
-          content: "Excellent at managing client expectations and keeping them informed. Really professional.",
+          content:
+            "Excellent at managing client expectations and keeping them informed. Really professional.",
           published: true,
           publishedAt: new Date(now - 48 * 24 * 60 * 60 * 1000),
           publishedBy: annaId,
@@ -634,7 +731,8 @@ async function seed() {
         {
           reviewerId: lucyId,
           revieweeId: alexBatesId,
-          content: "Really good at understanding client needs and translating them into technical requirements.",
+          content:
+            "Really good at understanding client needs and translating them into technical requirements.",
           published: true,
           publishedAt: new Date(now - 52 * 24 * 60 * 60 * 1000),
           publishedBy: annaId,
@@ -646,7 +744,8 @@ async function seed() {
         {
           reviewerId: markId,
           revieweeId: alexBatesId,
-          content: "Client feedback suggests they'd appreciate more frequent project updates from you.",
+          content:
+            "Client feedback suggests they'd appreciate more frequent project updates from you.",
           published: true,
           publishedAt: new Date(now - 56 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -657,7 +756,8 @@ async function seed() {
         {
           reviewerId: roryId,
           revieweeId: alexBatesId,
-          content: "Sometimes technical jargon in client calls confuses them. Simplify explanations when possible.",
+          content:
+            "Sometimes technical jargon in client calls confuses them. Simplify explanations when possible.",
           published: true,
           publishedAt: new Date(now - 60 * 24 * 60 * 60 * 1000),
           publishedBy: markId,
@@ -669,7 +769,8 @@ async function seed() {
         {
           reviewerId: matteoId,
           revieweeId: alexBatesId,
-          content: "Consistently delivers work on time and manages commitments well. Very reliable.",
+          content:
+            "Consistently delivers work on time and manages commitments well. Very reliable.",
           published: true,
           publishedAt: new Date(now - 64 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -680,7 +781,8 @@ async function seed() {
         {
           reviewerId: joshId,
           revieweeId: alexBatesId,
-          content: "Great at breaking down complex tasks and estimating time accurately. Really helps with planning.",
+          content:
+            "Great at breaking down complex tasks and estimating time accurately. Really helps with planning.",
           published: true,
           publishedAt: new Date(now - 68 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -692,7 +794,8 @@ async function seed() {
         {
           reviewerId: marcinId,
           revieweeId: alexBatesId,
-          content: "Love that you proactively identified and fixed that performance bottleneck. Took great initiative.",
+          content:
+            "Love that you proactively identified and fixed that performance bottleneck. Took great initiative.",
           published: true,
           publishedAt: new Date(now - 72 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -703,7 +806,8 @@ async function seed() {
         {
           reviewerId: matejId,
           revieweeId: alexBatesId,
-          content: "Really impressed by how you took the lead on the sprint planning improvements. Great ownership.",
+          content:
+            "Really impressed by how you took the lead on the sprint planning improvements. Great ownership.",
           published: true,
           publishedAt: new Date(now - 76 * 24 * 60 * 60 * 1000),
           publishedBy: matteoId,
@@ -715,7 +819,8 @@ async function seed() {
         {
           reviewerId: alexBrittenId,
           revieweeId: alexBatesId,
-          content: "Your attention to detail has prevented several bugs from reaching production. Really appreciate the thoroughness.",
+          content:
+            "Your attention to detail has prevented several bugs from reaching production. Really appreciate the thoroughness.",
           published: true,
           publishedAt: new Date(now - 80 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -726,7 +831,8 @@ async function seed() {
         {
           reviewerId: mattChambersId,
           revieweeId: alexBatesId,
-          content: "Your work consistently meets high quality standards. Never cuts corners - always delivers polished, production-ready work.",
+          content:
+            "Your work consistently meets high quality standards. Never cuts corners - always delivers polished, production-ready work.",
           published: true,
           publishedAt: new Date(now - 84 * 24 * 60 * 60 * 1000),
           publishedBy: roryId,
@@ -738,7 +844,8 @@ async function seed() {
         {
           reviewerId: annaId,
           revieweeId: alexBatesId,
-          content: "Alex's technical skills are excellent, but sometimes I feel he could be more open to alternative approaches in discussions.",
+          content:
+            "Alex's technical skills are excellent, but sometimes I feel he could be more open to alternative approaches in discussions.",
           published: true,
           publishedAt: new Date(now - 88 * 24 * 60 * 60 * 1000),
           publishedBy: markId,
@@ -756,17 +863,25 @@ async function seed() {
         try {
           await db.insert(feedbackTable).values(fb);
           const status = fb.published ? "✓" : "○";
-          const reviewer = Object.keys(userIdMap).find(k => userIdMap[k] === fb.reviewerId) || "Unknown";
-          const reviewee = Object.keys(userIdMap).find(k => userIdMap[k] === fb.revieweeId) || "Unknown";
+          const reviewer =
+            Object.keys(userIdMap).find(
+              (k) => userIdMap[k] === fb.reviewerId,
+            ) || "Unknown";
+          const reviewee =
+            Object.keys(userIdMap).find(
+              (k) => userIdMap[k] === fb.revieweeId,
+            ) || "Unknown";
           console.log(
-            `   ${status} ${fb.weekYear} ${reviewer} → ${reviewee}: ${fb.content.substring(0, 35)}...`
+            `   ${status} ${fb.weekYear} ${reviewer} → ${reviewee}: ${fb.content.substring(0, 35)}...`,
           );
           insertedCount++;
         } catch (error) {
           // Silently skip duplicates
         }
       }
-      console.log(`\n   📊 Inserted ${insertedCount} feedback items across 12 weeks (including ${guaranteedFeedbackForAlex.length} guaranteed for Alex Bates)`);
+      console.log(
+        `\n   📊 Inserted ${insertedCount} feedback items across 12 weeks (including ${guaranteedFeedbackForAlex.length} guaranteed for Alex Bates)`,
+      );
     }
 
     // Step 5: Create review schedules
@@ -780,7 +895,9 @@ async function seed() {
       {
         userId: alexBatesId,
         buddyId: matteoId,
-        scheduledDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 days from now
+        scheduledDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0], // 15 days from now
         status: "scheduled",
         name: "January 2026",
         notes: "Focus on technical growth and team collaboration",
@@ -790,12 +907,15 @@ async function seed() {
       {
         userId: alexBatesId,
         buddyId: matteoId,
-        scheduledDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 90 days ago
+        scheduledDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0], // 90 days ago
         status: "completed",
         name: "October 2025",
         notes: "Q4 review - focus on leadership development",
         completedDate: new Date(Date.now() - 85 * 24 * 60 * 60 * 1000),
-        completionNotes: "Great progress on public speaking and mentorship. Continue developing these skills.",
+        completionNotes:
+          "Great progress on public speaking and mentorship. Continue developing these skills.",
         createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(Date.now() - 85 * 24 * 60 * 60 * 1000),
       },
@@ -803,7 +923,9 @@ async function seed() {
       {
         userId: matteoId,
         buddyId: markId,
-        scheduledDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        scheduledDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         status: "scheduled",
         name: "February 2026",
         notes: "Review of Q1 goals and project deliveries",
@@ -813,11 +935,14 @@ async function seed() {
       {
         userId: matteoId,
         buddyId: markId,
-        scheduledDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        scheduledDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         status: "completed",
         name: "November 2025",
         completedDate: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000),
-        completionNotes: "Strong technical execution. Focus on communication with stakeholders next quarter.",
+        completionNotes:
+          "Strong technical execution. Focus on communication with stakeholders next quarter.",
         createdAt: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000),
       },
@@ -825,7 +950,9 @@ async function seed() {
       {
         userId: marcinId,
         buddyId: alexBatesId,
-        scheduledDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        scheduledDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         status: "scheduled",
         name: "February 2026",
         createdAt: new Date(),
@@ -835,7 +962,9 @@ async function seed() {
       {
         userId: matejId,
         buddyId: alexBatesId,
-        scheduledDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        scheduledDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         status: "scheduled",
         name: "January 2026",
         createdAt: new Date(),
@@ -845,11 +974,14 @@ async function seed() {
       {
         userId: roryId,
         buddyId: annaId,
-        scheduledDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        scheduledDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         status: "completed",
         name: "December 2025",
         completedDate: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
-        completionNotes: "Excellent quarter. Keep up the client communication improvements.",
+        completionNotes:
+          "Excellent quarter. Keep up the client communication improvements.",
         createdAt: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
       },
@@ -858,10 +990,16 @@ async function seed() {
     for (const review of reviewScheduleData) {
       try {
         await db.insert(reviewSchedulesTable).values(review);
-        const userName = Object.keys(userIdMap).find((k) => userIdMap[k] === review.userId);
-        const buddyName = Object.keys(userIdMap).find((k) => userIdMap[k] === review.buddyId);
+        const userName = Object.keys(userIdMap).find(
+          (k) => userIdMap[k] === review.userId,
+        );
+        const buddyName = Object.keys(userIdMap).find(
+          (k) => userIdMap[k] === review.buddyId,
+        );
         const statusEmoji = review.status === "scheduled" ? "📅" : "✅";
-        console.log(`   ${statusEmoji} ${userName} ↔ ${buddyName}: ${review.name} (${review.status})`);
+        console.log(
+          `   ${statusEmoji} ${userName} ↔ ${buddyName}: ${review.name} (${review.status})`,
+        );
       } catch (error) {
         console.log(`   ⚠️  Review schedule may already exist, skipping...`);
       }
@@ -880,7 +1018,8 @@ async function seed() {
         // Alex Bates - Active goals
         {
           userId: alexBatesId,
-          goalText: "Improve my public speaking skills by presenting at the next team all-hands meeting",
+          goalText:
+            "Improve my public speaking skills by presenting at the next team all-hands meeting",
           status: "active",
           targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
@@ -888,7 +1027,8 @@ async function seed() {
         },
         {
           userId: alexBatesId,
-          goalText: "Learn advanced TypeScript patterns and apply them to our codebase",
+          goalText:
+            "Learn advanced TypeScript patterns and apply them to our codebase",
           status: "active",
           targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
           createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
@@ -896,7 +1036,8 @@ async function seed() {
         },
         {
           userId: alexBatesId,
-          goalText: "Mentor two junior developers and help them complete their onboarding projects",
+          goalText:
+            "Mentor two junior developers and help them complete their onboarding projects",
           status: "active",
           targetDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
           createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
@@ -934,7 +1075,8 @@ async function seed() {
         // Marcin - Active goals
         {
           userId: marcinId,
-          goalText: "Improve backend API performance by implementing caching strategies",
+          goalText:
+            "Improve backend API performance by implementing caching strategies",
           status: "active",
           targetDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000),
           createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -964,9 +1106,18 @@ async function seed() {
       for (const goal of sampleGoals) {
         try {
           await db.insert(goalsTable).values(goal);
-          const userName = Object.keys(userIdMap).find((k) => userIdMap[k] === goal.userId);
-          const statusEmoji = goal.status === "active" ? "🎯" : goal.status === "completed" ? "✅" : "📦";
-          console.log(`   ${statusEmoji} ${userName}: ${goal.goalText.substring(0, 50)}...`);
+          const userName = Object.keys(userIdMap).find(
+            (k) => userIdMap[k] === goal.userId,
+          );
+          const statusEmoji =
+            goal.status === "active"
+              ? "🎯"
+              : goal.status === "completed"
+                ? "✅"
+                : "📦";
+          console.log(
+            `   ${statusEmoji} ${userName}: ${goal.goalText.substring(0, 50)}...`,
+          );
         } catch (error) {
           console.log(`   ⚠️  Goal may already exist, skipping...`);
         }
@@ -976,9 +1127,13 @@ async function seed() {
     console.log("\n✅ Seed completed successfully!");
     console.log(`\n📊 Summary:`);
     console.log(`   - Users: ${Object.keys(userIdMap).length}`);
-    console.log(`   - Buddy relationships: ${Object.keys(BUDDY_ASSIGNMENTS).length}`);
+    console.log(
+      `   - Buddy relationships: ${Object.keys(BUDDY_ASSIGNMENTS).length}`,
+    );
     console.log(`   - Feedback prompts: ${QUESTIONS.length}`);
-    console.log(`   - Feedback items: ~78 items across 12 weeks (70% published)`);
+    console.log(
+      `   - Feedback items: ~78 items across 12 weeks (70% published)`,
+    );
     console.log(`   - Review schedules: 7 created (4 upcoming, 3 completed)`);
     console.log(`   - Sample goals: Created for Alex Bates and Marcin`);
   } catch (error) {

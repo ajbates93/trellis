@@ -196,6 +196,29 @@ describe('API Schemas', () => {
       const result = apiSchemas.CreateUserRequestSchema.safeParse(validRequest)
       expect(result.success).toBe(true)
     })
+
+    it('should accept all valid role types', () => {
+      const roleTypes = ['dev', 'design', 'qa', 'growth']
+      roleTypes.forEach((roleType) => {
+        const validRequest = {
+          email: 'john@example.com',
+          name: 'John Doe',
+          roleType,
+        }
+        const result = apiSchemas.CreateUserRequestSchema.safeParse(validRequest)
+        expect(result.success).toBe(true)
+      })
+    })
+
+    it('should reject invalid role type', () => {
+      const invalidRequest = {
+        email: 'john@example.com',
+        name: 'John Doe',
+        roleType: 'invalid-role',
+      }
+      const result = apiSchemas.CreateUserRequestSchema.safeParse(invalidRequest)
+      expect(result.success).toBe(false)
+    })
   })
 
   describe('OnboardingImportRequestSchema', () => {
