@@ -15,11 +15,27 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Get all achievements for the current user, ordered by achievedDate (newest first)
+    const query = getQuery(event);
+    const forUserId = query.userId as string | undefined;
+
+    // If fetching for a specific user, verify authorization
+    if (forUserId) {
+      const isAdmin = session.user.role === 'admin';
+      if (!isAdmin && forUserId !== session.user.id) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view these achievements",
+        });
+      }
+    }
+
+    const targetUserId = forUserId || session.user.id;
+
+    // Get all achievements for the target user, ordered by achievedDate (newest first)
     const userAchievements = await db
       .select()
       .from(achievements)
-      .where(eq(achievements.userId, session.user.id))
+      .where(eq(achievements.userId, targetUserId))
       .orderBy(desc(achievements.achievedDate));
 
     return validateResponse(

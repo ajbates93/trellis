@@ -14,9 +14,9 @@ const { data: reviewData, refresh } = await useFetch(
   `/api/reviews/${reviewId}`,
 );
 
-const review = computed(() => reviewData.value?.review);
-const feedback = computed(() => reviewData.value?.feedback || []);
-const goals = computed(() => reviewData.value?.goals || []);
+const review = computed(() => (reviewData.value as any)?.review);
+const feedback = computed(() => (reviewData.value as any)?.feedback || []);
+const goals = computed(() => (reviewData.value as any)?.goals || []);
 
 // Fetch achievements for this review
 const { data: achievementsData } = await useFetch(
@@ -48,6 +48,10 @@ const isReviewee = computed(() => {
 // Check if current user is the buddy for this review
 const isBuddy = computed(() => {
   return review.value?.buddyId === currentUser.value?.id;
+});
+
+const isAdmin = computed(() => {
+  return currentUser.value?.role === 'admin';
 });
 
 // Open edit modal
@@ -251,7 +255,7 @@ watch(reflectionConcerns, (newValue, oldValue) => {
 
 watch(buddyComments, (newValue, oldValue) => {
   if (
-    isBuddy.value &&
+    (isBuddy.value || isAdmin.value) &&
     newValue !== (review.value?.buddyComments || "") &&
     oldValue !== ""
   ) {
@@ -317,8 +321,8 @@ const feedbackColumns = [
                 <div>
                   <div class="flex items-center gap-3 mb-2">
                     <UBadge :label="review.status === 'completed'
-                        ? 'Completed'
-                        : 'Scheduled'
+                      ? 'Completed'
+                      : 'Scheduled'
                       " variant="solid" :class="[
                         'capitalize',
                         review.status === 'completed'
@@ -350,13 +354,13 @@ const feedbackColumns = [
               </div>
 
               <!-- Actions -->
-              <div v-if="isBuddy && review.status === 'scheduled'" class="mt-8 flex gap-3">
-                <UButton color="white" variant="solid" icon="i-heroicons-check"
+              <div v-if="(isBuddy || isAdmin) && review.status === 'scheduled'" class="mt-8 flex gap-3">
+                <UButton color="neutral" variant="solid" icon="i-heroicons-check"
                   class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
                   @click="isCompleteModalOpen = true">
                   Mark as Completed
                 </UButton>
-                <UButton color="gray" variant="ghost" icon="i-heroicons-pencil-square"
+                <UButton color="neutral" variant="ghost" icon="i-heroicons-pencil-square"
                   class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer" @click="openEditModal">
                   Edit Details
                 </UButton>
@@ -414,7 +418,7 @@ const feedbackColumns = [
             </template>
 
             <ReviewsReflectionEditor v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
-              placeholder="Add comments about the review..." :readonly="!isBuddy" />
+              placeholder="Add comments about the review..." :readonly="!isBuddy && !isAdmin" />
           </UCard>
 
           <!-- Supporting Data Header -->

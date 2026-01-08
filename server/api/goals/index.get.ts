@@ -15,7 +15,23 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Fetch all goals for the current user (all statuses)
+    const query = getQuery(event);
+    const forUserId = query.userId as string | undefined;
+
+    // If fetching for a specific user, verify authorization
+    if (forUserId) {
+      const isAdmin = session.user.role === 'admin';
+      if (!isAdmin && forUserId !== session.user.id) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view these goals",
+        });
+      }
+    }
+
+    const targetUserId = forUserId || session.user.id;
+
+    // Fetch all goals for the target user (all statuses)
     const userGoals = await db
       .select({
         id: goals.id,
@@ -29,7 +45,7 @@ export default defineEventHandler(async (event) => {
         completedAt: goals.completedAt,
       })
       .from(goals)
-      .where(eq(goals.userId, session.user.id))
+      .where(eq(goals.userId, targetUserId))
       .orderBy(desc(goals.createdAt));
 
     // Fetch milestones for all goals
