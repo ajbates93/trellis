@@ -59,6 +59,10 @@ definePageMeta({
   layout: "auth",
 });
 
+useHead({
+  title: "Set Password",
+});
+
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();

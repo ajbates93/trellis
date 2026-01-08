@@ -17,6 +17,14 @@ const {
 
 const buddy = computed(() => buddyData.value?.buddy);
 
+useHead({
+  title: computed(() =>
+    buddy.value
+      ? `${buddy.value.preferredName || buddy.value.name}'s Profile`
+      : "Buddy Profile",
+  ),
+});
+
 const formatDate = (date: string | Date | null | undefined) => {
   if (!date) return "Not set";
   return format(new Date(date), "MMMM d, yyyy");

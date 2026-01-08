@@ -25,6 +25,8 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      title: "Trellis",
+      titleTemplate: "%s | Trellis",
       htmlAttrs: {
         class: "dark", // TODO: Remove when light mode is ready
       },

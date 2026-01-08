@@ -5,10 +5,7 @@
         <!-- Staggered animation container -->
         <div ref="container" class="space-y-8">
           <!-- Welcome header -->
-          <div
-            class="text-center animate-item"
-            :style="{ '--delay': '0ms' }"
-          >
+          <div class="text-center animate-item" :style="{ '--delay': '0ms' }">
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
               Welcome back,
               {{ user?.preferredName || user?.name?.split(" ")[0] || "there" }}
@@ -19,54 +16,25 @@
           </div>
 
           <!-- Quick Stats -->
-          <div
-            class="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-item"
-            :style="{ '--delay': '100ms' }"
-          >
-            <QuickStatCard
-              :value="stats.feedbackThisWeek"
-              label="Feedback This Week"
-              icon="i-heroicons-chat-bubble-left-right"
-              color="teal"
-            />
-            <QuickStatCard
-              :value="stats.activeGoals"
-              label="Active Goals"
-              icon="i-heroicons-flag"
-              color="purple"
-            />
-            <QuickStatCard
-              :value="stats.daysUntilReview"
-              :label="
-                stats.daysUntilReview !== null ? 'Days to Review' : 'Next Review'
-              "
-              icon="i-heroicons-calendar-days"
-              color="amber"
-            />
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-item" :style="{ '--delay': '100ms' }">
+            <QuickStatCard :value="stats.feedbackThisWeek" label="Feedback This Week"
+              icon="i-heroicons-chat-bubble-left-right" color="teal" />
+            <QuickStatCard :value="stats.activeGoals" label="Active Goals" icon="i-heroicons-flag" color="purple" />
+            <QuickStatCard :value="stats.daysUntilReview" :label="stats.daysUntilReview !== null ? 'Days to Review' : 'Next Review'
+              " icon="i-heroicons-calendar-days" color="amber" />
           </div>
 
           <!-- Getting Started Widget -->
-          <div
-            v-if="showOnboarding"
-            class="animate-item flex justify-center"
-            :style="{ '--delay': '150ms' }"
-          >
+          <div v-if="showOnboarding" class="animate-item flex justify-center" :style="{ '--delay': '150ms' }">
             <OnboardingWidget :is-static="true" />
           </div>
 
           <!-- Command Palette Trigger -->
-          <div
-            class="animate-item hidden lg:block"
-            :style="{ '--delay': '200ms' }"
-          >
+          <div class="animate-item hidden lg:block" :style="{ '--delay': '200ms' }">
             <button
               class="w-full flex items-center gap-3 px-4 py-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 group"
-              @click="openCommandPalette"
-            >
-              <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="text-xl text-gray-400 dark:text-gray-500"
-              />
+              @click="openCommandPalette">
+              <UIcon name="i-heroicons-magnifying-glass" class="text-xl text-gray-400 dark:text-gray-500" />
               <span class="flex-1 text-left text-gray-500 dark:text-gray-400">
                 Search actions, pages, or type a command...
               </span>
@@ -78,59 +46,35 @@
           </div>
 
           <!-- Contextual Suggestions -->
-          <div
-            v-if="suggestions.length > 0"
-            class="animate-item"
-            :style="{ '--delay': '300ms' }"
-          >
+          <div v-if="suggestions.length > 0" class="animate-item" :style="{ '--delay': '300ms' }">
             <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
               Suggested for you
             </h2>
             <div class="flex flex-wrap gap-2">
-              <NuxtLink
-                v-for="suggestion in suggestions"
-                :key="suggestion.to"
-                :to="suggestion.to"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 group"
-              >
-                <UIcon
-                  :name="suggestion.icon"
-                  class="text-gray-500 dark:text-gray-400 group-hover:text-primary-500"
-                />
-                <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+              <NuxtLink v-for="suggestion in suggestions" :key="suggestion.to" :to="suggestion.to"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 group">
+                <UIcon :name="suggestion.icon" class="text-gray-500 dark:text-gray-400 group-hover:text-primary-500" />
+                <span
+                  class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
                   {{ suggestion.label }}
                 </span>
-                <UBadge
-                  v-if="suggestion.badge"
-                  :label="suggestion.badge"
-                  color="primary"
-                  variant="subtle"
-                  size="xs"
-                />
+                <UBadge v-if="suggestion.badge" :label="suggestion.badge" color="primary" variant="subtle" size="xs" />
               </NuxtLink>
             </div>
           </div>
 
           <!-- Recent Activity (placeholder for future) -->
-          <div
-            class="animate-item"
-            :style="{ '--delay': '400ms' }"
-          >
+          <div class="animate-item" :style="{ '--delay': '400ms' }">
             <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
               Quick Links
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <NuxtLink
-                v-for="link in quickLinks"
-                :key="link.to"
-                :to="link.to"
-                class="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group"
-              >
-                <UIcon
-                  :name="link.icon"
-                  class="text-2xl text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 text-center">
+              <NuxtLink v-for="link in quickLinks" :key="link.to" :to="link.to"
+                class="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group">
+                <UIcon :name="link.icon"
+                  class="text-2xl text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors" />
+                <span
+                  class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 text-center">
                   {{ link.label }}
                 </span>
               </NuxtLink>
@@ -145,6 +89,10 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
+});
+
+useHead({
+  title: "Dashboard",
 });
 
 const { user } = useAuth();
@@ -277,6 +225,7 @@ const quickLinks = computed(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

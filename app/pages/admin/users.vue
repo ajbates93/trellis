@@ -7,9 +7,7 @@
           <div>
             <div class="flex items-center gap-3 mb-2">
               <UIcon name="i-heroicons-users" class="text-blue-500 text-3xl" />
-              <h1
-                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-              >
+              <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
                 User Management
               </h1>
             </div>
@@ -17,11 +15,7 @@
               Manage team members, roles, and buddy assignments
             </p>
           </div>
-          <UButton
-            icon="i-heroicons-plus"
-            color="primary"
-            @click="showAddModal = true"
-          >
+          <UButton icon="i-heroicons-plus" color="primary" @click="showAddModal = true">
             Add User
           </UButton>
         </div>
@@ -31,49 +25,26 @@
 
         <!-- Tab Content -->
         <div class="mt-6">
-          <AdminUserTable
-            :users="filteredUsers"
-            :loading="loading"
-            :error="error"
-            @edit="openEditModal"
-            @impersonate="handleImpersonate"
-            @remove="openRemoveModal"
-            @send-invitation="handleSendInvitation"
-            @send-password-reset="handleSendPasswordReset"
-          />
+          <AdminUserTable :users="filteredUsers" :loading="loading" :error="error" @edit="openEditModal"
+            @impersonate="handleImpersonate" @remove="openRemoveModal" @send-invitation="handleSendInvitation"
+            @send-password-reset="handleSendPasswordReset" />
         </div>
       </div>
       <!-- Edit User Modal -->
-      <AdminEditUserModal
-        v-model="showEditModal"
-        :user="selectedUser"
-        :all-users="allUsers"
-        @success="handleSuccess"
-      />
+      <AdminEditUserModal v-model="showEditModal" :user="selectedUser" :all-users="allUsers" @success="handleSuccess" />
 
       <!-- Add User Modal -->
-      <AdminAddUserModal
-        v-model="showAddModal"
-        :all-users="allUsers"
-        @success="handleSuccess"
-      />
+      <AdminAddUserModal v-model="showAddModal" :all-users="allUsers" @success="handleSuccess" />
 
       <!-- Remove User Confirmation Modal -->
-      <UModal
-        v-model:open="showRemoveModal"
-        title="Remove User"
+      <UModal v-model:open="showRemoveModal" title="Remove User"
         :description="`Are you sure you want to remove ${userToRemove?.name}? This action cannot be undone.`"
-        class="sm:max-w-md"
-      >
+        class="sm:max-w-md">
         <template #body>
           <div class="space-y-4">
             <div
-              class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
-            >
-              <UIcon
-                name="i-heroicons-exclamation-triangle"
-                class="text-red-500 text-2xl flex-shrink-0"
-              />
+              class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500 text-2xl flex-shrink-0" />
               <div class="text-sm text-red-700 dark:text-red-300">
                 <p class="font-medium mb-1">This will permanently delete:</p>
                 <ul class="list-disc list-inside space-y-1">
@@ -88,15 +59,8 @@
               </div>
             </div>
 
-            <div
-              v-if="userToRemove"
-              class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-            >
-              <UAvatar
-                :src="userToRemove.avatarUrl || userToRemove.image"
-                :alt="userToRemove.name"
-                size="sm"
-              />
+            <div v-if="userToRemove" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <UAvatar :src="userToRemove.avatarUrl || userToRemove.image" :alt="userToRemove.name" size="sm" />
               <div>
                 <div class="font-medium text-gray-900 dark:text-white">
                   {{ userToRemove.name }}
@@ -110,19 +74,10 @@
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              :disabled="removing"
-              @click="showRemoveModal = false"
-            >
+            <UButton color="neutral" variant="ghost" :disabled="removing" @click="showRemoveModal = false">
               Cancel
             </UButton>
-            <UButton
-              color="error"
-              :loading="removing"
-              @click="handleRemoveUser"
-            >
+            <UButton color="error" :loading="removing" @click="handleRemoveUser">
               Remove User
             </UButton>
           </div>
@@ -138,6 +93,10 @@ import type { User } from "~/types";
 definePageMeta({
   layout: "default",
   middleware: ["auth", "admin"],
+});
+
+useHead({
+  title: "Users",
 });
 
 const selectedTab = ref("all");

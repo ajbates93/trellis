@@ -40,7 +40,7 @@
                         <span class="font-medium">{{ option.name }}</span>
                         <span class="text-xs text-gray-500">{{
                           option.email
-                        }}</span>
+                          }}</span>
                       </div>
                     </div>
                   </template>
@@ -324,6 +324,10 @@ import type { User, FeedbackWithReviewer } from "~/types";
 definePageMeta({
   layout: "default",
   middleware: ["auth", "admin"],
+});
+
+useHead({
+  title: "Reports",
 });
 
 const users = ref<any[]>([]);

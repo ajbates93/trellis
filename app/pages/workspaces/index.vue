@@ -3,6 +3,10 @@ definePageMeta({
   middleware: ["super-admin"],
 });
 
+useHead({
+  title: "Workspaces",
+});
+
 const { data: workspacesData, status, refresh } = useFetch("/api/super-admin/workspaces");
 
 const isCreateModalOpen = ref(false);
@@ -103,11 +107,7 @@ const createWorkspace = async () => {
   <UDashboardPanel>
     <UDashboardNavbar title="Workspaces">
       <template #right>
-        <UButton
-          label="Create Workspace"
-          icon="i-heroicons-plus"
-          @click="isCreateModalOpen = true"
-        />
+        <UButton label="Create Workspace" icon="i-heroicons-plus" @click="isCreateModalOpen = true" />
       </template>
     </UDashboardNavbar>
 
@@ -124,20 +124,13 @@ const createWorkspace = async () => {
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <NuxtLink
-          v-for="workspace in workspacesData?.workspaces"
-          :key="workspace.id"
-          :to="`/workspaces/${workspace.id}`"
-        >
+        <NuxtLink v-for="workspace in workspacesData?.workspaces" :key="workspace.id"
+          :to="`/workspaces/${workspace.id}`">
           <UCard class="hover:ring-2 hover:ring-primary transition-all cursor-pointer h-full">
             <div class="flex items-start gap-4">
               <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <img
-                  v-if="workspace.logoUrl"
-                  :src="workspace.logoUrl"
-                  :alt="workspace.name"
-                  class="w-10 h-10 rounded object-cover"
-                >
+                <img v-if="workspace.logoUrl" :src="workspace.logoUrl" :alt="workspace.name"
+                  class="w-10 h-10 rounded object-cover">
                 <UIcon v-else name="i-heroicons-building-office-2" class="w-6 h-6 text-primary" />
               </div>
               <div class="flex-1 min-w-0">
@@ -167,37 +160,17 @@ const createWorkspace = async () => {
             <div class="space-y-3">
               <!-- Logo preview -->
               <div v-if="previewLogo" class="flex items-center gap-4">
-                <img
-                  :src="previewLogo"
-                  alt="Logo preview"
-                  class="w-16 h-16 rounded-lg object-cover"
-                >
-                <UButton
-                  variant="outline"
-                  color="error"
-                  size="sm"
-                  icon="i-heroicons-trash"
-                  @click="removeLogo"
-                >
+                <img :src="previewLogo" alt="Logo preview" class="w-16 h-16 rounded-lg object-cover">
+                <UButton variant="outline" color="error" size="sm" icon="i-heroicons-trash" @click="removeLogo">
                   Remove
                 </UButton>
               </div>
 
               <!-- Upload button -->
               <div v-else>
-                <input
-                  ref="fileInput"
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  @change="onLogoSelected"
-                >
-                <UButton
-                  variant="outline"
-                  icon="i-heroicons-arrow-up-tray"
-                  class="w-full"
-                  @click="($refs.fileInput as HTMLInputElement).click()"
-                >
+                <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onLogoSelected">
+                <UButton variant="outline" icon="i-heroicons-arrow-up-tray" class="w-full"
+                  @click="($refs.fileInput as HTMLInputElement).click()">
                   Upload Logo
                 </UButton>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -225,11 +198,7 @@ const createWorkspace = async () => {
 
       <template #footer>
         <UButton label="Cancel" color="neutral" variant="ghost" @click="isCreateModalOpen = false" />
-        <UButton
-          label="Create Workspace"
-          :loading="isCreating"
-          @click="createWorkspace"
-        />
+        <UButton label="Create Workspace" :loading="isCreating" @click="createWorkspace" />
       </template>
     </UModal>
   </UDashboardPanel>

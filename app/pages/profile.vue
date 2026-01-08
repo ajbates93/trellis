@@ -210,6 +210,10 @@ definePageMeta({
   middleware: "auth",
 });
 
+useHead({
+  title: "Profile",
+});
+
 const { user, refreshSession } = useAuth();
 const fileInput = ref<HTMLInputElement>();
 const isSaving = ref(false);

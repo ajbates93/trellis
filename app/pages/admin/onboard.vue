@@ -159,8 +159,8 @@
             <!-- Success Message -->
             <UAlert v-if="importResult.success" icon="i-heroicons-check-circle" color="success" variant="soft"
               :title="`Successfully imported ${importResult.imported} users`" :description="importResult.errors?.length > 0
-                  ? `${importResult.errors.length} warnings during import`
-                  : 'All users imported without issues'
+                ? `${importResult.errors.length} warnings during import`
+                : 'All users imported without issues'
                 " />
 
             <!-- Error Message -->
@@ -286,6 +286,10 @@
 definePageMeta({
   layout: "default",
   middleware: ["auth", "admin"],
+});
+
+useHead({
+  title: "Onboarding",
 });
 
 interface CSVPreview {

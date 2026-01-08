@@ -6,6 +6,10 @@ definePageMeta({
   layout: "default",
 });
 
+useHead({
+  title: "Reviews",
+});
+
 const toast = useToast();
 
 // Fetch upcoming and past reviews

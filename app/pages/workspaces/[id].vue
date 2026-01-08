@@ -9,6 +9,10 @@ const id = route.params.id as string;
 const { data: workspaceData, status, refresh } = useFetch(`/api/super-admin/workspaces/${id}`);
 const { data: usersData } = useFetch(`/api/super-admin/workspaces/${id}/users`);
 
+useHead({
+  title: computed(() => workspaceData.value?.workspace?.name || "Workspace Details"),
+});
+
 const isEditModalOpen = ref(false);
 const fileInput = ref<HTMLInputElement>();
 const previewLogo = ref<string | null>(null);
@@ -156,19 +160,9 @@ const deleteWorkspace = async () => {
         <span class="text-lg font-semibold">{{ workspaceData?.workspace?.name || 'Workspace' }}</span>
       </template>
       <template #right>
-        <UButton
-          label="Edit"
-          icon="i-heroicons-pencil"
-          variant="outline"
-          @click="isEditModalOpen = true"
-        />
-        <UButton
-          label="Delete"
-          icon="i-heroicons-trash"
-          color="error"
-          variant="ghost"
-          @click="isDeleteModalOpen = true"
-        />
+        <UButton label="Edit" icon="i-heroicons-pencil" variant="outline" @click="isEditModalOpen = true" />
+        <UButton label="Delete" icon="i-heroicons-trash" color="error" variant="ghost"
+          @click="isDeleteModalOpen = true" />
       </template>
     </UDashboardNavbar>
 
@@ -182,12 +176,8 @@ const deleteWorkspace = async () => {
         <UCard class="mb-6">
           <div class="flex items-start gap-6">
             <div class="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <img
-                v-if="workspaceData.workspace.logoUrl"
-                :src="workspaceData.workspace.logoUrl"
-                :alt="workspaceData.workspace.name"
-                class="w-14 h-14 rounded object-cover"
-              >
+              <img v-if="workspaceData.workspace.logoUrl" :src="workspaceData.workspace.logoUrl"
+                :alt="workspaceData.workspace.name" class="w-14 h-14 rounded object-cover">
               <UIcon v-else name="i-heroicons-building-office-2" class="w-8 h-8 text-primary" />
             </div>
             <div>
@@ -215,34 +205,19 @@ const deleteWorkspace = async () => {
           </div>
 
           <div v-else class="divide-y divide-gray-200 dark:divide-gray-800 max-h-96 overflow-y-auto">
-            <div
-              v-for="user in usersData?.users"
-              :key="user.id"
-              class="py-3 flex items-center justify-between"
-            >
+            <div v-for="user in usersData?.users" :key="user.id" class="py-3 flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <UAvatar
-                  :src="user.avatarUrl || user.image"
-                  :alt="user.name"
-                  :ui="{ fallback: 'bg-primary text-white' }"
-                />
+                <UAvatar :src="user.avatarUrl || user.image" :alt="user.name"
+                  :ui="{ fallback: 'bg-primary text-white' }" />
                 <div>
                   <p class="font-medium">{{ user.name }}</p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <UBadge
-                  v-if="user.role === 'admin'"
-                  label="Admin"
-                  color="primary"
-                  variant="subtle"
-                />
-                <UBadge
-                  :label="user.status"
-                  :color="user.status === 'active' ? 'success' : 'warning'"
-                  variant="subtle"
-                />
+                <UBadge v-if="user.role === 'admin'" label="Admin" color="primary" variant="subtle" />
+                <UBadge :label="user.status" :color="user.status === 'active' ? 'success' : 'warning'"
+                  variant="subtle" />
               </div>
             </div>
           </div>
@@ -262,37 +237,17 @@ const deleteWorkspace = async () => {
             <div class="space-y-3">
               <!-- Logo preview -->
               <div v-if="previewLogo" class="flex items-center gap-4">
-                <img
-                  :src="previewLogo"
-                  alt="Logo preview"
-                  class="w-16 h-16 rounded-lg object-cover"
-                >
-                <UButton
-                  variant="outline"
-                  color="error"
-                  size="sm"
-                  icon="i-heroicons-trash"
-                  @click="removeLogo"
-                >
+                <img :src="previewLogo" alt="Logo preview" class="w-16 h-16 rounded-lg object-cover">
+                <UButton variant="outline" color="error" size="sm" icon="i-heroicons-trash" @click="removeLogo">
                   Remove
                 </UButton>
               </div>
 
               <!-- Upload button -->
               <div v-else>
-                <input
-                  ref="fileInput"
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  @change="onLogoSelected"
-                >
-                <UButton
-                  variant="outline"
-                  icon="i-heroicons-arrow-up-tray"
-                  class="w-full"
-                  @click="($refs.fileInput as HTMLInputElement).click()"
-                >
+                <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onLogoSelected">
+                <UButton variant="outline" icon="i-heroicons-arrow-up-tray" class="w-full"
+                  @click="($refs.fileInput as HTMLInputElement).click()">
                   Upload Logo
                 </UButton>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -324,13 +279,8 @@ const deleteWorkspace = async () => {
 
       <template #footer>
         <UButton label="Cancel" color="neutral" variant="ghost" @click="isDeleteModalOpen = false" />
-        <UButton
-          label="Delete Workspace"
-          color="error"
-          :loading="isDeleting"
-          :disabled="workspaceData?.workspace?.userCount > 0"
-          @click="deleteWorkspace"
-        />
+        <UButton label="Delete Workspace" color="error" :loading="isDeleting"
+          :disabled="workspaceData?.workspace?.userCount > 0" @click="deleteWorkspace" />
       </template>
     </UModal>
   </UDashboardPanel>

@@ -7,6 +7,10 @@ definePageMeta({
   layout: "default",
 });
 
+useHead({
+  title: "Feedback Inbox",
+});
+
 const toast = useToast();
 
 // Mark onboarding task as complete on page visit
@@ -297,7 +301,7 @@ const givenColumns = [
                       @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                      }}</span>
+                        }}</span>
                     </UButton>
                   </template>
 
@@ -359,7 +363,7 @@ const givenColumns = [
                     @click="openFeedbackModal(row.original)">
                     <span class="truncate block">{{
                       row.original.content
-                    }}</span>
+                      }}</span>
                   </UButton>
                 </template>
 
@@ -432,7 +436,7 @@ const givenColumns = [
                       @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                      }}</span>
+                        }}</span>
                     </UButton>
                   </template>
 

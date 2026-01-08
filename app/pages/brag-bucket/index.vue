@@ -4,9 +4,7 @@
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1
-            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3"
-          >
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             Brag Bucket
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -16,90 +14,61 @@
 
         <!-- Stats Banner -->
         <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UCard
-            class="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20"
-          >
+          <UCard class="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Total Achievements
                 </p>
-                <p
-                  class="mt-2 text-3xl font-bold text-teal-600 dark:text-teal-400"
-                >
+                <p class="mt-2 text-3xl font-bold text-teal-600 dark:text-teal-400">
                   {{ achievements.length }}
                 </p>
               </div>
-              <UIcon
-                name="i-heroicons-trophy"
-                class="w-10 h-10 text-teal-500 dark:text-teal-400"
-              />
+              <UIcon name="i-heroicons-trophy" class="w-10 h-10 text-teal-500 dark:text-teal-400" />
             </div>
           </UCard>
 
-          <UCard
-            class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
-          >
+          <UCard class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                   This Year
                 </p>
-                <p
-                  class="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400"
-                >
+                <p class="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {{ thisYearCount }}
                 </p>
               </div>
-              <UIcon
-                name="i-heroicons-calendar"
-                class="w-10 h-10 text-blue-500 dark:text-blue-400"
-              />
+              <UIcon name="i-heroicons-calendar" class="w-10 h-10 text-blue-500 dark:text-blue-400" />
             </div>
           </UCard>
         </div>
 
         <!-- Add Button -->
         <div class="mb-8">
-          <UButton
-            color="primary"
-            size="lg"
-            icon="i-heroicons-plus-20-solid"
-            @click="openCreateModal"
-          >
+          <UButton color="primary" size="lg" icon="i-heroicons-plus-20-solid" @click="openCreateModal">
             Add Achievement
           </UButton>
         </div>
 
         <!-- Loading State -->
         <div v-if="isLoading" class="space-y-6">
-          <h2
-            class="text-xl font-semibold text-gray-900 dark:text-white text-center"
-          >
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white text-center">
             Your Achievement Timeline
           </h2>
           <div class="relative">
             <!-- Center line -->
-            <div
-              class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"
-            />
+            <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
             <div class="space-y-12">
               <div v-for="i in 3" :key="i" class="relative">
                 <!-- Timeline dot -->
-                <div
-                  class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10"
-                />
+                <div class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10" />
                 <!-- Card container -->
                 <div class="grid grid-cols-2 gap-8">
                   <div :class="i % 2 === 1 ? 'col-start-1' : 'col-start-2'">
                     <UCard class="animate-pulse">
                       <div class="space-y-3">
-                        <div
-                          class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"
-                        />
-                        <div
-                          class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"
-                        />
+                        <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
                       </div>
                     </UCard>
                   </div>
@@ -111,69 +80,44 @@
 
         <!-- Timeline View -->
         <div v-else-if="sortedAchievements.length > 0" class="space-y-6">
-          <h2
-            class="text-xl font-semibold text-gray-900 dark:text-white text-center"
-          >
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white text-center">
             Your Achievement Timeline
           </h2>
 
           <div class="relative">
             <!-- Center timeline line -->
-            <div
-              class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"
-            />
+            <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
 
             <!-- Timeline items -->
             <div class="space-y-12">
-              <template
-                v-for="item in timelineItems"
-                :key="
+              <template v-for="item in timelineItems" :key="
                   item.type === 'year'
                     ? `year-${item.year}`
                     : item.achievement.id
-                "
-              >
+                ">
                 <!-- Year marker -->
-                <div
-                  v-if="item.type === 'year'"
-                  class="relative flex justify-center"
-                >
+                <div v-if="item.type === 'year'" class="relative flex justify-center">
                   <div
                     class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-4 py-2 z-10 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 select-none"
-                    @click="toggleYear(item.year)"
-                  >
-                    <span
-                      class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
-                    >
+                    @click="toggleYear(item.year)">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                       {{ item.year }}
-                      <UIcon
-                        :name="
-                          expandedYears[item.year]
-                            ? 'i-heroicons-chevron-down'
-                            : 'i-heroicons-chevron-right'
-                        "
-                        class="w-4 h-4 transition-transform duration-200"
-                      />
+                      <UIcon :name="expandedYears[item.year]
+                          ? 'i-heroicons-chevron-down'
+                          : 'i-heroicons-chevron-right'
+                        " class="w-4 h-4 transition-transform duration-200" />
                     </span>
                   </div>
                 </div>
 
                 <!-- Achievement item -->
-                <Transition
-                  v-if="item.type === 'achievement'"
-                  name="achievement"
-                  appear
-                >
-                  <div
-                    v-if="
-                      expandedYears[getYearForAchievement(item.achievement)]
-                    "
-                    class="relative group"
-                  >
+                <Transition v-if="item.type === 'achievement'" name="achievement" appear>
+                  <div v-if="
+                    expandedYears[getYearForAchievement(item.achievement)]
+                  " class="relative group">
                     <!-- Timeline dot -->
                     <div
-                      class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10 group-hover:scale-150 transition-transform duration-200"
-                    />
+                      class="absolute left-1/2 -translate-x-1/2 top-8 w-3 h-3 bg-primary-500 rounded-full z-10 group-hover:scale-150 transition-transform duration-200" />
 
                     <!-- Grid for alternating layout -->
                     <div class="grid grid-cols-2 gap-8 items-start">
@@ -181,25 +125,16 @@
                       <div class="text-right">
                         <template v-if="item.displayIndex % 2 === 0">
                           <!-- Card on left -->
-                          <AchievementsAchievementCard
-                            :achievement="item.achievement"
-                            align="right"
-                            @updated="refreshAchievements"
-                            @deleted="refreshAchievements"
-                            @edit="editAchievement"
-                          />
+                          <AchievementsAchievementCard :achievement="item.achievement" align="right"
+                            @updated="refreshAchievements" @deleted="refreshAchievements" @edit="editAchievement" />
                         </template>
                         <template v-else>
                           <!-- Date on left -->
                           <div class="pr-4 pt-4">
-                            <p
-                              class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide"
-                            >
+                            <p class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                               {{ formatMonth(item.achievement.achievedDate) }}
                             </p>
-                            <p
-                              class="text-4xl font-bold text-gray-900 dark:text-white"
-                            >
+                            <p class="text-4xl font-bold text-gray-900 dark:text-white">
                               {{ formatDay(item.achievement.achievedDate) }}
                             </p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -214,14 +149,10 @@
                         <template v-if="item.displayIndex % 2 === 0">
                           <!-- Date on right -->
                           <div class="pl-4 pt-4">
-                            <p
-                              class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide"
-                            >
+                            <p class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                               {{ formatMonth(item.achievement.achievedDate) }}
                             </p>
-                            <p
-                              class="text-4xl font-bold text-gray-900 dark:text-white"
-                            >
+                            <p class="text-4xl font-bold text-gray-900 dark:text-white">
                               {{ formatDay(item.achievement.achievedDate) }}
                             </p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -231,13 +162,8 @@
                         </template>
                         <template v-else>
                           <!-- Card on right -->
-                          <AchievementsAchievementCard
-                            :achievement="item.achievement"
-                            align="left"
-                            @updated="refreshAchievements"
-                            @deleted="refreshAchievements"
-                            @edit="editAchievement"
-                          />
+                          <AchievementsAchievementCard :achievement="item.achievement" align="left"
+                            @updated="refreshAchievements" @deleted="refreshAchievements" @edit="editAchievement" />
                         </template>
                       </div>
                     </div>
@@ -249,25 +175,14 @@
         </div>
 
         <!-- Empty state -->
-        <EmptyState
-          v-else
-          icon="i-heroicons-trophy"
-          icon-color="text-teal-500"
-          icon-bg-color="bg-teal-100 dark:bg-teal-900/30"
-          heading="Your Brag Bucket is empty"
+        <EmptyState v-else icon="i-heroicons-trophy" icon-color="text-teal-500"
+          icon-bg-color="bg-teal-100 dark:bg-teal-900/30" heading="Your Brag Bucket is empty"
           description="Start adding achievements as they happen. At review time, you'll have a complete list to celebrate!"
-          button-text="Add Your First Achievement"
-          button-icon="i-heroicons-plus-20-solid"
-          variant="primary"
-          @button-click="openCreateModal"
-        />
+          button-text="Add Your First Achievement" button-icon="i-heroicons-plus-20-solid" variant="primary"
+          @button-click="openCreateModal" />
         <!-- Achievement Modal -->
-        <AchievementsAchievementModal
-          v-model:is-open="isModalOpen"
-          :mode="modalMode"
-          :achievement="selectedAchievement"
-          @success="onModalSuccess"
-        />
+        <AchievementsAchievementModal v-model:is-open="isModalOpen" :mode="modalMode" :achievement="selectedAchievement"
+          @success="onModalSuccess" />
       </div>
     </template>
   </UDashboardPanel>
@@ -277,6 +192,10 @@
 import { ref, computed } from "vue";
 import { format } from "date-fns";
 import type { Ref } from "vue";
+
+useHead({
+  title: "Brag Bucket",
+});
 
 interface Achievement {
   id: string;

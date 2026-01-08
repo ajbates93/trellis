@@ -7,6 +7,10 @@ definePageMeta({
   middleware: "buddy",
 });
 
+useHead({
+  title: "Buddy Feedback",
+});
+
 const toast = useToast();
 const { buddies, hasBuddies } = useBuddies();
 const { selectedBuddyId } = useSelectedBuddy();
@@ -245,7 +249,7 @@ const incomingColumns = [
                     @click="openFeedbackModal(row.original)">
                     <span class="truncate block">{{
                       row.original.content
-                    }}</span>
+                      }}</span>
                   </UButton>
                 </template>
 
@@ -300,7 +304,7 @@ const incomingColumns = [
                       @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
                         row.original.content
-                      }}</span>
+                        }}</span>
                     </UButton>
                   </template>
 

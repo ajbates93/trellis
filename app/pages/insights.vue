@@ -4,9 +4,7 @@
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1
-            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-          >
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Your Insights
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -17,120 +15,79 @@
         <!-- Stats cards grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <!-- Feedback given this week -->
-          <UCard
-            class="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20"
-          >
+          <UCard class="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <div class="space-y-2">
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Feedback Given
                   </p>
-                  <p
-                    class="text-3xl font-bold text-teal-600 dark:text-teal-400"
-                  >
+                  <p class="text-3xl font-bold text-teal-600 dark:text-teal-400">
                     {{ stats.feedbackGiven }}
                   </p>
                 </div>
-                <UIcon
-                  name="i-heroicons-paper-airplane"
-                  class="w-10 h-10 text-teal-500 dark:text-teal-400"
-                />
+                <UIcon name="i-heroicons-paper-airplane" class="w-10 h-10 text-teal-500 dark:text-teal-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge
-                  :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
-                  :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >vs last week</span
-                >
+                <UBadge :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
+                  :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'" size="xs" />
+                <span class="text-xs text-gray-600 dark:text-gray-400">vs last week</span>
               </div>
             </div>
           </UCard>
 
           <!-- Feedback received this week -->
-          <UCard
-            class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
-          >
+          <UCard class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <div class="space-y-2">
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Feedback Received
                   </p>
-                  <p
-                    class="text-3xl font-bold text-blue-600 dark:text-blue-400"
-                  >
+                  <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {{ stats.feedbackReceived }}
                   </p>
                 </div>
-                <UIcon
-                  name="i-heroicons-inbox-arrow-down"
-                  class="w-10 h-10 text-blue-500 dark:text-blue-400"
-                />
+                <UIcon name="i-heroicons-inbox-arrow-down" class="w-10 h-10 text-blue-500 dark:text-blue-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge
-                  :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
-                  :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >vs last week</span
-                >
+                <UBadge :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
+                  :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'" size="xs" />
+                <span class="text-xs text-gray-600 dark:text-gray-400">vs last week</span>
               </div>
             </div>
           </UCard>
 
           <!-- Active goals count -->
-          <UCard
-            class="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20"
-          >
+          <UCard class="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <div class="space-y-2">
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Active Goals
                   </p>
-                  <p
-                    class="text-3xl font-bold text-purple-600 dark:text-purple-400"
-                  >
+                  <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
                     {{ stats.activeGoals }}
                   </p>
                 </div>
-                <UIcon
-                  name="i-heroicons-flag"
-                  class="w-10 h-10 text-purple-500 dark:text-purple-400"
-                />
+                <UIcon name="i-heroicons-flag" class="w-10 h-10 text-purple-500 dark:text-purple-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge
-                  :label="`${stats.completedGoals} completed`"
-                  color="primary"
-                  size="xs"
-                />
-                <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >this month</span
-                >
+                <UBadge :label="`${stats.completedGoals} completed`" color="primary" size="xs" />
+                <span class="text-xs text-gray-600 dark:text-gray-400">this month</span>
               </div>
             </div>
           </UCard>
 
           <!-- Next review countdown -->
-          <UCard
-            class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20"
-          >
+          <UCard class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <div class="space-y-2">
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Next Review
                   </p>
-                  <p
-                    class="text-3xl font-bold text-amber-600 dark:text-amber-400"
-                  >
+                  <p class="text-3xl font-bold text-amber-600 dark:text-amber-400">
                     {{
                       stats.daysUntilReview !== null
                         ? stats.daysUntilReview
@@ -138,23 +95,14 @@
                     }}
                   </p>
                 </div>
-                <UIcon
-                  name="i-heroicons-calendar-days"
-                  class="w-10 h-10 text-amber-500 dark:text-amber-400"
-                />
+                <UIcon name="i-heroicons-calendar-days" class="w-10 h-10 text-amber-500 dark:text-amber-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge
-                  :label="
-                    stats.daysUntilReview !== null
-                      ? 'Upcoming'
-                      : 'Not scheduled'
-                  "
-                  :color="
-                    stats.daysUntilReview !== null ? 'primary' : 'neutral'
-                  "
-                  size="xs"
-                />
+                <UBadge :label="stats.daysUntilReview !== null
+                    ? 'Upcoming'
+                    : 'Not scheduled'
+                  " :color="stats.daysUntilReview !== null ? 'primary' : 'neutral'
+                    " size="xs" />
                 <span class="text-xs text-gray-600 dark:text-gray-400">
                   {{ stats.daysUntilReview !== null ? "days remaining" : "" }}
                 </span>
@@ -175,58 +123,35 @@
             <div class="flex items-center justify-between">
               <div>
                 <div class="flex items-center gap-2">
-                  <h2
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                     Recent Feedback
                   </h2>
-                  <UBadge
-                    v-if="unreadCount > 0"
-                    :label="`${unreadCount} unread`"
-                    color="primary"
-                    size="sm"
-                  />
+                  <UBadge v-if="unreadCount > 0" :label="`${unreadCount} unread`" color="primary" size="sm" />
                 </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   Latest feedback you've received
                 </p>
               </div>
-              <UButton
-                to="/feedback/inbox"
-                size="sm"
-                trailing-icon="i-heroicons-arrow-right"
-              >
+              <UButton to="/feedback/inbox" size="sm" trailing-icon="i-heroicons-arrow-right">
                 View All
               </UButton>
             </div>
 
-            <UTable
-              v-if="recentFeedback.length > 0"
-              :columns="feedbackColumns"
-              :data="recentFeedback"
-            >
+            <UTable v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback">
               <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
-                  <UAvatar
-                    :src="
-                      row.original.reviewer.image ||
-                      row.original.reviewer.avatarUrl ||
-                      undefined
-                    "
-                    :alt="row.original.reviewer.name"
-                    size="xs"
-                  />
+                  <UAvatar :src="row.original.reviewer.image ||
+                    row.original.reviewer.avatarUrl ||
+                    undefined
+                    " :alt="row.original.reviewer.name" size="xs" />
                   <span>{{ row.original.reviewer.name }}</span>
                 </div>
               </template>
 
               <template #content-cell="{ row }">
-                <UButton
-                  variant="ghost"
-                  color="neutral"
+                <UButton variant="ghost" color="neutral"
                   class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                  @click="openFeedbackModal(row.original)"
-                >
+                  @click="openFeedbackModal(row.original)">
                   <span class="truncate block">{{ row.original.content }}</span>
                 </UButton>
               </template>
@@ -238,20 +163,14 @@
               </template>
 
               <template #status-cell="{ row }">
-                <UBadge
-                  :color="row.original.isRead ? 'neutral' : 'primary'"
-                  size="xs"
-                >
+                <UBadge :color="row.original.isRead ? 'neutral' : 'primary'" size="xs">
                   {{ row.original.isRead ? "Read" : "Unread" }}
                 </UBadge>
               </template>
             </UTable>
 
             <div v-else class="text-center py-12">
-              <UIcon
-                name="i-heroicons-chat-bubble-left-right"
-                class="text-gray-400 text-4xl mb-2"
-              />
+              <UIcon name="i-heroicons-chat-bubble-left-right" class="text-gray-400 text-4xl mb-2" />
               <p class="text-lg font-semibold text-gray-900 dark:text-white">
                 No feedback yet
               </p>
@@ -272,6 +191,10 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
+});
+
+useHead({
+  title: "Insights",
 });
 
 // Fetch goals data

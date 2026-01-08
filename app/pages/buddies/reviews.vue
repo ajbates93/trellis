@@ -7,6 +7,10 @@ definePageMeta({
   middleware: "buddy",
 });
 
+useHead({
+  title: "Buddy Reviews",
+});
+
 const toast = useToast();
 const { selectedBuddyId } = useSelectedBuddy();
 const { getBuddyById } = useBuddies();

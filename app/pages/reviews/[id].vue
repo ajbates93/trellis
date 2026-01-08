@@ -15,6 +15,10 @@ const { data: reviewData, refresh } = await useFetch(
 );
 
 const review = computed(() => (reviewData.value as any)?.review);
+
+useHead({
+  title: computed(() => review.value?.name || "Review Details"),
+});
 const feedback = computed(() => (reviewData.value as any)?.feedback || []);
 const goals = computed(() => (reviewData.value as any)?.goals || []);
 
@@ -331,7 +335,7 @@ const feedbackColumns = [
                       ]" />
                     <span class="text-gray-400 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
-                    }}</span>
+                      }}</span>
                   </div>
                   <h1 class="text-3xl sm:text-4xl md:text-4xl font-bold mb-2">
                     {{ review.name || "Quarterly Review" }}
@@ -464,7 +468,7 @@ const feedbackColumns = [
                         @click="openFeedbackModal(row.original)">
                         <span class="truncate block">{{
                           row.original.content
-                        }}</span>
+                          }}</span>
                       </UButton>
                     </template>
 

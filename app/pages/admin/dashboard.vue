@@ -7,13 +7,8 @@
           <div class="flex items-center justify-between">
             <div>
               <div class="flex items-center gap-3 mb-2">
-                <UIcon
-                  name="i-heroicons-shield-check"
-                  class="text-purple-500 text-3xl"
-                />
-                <h1
-                  class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-                >
+                <UIcon name="i-heroicons-shield-check" class="text-purple-500 text-3xl" />
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
                   Admin Dashboard
                 </h1>
               </div>
@@ -38,63 +33,30 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <AdminStatsCard
-            v-if="stats"
-            title="Feedback This Week"
-            :value="stats.feedbackThisWeek"
-            :subtitle="`${stats.totalFeedback} total`"
-            icon="i-heroicons-chat-bubble-left-right"
-            color="primary"
-          />
-          <AdminStatsCard
-            v-if="stats"
-            title="Active Goals"
-            :value="stats.activeGoals"
-            subtitle="Currently in progress"
-            icon="i-heroicons-flag"
-            color="success"
-          />
-          <AdminStatsCard
-            v-if="stats"
-            title="Pending Reviews"
-            :value="stats.pendingReviews"
-            subtitle="Scheduled"
-            icon="i-heroicons-calendar"
-            color="warning"
-          />
-          <AdminStatsCard
-            v-if="stats"
-            title="Active Users"
-            :value="stats.activeUsers"
-            :subtitle="`${stats.invitedUsers} invited`"
-            icon="i-heroicons-users"
-            color="primary"
-          />
+          <AdminStatsCard v-if="stats" title="Feedback This Week" :value="stats.feedbackThisWeek"
+            :subtitle="`${stats.totalFeedback} total`" icon="i-heroicons-chat-bubble-left-right" color="primary" />
+          <AdminStatsCard v-if="stats" title="Active Goals" :value="stats.activeGoals" subtitle="Currently in progress"
+            icon="i-heroicons-flag" color="success" />
+          <AdminStatsCard v-if="stats" title="Pending Reviews" :value="stats.pendingReviews" subtitle="Scheduled"
+            icon="i-heroicons-calendar" color="warning" />
+          <AdminStatsCard v-if="stats" title="Active Users" :value="stats.activeUsers"
+            :subtitle="`${stats.invitedUsers} invited`" icon="i-heroicons-users" color="primary" />
         </div>
 
         <!-- AI Insights Row -->
         <div class="mb-8">
           <div class="flex items-center gap-2 mb-4">
-            <UIcon
-              name="i-heroicons-sparkles"
-              class="text-purple-500 text-xl"
-            />
+            <UIcon name="i-heroicons-sparkles" class="text-purple-500 text-xl" />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
               AI Sentiment Analysis
             </h2>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ClientOnly>
-              <AdminTeamSentimentCard
-                ref="teamSentimentCard"
-                @user-selected="onTeamUserSelected"
-              />
+              <AdminTeamSentimentCard ref="teamSentimentCard" @user-selected="onTeamUserSelected" />
             </ClientOnly>
             <ClientOnly>
-              <AdminUserSentimentCard
-                ref="userSentimentCard"
-                @analysis-completed="onUserAnalysisCompleted"
-              />
+              <AdminUserSentimentCard ref="userSentimentCard" @analysis-completed="onUserAnalysisCompleted" />
             </ClientOnly>
           </div>
         </div>
@@ -123,6 +85,10 @@
 definePageMeta({
   layout: "default",
   middleware: ["auth", "admin"],
+});
+
+useHead({
+  title: "Admin Dashboard",
 });
 
 const stats = ref<any>(null);

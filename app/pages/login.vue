@@ -78,6 +78,10 @@ definePageMeta({
   layout: "auth",
 });
 
+useHead({
+  title: "Login",
+});
+
 const authClient = createAuthClient({
   plugins: [
     inferAdditionalFields({
