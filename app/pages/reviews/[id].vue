@@ -255,7 +255,7 @@ watch(reflectionConcerns, (newValue, oldValue) => {
 
 watch(buddyComments, (newValue, oldValue) => {
   if (
-    (isBuddy.value || isAdmin.value) &&
+    isBuddy.value &&
     newValue !== (review.value?.buddyComments || "") &&
     oldValue !== ""
   ) {
@@ -418,7 +418,7 @@ const feedbackColumns = [
             </template>
 
             <ReviewsReflectionEditor v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
-              placeholder="Add comments about the review..." :readonly="!isBuddy && !isAdmin" />
+              placeholder="Add comments about the review..." :readonly="!isBuddy" />
           </UCard>
 
           <!-- Supporting Data Header -->

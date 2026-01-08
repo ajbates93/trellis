@@ -15,7 +15,23 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Fetch only published feedback for the current user
+    const query = getQuery(event);
+    const forUserId = query.userId as string | undefined;
+
+    // If fetching for a specific user, verify authorization
+    if (forUserId) {
+      const isAdmin = session.user.role === 'admin';
+      if (!isAdmin && forUserId !== session.user.id) {
+        throw createError({
+          statusCode: 403,
+          message: "You do not have permission to view this feedback",
+        });
+      }
+    }
+
+    const targetUserId = forUserId || session.user.id;
+
+    // Fetch only published feedback for the target user
     const receivedFeedback = await db
       .select({
         id: feedback.id,
@@ -43,7 +59,7 @@ export default defineEventHandler(async (event) => {
       .leftJoin(reviewSchedules, eq(feedback.reviewScheduleId, reviewSchedules.id))
       .where(
         and(
-          eq(feedback.revieweeId, session.user.id),
+          eq(feedback.revieweeId, targetUserId),
           eq(feedback.published, true)
         )
       )

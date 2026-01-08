@@ -67,8 +67,8 @@ export default defineEventHandler(async (event) => {
         startDate = new Date(previousReview.scheduledDate);
       }
     } else if (previousReviews.length === 1) {
-      // For the first review, start from the beginning of the year
-      startDate = new Date(new Date().getFullYear(), 0, 1);
+      // For the first review, start from the beginning of time to catch all previous achievements
+      startDate = new Date(0);
     }
 
     // Get all achievements for this user
