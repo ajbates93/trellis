@@ -58,6 +58,28 @@
               </div>
             </div>
           </UCard>
+
+          <!-- About Section -->
+          <UCard>
+            <template #header>
+              <h2 class="text-lg font-medium">About</h2>
+            </template>
+
+            <div class="space-y-4">
+              <!-- Version Info -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-medium">Version</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Current application version
+                  </p>
+                </div>
+                <div class="text-sm font-mono text-gray-700 dark:text-gray-300">
+                  v{{ appVersion }}
+                </div>
+              </div>
+            </div>
+          </UCard>
         </div>
       </div>
     </template>
@@ -72,4 +94,7 @@ definePageMeta({
 useHead({
   title: "General Settings",
 });
+
+const config = useRuntimeConfig();
+const appVersion = config.public.appVersion;
 </script>
