@@ -552,6 +552,7 @@ Configure in: **Repository Settings → Secrets and variables → Actions**
 - `BETTER_AUTH_URL`: https://your-staging-app.railway.app
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: OAuth credentials
 - `ANTHROPIC_API_KEY`: [Optional for staging]
+- `SENTRY_DSN`: [Staging Sentry project DSN - get from Sentry dashboard]
 
 **Production:**
 - `NODE_ENV=production`
@@ -560,11 +561,56 @@ Configure in: **Repository Settings → Secrets and variables → Actions**
 - `BETTER_AUTH_URL`: https://your-production-app.railway.app
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: OAuth credentials
 - `ANTHROPIC_API_KEY`: [Required for AI insights]
+- `SENTRY_DSN`: [Production Sentry project DSN - DIFFERENT from staging!]
 
 **Google OAuth Setup:**
 - Add authorized redirect URIs for each environment:
   - Staging: `https://your-staging-app.railway.app/api/auth/callback/google`
   - Production: `https://your-production-app.railway.app/api/auth/callback/google`
+
+**Sentry Error Tracking:**
+
+Sentry is integrated for error tracking and performance monitoring with version-based release tracking:
+
+1. **Create Separate Sentry Projects:**
+   - Go to [sentry.io](https://sentry.io) → Projects
+   - Create two projects:
+     - `trellis-staging` (for staging environment)
+     - `trellis-production` (for production environment)
+
+2. **Get DSN for Each Project:**
+   - Click project → Settings → Client Keys (DSN)
+   - Copy the DSN (format: `https://key@o1234567.ingest.sentry.io/1234567`)
+
+3. **Configure Environment Variables:**
+   - Add `SENTRY_DSN` to Railway staging environment
+   - Add `SENTRY_DSN` to Railway production environment (different DSN!)
+
+**What Sentry Tracks:**
+- ✅ JavaScript errors (client-side)
+- ✅ API errors (server-side)
+- ✅ Performance metrics
+- ✅ User session replays
+- ✅ Release versions (automatically set from `package.json`)
+
+**Benefits:**
+- Errors are tagged with semantic version (e.g., `v0.2.0`)
+- Easily identify which version introduced a bug
+- Separate staging errors from production errors
+- Performance tracking per release
+- Automatic source map uploads for better stack traces
+
+**Example Sentry Dashboard:**
+```
+Release v0.2.0 (Production)
+├─ 15 errors (down from 23 in v0.1.0)
+├─ Avg response time: 245ms
+└─ 127 users affected
+
+Release v0.3.0 (Staging)
+├─ 3 errors (new bug introduced!)
+└─ Testing in progress...
+```
 
 ### Local Development Setup
 
