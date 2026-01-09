@@ -1,7 +1,7 @@
 import { db } from "../../../database/connection";
 import { feedback } from "../../../database/schema";
 import { eq } from "drizzle-orm";
-import { validateBody, validateResponse } from "../../../utils/validation";
+import { validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
 
 export default defineEventHandler(async (event) => {
@@ -22,9 +22,6 @@ export default defineEventHandler(async (event) => {
       message: "Feedback ID is required",
     });
   }
-
-  // Validate request body
-  await validateBody(event, apiSchemas.MarkFeedbackAsReadRequestSchema);
 
   try {
     // Get the feedback item
