@@ -23,6 +23,12 @@ export default defineNuxtConfig({
     fallback: "dark",
   },
 
+  runtimeConfig: {
+    public: {
+      appVersion: process.env.npm_package_version || "0.0.0",
+    },
+  },
+
   app: {
     head: {
       title: "Trellis",

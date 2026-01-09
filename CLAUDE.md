@@ -412,6 +412,99 @@ feature-branch → PR → staging branch → test → PR → main branch → pro
    # Auto-deploys to Railway production
    ```
 
+### Version Management
+
+Trellis uses **Semantic Versioning (SemVer)** to track releases:
+
+**Version Format:** `MAJOR.MINOR.PATCH` (e.g., `0.1.0`, `1.2.3`)
+- **MAJOR**: Breaking changes (e.g., `1.0.0` → `2.0.0`)
+- **MINOR**: New features, backwards compatible (e.g., `0.1.0` → `0.2.0`)
+- **PATCH**: Bug fixes (e.g., `0.1.0` → `0.1.1`)
+
+**Current Phase:** Pre-release (`0.x.x`) until public launch, then `1.0.0`
+
+#### Versioning Workflow (PR-Based)
+
+**When to Bump Version:**
+- Bump version on `staging` branch after merging multiple features
+- This allows bundling multiple PRs into a single release
+- Version bump happens BEFORE creating the staging → main PR
+
+**Step-by-Step:**
+
+1. **Merge features to staging via PRs:**
+   ```bash
+   # Example: Multiple features merged to staging this week
+   feature/add-notifications → staging (PR #1) ✅ merged
+   feature/fix-dashboard-bug → staging (PR #2) ✅ merged
+   feature/improve-performance → staging (PR #3) ✅ merged
+   ```
+
+2. **Bump version on staging branch:**
+   ```bash
+   git checkout staging
+   git pull origin staging
+
+   # Choose version bump based on changes
+   npm version patch   # Bug fixes only: 0.1.0 → 0.1.1
+   npm version minor   # New features: 0.1.0 → 0.2.0
+   npm version major   # Breaking changes: 0.1.0 → 1.0.0
+
+   # Push version bump (includes commit + tag)
+   git push origin staging --follow-tags
+   ```
+
+   **What `npm version` does:**
+   - Updates `package.json` with new version
+   - Creates a git commit (e.g., "v0.2.0")
+   - Creates a git tag (e.g., "v0.2.0")
+
+3. **Test on staging:**
+   - Visit staging URL and verify all changes work
+   - Check version in Settings → General → About section
+
+4. **Deploy to production:**
+   ```bash
+   # Create PR: staging → main (includes version tag)
+   git checkout -b release/v0.2.0
+   git merge staging
+   git push origin release/v0.2.0
+
+   # Create PR, get approval, merge to main
+   # GitHub Actions automatically:
+   # - Deploys to production
+   # - Creates GitHub release with changelog
+   # - Tags production deployment
+   ```
+
+#### Version Display
+
+**User-Facing:**
+- Version displayed in **Settings → General → About** section
+- Shows current semantic version (e.g., "v0.2.0")
+
+**GitHub Releases:**
+- Production workflow automatically creates GitHub releases
+- Includes changelog generated from commit messages
+- Links to full diff between versions
+
+#### Example Timeline
+
+```
+Week 1: features/bugs → staging (multiple PRs)
+Week 1 Friday: npm version minor on staging → v0.2.0
+Week 1 Friday: Test on staging
+Week 2 Monday: staging → main PR (includes v0.2.0)
+Week 2 Monday: Merge to main → Production deploy + GitHub release
+```
+
+**Benefits:**
+- ✅ Bundle multiple features into logical releases
+- ✅ Version bump happens after testing features individually
+- ✅ Clear release history in GitHub
+- ✅ Users can see what version they're running
+- ✅ Bug tracking tied to specific versions
+
 ### GitHub Actions CI/CD
 
 **Three automated workflows:**
@@ -429,7 +522,8 @@ feature-branch → PR → staging branch → test → PR → main branch → pro
 3. **Production Deploy** (`.github/workflows/deploy-production.yml`)
    - Triggers on push to `main` branch
    - Runs: Database migrations → Deploy to Railway production
-   - Creates deployment tag (e.g., `production-20250112-143000`)
+   - Creates GitHub release with semantic version (e.g., `v0.2.0`)
+   - Auto-generates changelog from commits since last version
    - Auto-deploys on every push
 
 ### Required GitHub Secrets
