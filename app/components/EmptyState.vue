@@ -33,6 +33,8 @@ const containerClasses = computed(() => {
       return `${base} py-16 px-6`;
     case "minimal":
       return `${base} py-12 px-6`;
+    default:
+      return `${base} py-16 px-6`;
   }
 });
 

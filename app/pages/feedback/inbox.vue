@@ -383,7 +383,7 @@ const givenColumns = [
                   </span>
                 </template> -->
 
-                <template #status-cell="{ row }">
+                <template #status-cell>
                   <UBadge label="Unread" color="primary" size="sm" />
                 </template>
 
