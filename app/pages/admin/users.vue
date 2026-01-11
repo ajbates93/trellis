@@ -25,7 +25,8 @@
 
         <!-- Tab Content -->
         <div class="mt-6">
-          <AdminUserTable :users="filteredUsers" :loading="loading" :error="error" @edit="openEditModal"
+          <AdminUserTable
+:users="filteredUsers" :loading="loading" :error="error" @edit="openEditModal"
             @impersonate="handleImpersonate" @remove="openRemoveModal" @send-invitation="handleSendInvitation"
             @send-password-reset="handleSendPasswordReset" />
         </div>
@@ -37,7 +38,8 @@
       <AdminAddUserModal v-model="showAddModal" :all-users="allUsers" @success="handleSuccess" />
 
       <!-- Remove User Confirmation Modal -->
-      <UModal v-model:open="showRemoveModal" title="Remove User"
+      <UModal
+v-model:open="showRemoveModal" title="Remove User"
         :description="`Are you sure you want to remove ${userToRemove?.name}? This action cannot be undone.`"
         class="sm:max-w-md">
         <template #body>

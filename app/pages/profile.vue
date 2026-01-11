@@ -20,13 +20,14 @@
             <UCard class="mb-6">
               <div class="text-center">
                 <div class="mb-4 flex justify-center">
-                  <img :src="previewAvatar ||
+                  <img
+:src="previewAvatar ||
                     user?.avatarUrl ||
                     user?.image ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(
                       user?.name || 'User',
                     )}&background=059669&color=fff`
-                    " :alt="user?.name || 'User avatar'" class="w-32 h-32 rounded-lg object-cover" />
+                    " :alt="user?.name || 'User avatar'" class="w-32 h-32 rounded-lg object-cover" >
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ user?.name }}
@@ -44,12 +45,14 @@
                 <!-- Avatar upload -->
                 <div class="mt-6 space-y-3">
                   <div class="flex gap-2">
-                    <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelected" />
-                    <UButton class="flex-1" variant="outline" size="sm" :loading="uploadingAvatar"
+                    <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelected" >
+                    <UButton
+class="flex-1" variant="outline" size="sm" :loading="uploadingAvatar"
                       @click="$refs.fileInput.click()">
                       {{ user?.avatarUrl ? "Change Avatar" : "Upload Avatar" }}
                     </UButton>
-                    <UButton v-if="user?.avatarUrl" variant="outline" size="sm" color="red" icon="i-heroicons-trash"
+                    <UButton
+v-if="user?.avatarUrl" variant="outline" size="sm" color="red" icon="i-heroicons-trash"
                       @click="removeAvatar" />
                   </div>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
@@ -108,12 +111,14 @@
 
                 <div class="space-y-6">
                   <UFormField label="Full Name" name="name" :error="errors.name || undefined">
-                    <UInput v-model="form.name" placeholder="Your full name" :disabled="isSaving" class="w-full"
+                    <UInput
+v-model="form.name" placeholder="Your full name" :disabled="isSaving" class="w-full"
                       @blur="validateName" />
                   </UFormField>
 
                   <div>
-                    <UInput v-model="form.preferredName" placeholder="How you'd like to be called (optional)"
+                    <UInput
+v-model="form.preferredName" placeholder="How you'd like to be called (optional)"
                       :disabled="isSaving" class="w-full" @blur="validatePreferredName" />
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
                       Used for personal greetings. If empty, we'll use your
@@ -122,7 +127,8 @@
                   </div>
 
                   <UFormField label="Pronouns (Optional)" name="pronouns" :error="errors.pronouns || undefined">
-                    <UInput v-model="form.pronouns" placeholder="e.g., he/him, she/her, they/them" :disabled="isSaving"
+                    <UInput
+v-model="form.pronouns" placeholder="e.g., he/him, she/her, they/them" :disabled="isSaving"
                       class="w-full" @blur="validatePronouns" />
                   </UFormField>
                 </div>
@@ -137,9 +143,11 @@
                 </template>
 
                 <div class="space-y-4">
-                  <UFormField label="Bio (Optional)" name="bio" :error="errors.bio || undefined"
+                  <UFormField
+label="Bio (Optional)" name="bio" :error="errors.bio || undefined"
                     help="Tell us about yourself (max 500 characters)">
-                    <UTextarea v-model="form.bio"
+                    <UTextarea
+v-model="form.bio"
                       placeholder="Share a bit about yourself, your interests, or your role..." :rows="4"
                       :disabled="isSaving" class="w-full" @blur="validateBio" />
                   </UFormField>
@@ -159,9 +167,11 @@
 
                 <div class="space-y-6">
                   <!-- Review Preference -->
-                  <UFormField label="How do you prefer to have reviews?" name="reviewPreference"
+                  <UFormField
+label="How do you prefer to have reviews?" name="reviewPreference"
                     :error="errors.reviewPreference || undefined">
-                    <URadioGroup v-model="form.reviewPreference" :items="[
+                    <URadioGroup
+v-model="form.reviewPreference" :items="[
                       { value: 'in-person', label: 'In-Person' },
                       { value: 'remote', label: 'Remote (Video Call)' },
                       { value: 'hybrid', label: 'Flexible (Both)' },
@@ -170,10 +180,12 @@
                   </UFormField>
 
                   <!-- Communication Preferences -->
-                  <UFormField label="Communication Preferences (Optional)" name="communicationPreferences"
+                  <UFormField
+label="Communication Preferences (Optional)" name="communicationPreferences"
                     :error="errors.communicationPreferences || undefined"
                     help="Let your buddy know your preferred communication style and best times for feedback discussions">
-                    <UTextarea v-model="form.communicationPreferences"
+                    <UTextarea
+v-model="form.communicationPreferences"
                       placeholder="e.g., Prefer async written feedback; Best time for calls: mornings; Timezone: PST"
                       :rows="3" :disabled="isSaving" class="w-full" @blur="validateCommunicationPreferences" />
                   </UFormField>
@@ -188,7 +200,8 @@
                 <UButton type="submit" color="primary" size="lg" :loading="isSaving" class="flex-1">
                   Save Changes
                 </UButton>
-                <UButton type="button" variant="outline" size="lg" :disabled="isSaving" class="flex-1"
+                <UButton
+type="button" variant="outline" size="lg" :disabled="isSaving" class="flex-1"
                   @click="resetForm">
                   Cancel
                 </UButton>

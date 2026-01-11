@@ -574,13 +574,18 @@ export const CreateGoalNoteRequestSchema = z.object({
 });
 
 export const CreateGoalNoteResponseSchema = z.object({
-  success: z.boolean(),
   note: z.object({
     id: z.uuid(),
-    goalId: z.uuid(),
-    authorId: z.string(),
     noteText: z.string(),
-    createdAt: z.date(),
+    createdAt: z.coerce.date(),
+    updatedAt: z.coerce.date(),
+    author: z.object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string(),
+      image: z.string().nullable(),
+      avatarUrl: z.string().nullable(),
+    }),
   }),
 });
 

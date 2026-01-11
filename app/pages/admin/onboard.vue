@@ -15,7 +15,8 @@
               Bulk import users to get your team started quickly
             </p>
           </div>
-          <UButton icon="i-heroicons-arrow-down-tray" variant="solid" :loading="downloadingTemplate"
+          <UButton
+icon="i-heroicons-arrow-down-tray" variant="solid" :loading="downloadingTemplate"
             @click="downloadTemplate">
             Download Template
           </UButton>
@@ -59,7 +60,8 @@
               </ul>
             </div>
 
-            <UAlert icon="i-heroicons-light-bulb" color="primary" variant="soft" title="User Linking"
+            <UAlert
+icon="i-heroicons-light-bulb" color="primary" variant="soft" title="User Linking"
               description="Imported users are pre-created with emailVerified=false. When they first log in via Google OAuth, their accounts will automatically link and preserve all buddy assignments and relationships." />
           </div>
         </UCard>
@@ -78,7 +80,7 @@
                 'border-blue-500 bg-blue-50 dark:bg-blue-950': isDragging,
               }" @click="triggerFileInput" @dragover.prevent="isDragging = true" @dragleave="isDragging = false"
               @drop.prevent="handleFileDrop">
-              <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="handleFileSelect" />
+              <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="handleFileSelect" >
               <UIcon name="i-heroicons-document-arrow-up" class="mx-auto text-4xl text-gray-400 mb-4" />
               <p class="text-gray-600 dark:text-gray-400 mb-2">
                 {{
@@ -112,7 +114,8 @@
                       <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         #
                       </th>
-                      <th v-for="header in csvPreview.headers" :key="header"
+                      <th
+v-for="header in csvPreview.headers" :key="header"
                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         {{ header }}
                       </th>
@@ -123,7 +126,8 @@
                       <td class="px-4 py-2 text-sm text-gray-500">
                         {{ index + 1 }}
                       </td>
-                      <td v-for="header in csvPreview.headers" :key="header"
+                      <td
+v-for="header in csvPreview.headers" :key="header"
                         class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
                         {{ row[header] || "-" }}
                       </td>
@@ -138,7 +142,8 @@
 
             <!-- Action Buttons -->
             <div v-if="selectedFile" class="flex gap-3">
-              <UButton icon="i-heroicons-arrow-up-tray" color="primary" :loading="importing" :disabled="!csvPreview"
+              <UButton
+icon="i-heroicons-arrow-up-tray" color="primary" :loading="importing" :disabled="!csvPreview"
                 @click="importCSV">
                 Import Users
               </UButton>
@@ -157,21 +162,24 @@
 
           <div class="space-y-4">
             <!-- Success Message -->
-            <UAlert v-if="importResult.success" icon="i-heroicons-check-circle" color="success" variant="soft"
+            <UAlert
+v-if="importResult.success" icon="i-heroicons-check-circle" color="success" variant="soft"
               :title="`Successfully imported ${importResult.imported} users`" :description="importResult.errors?.length > 0
                 ? `${importResult.errors.length} warnings during import`
                 : 'All users imported without issues'
                 " />
 
             <!-- Error Message -->
-            <UAlert v-else icon="i-heroicons-x-circle" color="error" variant="soft" title="Import failed"
+            <UAlert
+v-else icon="i-heroicons-x-circle" color="error" variant="soft" title="Import failed"
               :description="`${importResult.errors?.length || 0} errors found. Please fix them and try again.`" />
 
             <!-- Error List -->
             <div v-if="importResult.errors && importResult.errors.length > 0" class="space-y-2">
               <h4 class="font-semibold">Errors and Warnings</h4>
               <div class="max-h-64 overflow-y-auto space-y-2">
-                <UAlert v-for="(error, index) in importResult.errors" :key="index"
+                <UAlert
+v-for="(error, index) in importResult.errors" :key="index"
                   icon="i-heroicons-exclamation-triangle" color="warning" variant="soft"
                   :title="`Row ${error.row}: ${error.field}`" :description="error.message" size="xs" />
               </div>
@@ -194,7 +202,8 @@
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold">Import History</h3>
-              <UButton icon="i-heroicons-arrow-path" color="neutral" variant="ghost" size="sm" :loading="loadingHistory"
+              <UButton
+icon="i-heroicons-arrow-path" color="neutral" variant="ghost" size="sm" :loading="loadingHistory"
                 @click="fetchHistory">
                 Refresh
               </UButton>
@@ -252,7 +261,8 @@
                   </td>
                   <td class="px-4 py-3 text-sm">{{ item.rowsImported }}</td>
                   <td class="px-4 py-3 text-sm">
-                    <UButton v-if="item.errorLog" icon="i-heroicons-exclamation-circle" color="neutral" variant="ghost"
+                    <UButton
+v-if="item.errorLog" icon="i-heroicons-exclamation-circle" color="neutral" variant="ghost"
                       size="xs" @click="viewErrors(item)">
                       View Errors
                     </UButton>
@@ -270,7 +280,8 @@
   <UModal v-model:open="showErrorModal" title="Import Errors">
     <template #body>
       <div v-if="selectedErrorLog" class="space-y-2 max-h-96 overflow-y-auto">
-        <UAlert v-for="(error, index) in selectedErrorLog" :key="index" icon="i-heroicons-exclamation-triangle"
+        <UAlert
+v-for="(error, index) in selectedErrorLog" :key="index" icon="i-heroicons-exclamation-triangle"
           color="warning" variant="soft" :title="`Row ${error.row}: ${error.field}`" :description="error.message"
           size="xs" />
       </div>

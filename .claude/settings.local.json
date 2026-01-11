@@ -16,7 +16,8 @@
       "Bash(grep:*)",
       "mcp__nuxt-ui-remote__get-component",
       "Bash(git -C /Users/alexbates/repos/work/cohort show:*)",
-      "mcp__nuxt-ui-remote__get-documentation-page"
+      "mcp__nuxt-ui-remote__get-documentation-page",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

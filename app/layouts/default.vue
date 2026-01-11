@@ -197,7 +197,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
     <header
       class="fixed top-0 left-0 right-0 z-30 h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 lg:hidden"
       :class="{ 'top-12': isImpersonating }">
-      <button aria-label="Open navigation menu" :aria-expanded="mobileNavOpen" aria-controls="mobile-navigation"
+      <button
+aria-label="Open navigation menu" :aria-expanded="mobileNavOpen" aria-controls="mobile-navigation"
         class="p-2 -ml-2 rounded-lg hover:bg-gray-800 transition-colors" @click="toggleMobileNav">
         <UIcon name="i-heroicons-bars-3" class="w-6 h-6 text-gray-300" />
       </button>
@@ -218,7 +219,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
     <UProgress v-if="isLoading" color="primary" animation="carousel" class="fixed top-0 left-0 right-0 z-50" />
 
     <!-- Impersonation banner -->
-    <div v-if="isImpersonating"
+    <div
+v-if="isImpersonating"
       class="fixed top-0 left-0 right-0 z-40 bg-amber-500 dark:bg-amber-600 text-white px-4 py-3 flex items-center justify-between shadow-lg">
       <div class="flex items-center gap-2">
         <UIcon name="i-heroicons-exclamation-triangle" class="text-xl" />
@@ -226,11 +228,13 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
           You are viewing as <strong>{{ user?.name || user?.email }}</strong>
         </span>
       </div>
-      <UButton label="Stop Impersonating" icon="i-heroicons-x-mark" color="neutral" variant="solid" size="sm"
+      <UButton
+label="Stop Impersonating" icon="i-heroicons-x-mark" color="neutral" variant="solid" size="sm"
         class="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 transition-all duration-200 shadow-sm hover:shadow-md"
         @click="stopImpersonating" />
     </div>
-    <UDashboardGroup unit="rem" :ui="{
+    <UDashboardGroup
+unit="rem" :ui="{
       base: [
         'flex overflow-hidden',
         isImpersonating
@@ -238,7 +242,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
           : 'fixed top-16 lg:top-0 bottom-0 left-0 right-0',
       ].join(' '),
     }">
-      <UDashboardSidebar class="hidden lg:flex" collapsible resizable :ui="{
+      <UDashboardSidebar
+class="hidden lg:flex" collapsible resizable :ui="{
         footer: 'lg:border-t lg:border-gray-200 dark:lg:border-gray-800',
       }">
         <!-- Logo and branding -->
@@ -253,7 +258,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
 
         <!-- Main navigation -->
         <template #default="{ collapsed }">
-          <SidebarNavigation :dashboard-link="dashboardLink" :personal-links="personalLinks" :buddy-links="buddyLinks"
+          <SidebarNavigation
+:dashboard-link="dashboardLink" :personal-links="personalLinks" :buddy-links="buddyLinks"
             :settings-and-admin-links="settingsAndAdminLinks.filter((item) => {
               // Hide items requiring admin if user is not admin
               if (item.requiresAdmin && user?.role !== 'admin') return false;
@@ -270,7 +276,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
               <button
                 class="flex items-center gap-3 px-4 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-0 flex-1 text-left"
                 @click="navigateTo('/profile')">
-                <UAvatar :src="user.avatarUrl ||
+                <UAvatar
+:src="user.avatarUrl ||
                   user.image ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`
                   " :alt="user.name || 'User'" size="sm" />
@@ -287,7 +294,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
               </button>
 
               <!-- Sign out icon button -->
-              <UButton icon="i-heroicons-arrow-right-on-rectangle" color="neutral" variant="ghost" size="sm" square
+              <UButton
+icon="i-heroicons-arrow-right-on-rectangle" color="neutral" variant="ghost" size="sm" square
                 class="px-4" @click="isLogoutModalOpen = true" />
             </div>
           </div>
@@ -299,14 +307,16 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
     </UDashboardGroup>
 
     <!-- Mobile navigation drawer (hidden on desktop via CSS) -->
-    <USlideover id="mobile-navigation" v-model:open="mobileNavOpen" class="lg:hidden" side="left" :close="false"
+    <USlideover
+id="mobile-navigation" v-model:open="mobileNavOpen" class="lg:hidden" side="left" :close="false"
       :ui="{ header: 'hidden', body: 'p-0' }">
       <template #body>
         <div class="flex flex-col h-full">
           <!-- User profile section -->
           <div v-if="user" class="p-4 border-b border-gray-800">
             <div class="flex items-center gap-3">
-              <UAvatar :src="user.avatarUrl ||
+              <UAvatar
+:src="user.avatarUrl ||
                 user.image ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email || 'User')}&background=059669&color=fff`
                 " :alt="user.name || 'User'" size="lg" class="ring-2 ring-gray-700" />
@@ -318,7 +328,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   {{ workspace?.name || "Workspace" }}
                 </p>
               </div>
-              <button aria-label="Close navigation menu"
+              <button
+aria-label="Close navigation menu"
                 class="p-2 -mr-2 rounded-lg hover:bg-gray-800 transition-colors" @click="mobileNavOpen = false">
                 <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-400" />
               </button>
@@ -333,7 +344,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 Main Menu
               </p>
               <nav class="space-y-1">
-                <NuxtLink :to="dashboardLink.to"
+                <NuxtLink
+:to="dashboardLink.to"
                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors" :class="dashboardLink.active
                       ? 'bg-primary/10 text-primary-400'
                       : 'text-gray-300 hover:bg-gray-800'
@@ -344,7 +356,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                     }}</span>
                   <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-500" />
                 </NuxtLink>
-                <NuxtLink v-for="link in mobilePersonalLinks" :key="link.to" :to="link.to"
+                <NuxtLink
+v-for="link in mobilePersonalLinks" :key="link.to" :to="link.to"
                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors" :class="link.active
                       ? 'bg-primary/10 text-primary-400'
                       : 'text-gray-300 hover:bg-gray-800'
@@ -363,7 +376,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 Account
               </p>
               <nav class="space-y-1">
-                <NuxtLink to="/profile" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors" :class="route.path === '/profile'
+                <NuxtLink
+to="/profile" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors" :class="route.path === '/profile'
                     ? 'bg-primary/10 text-primary-400'
                     : 'text-gray-300 hover:bg-gray-800'
                   " @click="mobileNavOpen = false">
@@ -386,7 +400,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
     </USlideover>
 
     <!-- Logout confirmation modal -->
-    <UModal v-model:open="isLogoutModalOpen" title="Confirm Logout"
+    <UModal
+v-model:open="isLogoutModalOpen" title="Confirm Logout"
       description="Are you sure you want to log out of Trellis?">
       <template #footer>
         <UButton label="Cancel" color="neutral" variant="ghost" @click="isLogoutModalOpen = false" />

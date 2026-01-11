@@ -552,7 +552,7 @@ Configure in: **Repository Settings → Secrets and variables → Actions**
 - `BETTER_AUTH_URL`: https://your-staging-app.railway.app
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: OAuth credentials
 - `ANTHROPIC_API_KEY`: [Optional for staging]
-- `SENTRY_DSN`: [Staging Sentry project DSN - get from Sentry dashboard]
+- `NUXT_PUBLIC_SENTRY_DSN`: [Staging Sentry project DSN - get from Sentry dashboard]
 
 **Production:**
 - `NODE_ENV=production`
@@ -561,7 +561,7 @@ Configure in: **Repository Settings → Secrets and variables → Actions**
 - `BETTER_AUTH_URL`: https://your-production-app.railway.app
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: OAuth credentials
 - `ANTHROPIC_API_KEY`: [Required for AI insights]
-- `SENTRY_DSN`: [Production Sentry project DSN - DIFFERENT from staging!]
+- `NUXT_PUBLIC_SENTRY_DSN`: [Production Sentry project DSN - DIFFERENT from staging!]
 
 **Google OAuth Setup:**
 - Add authorized redirect URIs for each environment:
@@ -583,8 +583,8 @@ Sentry is integrated for error tracking and performance monitoring with version-
    - Copy the DSN (format: `https://key@o1234567.ingest.sentry.io/1234567`)
 
 3. **Configure Environment Variables:**
-   - Add `SENTRY_DSN` to Railway staging environment
-   - Add `SENTRY_DSN` to Railway production environment (different DSN!)
+   - Add `NUXT_PUBLIC_SENTRY_DSN` to Railway staging environment
+   - Add `NUXT_PUBLIC_SENTRY_DSN` to Railway production environment (different DSN!)
 
 **What Sentry Tracks:**
 - ✅ JavaScript errors (client-side)

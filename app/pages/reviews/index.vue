@@ -85,14 +85,16 @@ const formatDate = (date: string | Date | null) => {
 
                   <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
-                      <UAvatar :src="upcomingReviews[0].buddy?.avatarUrl" :alt="upcomingReviews[0].buddy?.name"
+                      <UAvatar
+:src="upcomingReviews[0].buddy?.avatarUrl" :alt="upcomingReviews[0].buddy?.name"
                         size="sm" />
                       <div class="text-sm">
                         <p class="text-gray-500 dark:text-gray-400">Buddy</p>
                         <p class="font-medium text-gray-900 dark:text-white">{{ upcomingReviews[0].buddy?.name }}</p>
                       </div>
                     </div>
-                    <UIcon name="i-heroicons-chevron-right"
+                    <UIcon
+name="i-heroicons-chevron-right"
                       class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
                   </div>
                 </div>
@@ -100,7 +102,8 @@ const formatDate = (date: string | Date | null) => {
             </NuxtLink>
           </div>
 
-          <EmptyState v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
+          <EmptyState
+v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
             icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
             description="You're all caught up! Your buddy will schedule your next review." variant="secondary" />
         </section>
@@ -116,7 +119,8 @@ const formatDate = (date: string | Date | null) => {
             <NuxtLink v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`" class="block group">
               <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
                 <div class="flex justify-between items-start mb-4">
-                  <UBadge :label="formatDate(review.completedDate || review.scheduledDate)" color="neutral"
+                  <UBadge
+:label="formatDate(review.completedDate || review.scheduledDate)" color="neutral"
                     variant="solid" />
                   <UIcon name="i-heroicons-arrow-right" class="text-gray-400 group-hover:text-primary-500" />
                 </div>
@@ -132,7 +136,8 @@ const formatDate = (date: string | Date | null) => {
             </NuxtLink>
           </div>
 
-          <EmptyState v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
+          <EmptyState
+v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
             icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No past reviews"
             description="Your completed reviews will appear here." variant="secondary" />
         </section>

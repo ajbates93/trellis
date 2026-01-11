@@ -30,7 +30,7 @@ export default defineNuxtConfig({
     public: {
       appVersion: process.env.npm_package_version || "0.0.0",
       sentry: {
-        dsn: process.env.SENTRY_DSN || "",
+        dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
         environment: process.env.NODE_ENV || "development",
       },
     },

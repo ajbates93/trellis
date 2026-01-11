@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
 
     return validateResponse(
       { note: noteWithAuthor[0] },
-      apiSchemas.SuccessResponseSchema.passthrough()
+      apiSchemas.CreateGoalNoteResponseSchema
     );
   } catch (error) {
     console.error("Error creating goal note:", error);

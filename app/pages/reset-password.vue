@@ -14,23 +14,27 @@
 
     <UAlert v-if="error" icon="i-heroicons-exclamation-triangle" color="red" variant="soft" :title="error" />
 
-    <UAlert v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft"
+    <UAlert
+v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft"
       title="Password Reset Successful!" description="Redirecting you to login..." />
 
-    <form v-if="!success" @submit.prevent="handleResetPassword" class="space-y-6">
+    <form v-if="!success" class="space-y-6" @submit.prevent="handleResetPassword">
       <div>
-        <UInput v-model="password" type="password" placeholder="Enter new password" icon="i-heroicons-lock-closed"
+        <UInput
+v-model="password" type="password" placeholder="Enter new password" icon="i-heroicons-lock-closed"
           size="xl" class="w-full" :disabled="loading" />
         <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
       </div>
 
       <div>
-        <UInput v-model="confirmPassword" type="password" placeholder="Confirm new password"
+        <UInput
+v-model="confirmPassword" type="password" placeholder="Confirm new password"
           icon="i-heroicons-lock-closed" size="xl" class="w-full" :disabled="loading" />
         <p v-if="confirmPasswordError" class="text-xs text-red-500 mt-1">{{ confirmPasswordError }}</p>
       </div>
 
-      <UButton type="submit" color="primary" size="xl" block :loading="loading"
+      <UButton
+type="submit" color="primary" size="xl" block :loading="loading"
         :disabled="!password || !confirmPassword">
         Reset Password
       </UButton>

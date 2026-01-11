@@ -45,7 +45,8 @@ const modalDescription = computed(() => {
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" :title="modalTitle" :description="modalDescription" class="sm:max-w-2xl" :ui="{
+  <UModal
+v-model:open="isOpen" :title="modalTitle" :description="modalDescription" class="sm:max-w-2xl" :ui="{
     footer: 'justify-end',
   }">
     <template #body>
@@ -58,7 +59,8 @@ const modalDescription = computed(() => {
               From
             </p>
             <div class="flex items-center gap-3">
-              <UAvatar :src="feedback.reviewer.image || feedback.reviewer.avatarUrl" :alt="feedback.reviewer.name"
+              <UAvatar
+:src="feedback.reviewer.image || feedback.reviewer.avatarUrl" :alt="feedback.reviewer.name"
                 size="md" />
               <div>
                 <p class="font-medium text-gray-900 dark:text-white">
@@ -77,7 +79,8 @@ const modalDescription = computed(() => {
               To
             </p>
             <div class="flex items-center gap-3">
-              <UAvatar :src="feedback.reviewee.image || feedback.reviewee.avatarUrl" :alt="feedback.reviewee.name"
+              <UAvatar
+:src="feedback.reviewee.image || feedback.reviewee.avatarUrl" :alt="feedback.reviewee.name"
                 size="md" />
               <div>
                 <p class="font-medium text-gray-900 dark:text-white">
@@ -108,9 +111,11 @@ const modalDescription = computed(() => {
 
         <!-- Status Badges -->
         <div class="flex items-center gap-3">
-          <UBadge v-if="feedback.isRead !== undefined" :label="feedback.isRead ? 'Read' : 'Unread'"
+          <UBadge
+v-if="feedback.isRead !== undefined" :label="feedback.isRead ? 'Read' : 'Unread'"
             :color="feedback.isRead ? 'neutral' : 'primary'" size="sm" />
-          <UBadge v-if="feedback.published !== undefined" :label="feedback.published ? 'Published' : 'Pending'"
+          <UBadge
+v-if="feedback.published !== undefined" :label="feedback.published ? 'Published' : 'Pending'"
             :color="feedback.published ? 'success' : 'neutral'" size="sm" />
         </div>
 

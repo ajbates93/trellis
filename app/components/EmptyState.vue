@@ -15,6 +15,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   iconColor: "text-primary",
   iconBgColor: "bg-primary/10",
+  description: undefined,
+  buttonText: undefined,
+  buttonIcon: undefined,
+  buttonTo: undefined,
   buttonSize: "lg",
   variant: "primary",
 });
@@ -33,6 +37,8 @@ const containerClasses = computed(() => {
       return `${base} py-16 px-6`;
     case "minimal":
       return `${base} py-12 px-6`;
+    default:
+      return `${base} py-16 px-6`;
   }
 });
 
