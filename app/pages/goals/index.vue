@@ -18,7 +18,8 @@
         </div>
 
         <!-- Tabbed Goals Interface -->
-        <UTabs v-model="activeTab" :items="tabItems" variant="pill" color="neutral" size="lg" class="w-full" :ui="{
+        <UTabs
+v-model="activeTab" :items="tabItems" variant="pill" color="neutral" size="lg" class="w-full" :ui="{
           list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
           trigger:
             'data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
@@ -28,14 +29,16 @@
           <template #active>
             <div class="pt-6">
               <!-- Empty state -->
-              <EmptyState v-if="activeGoals.length === 0" icon="i-heroicons-rocket-launch" heading="Set your first goal"
+              <EmptyState
+v-if="activeGoals.length === 0" icon="i-heroicons-rocket-launch" heading="Set your first goal"
                 description="Goals help you track your professional development. Start with something you want to achieve this quarter."
                 button-text="Create Your First Goal" button-icon="i-heroicons-plus" variant="primary"
                 @button-click="showCreateModal = true" />
 
               <!-- Goals grid -->
               <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                <GoalsGoalCard v-for="goal in activeGoals" :key="goal.id" :goal="goal" mode="owner"
+                <GoalsGoalCard
+v-for="goal in activeGoals" :key="goal.id" :goal="goal" mode="owner"
                   @status-changed="handleGoalChange" @deleted="handleGoalChange" @updated="handleGoalChange" />
               </div>
             </div>
@@ -45,14 +48,16 @@
           <template #completed>
             <div class="pt-6">
               <!-- Empty state -->
-              <EmptyState v-if="completedGoals.length === 0" icon="i-heroicons-trophy" icon-color="text-amber-500"
+              <EmptyState
+v-if="completedGoals.length === 0" icon="i-heroicons-trophy" icon-color="text-amber-500"
                 icon-bg-color="bg-amber-100 dark:bg-amber-900/30" heading="No completed goals yet"
                 description="Keep working on your active goals. When you complete them, they'll appear here as achievements!"
                 variant="secondary" />
 
               <!-- Goals grid -->
               <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                <GoalsGoalCard v-for="goal in completedGoals" :key="goal.id" :goal="goal" mode="owner"
+                <GoalsGoalCard
+v-for="goal in completedGoals" :key="goal.id" :goal="goal" mode="owner"
                   @status-changed="handleGoalChange" @deleted="handleGoalChange" @updated="handleGoalChange" />
               </div>
             </div>
@@ -62,12 +67,14 @@
           <template #archived>
             <div class="pt-6">
               <!-- Empty state -->
-              <EmptyState v-if="archivedGoals.length === 0" icon="i-heroicons-archive-box" icon-color="text-gray-400"
+              <EmptyState
+v-if="archivedGoals.length === 0" icon="i-heroicons-archive-box" icon-color="text-gray-400"
                 icon-bg-color="bg-gray-200 dark:bg-gray-700" heading="No archived goals" variant="minimal" />
 
               <!-- Goals grid -->
               <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                <GoalsGoalCard v-for="goal in archivedGoals" :key="goal.id" :goal="goal" mode="owner"
+                <GoalsGoalCard
+v-for="goal in archivedGoals" :key="goal.id" :goal="goal" mode="owner"
                   @status-changed="handleGoalChange" @deleted="handleGoalChange" @updated="handleGoalChange" />
               </div>
             </div>
@@ -78,7 +85,8 @@
   </UDashboardPanel>
 
   <!-- Create Goal Modal -->
-  <GoalsGoalModal :is-open="showCreateModal" mode="create" :goal="initialGoalText
+  <GoalsGoalModal
+:is-open="showCreateModal" mode="create" :goal="initialGoalText
       ? {
         goalText: initialGoalText,
         description: null,

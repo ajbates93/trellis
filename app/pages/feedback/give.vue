@@ -143,7 +143,8 @@ watch(selectedUser, async (userId) => {
             </div>
 
             <!-- Success Message -->
-            <div v-if="showSuccess"
+            <div
+v-if="showSuccess"
               class="animate-item bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20 border border-teal-200/50 dark:border-teal-700/30 rounded-xl p-4">
               <div class="flex items-center gap-3">
                 <div
@@ -172,11 +173,13 @@ watch(selectedUser, async (userId) => {
                 <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Who would you like to give feedback to?
                 </label>
-                <USelectMenu v-model="selectedUser" :items="availableUsers" placeholder="Search for a colleague..."
+                <USelectMenu
+v-model="selectedUser" :items="availableUsers" placeholder="Search for a colleague..."
                   value-key="id" :search-input="{ placeholder: 'Search colleagues...' }" class="w-full">
                   <template #default>
                     <div class="flex items-center gap-2">
-                      <UAvatar v-if="selectedUserObject" :src="selectedUserObject.image || selectedUserObject.avatarUrl"
+                      <UAvatar
+v-if="selectedUserObject" :src="selectedUserObject.image || selectedUserObject.avatarUrl"
                         :alt="selectedUserObject.name" size="xs" />
                       <UIcon v-else name="i-heroicons-user-circle" class="w-5 h-5 text-gray-400 dark:text-gray-500" />
                       <span v-if="selectedUserObject">{{ selectedUserObject.name }}</span>
@@ -207,7 +210,8 @@ watch(selectedUser, async (userId) => {
                 </USelectMenu>
 
                 <!-- Warning if already reviewed this week -->
-                <div v-if="selectedUser && !canReviewUser"
+                <div
+v-if="selectedUser && !canReviewUser"
                   class="mt-3 flex items-start gap-2 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-700/30 rounded-lg text-sm">
                   <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   <p class="text-amber-700 dark:text-amber-300">
@@ -223,11 +227,13 @@ watch(selectedUser, async (userId) => {
                 <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Your Feedback
                 </label>
-                <UTextarea v-model="feedbackText" :rows="12"
+                <UTextarea
+v-model="feedbackText" :rows="12"
                   placeholder="Share your feedback here... Be specific, constructive, and kind."
                   :disabled="!selectedUser" class="w-full" />
                 <div class="mt-2 flex items-center justify-between">
-                  <p class="text-sm" :class="[
+                  <p
+class="text-sm" :class="[
                     feedbackText.length < 10 && feedbackText.length > 0
                       ? 'text-red-500 dark:text-red-400'
                       : 'text-gray-500 dark:text-gray-400',
@@ -243,7 +249,8 @@ watch(selectedUser, async (userId) => {
                 <UButton to="/" variant="ghost" color="neutral">
                   Cancel
                 </UButton>
-                <UButton type="submit" color="primary" size="lg" :disabled="!isFormValid || isSubmitting"
+                <UButton
+type="submit" color="primary" size="lg" :disabled="!isFormValid || isSubmitting"
                   :loading="isSubmitting">
                   {{ isSubmitting ? "Submitting..." : "Submit Feedback" }}
                 </UButton>
@@ -363,16 +370,19 @@ watch(selectedUser, async (userId) => {
                 <div
                   class="bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200/50 dark:border-primary-700/30 rounded-xl p-4 space-y-3">
                   <div class="flex items-start gap-3">
-                    <UIcon name="i-heroicons-light-bulb"
+                    <UIcon
+name="i-heroicons-light-bulb"
                       class="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
                     <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                       {{ currentPrompt.question }}
                     </p>
                   </div>
-                  <button type="button"
+                  <button
+type="button"
                     class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-200 bg-primary-100/50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
                     :disabled="isRefreshingPrompt" @click="randomizePrompt">
-                    <UIcon name="i-heroicons-arrow-path" class="w-4 h-4"
+                    <UIcon
+name="i-heroicons-arrow-path" class="w-4 h-4"
                       :class="{ 'animate-spin': isRefreshingPrompt }" />
                     <span>Generate new question</span>
                   </button>

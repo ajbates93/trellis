@@ -17,10 +17,12 @@
 
           <!-- Quick Stats -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-item" :style="{ '--delay': '100ms' }">
-            <QuickStatCard :value="stats.feedbackThisWeek" label="Feedback This Week"
+            <QuickStatCard
+:value="stats.feedbackThisWeek" label="Feedback This Week"
               icon="i-heroicons-chat-bubble-left-right" color="teal" />
             <QuickStatCard :value="stats.activeGoals" label="Active Goals" icon="i-heroicons-flag" color="purple" />
-            <QuickStatCard :value="stats.daysUntilReview" :label="stats.daysUntilReview !== null ? 'Days to Review' : 'Next Review'
+            <QuickStatCard
+:value="stats.daysUntilReview" :label="stats.daysUntilReview !== null ? 'Days to Review' : 'Next Review'
               " icon="i-heroicons-calendar-days" color="amber" />
           </div>
 
@@ -51,7 +53,8 @@
               Suggested for you
             </h2>
             <div class="flex flex-wrap gap-2">
-              <NuxtLink v-for="suggestion in suggestions" :key="suggestion.to" :to="suggestion.to"
+              <NuxtLink
+v-for="suggestion in suggestions" :key="suggestion.to" :to="suggestion.to"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 group">
                 <UIcon :name="suggestion.icon" class="text-gray-500 dark:text-gray-400 group-hover:text-primary-500" />
                 <span
@@ -69,9 +72,11 @@
               Quick Links
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <NuxtLink v-for="link in quickLinks" :key="link.to" :to="link.to"
+              <NuxtLink
+v-for="link in quickLinks" :key="link.to" :to="link.to"
                 class="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group">
-                <UIcon :name="link.icon"
+                <UIcon
+:name="link.icon"
                   class="text-2xl text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors" />
                 <span
                   class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 text-center">

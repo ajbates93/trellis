@@ -316,7 +316,8 @@ const getReviewActions = (review: any) => [
           <div class="flex-1">
             <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
           </div>
-          <UButton v-if="selectedBuddyId && upcomingReviews.length === 0" icon="i-heroicons-plus"
+          <UButton
+v-if="selectedBuddyId && upcomingReviews.length === 0" icon="i-heroicons-plus"
             @click="isCreateModalOpen = true">
             Create Review
           </UButton>
@@ -325,7 +326,8 @@ const getReviewActions = (review: any) => [
         <!-- Tabbed Reviews Interface -->
         <div v-if="selectedBuddyId && selectedBuddy">
           <!-- Empty state when buddy has no reviews at all -->
-          <EmptyState v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicons-calendar-days"
+          <EmptyState
+v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicons-calendar-days"
             heading="No reviews yet" :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
             button-text="Create First Review" button-icon="i-heroicons-plus" variant="primary"
             @button-click="isCreateModalOpen = true" />
@@ -373,7 +375,8 @@ const getReviewActions = (review: any) => [
                 </UCard>
               </div>
 
-              <EmptyState v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
+              <EmptyState
+v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
                 icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
                 :description="`${selectedBuddy?.name} has no scheduled reviews coming up`" button-text="Schedule Review"
                 button-icon="i-heroicons-plus" variant="secondary" @button-click="isCreateModalOpen = true" />
@@ -387,7 +390,8 @@ const getReviewActions = (review: any) => [
               </h2>
 
               <div v-if="pastReviews.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <NuxtLink v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`"
+                <NuxtLink
+v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`"
                   class="block group">
                   <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
                     <div class="flex justify-between items-start mb-4">
@@ -406,7 +410,8 @@ const getReviewActions = (review: any) => [
                 </NuxtLink>
               </div>
 
-              <EmptyState v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
+              <EmptyState
+v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
                 icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No past reviews"
                 :description="`${selectedBuddy?.name} has no completed reviews yet`" variant="secondary" />
             </section>
@@ -456,7 +461,8 @@ const getReviewActions = (review: any) => [
             💬 Check-ins
           </h3>
           <div v-if="selectedReview.checkins && selectedReview.checkins.length > 0" class="space-y-3">
-            <div v-for="checkin in selectedReview.checkins" :key="checkin.id"
+            <div
+v-for="checkin in selectedReview.checkins" :key="checkin.id"
               class="bg-gray-50 dark:bg-gray-800 rounded p-3 text-sm">
               <div class="flex items-start justify-between mb-2">
                 <div>
@@ -487,7 +493,8 @@ const getReviewActions = (review: any) => [
         <UButton variant="ghost" @click="showReviewModal = false">
           Close
         </UButton>
-        <UButton v-if="selectedReview?.status === 'scheduled'" color="success"
+        <UButton
+v-if="selectedReview?.status === 'scheduled'" color="success"
           @click="completeReview(selectedReview.id)">
           Complete Review
         </UButton>
@@ -496,7 +503,8 @@ const getReviewActions = (review: any) => [
   </UModal>
 
   <!-- Create Review Modal -->
-  <UModal v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
+  <UModal
+v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
     class="sm:max-w-2xl" :ui="{
       footer: 'justify-end',
     }">
@@ -524,7 +532,8 @@ const getReviewActions = (review: any) => [
     </template>
 
     <template #footer>
-      <UButton color="neutral" variant="ghost" :disabled="isCreating" @click="
+      <UButton
+color="neutral" variant="ghost" :disabled="isCreating" @click="
         isCreateModalOpen = false;
       resetForm();
       ">
@@ -537,7 +546,8 @@ const getReviewActions = (review: any) => [
   </UModal>
 
   <!-- Edit Review Modal -->
-  <UModal v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
+  <UModal
+v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
     footer: 'justify-end',
   }">
     <template #body>
@@ -547,7 +557,8 @@ const getReviewActions = (review: any) => [
           <label class="block text-sm font-medium mb-2">
             Scheduled Date <span class="text-red-500">*</span>
           </label>
-          <UInput v-model="editingReview.scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]"
+          <UInput
+v-model="editingReview.scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]"
             class="w-auto" />
         </div>
 

@@ -29,7 +29,8 @@
                 <UIcon name="i-heroicons-paper-airplane" class="w-10 h-10 text-teal-500 dark:text-teal-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge :label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
+                <UBadge
+:label="`${stats.feedbackGivenTrend > 0 ? '+' : ''}${stats.feedbackGivenTrend}%`"
                   :color="stats.feedbackGivenTrend > 0 ? 'primary' : 'error'" size="xs" />
                 <span class="text-xs text-gray-600 dark:text-gray-400">vs last week</span>
               </div>
@@ -51,7 +52,8 @@
                 <UIcon name="i-heroicons-inbox-arrow-down" class="w-10 h-10 text-blue-500 dark:text-blue-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge :label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
+                <UBadge
+:label="`${stats.feedbackReceivedTrend > 0 ? '+' : ''}${stats.feedbackReceivedTrend}%`"
                   :color="stats.feedbackReceivedTrend > 0 ? 'primary' : 'error'" size="xs" />
                 <span class="text-xs text-gray-600 dark:text-gray-400">vs last week</span>
               </div>
@@ -98,7 +100,8 @@
                 <UIcon name="i-heroicons-calendar-days" class="w-10 h-10 text-amber-500 dark:text-amber-400" />
               </div>
               <div class="flex items-center gap-2">
-                <UBadge :label="stats.daysUntilReview !== null
+                <UBadge
+:label="stats.daysUntilReview !== null
                     ? 'Upcoming'
                     : 'Not scheduled'
                   " :color="stats.daysUntilReview !== null ? 'primary' : 'neutral'
@@ -140,7 +143,8 @@
             <UTable v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback">
               <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
-                  <UAvatar :src="row.original.reviewer.image ||
+                  <UAvatar
+:src="row.original.reviewer.image ||
                     row.original.reviewer.avatarUrl ||
                     undefined
                     " :alt="row.original.reviewer.name" size="xs" />
@@ -149,7 +153,8 @@
               </template>
 
               <template #content-cell="{ row }">
-                <UButton variant="ghost" color="neutral"
+                <UButton
+variant="ghost" color="neutral"
                   class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
                   @click="openFeedbackModal(row.original)">
                   <span class="truncate block">{{ row.original.content }}</span>

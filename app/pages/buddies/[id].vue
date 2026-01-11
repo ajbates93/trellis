@@ -66,7 +66,8 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Back button -->
         <div class="mb-4">
-          <NuxtLink to="/buddies"
+          <NuxtLink
+to="/buddies"
             class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
             <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
             Back to Buddies
@@ -121,7 +122,7 @@ const getReviewPreferenceLabel = (preference: string | null | undefined) => {
               <UCard class="mb-6">
                 <div class="text-center">
                   <div class="mb-4 flex justify-center">
-                    <img :src="getAvatarUrl(buddy)" :alt="buddy.name" class="w-32 h-32 rounded-lg object-cover" />
+                    <img :src="getAvatarUrl(buddy)" :alt="buddy.name" class="w-32 h-32 rounded-lg object-cover" >
                   </div>
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ buddy.preferredName || buddy.name }}

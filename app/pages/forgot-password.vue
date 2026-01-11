@@ -12,11 +12,13 @@
       </p>
     </div>
 
-    <UAlert v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft" title="Email Sent!"
+    <UAlert
+v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft" title="Email Sent!"
       description="Check your inbox for password reset instructions." />
 
-    <form v-if="!success" @submit.prevent="handleForgotPassword" class="space-y-6">
-      <UInput v-model="email" type="email" placeholder="your@email.com" icon="i-heroicons-envelope" size="xl"
+    <form v-if="!success" class="space-y-6" @submit.prevent="handleForgotPassword">
+      <UInput
+v-model="email" type="email" placeholder="your@email.com" icon="i-heroicons-envelope" size="xl"
         class="w-full" :disabled="loading" />
 
       <UButton type="submit" color="primary" size="xl" block :loading="loading" :disabled="!email">

@@ -315,11 +315,13 @@ const submitCheckin = async (notes: string) => {
         <!-- Goals Content -->
         <div v-if="selectedBuddyId && selectedBuddy" class="space-y-6">
           <!-- Empty state when buddy has no goals at all -->
-          <EmptyState v-if="buddyGoals.length === 0" icon="i-heroicons-flag" heading="No goals yet"
+          <EmptyState
+v-if="buddyGoals.length === 0" icon="i-heroicons-flag" heading="No goals yet"
             :description="`${selectedBuddy.name} hasn't set any development goals yet.`" variant="primary" />
 
           <!-- Tabbed Goals Interface -->
-          <UTabs v-else v-model="activeTab" :items="tabItems" variant="pill" color="neutral" size="lg" class="w-full"
+          <UTabs
+v-else v-model="activeTab" :items="tabItems" variant="pill" color="neutral" size="lg" class="w-full"
             :ui="{
               list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
               trigger:
@@ -330,12 +332,14 @@ const submitCheckin = async (notes: string) => {
             <template #active>
               <div class="pt-6">
                 <!-- Empty state -->
-                <EmptyState v-if="activeGoals.length === 0" icon="i-heroicons-rocket-launch" heading="No active goals"
+                <EmptyState
+v-if="activeGoals.length === 0" icon="i-heroicons-rocket-launch" heading="No active goals"
                   :description="`${selectedBuddy?.name} doesn't have any active goals yet.`" variant="primary" />
 
                 <!-- Goals grid -->
                 <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  <GoalsGoalCard v-for="goal in activeGoals" :key="goal.id" :goal="goal" mode="buddy"
+                  <GoalsGoalCard
+v-for="goal in activeGoals" :key="goal.id" :goal="goal" mode="buddy"
                     @status-changed="handleGoalChange" @updated="handleGoalChange" />
                 </div>
               </div>
@@ -345,13 +349,15 @@ const submitCheckin = async (notes: string) => {
             <template #completed>
               <div class="pt-6">
                 <!-- Empty state -->
-                <EmptyState v-if="completedGoals.length === 0" icon="i-heroicons-trophy" icon-color="text-amber-500"
+                <EmptyState
+v-if="completedGoals.length === 0" icon="i-heroicons-trophy" icon-color="text-amber-500"
                   icon-bg-color="bg-amber-100 dark:bg-amber-900/30" heading="No completed goals yet"
                   :description="`${selectedBuddy?.name} hasn't completed any goals yet.`" variant="secondary" />
 
                 <!-- Goals grid -->
                 <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  <GoalsGoalCard v-for="goal in completedGoals" :key="goal.id" :goal="goal" mode="buddy"
+                  <GoalsGoalCard
+v-for="goal in completedGoals" :key="goal.id" :goal="goal" mode="buddy"
                     @status-changed="handleGoalChange" @updated="handleGoalChange" />
                 </div>
               </div>
@@ -361,12 +367,14 @@ const submitCheckin = async (notes: string) => {
             <template #archived>
               <div class="pt-6">
                 <!-- Empty state -->
-                <EmptyState v-if="archivedGoals.length === 0" icon="i-heroicons-archive-box" icon-color="text-gray-400"
+                <EmptyState
+v-if="archivedGoals.length === 0" icon="i-heroicons-archive-box" icon-color="text-gray-400"
                   icon-bg-color="bg-gray-200 dark:bg-gray-700" heading="No archived goals" variant="minimal" />
 
                 <!-- Goals grid -->
                 <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  <GoalsGoalCard v-for="goal in archivedGoals" :key="goal.id" :goal="goal" mode="buddy"
+                  <GoalsGoalCard
+v-for="goal in archivedGoals" :key="goal.id" :goal="goal" mode="buddy"
                     @status-changed="handleGoalChange" @updated="handleGoalChange" />
                 </div>
               </div>
@@ -388,7 +396,8 @@ const submitCheckin = async (notes: string) => {
             </div>
 
             <!-- Check-ins Table -->
-            <div v-if="checkins.length > 0"
+            <div
+v-if="checkins.length > 0"
               class="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <UTable :columns="checkinColumns" :data="checkins">
                 <template #date-cell="{ row }">
@@ -412,7 +421,8 @@ const submitCheckin = async (notes: string) => {
                 </template>
 
                 <template #notes-cell="{ row }">
-                  <UButton variant="ghost" color="neutral"
+                  <UButton
+variant="ghost" color="neutral"
                     class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
                     @click="openCheckinDetailsModal(row.original)">
                     <span class="truncate block">{{ row.original.notes }}</span>
@@ -420,7 +430,8 @@ const submitCheckin = async (notes: string) => {
                 </template>
 
                 <template #review-cell="{ row }">
-                  <div v-if="
+                  <div
+v-if="
                     row.original.reviewSchedule &&
                     row.original.reviewSchedule.name
                   ">
@@ -432,7 +443,8 @@ const submitCheckin = async (notes: string) => {
             </div>
 
             <!-- Empty State -->
-            <EmptyState v-else icon="i-heroicons-chat-bubble-left-right" icon-color="text-gray-400"
+            <EmptyState
+v-else icon="i-heroicons-chat-bubble-left-right" icon-color="text-gray-400"
               icon-bg-color="bg-gray-200 dark:bg-gray-700" heading="No check-ins yet"
               :description="`Record your monthly conversations with ${selectedBuddy?.name}.`"
               button-text="Add First Check-In" button-icon="i-heroicons-plus" button-size="sm" variant="minimal"
@@ -445,7 +457,8 @@ const submitCheckin = async (notes: string) => {
   </UDashboardPanel>
 
   <!-- Check-in Modal -->
-  <CheckinModal v-model="showCheckinModal" :buddy="selectedBuddy" :is-loading="isCreatingCheckin"
+  <CheckinModal
+v-model="showCheckinModal" :buddy="selectedBuddy" :is-loading="isCreatingCheckin"
     @submit="submitCheckin" />
 
   <!-- Check-in Details Modal -->
@@ -504,7 +517,8 @@ const submitCheckin = async (notes: string) => {
               <UButton variant="ghost" :disabled="isSubmittingEdit" @click="isEditingCheckin = false">
                 Cancel
               </UButton>
-              <UButton :loading="isSubmittingEdit" :disabled="!editingNotes.trim() || isSubmittingEdit"
+              <UButton
+:loading="isSubmittingEdit" :disabled="!editingNotes.trim() || isSubmittingEdit"
                 @click="saveEditedCheckin">
                 Save Changes
               </UButton>
@@ -512,7 +526,8 @@ const submitCheckin = async (notes: string) => {
           </div>
         </div>
 
-        <div v-if="
+        <div
+v-if="
           selectedCheckin.reviewSchedule &&
           selectedCheckin.reviewSchedule.name
         " class="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -526,7 +541,8 @@ const submitCheckin = async (notes: string) => {
 
     <template #footer>
       <div class="flex items-center justify-between w-full">
-        <UButton v-if="!isEditingCheckin" variant="outline" color="neutral" icon="i-heroicons-trash"
+        <UButton
+v-if="!isEditingCheckin" variant="outline" color="neutral" icon="i-heroicons-trash"
           :disabled="isSubmittingEdit" @click="deleteCheckin">
           Delete
         </UButton>

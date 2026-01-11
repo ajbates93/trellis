@@ -24,7 +24,8 @@
               </label>
 
               <ClientOnly>
-                <USelectMenu :model-value="selectedUser" :items="users" option-attribute="name" searchable class="w-80"
+                <USelectMenu
+:model-value="selectedUser" :items="users" option-attribute="name" searchable class="w-80"
                   :loading="loadingUsers" @update:model-value="(user) => (selectedUser = user)">
                   <template #leading>
                     <div v-if="selectedUser" class="flex items-center gap-2 truncate">
@@ -45,9 +46,11 @@
                     </div>
                   </template>
                   <template #trailing>
-                    <UButton v-if="selectedUser" color="neutral" variant="link" icon="i-heroicons-x-mark"
+                    <UButton
+v-if="selectedUser" color="neutral" variant="link" icon="i-heroicons-x-mark"
                       :padded="false" @click.stop="selectedUser = null" />
-                    <UIcon v-else name="i-heroicons-chevron-down-20-solid"
+                    <UIcon
+v-else name="i-heroicons-chevron-down-20-solid"
                       class="w-5 h-5 text-gray-400 dark:text-gray-500" />
                   </template>
                 </USelectMenu>
@@ -116,7 +119,8 @@
             </h2>
 
             <div v-if="loadingAchievements" class="grid gap-4 sm:grid-cols-2">
-              <div v-for="i in 4" :key="i"
+              <div
+v-for="i in 4" :key="i"
                 class="p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg">
                 <div class="flex items-start gap-3">
                   <USkeleton class="h-10 w-10 rounded-full" />
@@ -129,7 +133,8 @@
               </div>
             </div>
 
-            <div v-else-if="achievements.length === 0"
+            <div
+v-else-if="achievements.length === 0"
               class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <p class="text-gray-500">
                 No achievements recorded in the last year.
@@ -137,7 +142,8 @@
             </div>
 
             <div v-else class="grid gap-4 sm:grid-cols-2">
-              <div v-for="achievement in achievements" :key="achievement.id"
+              <div
+v-for="achievement in achievements" :key="achievement.id"
                 class="p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/30 rounded-lg">
                 <div class="flex items-start gap-3">
                   <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
@@ -167,7 +173,8 @@
             </h2>
 
             <div v-if="loadingGoals" class="space-y-4">
-              <div v-for="i in 2" :key="i"
+              <div
+v-for="i in 2" :key="i"
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div class="flex items-start justify-between mb-4">
                   <div class="space-y-2">
@@ -196,7 +203,8 @@
             </div>
 
             <div v-else class="space-y-4">
-              <div v-for="goal in sortedGoals" :key="goal.id"
+              <div
+v-for="goal in sortedGoals" :key="goal.id"
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div class="flex items-start justify-between mb-4">
                   <div>
@@ -219,17 +227,20 @@
                 </div>
 
                 <!-- Milestones -->
-                <div v-if="goal.milestones?.length"
+                <div
+v-if="goal.milestones?.length"
                   class="space-y-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div v-for="milestone in goal.milestones" :key="milestone.id" class="flex items-center gap-3 text-sm">
-                    <UIcon :name="milestone.isCompleted
+                    <UIcon
+:name="milestone.isCompleted
                       ? 'i-heroicons-check-circle'
                       : 'i-heroicons-stop'
                       " :class="milestone.isCompleted
                         ? 'text-green-500'
                         : 'text-gray-300'
                         " class="w-5 h-5" />
-                    <span :class="{
+                    <span
+:class="{
                       'text-gray-500 line-through': milestone.isCompleted,
                     }">
                       {{ milestone.title }}
@@ -265,16 +276,19 @@
               </UCard>
             </div>
 
-            <div v-else-if="recentFeedback.length === 0"
+            <div
+v-else-if="recentFeedback.length === 0"
               class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <p class="text-gray-500">No feedback received yet.</p>
             </div>
 
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="item in recentFeedback" :key="item.id"
+              <div
+v-for="item in recentFeedback" :key="item.id"
                 class="flex flex-col items-stretch bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-start gap-4 flex-1">
-                  <UAvatar :src="item.reviewer.image || item.reviewer.avatarUrl || undefined" :alt="item.reviewer.name"
+                  <UAvatar
+:src="item.reviewer.image || item.reviewer.avatarUrl || undefined" :alt="item.reviewer.name"
                     size="lg" class="flex-shrink-0" />
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between gap-2 mb-1">
@@ -301,7 +315,8 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else
+        <div
+v-else
           class="text-center py-20 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
           <UIcon name="i-heroicons-user" class="text-6xl text-gray-300 mb-4" />
           <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
