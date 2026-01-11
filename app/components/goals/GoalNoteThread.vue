@@ -135,6 +135,7 @@ const formatRelativeTime = (dateString: string) => {
           :rows="3"
           :maxlength="2000"
           autofocus
+          class="w-full"
         />
         <div class="flex justify-between items-center">
           <span class="text-xs text-gray-500">
