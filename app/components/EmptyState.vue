@@ -15,6 +15,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   iconColor: "text-primary",
   iconBgColor: "bg-primary/10",
+  description: undefined,
+  buttonText: undefined,
+  buttonIcon: undefined,
+  buttonTo: undefined,
   buttonSize: "lg",
   variant: "primary",
 });
