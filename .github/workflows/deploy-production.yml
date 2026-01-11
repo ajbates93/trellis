@@ -100,18 +100,25 @@ jobs:
         run: |
           VERSION="v${{ steps.version.outputs.version }}"
 
+          # Fetch all tags from remote
+          git fetch --tags
+
           # Check if tag already exists
           if git rev-parse "$VERSION" >/dev/null 2>&1; then
-            echo "Tag $VERSION already exists - skipping release creation"
-            echo "This is expected when version wasn't bumped since last release"
+            echo "Tag $VERSION already exists"
           else
-            echo "Creating release for version $VERSION"
-
-            # Create annotated tag
+            echo "Creating tag $VERSION"
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
             git tag -a "$VERSION" -m "Release $VERSION"
             git push origin "$VERSION"
+          fi
+
+          # Check if GitHub release already exists
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "GitHub release $VERSION already exists - skipping"
+          else
+            echo "Creating GitHub release for $VERSION"
 
             # Generate release notes from commits since last tag
             LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
@@ -131,5 +138,5 @@ jobs:
             **Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/${LAST_TAG}...${VERSION}" \
               --target main
 
-            echo "Created release: $VERSION"
+            echo "Created GitHub release: $VERSION"
           fi
