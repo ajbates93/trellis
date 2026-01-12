@@ -8,6 +8,7 @@ definePageMeta({
 const route = useRoute();
 const toast = useToast();
 const reviewId = route.params.id as string;
+const { downloadICalFile } = useCalendarExport();
 
 // Fetch review data
 const { data: reviewData, refresh } = await useFetch(
@@ -38,6 +39,8 @@ const completionNotes = ref("");
 // Edit review modal state
 const isEditModalOpen = ref(false);
 const editScheduledDate = ref<string>("");
+const editScheduledTime = ref<string>("09:00");
+const editIncludeTime = ref(false);
 const editReviewName = ref<string>("");
 const isEditing = ref(false);
 
@@ -61,7 +64,24 @@ const isAdmin = computed(() => {
 // Open edit modal
 const openEditModal = () => {
   if (!review.value) return;
-  editScheduledDate.value = review.value.scheduledDate;
+
+  if (review.value.scheduledDate) {
+    const dateTime = new Date(review.value.scheduledDate);
+    editScheduledDate.value = dateTime.toISOString().split('T')[0];
+
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    editScheduledTime.value = timeString;
+
+    // If not 9 AM, show time picker
+    editIncludeTime.value = !(hours === 9 && minutes === 0);
+  } else {
+    editScheduledDate.value = "";
+    editScheduledTime.value = "09:00";
+    editIncludeTime.value = false;
+  }
+
   editReviewName.value = review.value.name || "";
   isEditModalOpen.value = true;
 };
@@ -81,10 +101,19 @@ const updateReview = async () => {
   isEditing.value = true;
 
   try {
+    // Combine date and time if time is included, otherwise use 9 AM default
+    const dateTimeString = editIncludeTime.value
+      ? `${editScheduledDate.value}T${editScheduledTime.value}`
+      : `${editScheduledDate.value}T09:00`;
+
+    // Convert to UTC in the browser (user's timezone) before sending to server
+    const localDate = new Date(dateTimeString);
+    const utcDateString = localDate.toISOString();
+
     await $fetch(`/api/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
-        scheduledDate: editScheduledDate.value,
+        scheduledDate: utcDateString,
         name: editReviewName.value,
       },
     });
@@ -136,7 +165,21 @@ const completeReview = async () => {
 };
 
 const formatDate = (date: string) => {
-  return format(new Date(date), "MMM d, yyyy");
+  if (!date) return "N/A";
+  const d = new Date(date); // Automatically converts UTC to user's local timezone
+
+  // Check if this is stored as 9 AM UTC (the default time for "all day" events)
+  // We check the UTC hours, not local hours, to determine if it was an "all day" event
+  const utcHours = parseInt(date.substring(11, 13));
+  const utcMinutes = parseInt(date.substring(14, 16));
+
+  // Show "All day" for 9 AM UTC (default) or midnight UTC (legacy)
+  const isDefaultTime = (utcHours === 9 && utcMinutes === 0) || (utcHours === 0 && utcMinutes === 0);
+
+  if (isDefaultTime) {
+    return format(d, "MMM d, yyyy") + " (All day)";
+  }
+  return format(d, "MMM d, yyyy 'at' h:mm a");
 };
 
 // Modal state for feedback
@@ -360,17 +403,32 @@ const feedbackColumns = [
               </div>
 
               <!-- Actions -->
-              <div v-if="(isBuddy || isAdmin) && review.status === 'scheduled'" class="mt-8 flex gap-3">
+              <div class="mt-8 flex gap-3">
                 <UButton
-color="neutral" variant="solid" icon="i-heroicons-check"
+                  v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
+                  color="neutral"
+                  variant="solid"
+                  icon="i-heroicons-check"
                   class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
                   @click="isCompleteModalOpen = true">
                   Mark as Completed
                 </UButton>
                 <UButton
-color="neutral" variant="ghost" icon="i-heroicons-pencil-square"
-                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer" @click="openEditModal">
+                  v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-heroicons-pencil-square"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  @click="openEditModal">
                   Edit Details
+                </UButton>
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-heroicons-calendar"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  @click="downloadICalFile(review)">
+                  Add to Calendar
                 </UButton>
               </div>
             </div>
@@ -625,6 +683,29 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
                 Scheduled Date <span class="text-red-500">*</span>
               </label>
               <UInput v-model="editScheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" />
+            </div>
+
+            <!-- Include Time Checkbox -->
+            <div class="flex items-center gap-2">
+              <UCheckbox v-model="editIncludeTime" />
+              <label class="text-sm font-medium cursor-pointer" @click="editIncludeTime = !editIncludeTime">
+                Schedule at specific time
+              </label>
+            </div>
+
+            <!-- Time Picker (conditional) -->
+            <div v-if="editIncludeTime">
+              <label class="block text-sm font-medium mb-2">
+                Time
+              </label>
+              <UInput v-model="editScheduledTime" type="time" class="w-auto" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Review will be scheduled at {{ editScheduledTime }}
+              </p>
+            </div>
+
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+              Review will be scheduled for 9:00 AM (all-day event)
             </div>
 
             <!-- Review Name -->

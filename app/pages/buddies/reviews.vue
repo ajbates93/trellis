@@ -14,6 +14,7 @@ useHead({
 const toast = useToast();
 const { selectedBuddyId } = useSelectedBuddy();
 const { getBuddyById } = useBuddies();
+const { downloadICalFile } = useCalendarExport();
 
 // Get selected buddy info
 const selectedBuddy = computed(() => {
@@ -50,7 +51,21 @@ const handleBuddySelected = (buddyId: string) => {
 // Format date helper
 const formatDate = (date: string | Date | null) => {
   if (!date) return "N/A";
-  return format(new Date(date), "MMM d, yyyy");
+  const d = new Date(date); // Automatically converts UTC to user's local timezone
+
+  // Check if this is stored as 9 AM UTC (the default time for "all day" events)
+  // We check the UTC hours, not local hours, to determine if it was an "all day" event
+  const dateString = typeof date === 'string' ? date : d.toISOString();
+  const utcHours = parseInt(dateString.substring(11, 13));
+  const utcMinutes = parseInt(dateString.substring(14, 16));
+
+  // Show "All day" for 9 AM UTC (default) or midnight UTC (legacy)
+  const isDefaultTime = (utcHours === 9 && utcMinutes === 0) || (utcHours === 0 && utcMinutes === 0);
+
+  if (isDefaultTime) {
+    return format(d, "MMM d, yyyy") + " (All day)";
+  }
+  return format(d, "MMM d, yyyy 'at' h:mm a");
 };
 
 // Get days until review
@@ -87,6 +102,8 @@ const isEditing = ref(false);
 const editingReview = reactive({
   id: "",
   scheduledDate: "",
+  scheduledTime: "09:00",
+  includeTime: false,
   name: "",
 });
 
@@ -101,9 +118,24 @@ const openReviewModal = async (review: any) => {
 const openEditModal = (review: any) => {
   // Update reactive properties individually
   editingReview.id = review.id;
-  editingReview.scheduledDate = review.scheduledDate
-    ? new Date(review.scheduledDate).toISOString().split("T")[0]
-    : "";
+
+  if (review.scheduledDate) {
+    const dateTime = new Date(review.scheduledDate);
+    editingReview.scheduledDate = dateTime.toISOString().split('T')[0];
+
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    editingReview.scheduledTime = timeString;
+
+    // If not 9 AM, show time picker
+    editingReview.includeTime = !(hours === 9 && minutes === 0);
+  } else {
+    editingReview.scheduledDate = "";
+    editingReview.scheduledTime = "09:00";
+    editingReview.includeTime = false;
+  }
+
   editingReview.name = review.name || "";
   isEditModalOpen.value = true;
 };
@@ -123,10 +155,19 @@ const updateReview = async () => {
   isEditing.value = true;
 
   try {
+    // Combine date and time if time is included, otherwise use 9 AM default
+    const dateTimeString = editingReview.includeTime
+      ? `${editingReview.scheduledDate}T${editingReview.scheduledTime}`
+      : `${editingReview.scheduledDate}T09:00`;
+
+    // Convert to UTC in the browser (user's timezone) before sending to server
+    const localDate = new Date(dateTimeString);
+    const utcDateString = localDate.toISOString();
+
     await $fetch(`/api/reviews/${editingReview.id}`, {
       method: "PATCH",
       body: {
-        scheduledDate: editingReview.scheduledDate,
+        scheduledDate: utcDateString,
         name: editingReview.name,
       },
     });
@@ -156,6 +197,8 @@ const updateReview = async () => {
 // Create review modal state
 const isCreateModalOpen = ref(false);
 const scheduledDate = ref<string>("");
+const scheduledTime = ref<string>("09:00");
+const includeTime = ref(false);
 const reviewName = ref<string>("");
 const isCreating = ref(false);
 
@@ -170,6 +213,8 @@ watch(scheduledDate, (newDate) => {
 // Reset create review form
 const resetForm = () => {
   scheduledDate.value = "";
+  scheduledTime.value = "09:00";
+  includeTime.value = false;
   reviewName.value = "";
 };
 
@@ -188,11 +233,20 @@ const createReview = async () => {
   isCreating.value = true;
 
   try {
+    // Combine date and time if time is included, otherwise use 9 AM default
+    const dateTimeString = includeTime.value
+      ? `${scheduledDate.value}T${scheduledTime.value}`
+      : `${scheduledDate.value}T09:00`;
+
+    // Convert to UTC in the browser (user's timezone) before sending to server
+    const localDate = new Date(dateTimeString);
+    const utcDateString = localDate.toISOString();
+
     await $fetch("/api/reviews", {
       method: "POST",
       body: {
         userId: selectedBuddyId.value,
-        scheduledDate: scheduledDate.value,
+        scheduledDate: utcDateString,
         name: reviewName.value,
       },
     });
@@ -281,6 +335,11 @@ const getReviewActions = (review: any) => [
       onSelect: () => openEditModal(review),
     },
     {
+      label: "Add to Calendar",
+      icon: "i-heroicons-calendar",
+      onSelect: () => downloadICalFile(review),
+    },
+    {
       label: "Mark Complete",
       icon: "i-heroicons-check-circle",
       onSelect: () => completeReview(review.id),
@@ -317,7 +376,8 @@ const getReviewActions = (review: any) => [
             <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
           </div>
           <UButton
-v-if="selectedBuddyId && upcomingReviews.length === 0" icon="i-heroicons-plus"
+            v-if="selectedBuddyId"
+            icon="i-heroicons-plus"
             @click="isCreateModalOpen = true">
             Create Review
           </UButton>
@@ -337,37 +397,45 @@ v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicon
             <section>
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <UIcon name="i-heroicons-calendar-days" class="text-primary-500" />
-                Upcoming Review
+                Upcoming Reviews
+                <UBadge v-if="upcomingReviews.length > 0" :label="upcomingReviews.length.toString()" color="primary" />
               </h2>
 
-              <div v-if="upcomingReviews.length > 0">
-                <UCard class="bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
+              <div v-if="upcomingReviews.length > 0" class="space-y-4">
+                <UCard
+                  v-for="(review, index) in upcomingReviews"
+                  :key="review.id"
+                  :class="index === 0
+                    ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
+                    : 'bg-gray-50 dark:bg-gray-800'"
+                >
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="space-y-2">
                       <div class="flex items-center gap-3">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                          {{ upcomingReviews[0].name }}
+                          {{ review.name }}
                         </h3>
-                        <UBadge :label="upcomingReviews[0].status" color="primary" variant="subtle" />
+                        <UBadge v-if="index === 0" label="Next" color="primary" variant="subtle" />
+                        <UBadge v-else :label="review.status" color="neutral" variant="subtle" />
                       </div>
 
                       <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                         <div class="flex items-center gap-1.5">
                           <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                          <span>{{ formatDate(upcomingReviews[0].scheduledDate) }}</span>
+                          <span>{{ formatDate(review.scheduledDate) }}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                           <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                          <span>{{ getDaysUntilReview(upcomingReviews[0].scheduledDate) }} days left</span>
+                          <span>{{ getDaysUntilReview(review.scheduledDate) }} days left</span>
                         </div>
                       </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-                      <UButton :to="`/reviews/${upcomingReviews[0].id}`" variant="soft">
+                      <UButton :to="`/reviews/${review.id}`" variant="soft">
                         View Details
                       </UButton>
-                      <UDropdownMenu :items="getReviewActions(upcomingReviews[0])">
+                      <UDropdownMenu :items="getReviewActions(review)">
                         <UButton icon="i-heroicons-ellipsis-vertical" variant="ghost" color="neutral" />
                       </UDropdownMenu>
                     </div>
@@ -518,6 +586,29 @@ v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.nam
           <UInput v-model="scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" class="w-auto" />
         </div>
 
+        <!-- Include Time Checkbox -->
+        <div class="flex items-center gap-2">
+          <UCheckbox v-model="includeTime" />
+          <label class="text-sm font-medium cursor-pointer" @click="includeTime = !includeTime">
+            Schedule at specific time
+          </label>
+        </div>
+
+        <!-- Time Picker (conditional) -->
+        <div v-if="includeTime">
+          <label class="block text-sm font-medium mb-2">
+            Time
+          </label>
+          <UInput v-model="scheduledTime" type="time" class="w-auto" />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Review will be scheduled at {{ scheduledTime }}
+          </p>
+        </div>
+
+        <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+          Review will be scheduled for 9:00 AM (all-day event)
+        </div>
+
         <!-- Review Name -->
         <div>
           <label class="block text-sm font-medium mb-2"> Review Name </label>
@@ -558,8 +649,33 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
             Scheduled Date <span class="text-red-500">*</span>
           </label>
           <UInput
-v-model="editingReview.scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]"
+            v-model="editingReview.scheduledDate"
+            type="date"
+            :min="new Date().toISOString().split('T')[0]"
             class="w-auto" />
+        </div>
+
+        <!-- Include Time Checkbox -->
+        <div class="flex items-center gap-2">
+          <UCheckbox v-model="editingReview.includeTime" />
+          <label class="text-sm font-medium cursor-pointer" @click="editingReview.includeTime = !editingReview.includeTime">
+            Schedule at specific time
+          </label>
+        </div>
+
+        <!-- Time Picker (conditional) -->
+        <div v-if="editingReview.includeTime">
+          <label class="block text-sm font-medium mb-2">
+            Time
+          </label>
+          <UInput v-model="editingReview.scheduledTime" type="time" class="w-auto" />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Review will be scheduled at {{ editingReview.scheduledTime }}
+          </p>
+        </div>
+
+        <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+          Review will be scheduled for 9:00 AM (all-day event)
         </div>
 
         <!-- Review Name -->

@@ -53,13 +53,16 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update review to completed
+    // Store current datetime in UTC
+    const now = new Date();
+    const completedDateUTC = now.toISOString();
+
     const [updated] = await db
       .update(reviewSchedules)
       .set({
         status: 'completed',
-        completedDate: new Date().toISOString().split('T')[0],
+        completedDate: completedDateUTC,
         completionNotes: completionNotes || null,
-        updatedAt: new Date(),
       })
       .where(eq(reviewSchedules.id, reviewId))
       .returning();
@@ -68,9 +71,9 @@ export default defineEventHandler(async (event) => {
       { success: true, review: updated },
       apiSchemas.UpdateReviewScheduleResponseSchema
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error completing review:", error);
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error;
     }
     throw createError({

@@ -215,8 +215,8 @@ export const reviewSchedules = pgTable("review_schedules", {
   buddyId: text("buddy_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  scheduledDate: date("scheduled_date").notNull(),
-  completedDate: date("completed_date"),
+  scheduledDate: timestamp("scheduled_date", { mode: "string" }).notNull(),
+  completedDate: timestamp("completed_date", { mode: "string" }),
   status: varchar("status", { length: 50 }).default("scheduled"),
   notes: text("notes"),
   name: text("name"), // Custom review name, defaults to "Month YYYY"
