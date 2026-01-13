@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { format, differenceInDays } from "date-fns";
-import {
-  getTimezoneOffset,
-  format as formatTz,
-  fromZonedTime,
-} from "date-fns-tz";
+import { format } from "date-fns";
+import { format as formatTz, fromZonedTime } from "date-fns-tz";
 import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
@@ -20,7 +16,16 @@ const toast = useToast();
 const { selectedBuddyId } = useSelectedBuddy();
 const { getBuddyById } = useBuddies();
 const { downloadICalFile } = useCalendarExport();
-const { formatDateInUserTZ } = useUserTimezone();
+
+// Use shared review helpers
+const {
+  getDaysUntilText,
+  isOverdue,
+  isToday,
+  getDateColorClass,
+  getStatusColor,
+  formatDate,
+} = useReviewHelpers();
 
 // Get selected buddy info
 const selectedBuddy = computed(() => {
@@ -52,56 +57,6 @@ watch(selectedBuddyId, async () => {
 // Handle buddy selection
 const handleBuddySelected = (buddyId: string) => {
   selectedBuddyId.value = buddyId;
-};
-
-// Format date helper using user's configured timezone
-const formatDate = (date: string | Date | null) => {
-  return formatDateInUserTZ(date);
-};
-
-// Get days until review
-const getDaysUntilReview = (scheduledDate: string) => {
-  try {
-    return differenceInDays(new Date(scheduledDate), new Date());
-  } catch {
-    return null;
-  }
-};
-
-// Get formatted days until text
-const getDaysUntilText = (date: string) => {
-  const days = getDaysUntilReview(date);
-  if (days === null) return "";
-  if (days === 0) return "Today";
-  if (days < 0)
-    return `${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"} ago`;
-  return `${days} ${days === 1 ? "day" : "days"} left`;
-};
-
-// Check if review is overdue
-const isOverdue = (date: string) => {
-  const days = getDaysUntilReview(date);
-  return days !== null && days < 0;
-};
-
-// Check if review is today
-const isToday = (date: string) => {
-  const days = getDaysUntilReview(date);
-  return days === 0;
-};
-
-// Get status badge color - using subtle colors to reduce visual noise
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "scheduled":
-      return "neutral";
-    case "completed":
-      return "success";
-    case "rescheduled":
-      return "warning";
-    default:
-      return "neutral";
-  }
 };
 
 // Modal state for review details
@@ -495,13 +450,7 @@ const getReviewActions = (review: any) => [
                         </div>
                         <div
                           class="flex items-center gap-1.5"
-                          :class="
-                            isOverdue(review.scheduledDate)
-                              ? 'text-amber-600 dark:text-amber-400'
-                              : isToday(review.scheduledDate)
-                                ? 'text-green-600 dark:text-green-400'
-                                : ''
-                          "
+                          :class="getDateColorClass(review.scheduledDate)"
                         >
                           <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                           <span>{{

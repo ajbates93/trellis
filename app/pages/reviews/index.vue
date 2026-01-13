@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { format, differenceInDays } from "date-fns";
 import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
@@ -21,36 +20,9 @@ const { data: pastData } = await useFetch("/api/reviews/past");
 const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 const pastReviews = computed(() => pastData.value?.reviews || []);
 
-// Calculate days until review
-const daysUntil = (date: string) => {
-  return differenceInDays(new Date(date), new Date());
-};
-
-// Get formatted days until text
-const getDaysUntilText = (date: string) => {
-  const days = daysUntil(date);
-  if (days === 0) return "Today";
-  if (days < 0)
-    return `${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"} ago`;
-  return `${days} ${days === 1 ? "day" : "days"} left`;
-};
-
-// Check if review is overdue
-const isOverdue = (date: string) => {
-  return daysUntil(date) < 0;
-};
-
-// Check if review is today
-const isToday = (date: string) => {
-  return daysUntil(date) === 0;
-};
-
-// Format date using user's timezone
-const { formatDateInUserTZ } = useUserTimezone();
-
-const formatDate = (date: string | Date | null) => {
-  return formatDateInUserTZ(date);
-};
+// Use shared review helpers
+const { getDaysUntilText, isOverdue, isToday, getDateColorClass, formatDate } =
+  useReviewHelpers();
 </script>
 
 <template>
@@ -128,13 +100,7 @@ const formatDate = (date: string | Date | null) => {
                     </div>
                     <div
                       class="flex items-center gap-1.5"
-                      :class="
-                        isOverdue(review.scheduledDate)
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : isToday(review.scheduledDate)
-                            ? 'text-green-600 dark:text-green-400'
-                            : ''
-                      "
+                      :class="getDateColorClass(review.scheduledDate)"
                     >
                       <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                       <span>{{ getDaysUntilText(review.scheduledDate) }}</span>
