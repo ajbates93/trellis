@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import { format as formatTz, fromZonedTime } from "date-fns-tz";
-import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
   layout: "default",
@@ -18,14 +17,7 @@ const { getBuddyById } = useBuddies();
 const { downloadICalFile } = useCalendarExport();
 
 // Use shared review helpers
-const {
-  getDaysUntilText,
-  isOverdue,
-  isToday,
-  getDateColorClass,
-  getStatusColor,
-  formatDate,
-} = useReviewHelpers();
+const { getStatusColor, formatDate } = useReviewHelpers();
 
 // Get selected buddy info
 const selectedBuddy = computed(() => {
@@ -408,58 +400,15 @@ const getReviewActions = (review: any) => [
               </h2>
 
               <div v-if="upcomingReviews.length > 0" class="space-y-4">
-                <UCard
+                <ReviewsUpcomingReviewCard
                   v-for="(review, index) in upcomingReviews"
                   :key="review.id"
-                  :class="
-                    index === 0
-                      ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
-                      : 'bg-gray-50 dark:bg-gray-800'
-                  "
+                  :review="review"
+                  :index="index"
                 >
-                  <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                  >
-                    <div class="space-y-2">
-                      <div class="flex items-center gap-3">
-                        <h3
-                          class="text-xl font-bold text-gray-900 dark:text-white"
-                        >
-                          {{ review.name }}
-                        </h3>
-                        <UBadge
-                          v-if="index === 0"
-                          label="Next"
-                          color="primary"
-                          variant="subtle"
-                        />
-                        <UBadge
-                          v-else
-                          :label="review.status"
-                          color="neutral"
-                          variant="subtle"
-                        />
-                      </div>
+                  <!-- No metadata slot needed for buddy page -->
 
-                      <div
-                        class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400"
-                      >
-                        <div class="flex items-center gap-1.5">
-                          <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                          <span>{{ formatDate(review.scheduledDate) }}</span>
-                        </div>
-                        <div
-                          class="flex items-center gap-1.5"
-                          :class="getDateColorClass(review.scheduledDate)"
-                        >
-                          <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                          <span>{{
-                            getDaysUntilText(review.scheduledDate)
-                          }}</span>
-                        </div>
-                      </div>
-                    </div>
-
+                  <template #actions="{ review }">
                     <div class="flex items-center gap-2">
                       <UButton :to="`/reviews/${review.id}`" variant="soft">
                         View Details
@@ -472,8 +421,8 @@ const getReviewActions = (review: any) => [
                         />
                       </UDropdownMenu>
                     </div>
-                  </div>
-                </UCard>
+                  </template>
+                </ReviewsUpcomingReviewCard>
               </div>
 
               <EmptyState
@@ -503,46 +452,21 @@ const getReviewActions = (review: any) => [
                 v-if="pastReviews.length > 0"
                 class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
               >
-                <NuxtLink
+                <ReviewsPastReviewCard
                   v-for="review in pastReviews"
                   :key="review.id"
-                  :to="`/reviews/${review.id}`"
-                  class="block group"
+                  :review="review"
                 >
-                  <UCard
-                    class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer"
-                  >
-                    <div class="flex justify-between items-start mb-4">
-                      <UBadge
-                        :label="formatDate(review.scheduledDate)"
-                        color="neutral"
-                        variant="solid"
-                      />
-                      <UIcon
-                        name="i-heroicons-arrow-right"
-                        class="text-gray-400 group-hover:text-primary-500"
-                      />
-                    </div>
-                    <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
-                    <div
-                      class="flex items-center gap-2 text-sm text-gray-500 mb-4"
+                  <template #metadata="{ review }">
+                    <UIcon
+                      name="i-heroicons-check-circle"
+                      class="w-4 h-4 text-green-500"
+                    />
+                    <span
+                      >Completed {{ formatDate(review.completedDate) }}</span
                     >
-                      <UIcon
-                        name="i-heroicons-check-circle"
-                        class="w-4 h-4 text-green-500"
-                      />
-                      <span
-                        >Completed {{ formatDate(review.completedDate) }}</span
-                      >
-                    </div>
-                    <div
-                      v-if="review.completionNotes"
-                      class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3"
-                    >
-                      {{ review.completionNotes }}
-                    </div>
-                  </UCard>
-                </NuxtLink>
+                  </template>
+                </ReviewsPastReviewCard>
               </div>
 
               <EmptyState
