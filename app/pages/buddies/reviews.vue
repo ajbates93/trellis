@@ -68,6 +68,28 @@ const getDaysUntilReview = (scheduledDate: string) => {
   }
 };
 
+// Get formatted days until text
+const getDaysUntilText = (date: string) => {
+  const days = getDaysUntilReview(date);
+  if (days === null) return "";
+  if (days === 0) return "Today";
+  if (days < 0)
+    return `${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"} ago`;
+  return `${days} ${days === 1 ? "day" : "days"} left`;
+};
+
+// Check if review is overdue
+const isOverdue = (date: string) => {
+  const days = getDaysUntilReview(date);
+  return days !== null && days < 0;
+};
+
+// Check if review is today
+const isToday = (date: string) => {
+  const days = getDaysUntilReview(date);
+  return days === 0;
+};
+
 // Get status badge color - using subtle colors to reduce visual noise
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -471,12 +493,20 @@ const getReviewActions = (review: any) => [
                           <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
                           <span>{{ formatDate(review.scheduledDate) }}</span>
                         </div>
-                        <div class="flex items-center gap-1.5">
+                        <div
+                          class="flex items-center gap-1.5"
+                          :class="
+                            isOverdue(review.scheduledDate)
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : isToday(review.scheduledDate)
+                                ? 'text-green-600 dark:text-green-400'
+                                : ''
+                          "
+                        >
                           <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                          <span
-                            >{{ getDaysUntilReview(review.scheduledDate) }} days
-                            left</span
-                          >
+                          <span>{{
+                            getDaysUntilText(review.scheduledDate)
+                          }}</span>
                         </div>
                       </div>
                     </div>
