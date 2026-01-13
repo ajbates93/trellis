@@ -71,6 +71,20 @@
       "when": 1767805739291,
       "tag": "0009_striped_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768254985674,
+      "tag": "0010_wise_ser_duncan",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1768320097845,
+      "tag": "0011_mighty_loners",
+      "breakpoints": true
     }
   ]
 }

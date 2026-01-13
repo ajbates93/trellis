@@ -48,33 +48,32 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Validate scheduled date is in the future
+    // Client sends UTC timestamp already (e.g., "2026-05-29T09:00:00.000Z")
+    // No timezone conversion needed on server
     const selectedDate = new Date(scheduledDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+    const now = new Date();
 
-    if (selectedDate < today) {
+    if (selectedDate < now) {
       throw createError({
         statusCode: 400,
-        message: "Scheduled date must be in the future",
+        message: "Scheduled date and time must be in the future",
       });
     }
 
     // Auto-generate name if not provided
     const reviewName = name || format(selectedDate, "MMMM yyyy");
 
+    // Store as-is (already in UTC format from client)
     // Create the review
     const [newReview] = await db
       .insert(reviewSchedules)
       .values({
         userId,
         buddyId: session.user.id,
-        scheduledDate,
+        scheduledDate: scheduledDate,
         name: reviewName,
         notes: notes || null,
         status: "scheduled",
-        createdAt: new Date(),
-        updatedAt: new Date(),
       })
       .returning();
 

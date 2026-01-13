@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { format, differenceInDays } from "date-fns";
-import type { TabsItem } from "@nuxt/ui";
-
 definePageMeta({
   layout: "default",
 });
@@ -21,16 +18,8 @@ const { data: pastData } = await useFetch("/api/reviews/past");
 const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 const pastReviews = computed(() => pastData.value?.reviews || []);
 
-// Calculate days until review
-const daysUntil = (date: string) => {
-  return differenceInDays(new Date(date), new Date());
-};
-
-// Format date
-const formatDate = (date: string | Date | null) => {
-  if (!date) return "N/A";
-  return format(new Date(date), "MMM d, yyyy");
-};
+// Only need formatDate for display in slots
+const { formatDate } = useReviewHelpers();
 </script>
 
 <template>
@@ -41,7 +30,9 @@ const formatDate = (date: string | Date | null) => {
         <div class="mb-6">
           <div class="flex items-start justify-between">
             <div>
-              <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+              <h1
+                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+              >
                 Reviews
               </h1>
               <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -51,95 +42,98 @@ const formatDate = (date: string | Date | null) => {
           </div>
         </div>
 
-        <!-- Upcoming Review Section -->
+        <!-- Upcoming Reviews Section -->
         <section class="mb-12">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <h2
+            class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+          >
             <UIcon name="i-heroicons-calendar-days" class="text-primary-500" />
-            Upcoming Review
+            Upcoming Reviews
+            <UBadge
+              v-if="upcomingReviews.length > 0"
+              :label="upcomingReviews.length.toString()"
+              color="primary"
+            />
           </h2>
 
-          <div v-if="upcomingReviews.length > 0">
-            <NuxtLink :to="`/reviews/${upcomingReviews[0].id}`" class="block group">
-              <UCard
-                class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div class="space-y-2">
-                    <div class="flex items-center gap-3">
-                      <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ upcomingReviews[0].name }}
-                      </h3>
-                      <UBadge :label="upcomingReviews[0].status" color="primary" variant="subtle" />
-                    </div>
-
-                    <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                        <span>{{ formatDate(upcomingReviews[0].scheduledDate) }}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                        <span>{{ daysUntil(upcomingReviews[0].scheduledDate) }} days left</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                      <UAvatar
-:src="upcomingReviews[0].buddy?.avatarUrl" :alt="upcomingReviews[0].buddy?.name"
-                        size="sm" />
-                      <div class="text-sm">
-                        <p class="text-gray-500 dark:text-gray-400">Buddy</p>
-                        <p class="font-medium text-gray-900 dark:text-white">{{ upcomingReviews[0].buddy?.name }}</p>
-                      </div>
-                    </div>
-                    <UIcon
-name="i-heroicons-chevron-right"
-                      class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+          <div v-if="upcomingReviews.length > 0" class="space-y-4">
+            <ReviewsUpcomingReviewCard
+              v-for="(review, index) in upcomingReviews"
+              :key="review.id"
+              :review="review"
+              :index="index"
+            >
+              <template #metadata="{ review }">
+                <div class="flex items-center gap-2">
+                  <UAvatar
+                    :src="review.buddy?.avatarUrl"
+                    :alt="review.buddy?.name"
+                    size="sm"
+                  />
+                  <div class="text-sm">
+                    <span class="text-gray-500 dark:text-gray-400"
+                      >Buddy:
+                    </span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{
+                      review.buddy?.name
+                    }}</span>
                   </div>
                 </div>
-              </UCard>
-            </NuxtLink>
+              </template>
+
+              <template #actions="{ review }">
+                <UButton :to="`/reviews/${review.id}`" variant="soft">
+                  View Details
+                </UButton>
+              </template>
+            </ReviewsUpcomingReviewCard>
           </div>
 
           <EmptyState
-v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
-            icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
-            description="You're all caught up! Your buddy will schedule your next review." variant="secondary" />
+            v-else
+            icon="i-heroicons-calendar-days"
+            icon-color="text-gray-400"
+            icon-bg-color="bg-gray-100 dark:bg-gray-800"
+            heading="No upcoming reviews"
+            description="You're all caught up! Your buddy will schedule your next review."
+            variant="secondary"
+          />
         </section>
 
         <!-- Past Reviews Section -->
         <section>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <h2
+            class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+          >
             <UIcon name="i-heroicons-archive-box" class="text-gray-500" />
             Past Reviews
           </h2>
 
-          <div v-if="pastReviews.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <NuxtLink v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`" class="block group">
-              <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
-                <div class="flex justify-between items-start mb-4">
-                  <UBadge
-:label="formatDate(review.completedDate || review.scheduledDate)" color="neutral"
-                    variant="solid" />
-                  <UIcon name="i-heroicons-arrow-right" class="text-gray-400 group-hover:text-primary-500" />
-                </div>
-                <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
-                <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                  <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  <span>Buddy: {{ review.buddy?.name || "Unassigned" }}</span>
-                </div>
-                <div v-if="review.completionNotes" class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                  {{ review.completionNotes }}
-                </div>
-              </UCard>
-            </NuxtLink>
+          <div
+            v-if="pastReviews.length > 0"
+            class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            <ReviewsPastReviewCard
+              v-for="review in pastReviews"
+              :key="review.id"
+              :review="review"
+            >
+              <template #metadata="{ review }">
+                <UIcon name="i-heroicons-user" class="w-4 h-4" />
+                <span>Buddy: {{ review.buddy?.name || "Unassigned" }}</span>
+              </template>
+            </ReviewsPastReviewCard>
           </div>
 
           <EmptyState
-v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
-            icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No past reviews"
-            description="Your completed reviews will appear here." variant="secondary" />
+            v-else
+            icon="i-heroicons-archive-box"
+            icon-color="text-gray-400"
+            icon-bg-color="bg-gray-100 dark:bg-gray-800"
+            heading="No past reviews"
+            description="Your completed reviews will appear here."
+            variant="secondary"
+          />
         </section>
       </div>
     </template>

@@ -307,19 +307,31 @@ export const OnboardingImportResponseSchema = z.object({
 
 export const CreateReviewScheduleRequestSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  scheduledDate: z.string().min(1, "Scheduled date is required"),
+  scheduledDate: z
+    .string()
+    .min(1, "Scheduled date is required")
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message:
+        "Invalid date format. Use ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm)",
+    }),
   name: z.string().optional(),
   notes: z.string().nullable().optional(),
 });
 
 export const UpdateReviewScheduleRequestSchema = z.object({
-  scheduledDate: z.string().optional(),
+  scheduledDate: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message:
+        "Invalid date format. Use ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm)",
+    })
+    .optional(),
   name: z.string().optional(),
   notes: z.string().nullable().optional(),
 
   status: z.enum(["scheduled", "completed", "rescheduled"]).optional(),
   completionNotes: z.string().nullable().optional(),
-  
+
   // Reflection fields (editable by reviewee)
   reflectionLearnings: z.string().nullable().optional(),
   reflectionHighlights: z.string().nullable().optional(),

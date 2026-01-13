@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
+import { getTimezoneOffset, format as formatTz } from "date-fns-tz";
 
 definePageMeta({
   layout: "default",
@@ -8,6 +9,8 @@ definePageMeta({
 const route = useRoute();
 const toast = useToast();
 const reviewId = route.params.id as string;
+const { downloadICalFile } = useCalendarExport();
+const { formatDateInUserTZ } = useUserTimezone();
 
 // Fetch review data
 const { data: reviewData, refresh } = await useFetch(
@@ -38,6 +41,8 @@ const completionNotes = ref("");
 // Edit review modal state
 const isEditModalOpen = ref(false);
 const editScheduledDate = ref<string>("");
+const editScheduledTime = ref<string>("09:00");
+const editIncludeTime = ref(false);
 const editReviewName = ref<string>("");
 const isEditing = ref(false);
 
@@ -61,7 +66,30 @@ const isAdmin = computed(() => {
 // Open edit modal
 const openEditModal = () => {
   if (!review.value) return;
-  editScheduledDate.value = review.value.scheduledDate;
+
+  if (review.value.scheduledDate) {
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+    const utcDate = new Date(review.value.scheduledDate);
+
+    // Check if this is midnight UTC (all day event)
+    const utcHours = utcDate.getUTCHours();
+    const utcMinutes = utcDate.getUTCMinutes();
+    const isAllDay = utcHours === 0 && utcMinutes === 0;
+
+    // Convert from UTC to user's configured timezone using date-fns-tz
+    // Extract date in user's timezone
+    editScheduledDate.value = formatTz(utcDate, 'yyyy-MM-dd', { timeZone: userTz });
+    // Extract time in user's timezone
+    editScheduledTime.value = formatTz(utcDate, 'HH:mm', { timeZone: userTz });
+
+    editIncludeTime.value = !isAllDay;
+  } else {
+    editScheduledDate.value = "";
+    editScheduledTime.value = "09:00";
+    editIncludeTime.value = false;
+  }
+
   editReviewName.value = review.value.name || "";
   isEditModalOpen.value = true;
 };
@@ -81,10 +109,34 @@ const updateReview = async () => {
   isEditing.value = true;
 
   try {
+    // Combine date and time if time is included, otherwise use midnight for "all day"
+    const dateTimeString = editIncludeTime.value
+      ? `${editScheduledDate.value}T${editScheduledTime.value}`
+      : `${editScheduledDate.value}T00:00`;
+
+    // Convert from user's configured timezone to UTC
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+
+    // Parse date/time components
+    const [datePart, timePart] = dateTimeString.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+
+    // Create UTC timestamp for this date/time
+    const utcMs = Date.UTC(year, month - 1, day, hours, minutes);
+
+    // Get timezone offset for this date (handles DST automatically)
+    const offset = getTimezoneOffset(userTz, new Date(year, month - 1, day));
+
+    // Subtract offset to convert from user's timezone to UTC
+    const correctUtcMs = utcMs - offset;
+    const utcDateString = new Date(correctUtcMs).toISOString();
+
     await $fetch(`/api/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
-        scheduledDate: editScheduledDate.value,
+        scheduledDate: utcDateString,
         name: editReviewName.value,
       },
     });
@@ -135,8 +187,9 @@ const completeReview = async () => {
   }
 };
 
+// Format date helper using user's configured timezone
 const formatDate = (date: string) => {
-  return format(new Date(date), "MMM d, yyyy");
+  return formatDateInUserTZ(date);
 };
 
 // Modal state for feedback
@@ -360,17 +413,32 @@ const feedbackColumns = [
               </div>
 
               <!-- Actions -->
-              <div v-if="(isBuddy || isAdmin) && review.status === 'scheduled'" class="mt-8 flex gap-3">
+              <div class="mt-8 flex gap-3">
                 <UButton
-color="neutral" variant="solid" icon="i-heroicons-check"
+                  v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
+                  color="neutral"
+                  variant="solid"
+                  icon="i-heroicons-check"
                   class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
                   @click="isCompleteModalOpen = true">
                   Mark as Completed
                 </UButton>
                 <UButton
-color="neutral" variant="ghost" icon="i-heroicons-pencil-square"
-                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer" @click="openEditModal">
+                  v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-heroicons-pencil-square"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  @click="openEditModal">
                   Edit Details
+                </UButton>
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-heroicons-calendar"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  @click="downloadICalFile(review)">
+                  Add to Calendar
                 </UButton>
               </div>
             </div>
@@ -625,6 +693,29 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
                 Scheduled Date <span class="text-red-500">*</span>
               </label>
               <UInput v-model="editScheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" />
+            </div>
+
+            <!-- Include Time Checkbox -->
+            <div class="flex items-center gap-2">
+              <UCheckbox v-model="editIncludeTime" />
+              <label class="text-sm font-medium cursor-pointer" @click="editIncludeTime = !editIncludeTime">
+                Schedule at specific time
+              </label>
+            </div>
+
+            <!-- Time Picker (conditional) -->
+            <div v-if="editIncludeTime">
+              <label class="block text-sm font-medium mb-2">
+                Time
+              </label>
+              <UInput v-model="editScheduledTime" type="time" class="w-auto" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Review will be scheduled at {{ editScheduledTime }}
+              </p>
+            </div>
+
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+              Review will be shown as an all-day event
             </div>
 
             <!-- Review Name -->

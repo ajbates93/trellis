@@ -33,6 +33,9 @@ export const useAuth = () => {
           communicationPreferences: {
             type: "string",
           },
+          timezone: {
+            type: "string",
+          },
           onboardingTasks: {
             type: "string[]",
           },
