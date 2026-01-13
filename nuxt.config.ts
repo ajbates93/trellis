@@ -2,13 +2,16 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
+
   modules: [
     "@nuxt/test-utils",
     "@nuxt/ui",
     "@nuxt/eslint",
     "nuxt-mcp",
     "nuxt-tiptap-editor",
+    "@sentry/nuxt/module",
   ],
+
   css: ["~/assets/css/main.css"],
 
   tiptap: {
@@ -21,6 +24,16 @@ export default defineNuxtConfig({
   colorMode: {
     preference: "dark",
     fallback: "dark",
+  },
+
+  runtimeConfig: {
+    public: {
+      appVersion: process.env.npm_package_version || "0.0.0",
+      sentry: {
+        dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
+        environment: process.env.NODE_ENV || "development",
+      },
+    },
   },
 
   app: {
@@ -40,5 +53,14 @@ export default defineNuxtConfig({
         // },
       ],
     },
+  },
+
+  sentry: {
+    org: "alex-bates",
+    project: "trellis",
+  },
+
+  sourcemap: {
+    client: "hidden",
   },
 });

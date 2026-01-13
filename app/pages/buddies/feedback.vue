@@ -215,7 +215,8 @@ const incomingColumns = [
         </div>
 
         <!-- Tabs -->
-        <UTabs v-if="selectedBuddyId" v-model="selectedTab" :items="tabs" variant="pill" color="neutral" size="lg"
+        <UTabs
+v-if="selectedBuddyId" v-model="selectedTab" :items="tabs" variant="pill" color="neutral" size="lg"
           class="w-full mb-6" :ui="{
             list: 'bg-gray-200 dark:bg-gray-800 rounded-xl p-1',
             trigger:
@@ -227,7 +228,8 @@ const incomingColumns = [
         <div v-if="selectedBuddyId" class="mt-6">
           <!-- Received Tab -->
           <div v-if="selectedTab === 'received'">
-            <EmptyState v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-blue-500"
+            <EmptyState
+v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-blue-500"
               icon-bg-color="bg-blue-100 dark:bg-blue-900/30" heading="No feedback received"
               description="This buddy hasn't received any published feedback yet" variant="secondary" />
 
@@ -235,7 +237,8 @@ const incomingColumns = [
               <UTable :columns="receivedColumns" :data="buddyReceivedFeedback">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
-                    <UAvatar :src="row.original.reviewer.image ||
+                    <UAvatar
+:src="row.original.reviewer.image ||
                       row.original.reviewer.avatarUrl ||
                       undefined
                       " :alt="row.original.reviewer.name" size="xs" />
@@ -244,7 +247,8 @@ const incomingColumns = [
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UButton variant="ghost" color="neutral"
+                  <UButton
+variant="ghost" color="neutral"
                     class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
                     @click="openFeedbackModal(row.original)">
                     <span class="truncate block">{{
@@ -260,7 +264,8 @@ const incomingColumns = [
                 </template>
 
                 <template #review-cell="{ row }">
-                  <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                  <NuxtLink
+v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
                     class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                     {{ row.original.review.name }}
                   </NuxtLink>
@@ -274,7 +279,8 @@ const incomingColumns = [
 
           <!-- Incoming Tab -->
           <div v-else-if="selectedTab === 'incoming'">
-            <EmptyState v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="text-green-500"
+            <EmptyState
+v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="text-green-500"
               icon-bg-color="bg-green-100 dark:bg-green-900/30" heading="No pending feedback"
               description="All feedback for this buddy has been reviewed and published" variant="secondary" />
 
@@ -290,7 +296,8 @@ const incomingColumns = [
                 <UTable :columns="incomingColumns" :data="incomingFeedback">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
-                      <UAvatar :src="row.original.reviewer.image ||
+                      <UAvatar
+:src="row.original.reviewer.image ||
                         row.original.reviewer.avatarUrl ||
                         undefined
                         " :alt="row.original.reviewer.name" size="xs" />
@@ -299,7 +306,8 @@ const incomingColumns = [
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton variant="ghost" color="neutral"
+                    <UButton
+variant="ghost" color="neutral"
                       class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
                       @click="openFeedbackModal(row.original)">
                       <span class="truncate block">{{
@@ -315,7 +323,8 @@ const incomingColumns = [
                   </template>
 
                   <template #review-cell="{ row }">
-                    <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
+                    <NuxtLink
+v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
                       class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
                       {{ row.original.review.name }}
                     </NuxtLink>

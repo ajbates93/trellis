@@ -33,13 +33,17 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <AdminStatsCard v-if="stats" title="Feedback This Week" :value="stats.feedbackThisWeek"
+          <AdminStatsCard
+v-if="stats" title="Feedback This Week" :value="stats.feedbackThisWeek"
             :subtitle="`${stats.totalFeedback} total`" icon="i-heroicons-chat-bubble-left-right" color="primary" />
-          <AdminStatsCard v-if="stats" title="Active Goals" :value="stats.activeGoals" subtitle="Currently in progress"
+          <AdminStatsCard
+v-if="stats" title="Active Goals" :value="stats.activeGoals" subtitle="Currently in progress"
             icon="i-heroicons-flag" color="success" />
-          <AdminStatsCard v-if="stats" title="Pending Reviews" :value="stats.pendingReviews" subtitle="Scheduled"
+          <AdminStatsCard
+v-if="stats" title="Pending Reviews" :value="stats.pendingReviews" subtitle="Scheduled"
             icon="i-heroicons-calendar" color="warning" />
-          <AdminStatsCard v-if="stats" title="Active Users" :value="stats.activeUsers"
+          <AdminStatsCard
+v-if="stats" title="Active Users" :value="stats.activeUsers"
             :subtitle="`${stats.invitedUsers} invited`" icon="i-heroicons-users" color="primary" />
         </div>
 

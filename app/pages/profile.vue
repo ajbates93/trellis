@@ -4,7 +4,9 @@
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-8">
-          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             My Profile
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -20,37 +22,65 @@
             <UCard class="mb-6">
               <div class="text-center">
                 <div class="mb-4 flex justify-center">
-                  <img :src="previewAvatar ||
-                    user?.avatarUrl ||
-                    user?.image ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      user?.name || 'User',
-                    )}&background=059669&color=fff`
-                    " :alt="user?.name || 'User avatar'" class="w-32 h-32 rounded-lg object-cover" />
+                  <img
+                    :src="
+                      previewAvatar ||
+                      user?.avatarUrl ||
+                      user?.image ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        user?.name || 'User',
+                      )}&background=059669&color=fff`
+                    "
+                    :alt="user?.name || 'User avatar'"
+                    class="w-32 h-32 rounded-lg object-cover"
+                  />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ user?.name }}
                 </h3>
-                <p v-if="user?.pronouns" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p
+                  v-if="user?.pronouns"
+                  class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                >
                   {{ user.pronouns }}
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
                   {{ user?.email }}
                 </p>
-                <p v-if="workspace" class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <p
+                  v-if="workspace"
+                  class="text-xs text-gray-400 dark:text-gray-500 mt-1"
+                >
                   {{ workspace.name }}
                 </p>
 
                 <!-- Avatar upload -->
                 <div class="mt-6 space-y-3">
                   <div class="flex gap-2">
-                    <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelected" />
-                    <UButton class="flex-1" variant="outline" size="sm" :loading="uploadingAvatar"
-                      @click="$refs.fileInput.click()">
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept="image/*"
+                      class="hidden"
+                      @change="onAvatarSelected"
+                    />
+                    <UButton
+                      class="flex-1"
+                      variant="outline"
+                      size="sm"
+                      :loading="uploadingAvatar"
+                      @click="$refs.fileInput.click()"
+                    >
                       {{ user?.avatarUrl ? "Change Avatar" : "Upload Avatar" }}
                     </UButton>
-                    <UButton v-if="user?.avatarUrl" variant="outline" size="sm" color="red" icon="i-heroicons-trash"
-                      @click="removeAvatar" />
+                    <UButton
+                      v-if="user?.avatarUrl"
+                      variant="outline"
+                      size="sm"
+                      color="red"
+                      icon="i-heroicons-trash"
+                      @click="removeAvatar"
+                    />
                   </div>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
                     Max 500 KB
@@ -61,7 +91,9 @@
 
             <!-- Info card -->
             <UCard>
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+              <h3
+                class="text-sm font-semibold text-gray-900 dark:text-white mb-4"
+              >
                 Account Information
               </h3>
               <div class="space-y-3 text-sm">
@@ -73,14 +105,20 @@
                 </div>
                 <div>
                   <p class="text-gray-600 dark:text-gray-400">Buddy</p>
-                  <p v-if="buddy" class="text-gray-900 dark:text-white font-medium">
+                  <p
+                    v-if="buddy"
+                    class="text-gray-900 dark:text-white font-medium"
+                  >
                     {{ buddy.name }}
                   </p>
                   <p v-else class="text-gray-500">Not assigned</p>
                 </div>
                 <div>
                   <p class="text-gray-600 dark:text-gray-400">Next Review</p>
-                  <p v-if="nextReview" class="text-gray-900 dark:text-white font-medium">
+                  <p
+                    v-if="nextReview"
+                    class="text-gray-900 dark:text-white font-medium"
+                  >
                     {{ formatDate(nextReview.scheduledDate) }}
                   </p>
                   <p v-else class="text-gray-500">Not scheduled</p>
@@ -101,29 +139,54 @@
               <!-- Basic Information -->
               <UCard>
                 <template #header>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     Basic Information
                   </h3>
                 </template>
 
                 <div class="space-y-6">
-                  <UFormField label="Full Name" name="name" :error="errors.name || undefined">
-                    <UInput v-model="form.name" placeholder="Your full name" :disabled="isSaving" class="w-full"
-                      @blur="validateName" />
+                  <UFormField
+                    label="Full Name"
+                    name="name"
+                    :error="errors.name || undefined"
+                  >
+                    <UInput
+                      v-model="form.name"
+                      placeholder="Your full name"
+                      :disabled="isSaving"
+                      class="w-full"
+                      @blur="validateName"
+                    />
                   </UFormField>
 
                   <div>
-                    <UInput v-model="form.preferredName" placeholder="How you'd like to be called (optional)"
-                      :disabled="isSaving" class="w-full" @blur="validatePreferredName" />
+                    <UInput
+                      v-model="form.preferredName"
+                      placeholder="How you'd like to be called (optional)"
+                      :disabled="isSaving"
+                      class="w-full"
+                      @blur="validatePreferredName"
+                    />
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
                       Used for personal greetings. If empty, we'll use your
                       first name.
                     </p>
                   </div>
 
-                  <UFormField label="Pronouns (Optional)" name="pronouns" :error="errors.pronouns || undefined">
-                    <UInput v-model="form.pronouns" placeholder="e.g., he/him, she/her, they/them" :disabled="isSaving"
-                      class="w-full" @blur="validatePronouns" />
+                  <UFormField
+                    label="Pronouns (Optional)"
+                    name="pronouns"
+                    :error="errors.pronouns || undefined"
+                  >
+                    <UInput
+                      v-model="form.pronouns"
+                      placeholder="e.g., he/him, she/her, they/them"
+                      :disabled="isSaving"
+                      class="w-full"
+                      @blur="validatePronouns"
+                    />
                   </UFormField>
                 </div>
               </UCard>
@@ -131,19 +194,33 @@
               <!-- About -->
               <UCard>
                 <template #header>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     About
                   </h3>
                 </template>
 
                 <div class="space-y-4">
-                  <UFormField label="Bio (Optional)" name="bio" :error="errors.bio || undefined"
-                    help="Tell us about yourself (max 500 characters)">
-                    <UTextarea v-model="form.bio"
-                      placeholder="Share a bit about yourself, your interests, or your role..." :rows="4"
-                      :disabled="isSaving" class="w-full" @blur="validateBio" />
+                  <UFormField
+                    label="Bio (Optional)"
+                    name="bio"
+                    :error="errors.bio || undefined"
+                    help="Tell us about yourself (max 500 characters)"
+                  >
+                    <UTextarea
+                      v-model="form.bio"
+                      placeholder="Share a bit about yourself, your interests, or your role..."
+                      :rows="4"
+                      :disabled="isSaving"
+                      class="w-full"
+                      @blur="validateBio"
+                    />
                   </UFormField>
-                  <p v-if="form.bio" class="text-xs text-gray-500 dark:text-gray-500 text-right">
+                  <p
+                    v-if="form.bio"
+                    class="text-xs text-gray-500 dark:text-gray-500 text-right"
+                  >
                     {{ form.bio.length }} / 500 characters
                   </p>
                 </div>
@@ -152,44 +229,120 @@
               <!-- Trellis-Specific Preferences -->
               <UCard>
                 <template #header>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     Trellis Preferences
                   </h3>
                 </template>
 
                 <div class="space-y-6">
                   <!-- Review Preference -->
-                  <UFormField label="How do you prefer to have reviews?" name="reviewPreference"
-                    :error="errors.reviewPreference || undefined">
-                    <URadioGroup v-model="form.reviewPreference" :items="[
-                      { value: 'in-person', label: 'In-Person' },
-                      { value: 'remote', label: 'Remote (Video Call)' },
-                      { value: 'hybrid', label: 'Flexible (Both)' },
-                      { value: 'no-preference', label: 'No Preference' },
-                    ]" :disabled="isSaving" />
+                  <UFormField
+                    label="How do you prefer to have reviews?"
+                    name="reviewPreference"
+                    :error="errors.reviewPreference || undefined"
+                  >
+                    <URadioGroup
+                      v-model="form.reviewPreference"
+                      :items="[
+                        { value: 'in-person', label: 'In-Person' },
+                        { value: 'remote', label: 'Remote (Video Call)' },
+                        { value: 'hybrid', label: 'Flexible (Both)' },
+                        { value: 'no-preference', label: 'No Preference' },
+                      ]"
+                      :disabled="isSaving"
+                    />
                   </UFormField>
 
                   <!-- Communication Preferences -->
-                  <UFormField label="Communication Preferences (Optional)" name="communicationPreferences"
+                  <UFormField
+                    label="Communication Preferences (Optional)"
+                    name="communicationPreferences"
                     :error="errors.communicationPreferences || undefined"
-                    help="Let your buddy know your preferred communication style and best times for feedback discussions">
-                    <UTextarea v-model="form.communicationPreferences"
+                    help="Let your buddy know your preferred communication style and best times for feedback discussions"
+                  >
+                    <UTextarea
+                      v-model="form.communicationPreferences"
                       placeholder="e.g., Prefer async written feedback; Best time for calls: mornings; Timezone: PST"
-                      :rows="3" :disabled="isSaving" class="w-full" @blur="validateCommunicationPreferences" />
+                      :rows="3"
+                      :disabled="isSaving"
+                      class="w-full"
+                      @blur="validateCommunicationPreferences"
+                    />
                   </UFormField>
-                  <p v-if="form.communicationPreferences" class="text-xs text-gray-500 dark:text-gray-500 text-right">
+                  <p
+                    v-if="form.communicationPreferences"
+                    class="text-xs text-gray-500 dark:text-gray-500 text-right"
+                  >
                     {{ form.communicationPreferences.length }} / 300 characters
                   </p>
+
+                  <!-- Timezone -->
+                  <UFormField
+                    label="Timezone"
+                    name="timezone"
+                    help="All dates and times will be displayed in your selected timezone"
+                  >
+                    <USelectMenu
+                      v-model="form.timezone"
+                      :items="commonTimezones"
+                      value-attribute="value"
+                      option-attribute="label"
+                      searchable
+                      searchable-placeholder="Search by city or country..."
+                      placeholder="Select your timezone"
+                      :disabled="isSaving"
+                      class="w-full"
+                    >
+                      <template #label>
+                        <span v-if="form.timezone">
+                          {{
+                            typeof form.timezone === 'string'
+                              ? (commonTimezones.find(
+                                  (tz) => tz.value === form.timezone,
+                                )?.label || form.timezone)
+                              : (form.timezone?.label || form.timezone?.value || '')
+                          }}
+                        </span>
+                        <span v-else class="text-gray-500">
+                          {{ getBrowserTimezone() }} (Browser default)
+                        </span>
+                      </template>
+                    </USelectMenu>
+                    <template #help>
+                      <div
+                        class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+                      >
+                        <UIcon name="i-heroicons-clock" class="w-3 h-3" />
+                        <span
+                          >Current time: {{ getCurrentTimeInUserTZ() }}</span
+                        >
+                      </div>
+                    </template>
+                  </UFormField>
                 </div>
               </UCard>
 
               <!-- Form actions -->
               <div class="flex gap-3">
-                <UButton type="submit" color="primary" size="lg" :loading="isSaving" class="flex-1">
+                <UButton
+                  type="submit"
+                  color="primary"
+                  size="lg"
+                  :loading="isSaving"
+                  class="flex-1"
+                >
                   Save Changes
                 </UButton>
-                <UButton type="button" variant="outline" size="lg" :disabled="isSaving" class="flex-1"
-                  @click="resetForm">
+                <UButton
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  :disabled="isSaving"
+                  class="flex-1"
+                  @click="resetForm"
+                >
                   Cancel
                 </UButton>
               </div>
@@ -203,6 +356,7 @@
 
 <script setup lang="ts">
 import { useAuth } from "~/composables/useAuth";
+import { useUserTimezone } from "~/composables/useUserTimezone";
 import type { User } from "~/types";
 
 definePageMeta({
@@ -215,6 +369,8 @@ useHead({
 });
 
 const { user, refreshSession } = useAuth();
+const { getBrowserTimezone, getCurrentTimeInUserTZ, commonTimezones } =
+  useUserTimezone();
 const fileInput = ref<HTMLInputElement>();
 const isSaving = ref(false);
 const uploadingAvatar = ref(false);
@@ -232,6 +388,7 @@ const form = reactive({
   bio: "",
   reviewPreference: "no-preference",
   communicationPreferences: "",
+  timezone: "",
   avatarUrl: "",
 });
 
@@ -255,6 +412,10 @@ watch(
       form.bio = newUser.bio || "";
       form.reviewPreference = newUser.reviewPreference || "no-preference";
       form.communicationPreferences = newUser.communicationPreferences || "";
+      // Initialize timezone with the full object so the label displays correctly
+      form.timezone = newUser.timezone
+        ? (commonTimezones.find(tz => tz.value === newUser.timezone) || newUser.timezone)
+        : "";
     }
   },
   { immediate: true },
@@ -416,6 +577,7 @@ const saveProfile = async () => {
       bio?: string;
       reviewPreference: string;
       communicationPreferences?: string;
+      timezone?: string;
       avatarUrl?: string;
     } = {
       name: form.name,
@@ -424,6 +586,10 @@ const saveProfile = async () => {
       bio: form.bio || undefined,
       reviewPreference: form.reviewPreference,
       communicationPreferences: form.communicationPreferences || undefined,
+      // Handle timezone - could be string or object from USelectMenu
+      timezone: typeof form.timezone === 'string'
+        ? (form.timezone.trim() || undefined)
+        : (form.timezone?.value || undefined),
     };
 
     // Include avatar if it was changed
@@ -465,6 +631,10 @@ const resetForm = () => {
     form.bio = user.value.bio || "";
     form.reviewPreference = user.value.reviewPreference || "no-preference";
     form.communicationPreferences = user.value.communicationPreferences || "";
+    // Reset timezone with the full object so the label displays correctly
+    form.timezone = user.value.timezone
+      ? (commonTimezones.find(tz => tz.value === user.value.timezone) || user.value.timezone)
+      : "";
     form.avatarUrl = "";
   }
   previewAvatar.value = null;

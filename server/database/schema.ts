@@ -43,6 +43,7 @@ export const users = pgTable("users", {
   bio: text("bio"),
   reviewPreference: varchar("review_preference", { length: 20 }), // in-person, remote, hybrid, no-preference
   communicationPreferences: text("communication_preferences"),
+  timezone: varchar("timezone", { length: 100 }), // IANA timezone (e.g., Europe/London)
   // Onboarding wizard progress
   onboardingTasks: text("onboarding_tasks").array().default([]),
   // Admin plugin fields
@@ -215,8 +216,8 @@ export const reviewSchedules = pgTable("review_schedules", {
   buddyId: text("buddy_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  scheduledDate: date("scheduled_date").notNull(),
-  completedDate: date("completed_date"),
+  scheduledDate: timestamp("scheduled_date", { mode: "string", withTimezone: true }).notNull(),
+  completedDate: timestamp("completed_date", { mode: "string", withTimezone: true }),
   status: varchar("status", { length: 50 }).default("scheduled"),
   notes: text("notes"),
   name: text("name"), // Custom review name, defaults to "Month YYYY"

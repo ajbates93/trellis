@@ -67,6 +67,18 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Validate timezone if provided (and not empty string)
+    if (body.timezone && body.timezone.trim() !== "") {
+      try {
+        Intl.DateTimeFormat(undefined, { timeZone: body.timezone });
+      } catch {
+        throw createError({
+          statusCode: 400,
+          message: "Invalid timezone format",
+        });
+      }
+    }
+
     // Build update object with only allowed fields
     const updateData: any = {};
     if ("name" in body && body.name) updateData.name = body.name;
@@ -76,6 +88,7 @@ export default defineEventHandler(async (event) => {
     if ("reviewPreference" in body) updateData.reviewPreference = body.reviewPreference || null;
     if ("communicationPreferences" in body)
       updateData.communicationPreferences = body.communicationPreferences || null;
+    if ("timezone" in body) updateData.timezone = body.timezone || null;
 
     // Handle avatar upload to S3
     if ("avatarUrl" in body) {
@@ -116,6 +129,7 @@ export default defineEventHandler(async (event) => {
         bio: users.bio,
         reviewPreference: users.reviewPreference,
         communicationPreferences: users.communicationPreferences,
+        timezone: users.timezone,
         avatarUrl: users.avatarUrl,
         image: users.image,
         roleType: users.roleType,

@@ -124,12 +124,14 @@ const createWorkspace = async () => {
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <NuxtLink v-for="workspace in workspacesData?.workspaces" :key="workspace.id"
+        <NuxtLink
+v-for="workspace in workspacesData?.workspaces" :key="workspace.id"
           :to="`/workspaces/${workspace.id}`">
           <UCard class="hover:ring-2 hover:ring-primary transition-all cursor-pointer h-full">
             <div class="flex items-start gap-4">
               <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <img v-if="workspace.logoUrl" :src="workspace.logoUrl" :alt="workspace.name"
+                <img
+v-if="workspace.logoUrl" :src="workspace.logoUrl" :alt="workspace.name"
                   class="w-10 h-10 rounded object-cover">
                 <UIcon v-else name="i-heroicons-building-office-2" class="w-6 h-6 text-primary" />
               </div>
@@ -169,7 +171,8 @@ const createWorkspace = async () => {
               <!-- Upload button -->
               <div v-else>
                 <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onLogoSelected">
-                <UButton variant="outline" icon="i-heroicons-arrow-up-tray" class="w-full"
+                <UButton
+variant="outline" icon="i-heroicons-arrow-up-tray" class="w-full"
                   @click="($refs.fileInput as HTMLInputElement).click()">
                   Upload Logo
                 </UButton>

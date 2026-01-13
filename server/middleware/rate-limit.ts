@@ -14,7 +14,7 @@ setInterval(() => {
   const now = Date.now();
   Object.keys(store).forEach((key) => {
     if (store[key].resetAt < now) {
-      delete store[key];
+      Reflect.deleteProperty(store, key);
     }
   });
 }, 10 * 60 * 1000);

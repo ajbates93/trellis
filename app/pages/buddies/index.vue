@@ -32,7 +32,8 @@ const { buddies, pending } = useBuddies();
         </div>
 
         <!-- Empty state (shouldn't happen due to middleware, but good to have) -->
-        <EmptyState v-else-if="buddies.length === 0" icon="i-heroicons-user-group" heading="No buddies assigned"
+        <EmptyState
+v-else-if="buddies.length === 0" icon="i-heroicons-user-group" heading="No buddies assigned"
           description="You don't have any buddies assigned to you yet. Contact your admin to get buddies assigned."
           variant="primary" />
 

@@ -16,19 +16,22 @@
         <div class="mb-6">
           <div class="border-b border-gray-200 dark:border-gray-800">
             <nav class="-mb-px flex space-x-8">
-              <NuxtLink to="/settings/general" class="border-b-2 py-4 px-1 text-sm font-medium" :class="$route.path === '/settings/general'
+              <NuxtLink
+to="/settings/general" class="border-b-2 py-4 px-1 text-sm font-medium" :class="$route.path === '/settings/general'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                 ">
                 General
               </NuxtLink>
-              <NuxtLink to="/settings/security" class="border-b-2 py-4 px-1 text-sm font-medium" :class="$route.path === '/settings/security'
+              <NuxtLink
+to="/settings/security" class="border-b-2 py-4 px-1 text-sm font-medium" :class="$route.path === '/settings/security'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                 ">
                 Security
               </NuxtLink>
-              <NuxtLink to="/settings/notifications" class="border-b-2 py-4 px-1 text-sm font-medium" :class="$route.path === '/settings/notifications'
+              <NuxtLink
+to="/settings/notifications" class="border-b-2 py-4 px-1 text-sm font-medium" :class="$route.path === '/settings/notifications'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                 ">
@@ -58,6 +61,28 @@
               </div>
             </div>
           </UCard>
+
+          <!-- About Section -->
+          <UCard>
+            <template #header>
+              <h2 class="text-lg font-medium">About</h2>
+            </template>
+
+            <div class="space-y-4">
+              <!-- Version Info -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-medium">Version</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Current application version
+                  </p>
+                </div>
+                <div class="text-sm font-mono text-gray-700 dark:text-gray-300">
+                  v{{ appVersion }}
+                </div>
+              </div>
+            </div>
+          </UCard>
         </div>
       </div>
     </template>
@@ -72,4 +97,7 @@ definePageMeta({
 useHead({
   title: "General Settings",
 });
+
+const config = useRuntimeConfig();
+const appVersion = config.public.appVersion;
 </script>

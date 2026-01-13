@@ -17,15 +17,17 @@
     <UAlert v-if="error" icon="i-heroicons-exclamation-triangle" color="red" variant="soft" :title="error" />
 
     <!-- Success Message -->
-    <UAlert v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft"
+    <UAlert
+v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft"
       title="Password set successfully!" description="Redirecting you to login..." />
 
     <!-- Set Password Form -->
-    <form v-if="!success" @submit.prevent="handleSetPassword" class="space-y-6">
+    <form v-if="!success" class="space-y-6" @submit.prevent="handleSetPassword">
       <UInput v-model="email" type="email" disabled icon="i-heroicons-envelope" size="xl" class="w-full" />
 
       <div>
-        <UInput v-model="password" type="password" placeholder="Enter your password" icon="i-heroicons-lock-closed"
+        <UInput
+v-model="password" type="password" placeholder="Enter your password" icon="i-heroicons-lock-closed"
           size="xl" class="w-full" :disabled="loading" />
         <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
         <p v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -34,12 +36,14 @@
       </div>
 
       <div>
-        <UInput v-model="confirmPassword" type="password" placeholder="Confirm your password"
+        <UInput
+v-model="confirmPassword" type="password" placeholder="Confirm your password"
           icon="i-heroicons-lock-closed" size="xl" class="w-full" :disabled="loading" />
         <p v-if="confirmPasswordError" class="text-xs text-red-500 mt-1">{{ confirmPasswordError }}</p>
       </div>
 
-      <UButton type="submit" color="primary" size="xl" block :loading="loading"
+      <UButton
+type="submit" color="primary" size="xl" block :loading="loading"
         :disabled="!password || !confirmPassword">
         Set Password & Continue
       </UButton>

@@ -90,7 +90,8 @@
 
             <!-- Timeline items -->
             <div class="space-y-12">
-              <template v-for="item in timelineItems" :key="
+              <template
+v-for="item in timelineItems" :key="
                   item.type === 'year'
                     ? `year-${item.year}`
                     : item.achievement.id
@@ -102,7 +103,8 @@
                     @click="toggleYear(item.year)">
                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                       {{ item.year }}
-                      <UIcon :name="expandedYears[item.year]
+                      <UIcon
+:name="expandedYears[item.year]
                           ? 'i-heroicons-chevron-down'
                           : 'i-heroicons-chevron-right'
                         " class="w-4 h-4 transition-transform duration-200" />
@@ -112,7 +114,8 @@
 
                 <!-- Achievement item -->
                 <Transition v-if="item.type === 'achievement'" name="achievement" appear>
-                  <div v-if="
+                  <div
+v-if="
                     expandedYears[getYearForAchievement(item.achievement)]
                   " class="relative group">
                     <!-- Timeline dot -->
@@ -125,7 +128,8 @@
                       <div class="text-right">
                         <template v-if="item.displayIndex % 2 === 0">
                           <!-- Card on left -->
-                          <AchievementsAchievementCard :achievement="item.achievement" align="right"
+                          <AchievementsAchievementCard
+:achievement="item.achievement" align="right"
                             @updated="refreshAchievements" @deleted="refreshAchievements" @edit="editAchievement" />
                         </template>
                         <template v-else>
@@ -162,7 +166,8 @@
                         </template>
                         <template v-else>
                           <!-- Card on right -->
-                          <AchievementsAchievementCard :achievement="item.achievement" align="left"
+                          <AchievementsAchievementCard
+:achievement="item.achievement" align="left"
                             @updated="refreshAchievements" @deleted="refreshAchievements" @edit="editAchievement" />
                         </template>
                       </div>
@@ -175,13 +180,15 @@
         </div>
 
         <!-- Empty state -->
-        <EmptyState v-else icon="i-heroicons-trophy" icon-color="text-teal-500"
+        <EmptyState
+v-else icon="i-heroicons-trophy" icon-color="text-teal-500"
           icon-bg-color="bg-teal-100 dark:bg-teal-900/30" heading="Your Brag Bucket is empty"
           description="Start adding achievements as they happen. At review time, you'll have a complete list to celebrate!"
           button-text="Add Your First Achievement" button-icon="i-heroicons-plus-20-solid" variant="primary"
           @button-click="openCreateModal" />
         <!-- Achievement Modal -->
-        <AchievementsAchievementModal v-model:is-open="isModalOpen" :mode="modalMode" :achievement="selectedAchievement"
+        <AchievementsAchievementModal
+v-model:is-open="isModalOpen" :mode="modalMode" :achievement="selectedAchievement"
           @success="onModalSuccess" />
       </div>
     </template>
