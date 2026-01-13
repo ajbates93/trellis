@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { format } from "date-fns";
+import { getTimezoneOffset, format as formatTz } from "date-fns-tz";
 
 definePageMeta({
   layout: "default",
@@ -9,6 +10,7 @@ const route = useRoute();
 const toast = useToast();
 const reviewId = route.params.id as string;
 const { downloadICalFile } = useCalendarExport();
+const { formatDateInUserTZ } = useUserTimezone();
 
 // Fetch review data
 const { data: reviewData, refresh } = await useFetch(
@@ -66,16 +68,22 @@ const openEditModal = () => {
   if (!review.value) return;
 
   if (review.value.scheduledDate) {
-    const dateTime = new Date(review.value.scheduledDate);
-    editScheduledDate.value = dateTime.toISOString().split('T')[0];
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+    const utcDate = new Date(review.value.scheduledDate);
 
-    const hours = dateTime.getHours();
-    const minutes = dateTime.getMinutes();
-    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    editScheduledTime.value = timeString;
+    // Check if this is midnight UTC (all day event)
+    const utcHours = utcDate.getUTCHours();
+    const utcMinutes = utcDate.getUTCMinutes();
+    const isAllDay = utcHours === 0 && utcMinutes === 0;
 
-    // If not 9 AM, show time picker
-    editIncludeTime.value = !(hours === 9 && minutes === 0);
+    // Convert from UTC to user's configured timezone using date-fns-tz
+    // Extract date in user's timezone
+    editScheduledDate.value = formatTz(utcDate, 'yyyy-MM-dd', { timeZone: userTz });
+    // Extract time in user's timezone
+    editScheduledTime.value = formatTz(utcDate, 'HH:mm', { timeZone: userTz });
+
+    editIncludeTime.value = !isAllDay;
   } else {
     editScheduledDate.value = "";
     editScheduledTime.value = "09:00";
@@ -101,14 +109,29 @@ const updateReview = async () => {
   isEditing.value = true;
 
   try {
-    // Combine date and time if time is included, otherwise use 9 AM default
+    // Combine date and time if time is included, otherwise use midnight for "all day"
     const dateTimeString = editIncludeTime.value
       ? `${editScheduledDate.value}T${editScheduledTime.value}`
-      : `${editScheduledDate.value}T09:00`;
+      : `${editScheduledDate.value}T00:00`;
 
-    // Convert to UTC in the browser (user's timezone) before sending to server
-    const localDate = new Date(dateTimeString);
-    const utcDateString = localDate.toISOString();
+    // Convert from user's configured timezone to UTC
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+
+    // Parse date/time components
+    const [datePart, timePart] = dateTimeString.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+
+    // Create UTC timestamp for this date/time
+    const utcMs = Date.UTC(year, month - 1, day, hours, minutes);
+
+    // Get timezone offset for this date (handles DST automatically)
+    const offset = getTimezoneOffset(userTz, new Date(year, month - 1, day));
+
+    // Subtract offset to convert from user's timezone to UTC
+    const correctUtcMs = utcMs - offset;
+    const utcDateString = new Date(correctUtcMs).toISOString();
 
     await $fetch(`/api/reviews/${reviewId}`, {
       method: "PATCH",
@@ -164,22 +187,9 @@ const completeReview = async () => {
   }
 };
 
+// Format date helper using user's configured timezone
 const formatDate = (date: string) => {
-  if (!date) return "N/A";
-  const d = new Date(date); // Automatically converts UTC to user's local timezone
-
-  // Check if this is stored as 9 AM UTC (the default time for "all day" events)
-  // We check the UTC hours, not local hours, to determine if it was an "all day" event
-  const utcHours = parseInt(date.substring(11, 13));
-  const utcMinutes = parseInt(date.substring(14, 16));
-
-  // Show "All day" for 9 AM UTC (default) or midnight UTC (legacy)
-  const isDefaultTime = (utcHours === 9 && utcMinutes === 0) || (utcHours === 0 && utcMinutes === 0);
-
-  if (isDefaultTime) {
-    return format(d, "MMM d, yyyy") + " (All day)";
-  }
-  return format(d, "MMM d, yyyy 'at' h:mm a");
+  return formatDateInUserTZ(date);
 };
 
 // Modal state for feedback
@@ -705,7 +715,7 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
             </div>
 
             <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-              Review will be scheduled for 9:00 AM (all-day event)
+              Review will be shown as an all-day event
             </div>
 
             <!-- Review Name -->

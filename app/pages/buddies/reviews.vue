@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { format, differenceInDays } from "date-fns";
+import {
+  getTimezoneOffset,
+  format as formatTz,
+  fromZonedTime,
+} from "date-fns-tz";
 import type { TabsItem } from "@nuxt/ui";
 
 definePageMeta({
@@ -15,6 +20,7 @@ const toast = useToast();
 const { selectedBuddyId } = useSelectedBuddy();
 const { getBuddyById } = useBuddies();
 const { downloadICalFile } = useCalendarExport();
+const { formatDateInUserTZ } = useUserTimezone();
 
 // Get selected buddy info
 const selectedBuddy = computed(() => {
@@ -48,24 +54,9 @@ const handleBuddySelected = (buddyId: string) => {
   selectedBuddyId.value = buddyId;
 };
 
-// Format date helper
+// Format date helper using user's configured timezone
 const formatDate = (date: string | Date | null) => {
-  if (!date) return "N/A";
-  const d = new Date(date); // Automatically converts UTC to user's local timezone
-
-  // Check if this is stored as 9 AM UTC (the default time for "all day" events)
-  // We check the UTC hours, not local hours, to determine if it was an "all day" event
-  const dateString = typeof date === 'string' ? date : d.toISOString();
-  const utcHours = parseInt(dateString.substring(11, 13));
-  const utcMinutes = parseInt(dateString.substring(14, 16));
-
-  // Show "All day" for 9 AM UTC (default) or midnight UTC (legacy)
-  const isDefaultTime = (utcHours === 9 && utcMinutes === 0) || (utcHours === 0 && utcMinutes === 0);
-
-  if (isDefaultTime) {
-    return format(d, "MMM d, yyyy") + " (All day)";
-  }
-  return format(d, "MMM d, yyyy 'at' h:mm a");
+  return formatDateInUserTZ(date);
 };
 
 // Get days until review
@@ -120,16 +111,26 @@ const openEditModal = (review: any) => {
   editingReview.id = review.id;
 
   if (review.scheduledDate) {
-    const dateTime = new Date(review.scheduledDate);
-    editingReview.scheduledDate = dateTime.toISOString().split('T')[0];
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+    const utcDate = new Date(review.scheduledDate);
 
-    const hours = dateTime.getHours();
-    const minutes = dateTime.getMinutes();
-    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    editingReview.scheduledTime = timeString;
+    // Check if this is midnight UTC (all day event)
+    const utcHours = utcDate.getUTCHours();
+    const utcMinutes = utcDate.getUTCMinutes();
+    const isAllDay = utcHours === 0 && utcMinutes === 0;
 
-    // If not 9 AM, show time picker
-    editingReview.includeTime = !(hours === 9 && minutes === 0);
+    // Convert from UTC to user's configured timezone using date-fns-tz
+    // Extract date in user's timezone
+    editingReview.scheduledDate = formatTz(utcDate, "yyyy-MM-dd", {
+      timeZone: userTz,
+    });
+    // Extract time in user's timezone
+    editingReview.scheduledTime = formatTz(utcDate, "HH:mm", {
+      timeZone: userTz,
+    });
+
+    editingReview.includeTime = !isAllDay;
   } else {
     editingReview.scheduledDate = "";
     editingReview.scheduledTime = "09:00";
@@ -155,14 +156,18 @@ const updateReview = async () => {
   isEditing.value = true;
 
   try {
-    // Combine date and time if time is included, otherwise use 9 AM default
+    // Combine date and time if time is included, otherwise use midnight for "all day"
     const dateTimeString = editingReview.includeTime
       ? `${editingReview.scheduledDate}T${editingReview.scheduledTime}`
-      : `${editingReview.scheduledDate}T09:00`;
+      : `${editingReview.scheduledDate}T00:00`;
 
-    // Convert to UTC in the browser (user's timezone) before sending to server
-    const localDate = new Date(dateTimeString);
-    const utcDateString = localDate.toISOString();
+    // Convert from user's configured timezone to UTC
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+
+    // Convert the datetime from user's timezone to UTC
+    const utcDate = fromZonedTime(dateTimeString, userTz);
+    const utcDateString = utcDate.toISOString();
 
     await $fetch(`/api/reviews/${editingReview.id}`, {
       method: "PATCH",
@@ -233,14 +238,18 @@ const createReview = async () => {
   isCreating.value = true;
 
   try {
-    // Combine date and time if time is included, otherwise use 9 AM default
+    // Combine date and time if time is included, otherwise use midnight for "all day"
     const dateTimeString = includeTime.value
       ? `${scheduledDate.value}T${scheduledTime.value}`
-      : `${scheduledDate.value}T09:00`;
+      : `${scheduledDate.value}T00:00`;
 
-    // Convert to UTC in the browser (user's timezone) before sending to server
-    const localDate = new Date(dateTimeString);
-    const utcDateString = localDate.toISOString();
+    // Convert from user's configured timezone to UTC
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+
+    // Convert the datetime from user's timezone to UTC
+    const utcDate = fromZonedTime(dateTimeString, userTz);
+    const utcDateString = utcDate.toISOString();
 
     await $fetch("/api/reviews", {
       method: "POST",
@@ -362,7 +371,9 @@ const getReviewActions = (review: any) => [
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Page header -->
         <div class="mb-6">
-          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+          <h1
+            class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+          >
             Buddy Reviews
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -373,12 +384,16 @@ const getReviewActions = (review: any) => [
         <!-- Buddy Selector and Create Button -->
         <div class="mb-6 flex items-end justify-between gap-4">
           <div class="flex-1">
-            <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
+            <BuddySelector
+              :buddy-id="selectedBuddyId || undefined"
+              @buddy-selected="handleBuddySelected"
+            />
           </div>
           <UButton
             v-if="selectedBuddyId"
             icon="i-heroicons-plus"
-            @click="isCreateModalOpen = true">
+            @click="isCreateModalOpen = true"
+          >
             Create Review
           </UButton>
         </div>
@@ -387,46 +402,81 @@ const getReviewActions = (review: any) => [
         <div v-if="selectedBuddyId && selectedBuddy">
           <!-- Empty state when buddy has no reviews at all -->
           <EmptyState
-v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicons-calendar-days"
-            heading="No reviews yet" :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
-            button-text="Create First Review" button-icon="i-heroicons-plus" variant="primary"
-            @button-click="isCreateModalOpen = true" />
+            v-if="upcomingReviews.length === 0 && pastReviews.length === 0"
+            icon="i-heroicons-calendar-days"
+            heading="No reviews yet"
+            :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
+            button-text="Create First Review"
+            button-icon="i-heroicons-plus"
+            variant="primary"
+            @button-click="isCreateModalOpen = true"
+          />
 
           <div v-else class="space-y-12">
             <!-- Upcoming Review Section -->
             <section>
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <UIcon name="i-heroicons-calendar-days" class="text-primary-500" />
+              <h2
+                class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+              >
+                <UIcon
+                  name="i-heroicons-calendar-days"
+                  class="text-primary-500"
+                />
                 Upcoming Reviews
-                <UBadge v-if="upcomingReviews.length > 0" :label="upcomingReviews.length.toString()" color="primary" />
+                <UBadge
+                  v-if="upcomingReviews.length > 0"
+                  :label="upcomingReviews.length.toString()"
+                  color="primary"
+                />
               </h2>
 
               <div v-if="upcomingReviews.length > 0" class="space-y-4">
                 <UCard
                   v-for="(review, index) in upcomingReviews"
                   :key="review.id"
-                  :class="index === 0
-                    ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
-                    : 'bg-gray-50 dark:bg-gray-800'"
+                  :class="
+                    index === 0
+                      ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
+                      : 'bg-gray-50 dark:bg-gray-800'
+                  "
                 >
-                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
                     <div class="space-y-2">
                       <div class="flex items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                        <h3
+                          class="text-xl font-bold text-gray-900 dark:text-white"
+                        >
                           {{ review.name }}
                         </h3>
-                        <UBadge v-if="index === 0" label="Next" color="primary" variant="subtle" />
-                        <UBadge v-else :label="review.status" color="neutral" variant="subtle" />
+                        <UBadge
+                          v-if="index === 0"
+                          label="Next"
+                          color="primary"
+                          variant="subtle"
+                        />
+                        <UBadge
+                          v-else
+                          :label="review.status"
+                          color="neutral"
+                          variant="subtle"
+                        />
                       </div>
 
-                      <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div
+                        class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400"
+                      >
                         <div class="flex items-center gap-1.5">
                           <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
                           <span>{{ formatDate(review.scheduledDate) }}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                           <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                          <span>{{ getDaysUntilReview(review.scheduledDate) }} days left</span>
+                          <span
+                            >{{ getDaysUntilReview(review.scheduledDate) }} days
+                            left</span
+                          >
                         </div>
                       </div>
                     </div>
@@ -436,7 +486,11 @@ v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicon
                         View Details
                       </UButton>
                       <UDropdownMenu :items="getReviewActions(review)">
-                        <UButton icon="i-heroicons-ellipsis-vertical" variant="ghost" color="neutral" />
+                        <UButton
+                          icon="i-heroicons-ellipsis-vertical"
+                          variant="ghost"
+                          color="neutral"
+                        />
                       </UDropdownMenu>
                     </div>
                   </div>
@@ -444,34 +498,68 @@ v-if="upcomingReviews.length === 0 && pastReviews.length === 0" icon="i-heroicon
               </div>
 
               <EmptyState
-v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
-                icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
-                :description="`${selectedBuddy?.name} has no scheduled reviews coming up`" button-text="Schedule Review"
-                button-icon="i-heroicons-plus" variant="secondary" @button-click="isCreateModalOpen = true" />
+                v-else
+                icon="i-heroicons-calendar-days"
+                icon-color="text-gray-400"
+                icon-bg-color="bg-gray-100 dark:bg-gray-800"
+                heading="No upcoming review"
+                :description="`${selectedBuddy?.name} has no scheduled reviews coming up`"
+                button-text="Schedule Review"
+                button-icon="i-heroicons-plus"
+                variant="secondary"
+                @button-click="isCreateModalOpen = true"
+              />
             </section>
 
             <!-- Past Reviews Section -->
             <section>
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <h2
+                class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+              >
                 <UIcon name="i-heroicons-archive-box" class="text-gray-500" />
                 Past Reviews
               </h2>
 
-              <div v-if="pastReviews.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div
+                v-if="pastReviews.length > 0"
+                class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              >
                 <NuxtLink
-v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`"
-                  class="block group">
-                  <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
+                  v-for="review in pastReviews"
+                  :key="review.id"
+                  :to="`/reviews/${review.id}`"
+                  class="block group"
+                >
+                  <UCard
+                    class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer"
+                  >
                     <div class="flex justify-between items-start mb-4">
-                      <UBadge :label="formatDate(review.scheduledDate)" color="neutral" variant="solid" />
-                      <UIcon name="i-heroicons-arrow-right" class="text-gray-400 group-hover:text-primary-500" />
+                      <UBadge
+                        :label="formatDate(review.scheduledDate)"
+                        color="neutral"
+                        variant="solid"
+                      />
+                      <UIcon
+                        name="i-heroicons-arrow-right"
+                        class="text-gray-400 group-hover:text-primary-500"
+                      />
                     </div>
                     <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
-                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-green-500" />
-                      <span>Completed {{ formatDate(review.completedDate) }}</span>
+                    <div
+                      class="flex items-center gap-2 text-sm text-gray-500 mb-4"
+                    >
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="w-4 h-4 text-green-500"
+                      />
+                      <span
+                        >Completed {{ formatDate(review.completedDate) }}</span
+                      >
                     </div>
-                    <div v-if="review.completionNotes" class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                    <div
+                      v-if="review.completionNotes"
+                      class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3"
+                    >
                       {{ review.completionNotes }}
                     </div>
                   </UCard>
@@ -479,9 +567,14 @@ v-for="review in pastReviews" :key="review.id" :to="`/reviews/${review.id}`"
               </div>
 
               <EmptyState
-v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
-                icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No past reviews"
-                :description="`${selectedBuddy?.name} has no completed reviews yet`" variant="secondary" />
+                v-else
+                icon="i-heroicons-archive-box"
+                icon-color="text-gray-400"
+                icon-bg-color="bg-gray-100 dark:bg-gray-800"
+                heading="No past reviews"
+                :description="`${selectedBuddy?.name} has no completed reviews yet`"
+                variant="secondary"
+              />
             </section>
           </div>
         </div>
@@ -490,7 +583,11 @@ v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
   </UDashboardPanel>
 
   <!-- Review Details Modal -->
-  <UModal v-model:open="showReviewModal" :title="`Review: ${selectedReview?.name}`" size="xl">
+  <UModal
+    v-model:open="showReviewModal"
+    :title="`Review: ${selectedReview?.name}`"
+    size="xl"
+  >
     <template #body>
       <div v-if="selectedReview" class="space-y-6">
         <!-- Review Details -->
@@ -507,7 +604,10 @@ v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
           <div>
             <div class="text-sm text-gray-500 dark:text-gray-400">Status</div>
             <div>
-              <UBadge :label="selectedReview.status" :color="getStatusColor(selectedReview.status)" />
+              <UBadge
+                :label="selectedReview.status"
+                :color="getStatusColor(selectedReview.status)"
+              />
             </div>
           </div>
         </div>
@@ -521,17 +621,20 @@ v-else icon="i-heroicons-archive-box" icon-color="text-gray-400"
           </div>
         </div>
 
-
-
         <!-- Check-ins Section -->
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
             💬 Check-ins
           </h3>
-          <div v-if="selectedReview.checkins && selectedReview.checkins.length > 0" class="space-y-3">
+          <div
+            v-if="selectedReview.checkins && selectedReview.checkins.length > 0"
+            class="space-y-3"
+          >
             <div
-v-for="checkin in selectedReview.checkins" :key="checkin.id"
-              class="bg-gray-50 dark:bg-gray-800 rounded p-3 text-sm">
+              v-for="checkin in selectedReview.checkins"
+              :key="checkin.id"
+              class="bg-gray-50 dark:bg-gray-800 rounded p-3 text-sm"
+            >
               <div class="flex items-start justify-between mb-2">
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">
@@ -562,8 +665,10 @@ v-for="checkin in selectedReview.checkins" :key="checkin.id"
           Close
         </UButton>
         <UButton
-v-if="selectedReview?.status === 'scheduled'" color="success"
-          @click="completeReview(selectedReview.id)">
+          v-if="selectedReview?.status === 'scheduled'"
+          color="success"
+          @click="completeReview(selectedReview.id)"
+        >
           Complete Review
         </UButton>
       </div>
@@ -572,10 +677,13 @@ v-if="selectedReview?.status === 'scheduled'" color="success"
 
   <!-- Create Review Modal -->
   <UModal
-v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
-    class="sm:max-w-2xl" :ui="{
+    v-model:open="isCreateModalOpen"
+    :title="`Create Review for ${selectedBuddy?.name || 'Buddy'}`"
+    class="sm:max-w-2xl"
+    :ui="{
       footer: 'justify-end',
-    }">
+    }"
+  >
     <template #body>
       <div class="space-y-4">
         <!-- Scheduled Date -->
@@ -583,22 +691,28 @@ v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.nam
           <label class="block text-sm font-medium mb-2">
             Scheduled Date <span class="text-red-500">*</span>
           </label>
-          <UInput v-model="scheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" class="w-auto" />
+          <UInput
+            v-model="scheduledDate"
+            type="date"
+            :min="new Date().toISOString().split('T')[0]"
+            class="w-auto"
+          />
         </div>
 
         <!-- Include Time Checkbox -->
         <div class="flex items-center gap-2">
           <UCheckbox v-model="includeTime" />
-          <label class="text-sm font-medium cursor-pointer" @click="includeTime = !includeTime">
+          <label
+            class="text-sm font-medium cursor-pointer"
+            @click="includeTime = !includeTime"
+          >
             Schedule at specific time
           </label>
         </div>
 
         <!-- Time Picker (conditional) -->
         <div v-if="includeTime">
-          <label class="block text-sm font-medium mb-2">
-            Time
-          </label>
+          <label class="block text-sm font-medium mb-2"> Time </label>
           <UInput v-model="scheduledTime" type="time" class="w-auto" />
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Review will be scheduled at {{ scheduledTime }}
@@ -606,31 +720,42 @@ v-model:open="isCreateModalOpen" :title="`Create Review for ${selectedBuddy?.nam
         </div>
 
         <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-          Review will be scheduled for 9:00 AM (all-day event)
+          Review will be shown as an all-day event
         </div>
 
         <!-- Review Name -->
         <div>
           <label class="block text-sm font-medium mb-2"> Review Name </label>
-          <UInput v-model="reviewName" placeholder="e.g., January 2026" size="lg" class="w-full" />
+          <UInput
+            v-model="reviewName"
+            placeholder="e.g., January 2026"
+            size="lg"
+            class="w-full"
+          />
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Auto-generated from date if left empty
           </p>
         </div>
-
-
       </div>
     </template>
 
     <template #footer>
       <UButton
-color="neutral" variant="ghost" :disabled="isCreating" @click="
-        isCreateModalOpen = false;
-      resetForm();
-      ">
+        color="neutral"
+        variant="ghost"
+        :disabled="isCreating"
+        @click="
+          isCreateModalOpen = false;
+          resetForm();
+        "
+      >
         Cancel
       </UButton>
-      <UButton :loading="isCreating" :disabled="!scheduledDate" @click="createReview">
+      <UButton
+        :loading="isCreating"
+        :disabled="!scheduledDate"
+        @click="createReview"
+      >
         Create Review
       </UButton>
     </template>
@@ -638,9 +763,13 @@ color="neutral" variant="ghost" :disabled="isCreating" @click="
 
   <!-- Edit Review Modal -->
   <UModal
-v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
-    footer: 'justify-end',
-  }">
+    v-model:open="isEditModalOpen"
+    title="Edit Review"
+    class="sm:max-w-2xl"
+    :ui="{
+      footer: 'justify-end',
+    }"
+  >
     <template #body>
       <div class="space-y-4">
         <!-- Scheduled Date -->
@@ -652,47 +781,65 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
             v-model="editingReview.scheduledDate"
             type="date"
             :min="new Date().toISOString().split('T')[0]"
-            class="w-auto" />
+            class="w-auto"
+          />
         </div>
 
         <!-- Include Time Checkbox -->
         <div class="flex items-center gap-2">
           <UCheckbox v-model="editingReview.includeTime" />
-          <label class="text-sm font-medium cursor-pointer" @click="editingReview.includeTime = !editingReview.includeTime">
+          <label
+            class="text-sm font-medium cursor-pointer"
+            @click="editingReview.includeTime = !editingReview.includeTime"
+          >
             Schedule at specific time
           </label>
         </div>
 
         <!-- Time Picker (conditional) -->
         <div v-if="editingReview.includeTime">
-          <label class="block text-sm font-medium mb-2">
-            Time
-          </label>
-          <UInput v-model="editingReview.scheduledTime" type="time" class="w-auto" />
+          <label class="block text-sm font-medium mb-2"> Time </label>
+          <UInput
+            v-model="editingReview.scheduledTime"
+            type="time"
+            class="w-auto"
+          />
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Review will be scheduled at {{ editingReview.scheduledTime }}
           </p>
         </div>
 
         <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-          Review will be scheduled for 9:00 AM (all-day event)
+          Review will be shown as an all-day event
         </div>
 
         <!-- Review Name -->
         <div>
           <label class="block text-sm font-medium mb-2"> Review Name </label>
-          <UInput v-model="editingReview.name" placeholder="e.g., January 2026" size="lg" class="w-full" />
+          <UInput
+            v-model="editingReview.name"
+            placeholder="e.g., January 2026"
+            size="lg"
+            class="w-full"
+          />
         </div>
-
-
       </div>
     </template>
 
     <template #footer>
-      <UButton color="neutral" variant="ghost" :disabled="isEditing" @click="isEditModalOpen = false">
+      <UButton
+        color="neutral"
+        variant="ghost"
+        :disabled="isEditing"
+        @click="isEditModalOpen = false"
+      >
         Cancel
       </UButton>
-      <UButton :loading="isEditing" :disabled="!editingReview.scheduledDate" @click="updateReview">
+      <UButton
+        :loading="isEditing"
+        :disabled="!editingReview.scheduledDate"
+        @click="updateReview"
+      >
         Save Changes
       </UButton>
     </template>

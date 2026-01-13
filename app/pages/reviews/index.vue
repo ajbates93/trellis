@@ -26,10 +26,11 @@ const daysUntil = (date: string) => {
   return differenceInDays(new Date(date), new Date());
 };
 
-// Format date
+// Format date using user's timezone
+const { formatDateInUserTZ } = useUserTimezone();
+
 const formatDate = (date: string | Date | null) => {
-  if (!date) return "N/A";
-  return format(new Date(date), "MMM d, yyyy");
+  return formatDateInUserTZ(date);
 };
 </script>
 
@@ -51,61 +52,84 @@ const formatDate = (date: string | Date | null) => {
           </div>
         </div>
 
-        <!-- Upcoming Review Section -->
+        <!-- Upcoming Reviews Section -->
         <section class="mb-12">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <UIcon name="i-heroicons-calendar-days" class="text-primary-500" />
-            Upcoming Review
+            Upcoming Reviews
+            <UBadge v-if="upcomingReviews.length > 0" :label="upcomingReviews.length.toString()" color="primary" />
           </h2>
 
-          <div v-if="upcomingReviews.length > 0">
-            <NuxtLink :to="`/reviews/${upcomingReviews[0].id}`" class="block group">
-              <UCard
-                class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div class="space-y-2">
-                    <div class="flex items-center gap-3">
-                      <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ upcomingReviews[0].name }}
-                      </h3>
-                      <UBadge :label="upcomingReviews[0].status" color="primary" variant="subtle" />
-                    </div>
+          <div v-if="upcomingReviews.length > 0" class="space-y-4">
+            <UCard
+              v-for="(review, index) in upcomingReviews"
+              :key="review.id"
+              :class="index === 0
+                ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
+                : 'bg-gray-50 dark:bg-gray-800'"
+            >
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                      {{ review.name }}
+                    </h3>
+                    <UBadge
+                      v-if="index === 0"
+                      label="Next"
+                      color="primary"
+                      variant="subtle"
+                    />
+                    <UBadge
+                      v-else
+                      :label="review.status"
+                      color="neutral"
+                      variant="subtle"
+                    />
+                  </div>
 
-                    <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                        <span>{{ formatDate(upcomingReviews[0].scheduledDate) }}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                        <span>{{ daysUntil(upcomingReviews[0].scheduledDate) }} days left</span>
-                      </div>
+                  <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div class="flex items-center gap-1.5">
+                      <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
+                      <span>{{ formatDate(review.scheduledDate) }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                      <span>{{ daysUntil(review.scheduledDate) }} days left</span>
                     </div>
                   </div>
 
-                  <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                      <UAvatar
-:src="upcomingReviews[0].buddy?.avatarUrl" :alt="upcomingReviews[0].buddy?.name"
-                        size="sm" />
-                      <div class="text-sm">
-                        <p class="text-gray-500 dark:text-gray-400">Buddy</p>
-                        <p class="font-medium text-gray-900 dark:text-white">{{ upcomingReviews[0].buddy?.name }}</p>
-                      </div>
+                  <div class="flex items-center gap-2">
+                    <UAvatar
+                      :src="review.buddy?.avatarUrl"
+                      :alt="review.buddy?.name"
+                      size="sm"
+                    />
+                    <div class="text-sm">
+                      <span class="text-gray-500 dark:text-gray-400">Buddy: </span>
+                      <span class="font-medium text-gray-900 dark:text-white">{{ review.buddy?.name }}</span>
                     </div>
-                    <UIcon
-name="i-heroicons-chevron-right"
-                      class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
                   </div>
                 </div>
-              </UCard>
-            </NuxtLink>
+
+                <div>
+                  <UButton :to="`/reviews/${review.id}`" variant="soft">
+                    View Details
+                  </UButton>
+                </div>
+              </div>
+            </UCard>
           </div>
 
           <EmptyState
-v-else icon="i-heroicons-calendar-days" icon-color="text-gray-400"
-            icon-bg-color="bg-gray-100 dark:bg-gray-800" heading="No upcoming review"
-            description="You're all caught up! Your buddy will schedule your next review." variant="secondary" />
+            v-else
+            icon="i-heroicons-calendar-days"
+            icon-color="text-gray-400"
+            icon-bg-color="bg-gray-100 dark:bg-gray-800"
+            heading="No upcoming reviews"
+            description="You're all caught up! Your buddy will schedule your next review."
+            variant="secondary"
+          />
         </section>
 
         <!-- Past Reviews Section -->

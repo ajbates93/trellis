@@ -95,6 +95,10 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      timezone: {
+        type: "string",
+        required: false,
+      },
       onboardingTasks: {
         type: "string[]",
         required: false,
@@ -244,6 +248,10 @@ export const auth = betterAuth({
           // Transfer super admin status (in case admin was pre-created)
           if (seededUser.isSuperAdmin) {
             updateData.isSuperAdmin = seededUser.isSuperAdmin;
+          }
+          // Transfer timezone preference
+          if (seededUser.timezone) {
+            updateData.timezone = seededUser.timezone;
           }
 
           if (Object.keys(updateData).length > 0) {
