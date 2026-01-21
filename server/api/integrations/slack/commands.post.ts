@@ -1,0 +1,191 @@
+import { db } from "../../../database/connection";
+import { slackWorkspaces, users } from "../../../database/schema";
+import { eq } from "drizzle-orm";
+import {
+  verifySlackSignature,
+  getSlackUserInfo,
+  openSlackModal,
+  buildFeedbackModal,
+  extractUserIdFromMention,
+} from "../../../utils/slack";
+
+/**
+ * Handle Slack slash commands
+ * POST /api/integrations/slack/commands
+ */
+export default defineEventHandler(async (event) => {
+  try {
+    // Read raw body for signature verification
+    const body = await readRawBody(event);
+    if (!body) {
+      throw createError({
+        statusCode: 400,
+        message: "Missing request body",
+      });
+    }
+
+    // Verify Slack signature
+    if (!verifySlackSignature(event, body)) {
+      throw createError({
+        statusCode: 401,
+        message: "Invalid Slack signature",
+      });
+    }
+
+    // Parse form data
+    const formData = new URLSearchParams(body);
+    const command = formData.get("command");
+    const text = formData.get("text") || "";
+    const userId = formData.get("user_id");
+    const teamId = formData.get("team_id");
+    const triggerId = formData.get("trigger_id");
+
+    if (!userId || !teamId || !triggerId) {
+      throw createError({
+        statusCode: 400,
+        message: "Missing required Slack parameters",
+      });
+    }
+
+    // Only handle /submit command
+    if (command !== "/submit") {
+      return {
+        response_type: "ephemeral",
+        text: `Unknown command: ${command}`,
+      };
+    }
+
+    // Look up Slack workspace to get access token and Trellis workspace ID
+    const [slackWorkspace] = await db
+      .select()
+      .from(slackWorkspaces)
+      .where(eq(slackWorkspaces.slackTeamId, teamId))
+      .limit(1);
+
+    if (!slackWorkspace) {
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Slack integration not configured. Please ask your admin to connect Trellis to Slack.",
+      };
+    }
+
+    const { accessToken, workspaceId } = slackWorkspace;
+
+    // Get Slack user info
+    let slackUser;
+    try {
+      slackUser = await getSlackUserInfo(accessToken, userId);
+    } catch (error) {
+      console.error("Failed to get Slack user info:", error);
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Failed to retrieve your Slack profile. Please try again.",
+      };
+    }
+
+    if (!slackUser.email) {
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Your Slack account doesn't have an email address. Please contact your admin.",
+      };
+    }
+
+    // Find Trellis user with matching email in this workspace
+    const [trellisUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, slackUser.email))
+      .limit(1);
+
+    if (!trellisUser) {
+      return {
+        response_type: "ephemeral",
+        text: `⚠️ You haven't been invited to this Trellis workspace. Please contact your admin.\n\nYour email: ${slackUser.email}`,
+      };
+    }
+
+    // Verify user belongs to the same workspace
+    if (trellisUser.workspaceId !== workspaceId) {
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Your Trellis account is in a different workspace. Please contact your admin.",
+      };
+    }
+
+    // Fetch all users in the same workspace for the recipient dropdown
+    const workspaceUsers = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+      })
+      .from(users)
+      .where(eq(users.workspaceId, workspaceId))
+      .orderBy(users.name);
+
+    // Filter out self (can't give feedback to yourself)
+    const recipients = workspaceUsers.filter(u => u.id !== trellisUser.id);
+
+    if (recipients.length === 0) {
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ No other users found in your workspace.",
+      };
+    }
+
+    // Check if user mentioned someone in the command text (e.g., /submit @user)
+    let preselectedUserId: string | undefined;
+    if (text.trim()) {
+      const mentionedSlackUserId = extractUserIdFromMention(text);
+
+      if (mentionedSlackUserId) {
+        // Get mentioned user's email from Slack
+        try {
+          const mentionedSlackUser = await getSlackUserInfo(accessToken, mentionedSlackUserId);
+          if (mentionedSlackUser.email) {
+            // Find Trellis user with this email
+            const [mentionedTrellisUser] = await db
+              .select()
+              .from(users)
+              .where(eq(users.email, mentionedSlackUser.email))
+              .limit(1);
+
+            if (mentionedTrellisUser && mentionedTrellisUser.workspaceId === workspaceId) {
+              preselectedUserId = mentionedTrellisUser.id;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to get mentioned user info:", error);
+          // Continue without preselection
+        }
+      }
+    }
+
+    // Build and open feedback modal
+    const modal = buildFeedbackModal(recipients, preselectedUserId);
+
+    try {
+      await openSlackModal(accessToken, triggerId, modal);
+
+      // Return empty response (modal already opened)
+      return {
+        response_type: "ephemeral",
+        text: "",
+      };
+    } catch (error: any) {
+      console.error("Failed to open modal:", error);
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Failed to open feedback form. Please try again.",
+      };
+    }
+  } catch (error: any) {
+    console.error("Slack command error:", error);
+
+    // Return user-friendly error
+    return {
+      response_type: "ephemeral",
+      text: `⚠️ Something went wrong: ${error.message || "Unknown error"}`,
+    };
+  }
+});

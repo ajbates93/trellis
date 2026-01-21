@@ -1,0 +1,50 @@
+import { db } from "../../../database/connection";
+import { slackWorkspaces } from "../../../database/schema";
+import { eq } from "drizzle-orm";
+import { getWorkspaceId } from "../../../utils/workspace";
+
+/**
+ * Get Slack workspace connection status
+ * GET /api/integrations/slack/status
+ */
+export default defineEventHandler(async (event) => {
+  try {
+    const user = event.context.user;
+    if (!user) {
+      throw createError({
+        statusCode: 401,
+        message: "Unauthorized",
+      });
+    }
+
+    // Get current workspace
+    const workspaceId = getWorkspaceId(event);
+
+    // Check if user is admin
+    const isAdmin = user.role === "admin" || user.isSuperAdmin === true;
+
+    // Check if Slack workspace is connected
+    const [slackWorkspace] = await db
+      .select({
+        id: slackWorkspaces.id,
+        slackTeamId: slackWorkspaces.slackTeamId,
+        slackTeamName: slackWorkspaces.slackTeamName,
+        installedAt: slackWorkspaces.installedAt,
+        installedBy: slackWorkspaces.installedBy,
+      })
+      .from(slackWorkspaces)
+      .where(eq(slackWorkspaces.workspaceId, workspaceId))
+      .limit(1);
+
+    return {
+      slackWorkspace: slackWorkspace || null,
+      isAdmin,
+    };
+  } catch (error: any) {
+    console.error("Slack status check error:", error);
+    throw createError({
+      statusCode: error.statusCode || 500,
+      message: error.message || "Failed to check Slack status",
+    });
+  }
+});

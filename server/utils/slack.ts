@@ -1,0 +1,284 @@
+import { createHmac, timingSafeEqual } from "crypto";
+import type { H3Event } from "h3";
+
+/**
+ * Verify Slack request signature
+ * https://api.slack.com/authentication/verifying-requests-from-slack
+ */
+export function verifySlackSignature(event: H3Event, body: string): boolean {
+  const config = useRuntimeConfig();
+  const signingSecret = config.slackSigningSecret;
+
+  if (!signingSecret) {
+    console.error("SLACK_SIGNING_SECRET not configured");
+    return false;
+  }
+
+  const slackSignature = getHeader(event, "x-slack-signature");
+  const slackTimestamp = getHeader(event, "x-slack-request-timestamp");
+
+  if (!slackSignature || !slackTimestamp) {
+    return false;
+  }
+
+  // Prevent replay attacks - reject requests older than 5 minutes
+  const currentTime = Math.floor(Date.now() / 1000);
+  const requestTime = parseInt(slackTimestamp, 10);
+  if (Math.abs(currentTime - requestTime) > 300) {
+    console.warn("Slack request timestamp too old");
+    return false;
+  }
+
+  // Compute expected signature
+  const sigBasestring = `v0:${slackTimestamp}:${body}`;
+  const expectedSignature = `v0=${createHmac("sha256", signingSecret)
+    .update(sigBasestring)
+    .digest("hex")}`;
+
+  // Timing-safe comparison
+  try {
+    const expectedBuffer = Buffer.from(expectedSignature);
+    const actualBuffer = Buffer.from(slackSignature);
+
+    if (expectedBuffer.length !== actualBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(expectedBuffer, actualBuffer);
+  } catch (error) {
+    console.error("Signature verification error:", error);
+    return false;
+  }
+}
+
+/**
+ * Get Slack user info by user ID
+ */
+export async function getSlackUserInfo(accessToken: string, userId: string) {
+  try {
+    const response = await fetch(`https://slack.com/api/users.info?user=${userId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(`Slack API error: ${data.error}`);
+    }
+
+    return {
+      id: data.user.id,
+      email: data.user.profile?.email,
+      name: data.user.real_name || data.user.name,
+    };
+  } catch (error) {
+    console.error("Failed to get Slack user info:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get Slack team info
+ */
+export async function getSlackTeamInfo(accessToken: string) {
+  try {
+    const response = await fetch("https://slack.com/api/team.info", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(`Slack API error: ${data.error}`);
+    }
+
+    return {
+      id: data.team.id,
+      name: data.team.name,
+    };
+  } catch (error) {
+    console.error("Failed to get Slack team info:", error);
+    throw error;
+  }
+}
+
+/**
+ * Open a modal view in Slack
+ */
+export async function openSlackModal(
+  accessToken: string,
+  triggerId: string,
+  view: any
+) {
+  try {
+    const response = await fetch("https://slack.com/api/views.open", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        trigger_id: triggerId,
+        view,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(`Slack API error: ${data.error}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Failed to open Slack modal:", error);
+    throw error;
+  }
+}
+
+/**
+ * Post a message to Slack user (ephemeral)
+ */
+export async function postEphemeralMessage(
+  accessToken: string,
+  channel: string,
+  user: string,
+  text: string
+) {
+  try {
+    const response = await fetch("https://slack.com/api/chat.postEphemeral", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        channel,
+        user,
+        text,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(`Slack API error: ${data.error}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Failed to post ephemeral message:", error);
+    throw error;
+  }
+}
+
+/**
+ * Build feedback modal view for Slack
+ */
+export function buildFeedbackModal(recipients: Array<{ id: string; name: string }>, preselectedUserId?: string) {
+  return {
+    type: "modal",
+    callback_id: "feedback_submission",
+    title: {
+      type: "plain_text",
+      text: "Give Feedback",
+    },
+    submit: {
+      type: "plain_text",
+      text: "Submit",
+    },
+    close: {
+      type: "plain_text",
+      text: "Cancel",
+    },
+    blocks: [
+      {
+        type: "input",
+        block_id: "recipient_block",
+        label: {
+          type: "plain_text",
+          text: "Recipient",
+        },
+        element: {
+          type: "static_select",
+          action_id: "recipient_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select a team member",
+          },
+          initial_option: preselectedUserId ? {
+            text: {
+              type: "plain_text",
+              text: recipients.find(r => r.id === preselectedUserId)?.name || "Unknown",
+            },
+            value: preselectedUserId,
+          } : undefined,
+          options: recipients.map(recipient => ({
+            text: {
+              type: "plain_text",
+              text: recipient.name,
+            },
+            value: recipient.id,
+          })),
+        },
+      },
+      {
+        type: "input",
+        block_id: "feedback_block",
+        label: {
+          type: "plain_text",
+          text: "Your Feedback",
+        },
+        hint: {
+          type: "plain_text",
+          text: "Be specific about what they did well and the impact it had.",
+        },
+        element: {
+          type: "plain_text_input",
+          action_id: "feedback_input",
+          multiline: true,
+          min_length: 10,
+          max_length: 5000,
+          placeholder: {
+            type: "plain_text",
+            text: "Great work on...",
+          },
+        },
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: "Your feedback will be saved as a draft. Your buddy will publish it later.",
+          },
+        ],
+      },
+    ],
+  };
+}
+
+/**
+ * Extract user mention from Slack command text (e.g., "@U12345" or "<@U12345>")
+ */
+export function extractUserIdFromMention(text: string): string | null {
+  // Match <@U12345> or <@U12345|username>
+  const match = text.match(/<@([A-Z0-9]+)(?:\|[^>]+)?>/);
+  if (match) {
+    return match[1];
+  }
+
+  // Match plain @U12345
+  const plainMatch = text.match(/@([A-Z0-9]+)/);
+  if (plainMatch) {
+    return plainMatch[1];
+  }
+
+  return null;
+}
