@@ -15,27 +15,32 @@ import {
  */
 export default defineEventHandler(async (event) => {
   try {
-    console.log("[Slack Command] Received request");
+    console.log("[Slack Command] ========== NEW REQUEST ==========");
+    console.log("[Slack Command] Method:", event.method);
+    console.log("[Slack Command] Path:", event.path);
+    console.log("[Slack Command] Headers:", getHeaders(event));
 
     // Read raw body for signature verification
     const body = await readRawBody(event);
     if (!body) {
       console.error("[Slack Command] Missing request body");
-      throw createError({
-        statusCode: 400,
-        message: "Missing request body",
-      });
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Error: No request body received",
+      };
     }
 
-    console.log("[Slack Command] Body received, verifying signature");
+    console.log("[Slack Command] Body received (length: " + body.length + ")");
+    console.log("[Slack Command] Body preview:", body.substring(0, 200));
 
     // Verify Slack signature
+    console.log("[Slack Command] Verifying signature...");
     if (!verifySlackSignature(event, body)) {
       console.error("[Slack Command] Signature verification failed");
-      throw createError({
-        statusCode: 401,
-        message: "Invalid Slack signature",
-      });
+      return {
+        response_type: "ephemeral",
+        text: "⚠️ Error: Invalid signature",
+      };
     }
 
     console.log("[Slack Command] Signature verified successfully");
