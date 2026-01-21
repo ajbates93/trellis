@@ -265,7 +265,7 @@ export function buildFeedbackModal(recipients: Array<{ id: string; name: string 
           action_id: "feedback_input",
           multiline: true,
           min_length: 10,
-          max_length: 5000,
+          max_length: 3000,
           placeholder: {
             type: "plain_text",
             text: "Great work on...",

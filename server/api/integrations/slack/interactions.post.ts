@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    // Validate feedback length (10-5000 characters)
+    // Validate feedback length (10-3000 characters, Slack modal limit)
     const trimmedContent = feedbackContent.trim();
     if (trimmedContent.length < 10) {
       return {
@@ -84,11 +84,11 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    if (trimmedContent.length > 5000) {
+    if (trimmedContent.length > 3000) {
       return {
         response_action: "errors",
         errors: {
-          feedback_block: "Feedback must be less than 5000 characters",
+          feedback_block: "Feedback must be less than 3000 characters",
         },
       };
     }
