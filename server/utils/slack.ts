@@ -117,21 +117,30 @@ export async function openSlackModal(
   view: any
 ) {
   try {
+    const payload = {
+      trigger_id: triggerId,
+      view,
+    };
+
+    console.log("[openSlackModal] Sending modal to Slack:");
+    console.log(JSON.stringify(payload, null, 2));
+
     const response = await fetch("https://slack.com/api/views.open", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        trigger_id: triggerId,
-        view,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
 
+    console.log("[openSlackModal] Slack response:", JSON.stringify(data, null, 2));
+
     if (!data.ok) {
+      console.error("[openSlackModal] Slack rejected modal. Error:", data.error);
+      console.error("[openSlackModal] Response metadata:", data.response_metadata);
       throw new Error(`Slack API error: ${data.error}`);
     }
 
@@ -182,6 +191,39 @@ export async function postEphemeralMessage(
  * Build feedback modal view for Slack
  */
 export function buildFeedbackModal(recipients: Array<{ id: string; name: string }>, preselectedUserId?: string) {
+  // Find preselected user if provided
+  const preselectedUser = preselectedUserId
+    ? recipients.find(r => r.id === preselectedUserId)
+    : undefined;
+
+  // Build select element
+  const selectElement: any = {
+    type: "static_select",
+    action_id: "recipient_select",
+    placeholder: {
+      type: "plain_text",
+      text: "Select a team member",
+    },
+    options: recipients.map(recipient => ({
+      text: {
+        type: "plain_text",
+        text: recipient.name,
+      },
+      value: recipient.id,
+    })),
+  };
+
+  // Only set initial_option if preselected user exists in recipients
+  if (preselectedUser) {
+    selectElement.initial_option = {
+      text: {
+        type: "plain_text",
+        text: preselectedUser.name,
+      },
+      value: preselectedUser.id,
+    };
+  }
+
   return {
     type: "modal",
     callback_id: "feedback_submission",
@@ -205,28 +247,7 @@ export function buildFeedbackModal(recipients: Array<{ id: string; name: string 
           type: "plain_text",
           text: "Recipient",
         },
-        element: {
-          type: "static_select",
-          action_id: "recipient_select",
-          placeholder: {
-            type: "plain_text",
-            text: "Select a team member",
-          },
-          initial_option: preselectedUserId ? {
-            text: {
-              type: "plain_text",
-              text: recipients.find(r => r.id === preselectedUserId)?.name || "Unknown",
-            },
-            value: preselectedUserId,
-          } : undefined,
-          options: recipients.map(recipient => ({
-            text: {
-              type: "plain_text",
-              text: recipient.name,
-            },
-            value: recipient.id,
-          })),
-        },
+        element: selectElement,
       },
       {
         type: "input",
