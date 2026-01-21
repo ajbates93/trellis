@@ -8,7 +8,11 @@ export default defineEventHandler(async (event) => {
   const publicRoutes = [
     "/api/auth",
     "/api/health",
-    "/api/integrations/slack", // Slack webhooks (authenticated via signature)
+    "/api/integrations/slack/commands", // Slack slash commands (signature verified)
+    "/api/integrations/slack/interactions", // Slack modal interactions (signature verified)
+    "/api/integrations/slack/callback", // OAuth callback
+    "/api/integrations/slack/ping", // Debug endpoint
+    "/api/integrations/slack/test", // Debug endpoint
     "/login",
   ];
   const path = event.path;
