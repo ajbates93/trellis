@@ -1,7 +1,6 @@
 import { db } from "../../../database/connection";
 import { slackWorkspaces } from "../../../database/schema";
 import { eq } from "drizzle-orm";
-import { getSlackTeamInfo } from "../../../utils/slack";
 
 /**
  * Handles Slack OAuth callback
@@ -86,16 +85,6 @@ export default defineEventHandler(async (event) => {
     const slackTeamId = tokenData.team.id;
     const slackTeamName = tokenData.team.name;
     const botUserId = tokenData.bot_user_id;
-
-    // Verify we can access team info
-    const teamInfo = await getSlackTeamInfo(accessToken);
-
-    if (teamInfo.id !== slackTeamId) {
-      throw createError({
-        statusCode: 400,
-        message: "Team ID mismatch",
-      });
-    }
 
     // Get current user for installed_by field
     const user = event.context.user;
