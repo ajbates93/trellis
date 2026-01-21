@@ -27,7 +27,14 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Server-side only (private)
+    betterAuthUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    slackClientId: process.env.SLACK_CLIENT_ID || "",
+    slackClientSecret: process.env.SLACK_CLIENT_SECRET || "",
+    slackSigningSecret: process.env.SLACK_SIGNING_SECRET || "",
+
     public: {
+      baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
       appVersion: process.env.npm_package_version || "0.0.0",
       sentry: {
         dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
