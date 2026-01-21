@@ -15,22 +15,30 @@ import {
  */
 export default defineEventHandler(async (event) => {
   try {
+    console.log("[Slack Command] Received request");
+
     // Read raw body for signature verification
     const body = await readRawBody(event);
     if (!body) {
+      console.error("[Slack Command] Missing request body");
       throw createError({
         statusCode: 400,
         message: "Missing request body",
       });
     }
 
+    console.log("[Slack Command] Body received, verifying signature");
+
     // Verify Slack signature
     if (!verifySlackSignature(event, body)) {
+      console.error("[Slack Command] Signature verification failed");
       throw createError({
         statusCode: 401,
         message: "Invalid Slack signature",
       });
     }
+
+    console.log("[Slack Command] Signature verified successfully");
 
     // Parse form data
     const formData = new URLSearchParams(body);
