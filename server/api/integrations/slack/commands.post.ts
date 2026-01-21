@@ -180,11 +180,8 @@ export default defineEventHandler(async (event) => {
     try {
       await openSlackModal(accessToken, triggerId, modal);
 
-      // Return empty response (modal already opened)
-      return {
-        response_type: "ephemeral",
-        text: "",
-      };
+      // Return empty 200 response (modal already opened, no message needed)
+      return "";
     } catch (error: any) {
       console.error("Failed to open modal:", error);
       return {
