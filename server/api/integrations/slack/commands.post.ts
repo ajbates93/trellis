@@ -1,12 +1,13 @@
 import { db } from "../../../database/connection";
 import { slackWorkspaces, users } from "../../../database/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, ilike } from "drizzle-orm";
 import {
   verifySlackSignature,
   getSlackUserInfo,
   openSlackModal,
   buildFeedbackModal,
   extractUserIdFromMention,
+  extractMentionedName,
   extractFeedbackText,
 } from "../../../utils/slack";
 
@@ -154,6 +155,7 @@ export default defineEventHandler(async (event) => {
     if (text.trim()) {
       console.log("[Slack Command] Parsing command text:", text);
 
+      // First, try to extract Slack user ID mention (rare in slash commands)
       const mentionedSlackUserId = extractUserIdFromMention(text);
       console.log("[Slack Command] Extracted Slack user ID:", mentionedSlackUserId);
 
@@ -168,19 +170,53 @@ export default defineEventHandler(async (event) => {
             const [mentionedTrellisUser] = await db
               .select()
               .from(users)
-              .where(eq(users.email, mentionedSlackUser.email))
+              .where(
+                and(
+                  eq(users.email, mentionedSlackUser.email),
+                  eq(users.workspaceId, workspaceId)
+                )
+              )
               .limit(1);
 
-            if (mentionedTrellisUser && mentionedTrellisUser.workspaceId === workspaceId) {
+            if (mentionedTrellisUser) {
               preselectedUserId = mentionedTrellisUser.id;
-              console.log("[Slack Command] Pre-selected Trellis user:", mentionedTrellisUser.name, mentionedTrellisUser.id);
-            } else {
-              console.log("[Slack Command] Mentioned user not found in workspace or wrong workspace");
+              console.log("[Slack Command] Pre-selected Trellis user (by Slack ID):", mentionedTrellisUser.name, mentionedTrellisUser.id);
             }
           }
         } catch (error) {
           console.error("[Slack Command] Failed to get mentioned user info:", error);
-          // Continue without preselection
+          // Continue to try name-based matching
+        }
+      }
+
+      // If no Slack user ID found, try plain text name matching (e.g., @anna)
+      if (!preselectedUserId) {
+        const mentionedName = extractMentionedName(text);
+        console.log("[Slack Command] Extracted plain text name:", mentionedName);
+
+        if (mentionedName) {
+          // Search for users whose name contains the mentioned name (case-insensitive)
+          const matchingUsers = await db
+            .select()
+            .from(users)
+            .where(
+              and(
+                eq(users.workspaceId, workspaceId),
+                ilike(users.name, `%${mentionedName}%`)
+              )
+            );
+
+          console.log("[Slack Command] Found", matchingUsers.length, "matching users");
+
+          // Only pre-select if exactly one match found
+          if (matchingUsers.length === 1) {
+            preselectedUserId = matchingUsers[0].id;
+            console.log("[Slack Command] Pre-selected Trellis user (by name):", matchingUsers[0].name, matchingUsers[0].id);
+          } else if (matchingUsers.length > 1) {
+            console.log("[Slack Command] Multiple matches found, not pre-selecting:", matchingUsers.map(u => u.name).join(", "));
+          } else {
+            console.log("[Slack Command] No matching users found for name:", mentionedName);
+          }
         }
       }
 

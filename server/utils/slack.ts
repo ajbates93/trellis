@@ -292,6 +292,7 @@ export function buildFeedbackModal(
 
 /**
  * Extract user mention from Slack command text (e.g., "@U12345" or "<@U12345>")
+ * For proper Slack mentions (rare in slash commands)
  */
 export function extractUserIdFromMention(text: string): string | null {
   // Match <@U12345> or <@U12345|username>
@@ -300,10 +301,29 @@ export function extractUserIdFromMention(text: string): string | null {
     return match[1];
   }
 
-  // Match plain @U12345
-  const plainMatch = text.match(/@([A-Z0-9]+)/);
+  // Match plain @U12345 (Slack user ID format)
+  const plainMatch = text.match(/@(U[A-Z0-9]+)/);
   if (plainMatch) {
     return plainMatch[1];
+  }
+
+  return null;
+}
+
+/**
+ * Extract plain text name from @mention
+ * E.g., "@anna", "@anna.smith", "@annasmith" returns "anna"
+ */
+export function extractMentionedName(text: string): string | null {
+  // Match @username patterns (letters, dots, hyphens, underscores)
+  // Examples: @anna, @anna.smith, @anna-smith, @anna_smith
+  const match = text.match(/@([a-zA-Z][a-zA-Z0-9._-]*)/);
+  if (match) {
+    // Return the name part, split by dots/hyphens for better matching
+    // "@anna.smith" -> "anna" (first part is usually first name)
+    const fullMatch = match[1];
+    const nameParts = fullMatch.split(/[._-]/);
+    return nameParts[0]; // Return first part for matching
   }
 
   return null;
@@ -314,11 +334,11 @@ export function extractUserIdFromMention(text: string): string | null {
  * E.g., "/submit @user Great work!" returns "Great work!"
  */
 export function extractFeedbackText(text: string): string | null {
-  // Remove the user mention and get the remaining text
-  const textWithoutMention = text.replace(/<@[A-Z0-9]+(?:\|[^>]+)?>/g, "").trim();
+  // Remove Slack user ID mentions: <@U12345> or <@U12345|username>
+  let cleanText = text.replace(/<@[A-Z0-9]+(?:\|[^>]+)?>/g, "").trim();
 
-  // Also handle plain @mentions
-  const cleanText = textWithoutMention.replace(/@[A-Z0-9]+/g, "").trim();
+  // Remove plain text @mentions: @anna, @anna.smith, etc.
+  cleanText = cleanText.replace(/@[a-zA-Z][a-zA-Z0-9._-]*/g, "").trim();
 
   return cleanText.length > 0 ? cleanText : null;
 }
