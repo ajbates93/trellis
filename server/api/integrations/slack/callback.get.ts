@@ -1,6 +1,7 @@
 import { db } from "../../../database/connection";
 import { slackWorkspaces } from "../../../database/schema";
 import { eq } from "drizzle-orm";
+import { auth } from "../../../utils/auth";
 
 /**
  * Handles Slack OAuth callback
@@ -86,12 +87,25 @@ export default defineEventHandler(async (event) => {
     const slackTeamName = tokenData.team.name;
     const botUserId = tokenData.bot_user_id;
 
-    // Get current user for installed_by field
-    const user = event.context.user;
-    if (!user) {
+    // Get current user session (callback is public route, so we need to manually check)
+    const session = await auth.api.getSession({
+      headers: event.headers,
+    });
+
+    if (!session?.user) {
       throw createError({
         statusCode: 401,
-        message: "Unauthorized",
+        message: "Unauthorized - Please log in to install Slack integration",
+      });
+    }
+
+    const user = session.user;
+
+    // Verify user is admin (only admins can install Slack integration)
+    if (user.role !== "admin" && !user.isSuperAdmin) {
+      throw createError({
+        statusCode: 403,
+        message: "Forbidden - Only admins can install Slack integration",
       });
     }
 
