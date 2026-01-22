@@ -313,16 +313,33 @@ export function extractUserIdFromMention(text: string): string | null {
 /**
  * Extract plain text name from @mention
  * Supports: @anna, @anna.smith, @Alex Britten (with spaces)
+ *
+ * Strategy:
+ * - Single lowercase word: @anna, @john
+ * - Capitalized names (multiple words): @Anna Smith, @Alex Britten
+ * - Dotted/hyphenated: @anna.smith, @john-doe
  */
 export function extractMentionedName(text: string): string | null {
-  // Match @username patterns with support for:
-  // - Single names: @anna
-  // - Dotted names: @anna.smith
-  // - Hyphenated names: @anna-smith
-  // - Full names with spaces: @Alex Britten, @Anna Marie Smith
-  const match = text.match(/@([A-Za-z]+(?:[._\-\s][A-Za-z]+)*)/);
-  if (match) {
-    return match[1].trim();
+  // Match either:
+  // 1. Capitalized name(s): @Anna, @Anna Smith, @Anna Marie Smith
+  //    Pattern: One or more capitalized words (stops at lowercase words like "is", "has")
+  // 2. Single lowercase word: @anna
+  // 3. Dotted/hyphenated: @anna.smith, @john-doe
+  const capitalizedMatch = text.match(/@([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/);
+  if (capitalizedMatch) {
+    return capitalizedMatch[1].trim();
+  }
+
+  // Try lowercase with dots/hyphens
+  const dottedMatch = text.match(/@([a-z]+(?:[._-][a-z]+)*)/);
+  if (dottedMatch) {
+    return dottedMatch[1].trim();
+  }
+
+  // Try simple lowercase word
+  const lowercaseMatch = text.match(/@([a-z]+)/);
+  if (lowercaseMatch) {
+    return lowercaseMatch[1].trim();
   }
 
   return null;
@@ -337,9 +354,15 @@ export function extractFeedbackText(text: string): string | null {
   // Remove Slack user ID mentions: <@U12345> or <@U12345|username>
   let cleanText = text.replace(/<@[A-Z0-9]+(?:\|[^>]+)?>/g, "").trim();
 
-  // Remove plain text @mentions with support for full names with spaces
-  // Matches: @anna, @anna.smith, @Alex Britten, @Anna Marie Smith
-  cleanText = cleanText.replace(/@[A-Za-z]+(?:[._\-\s][A-Za-z]+)*/g, "").trim();
+  // Remove plain text @mentions using same logic as extractMentionedName
+  // 1. Remove capitalized names: @Anna, @Anna Smith, @Alex Britten
+  cleanText = cleanText.replace(/@[A-Z][a-z]+(?:\s[A-Z][a-z]+)*/g, "").trim();
+
+  // 2. Remove dotted/hyphenated names: @anna.smith, @john-doe
+  cleanText = cleanText.replace(/@[a-z]+(?:[._-][a-z]+)*/g, "").trim();
+
+  // 3. Remove simple lowercase mentions: @anna, @john
+  cleanText = cleanText.replace(/@[a-z]+/g, "").trim();
 
   return cleanText.length > 0 ? cleanText : null;
 }
