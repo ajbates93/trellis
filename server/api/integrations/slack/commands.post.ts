@@ -7,6 +7,7 @@ import {
   openSlackModal,
   buildFeedbackModal,
   extractUserIdFromMention,
+  extractFeedbackText,
 } from "../../../utils/slack";
 
 /**
@@ -148,13 +149,20 @@ export default defineEventHandler(async (event) => {
 
     // Check if user mentioned someone in the command text (e.g., /submit @user)
     let preselectedUserId: string | undefined;
+    let initialFeedbackText: string | undefined;
+
     if (text.trim()) {
+      console.log("[Slack Command] Parsing command text:", text);
+
       const mentionedSlackUserId = extractUserIdFromMention(text);
+      console.log("[Slack Command] Extracted Slack user ID:", mentionedSlackUserId);
 
       if (mentionedSlackUserId) {
         // Get mentioned user's email from Slack
         try {
           const mentionedSlackUser = await getSlackUserInfo(accessToken, mentionedSlackUserId);
+          console.log("[Slack Command] Mentioned user email:", mentionedSlackUser.email);
+
           if (mentionedSlackUser.email) {
             // Find Trellis user with this email
             const [mentionedTrellisUser] = await db
@@ -165,17 +173,24 @@ export default defineEventHandler(async (event) => {
 
             if (mentionedTrellisUser && mentionedTrellisUser.workspaceId === workspaceId) {
               preselectedUserId = mentionedTrellisUser.id;
+              console.log("[Slack Command] Pre-selected Trellis user:", mentionedTrellisUser.name, mentionedTrellisUser.id);
+            } else {
+              console.log("[Slack Command] Mentioned user not found in workspace or wrong workspace");
             }
           }
         } catch (error) {
-          console.error("Failed to get mentioned user info:", error);
+          console.error("[Slack Command] Failed to get mentioned user info:", error);
           // Continue without preselection
         }
       }
+
+      // Extract feedback text if provided (e.g., /submit @user Great work!)
+      initialFeedbackText = extractFeedbackText(text) || undefined;
+      console.log("[Slack Command] Extracted feedback text:", initialFeedbackText);
     }
 
     // Build and open feedback modal
-    const modal = buildFeedbackModal(recipients, preselectedUserId);
+    const modal = buildFeedbackModal(recipients, preselectedUserId, initialFeedbackText);
 
     try {
       await openSlackModal(accessToken, triggerId, modal);

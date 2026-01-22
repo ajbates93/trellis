@@ -190,7 +190,11 @@ export async function postEphemeralMessage(
 /**
  * Build feedback modal view for Slack
  */
-export function buildFeedbackModal(recipients: Array<{ id: string; name: string }>, preselectedUserId?: string) {
+export function buildFeedbackModal(
+  recipients: Array<{ id: string; name: string }>,
+  preselectedUserId?: string,
+  initialFeedbackText?: string
+) {
   // Find preselected user if provided
   const preselectedUser = preselectedUserId
     ? recipients.find(r => r.id === preselectedUserId)
@@ -270,6 +274,7 @@ export function buildFeedbackModal(recipients: Array<{ id: string; name: string 
             type: "plain_text",
             text: "Great work on...",
           },
+          ...(initialFeedbackText && { initial_value: initialFeedbackText }),
         },
       },
       {
@@ -302,4 +307,18 @@ export function extractUserIdFromMention(text: string): string | null {
   }
 
   return null;
+}
+
+/**
+ * Extract feedback text from command after the user mention
+ * E.g., "/submit @user Great work!" returns "Great work!"
+ */
+export function extractFeedbackText(text: string): string | null {
+  // Remove the user mention and get the remaining text
+  const textWithoutMention = text.replace(/<@[A-Z0-9]+(?:\|[^>]+)?>/g, "").trim();
+
+  // Also handle plain @mentions
+  const cleanText = textWithoutMention.replace(/@[A-Z0-9]+/g, "").trim();
+
+  return cleanText.length > 0 ? cleanText : null;
 }

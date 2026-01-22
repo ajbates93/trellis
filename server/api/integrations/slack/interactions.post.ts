@@ -201,9 +201,39 @@ export default defineEventHandler(async (event) => {
 
       console.log(`Feedback submitted via Slack: ${newFeedback.id}`);
 
-      // Return success - Slack will close the modal automatically
+      // Return success with confirmation message
       return {
-        response_action: "clear",
+        response_action: "update",
+        view: {
+          type: "modal",
+          callback_id: "feedback_success",
+          title: {
+            type: "plain_text",
+            text: "Success!",
+          },
+          close: {
+            type: "plain_text",
+            text: "Close",
+          },
+          blocks: [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `✅ *Feedback submitted!*\n\nYour feedback for *${reviewee.name}* has been saved and will be reviewed by their buddy before being published.`,
+              },
+            },
+            {
+              type: "context",
+              elements: [
+                {
+                  type: "mrkdwn",
+                  text: "You can submit more feedback anytime with `/submit`",
+                },
+              ],
+            },
+          ],
+        },
       };
     } catch (error: any) {
       console.error("Failed to create feedback:", error);
