@@ -144,6 +144,12 @@ User sees existing buddy, can give/receive feedback immediately
 - `id` (UUID), `admin_id`, `filename`, `rows_imported`
 - `status` (pending/completed/failed), `error_log`
 
+**slack_workspaces**: Slack integration connections
+- `id` (UUID), `workspace_id`, `slack_team_id`, `slack_team_name`
+- `access_token` (encrypted bot token), `bot_user_id`
+- `installed_by`, `installed_at`
+- Links Trellis workspaces to Slack workspaces for `/submit` command
+
 ## File Structure & Conventions
 
 Following Nuxt file-based conventions:
@@ -193,6 +199,14 @@ Following Nuxt file-based conventions:
 - `POST /api/admin/onboard` - CSV user import
 - `GET /api/admin/stats` - Platform-wide statistics
 - `GET /api/admin/engagement` - Team engagement metrics
+
+### Integrations (Slack)
+- `GET /api/integrations/slack/install` - Initiate Slack OAuth installation
+- `GET /api/integrations/slack/callback` - Handle Slack OAuth callback
+- `GET /api/integrations/slack/status` - Get Slack connection status
+- `POST /api/integrations/slack/disconnect` - Disconnect Slack workspace
+- `POST /api/integrations/slack/commands` - Handle `/submit` slash command
+- `POST /api/integrations/slack/interactions` - Handle modal submissions
 
 ## Design System
 
@@ -282,6 +296,13 @@ jane.smith@company.com,Jane Smith,management,
   - ✅ Mark as read functionality
   - ✅ Publish feedback (single and batch)
   - ✅ Loading states (page navigation + button spinners)
+- ✅ Slack Integration
+  - ✅ OAuth install flow via Settings → Integrations
+  - ✅ `/submit` slash command with modal UI
+  - ✅ User email matching (Slack ↔ Trellis)
+  - ✅ Workspace-scoped (multi-tenant ready)
+  - ✅ Rate limiting (10 submissions/hour)
+  - ✅ Draft feedback (buddy publishes later)
 - ⏳ Goals management (pending)
 
 ### Week 5-6: Admin & Polish

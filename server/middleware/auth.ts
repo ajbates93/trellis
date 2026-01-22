@@ -5,7 +5,16 @@ import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   // Skip auth check for public routes
-  const publicRoutes = ["/api/auth", "/api/health", "/login"];
+  const publicRoutes = [
+    "/api/auth",
+    "/api/health",
+    "/api/integrations/slack/commands", // Slack slash commands (signature verified)
+    "/api/integrations/slack/interactions", // Slack modal interactions (signature verified)
+    "/api/integrations/slack/callback", // OAuth callback
+    "/api/integrations/slack/ping", // Debug endpoint
+    "/api/integrations/slack/test", // Debug endpoint
+    "/login",
+  ];
   const path = event.path;
 
   if (publicRoutes.some((route) => path.startsWith(route))) {

@@ -17,7 +17,9 @@
       "mcp__nuxt-ui-remote__get-component",
       "Bash(git -C /Users/alexbates/repos/work/cohort show:*)",
       "mcp__nuxt-ui-remote__get-documentation-page",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "WebFetch(domain:api.slack.com)",
+      "WebFetch(domain:docs.slack.dev)"
     ],
     "deny": [],
     "ask": []

@@ -22,6 +22,34 @@ export const workspaces = pgTable("workspaces", {
 // Relations for workspaces
 export const workspacesRelations = relations(workspaces, ({ many }) => ({
   users: many(users),
+  slackWorkspaces: many(slackWorkspaces),
+}));
+
+// Slack Workspaces table (Slack integration)
+export const slackWorkspaces = pgTable("slack_workspaces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: text("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  slackTeamId: text("slack_team_id").notNull().unique(), // Slack workspace ID
+  slackTeamName: text("slack_team_name"),
+  accessToken: text("access_token").notNull(), // Bot token (should be encrypted in production)
+  botUserId: text("bot_user_id"), // Bot's Slack user ID
+  installedBy: text("installed_by").references(() => users.id),
+  installedAt: timestamp("installed_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations for slack workspaces
+export const slackWorkspacesRelations = relations(slackWorkspaces, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [slackWorkspaces.workspaceId],
+    references: [workspaces.id],
+  }),
+  installer: one(users, {
+    fields: [slackWorkspaces.installedBy],
+    references: [users.id],
+  }),
 }));
 
 // Users table
