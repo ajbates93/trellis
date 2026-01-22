@@ -17,35 +17,22 @@ import {
  */
 export default defineEventHandler(async (event) => {
   try {
-    console.log("[Slack Command] ========== NEW REQUEST ==========");
-    console.log("[Slack Command] Method:", event.method);
-    console.log("[Slack Command] Path:", event.path);
-    console.log("[Slack Command] Headers:", getHeaders(event));
-
     // Read raw body for signature verification
     const body = await readRawBody(event);
     if (!body) {
-      console.error("[Slack Command] Missing request body");
       return {
         response_type: "ephemeral",
         text: "⚠️ Error: No request body received",
       };
     }
 
-    console.log("[Slack Command] Body received (length: " + body.length + ")");
-    console.log("[Slack Command] Body preview:", body.substring(0, 200));
-
     // Verify Slack signature
-    console.log("[Slack Command] Verifying signature...");
     if (!verifySlackSignature(event, body)) {
-      console.error("[Slack Command] Signature verification failed");
       return {
         response_type: "ephemeral",
         text: "⚠️ Error: Invalid signature",
       };
     }
-
-    console.log("[Slack Command] Signature verified successfully");
 
     // Parse form data
     const formData = new URLSearchParams(body);
@@ -153,17 +140,13 @@ export default defineEventHandler(async (event) => {
     let initialFeedbackText: string | undefined;
 
     if (text.trim()) {
-      console.log("[Slack Command] Parsing command text:", text);
-
       // First, try to extract Slack user ID mention (rare in slash commands)
       const mentionedSlackUserId = extractUserIdFromMention(text);
-      console.log("[Slack Command] Extracted Slack user ID:", mentionedSlackUserId);
 
       if (mentionedSlackUserId) {
         // Get mentioned user's email from Slack
         try {
           const mentionedSlackUser = await getSlackUserInfo(accessToken, mentionedSlackUserId);
-          console.log("[Slack Command] Mentioned user email:", mentionedSlackUser.email);
 
           if (mentionedSlackUser.email) {
             // Find Trellis user with this email
@@ -180,11 +163,10 @@ export default defineEventHandler(async (event) => {
 
             if (mentionedTrellisUser) {
               preselectedUserId = mentionedTrellisUser.id;
-              console.log("[Slack Command] Pre-selected Trellis user (by Slack ID):", mentionedTrellisUser.name, mentionedTrellisUser.id);
             }
           }
         } catch (error) {
-          console.error("[Slack Command] Failed to get mentioned user info:", error);
+          console.error("Failed to get mentioned user info:", error);
           // Continue to try name-based matching
         }
       }
@@ -192,13 +174,11 @@ export default defineEventHandler(async (event) => {
       // If no Slack user ID found, try plain text name matching (e.g., @anna)
       if (!preselectedUserId) {
         const mentionedName = extractMentionedName(text);
-        console.log("[Slack Command] Extracted plain text name:", mentionedName);
 
         if (mentionedName) {
           // Normalize name for searching: convert dots/hyphens to spaces
           // E.g., "alex.britten" -> "alex britten"
           const normalizedName = mentionedName.replace(/[._-]/g, " ");
-          console.log("[Slack Command] Normalized name for search:", normalizedName);
 
           // Search for users whose name contains the mentioned name (case-insensitive)
           const matchingUsers = await db
@@ -211,23 +191,15 @@ export default defineEventHandler(async (event) => {
               )
             );
 
-          console.log("[Slack Command] Found", matchingUsers.length, "matching users");
-
           // Only pre-select if exactly one match found
           if (matchingUsers.length === 1) {
             preselectedUserId = matchingUsers[0].id;
-            console.log("[Slack Command] Pre-selected Trellis user (by name):", matchingUsers[0].name, matchingUsers[0].id);
-          } else if (matchingUsers.length > 1) {
-            console.log("[Slack Command] Multiple matches found, not pre-selecting:", matchingUsers.map(u => u.name).join(", "));
-          } else {
-            console.log("[Slack Command] No matching users found for name:", normalizedName);
           }
         }
       }
 
       // Extract feedback text if provided (e.g., /submit @user Great work!)
       initialFeedbackText = extractFeedbackText(text) || undefined;
-      console.log("[Slack Command] Extracted feedback text:", initialFeedbackText);
     }
 
     // Build and open feedback modal

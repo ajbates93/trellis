@@ -122,9 +122,6 @@ export async function openSlackModal(
       view,
     };
 
-    console.log("[openSlackModal] Sending modal to Slack:");
-    console.log(JSON.stringify(payload, null, 2));
-
     const response = await fetch("https://slack.com/api/views.open", {
       method: "POST",
       headers: {
@@ -136,11 +133,7 @@ export async function openSlackModal(
 
     const data = await response.json();
 
-    console.log("[openSlackModal] Slack response:", JSON.stringify(data, null, 2));
-
     if (!data.ok) {
-      console.error("[openSlackModal] Slack rejected modal. Error:", data.error);
-      console.error("[openSlackModal] Response metadata:", data.response_metadata);
       throw new Error(`Slack API error: ${data.error}`);
     }
 

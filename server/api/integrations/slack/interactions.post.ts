@@ -199,8 +199,6 @@ export default defineEventHandler(async (event) => {
         })
         .returning();
 
-      console.log(`Feedback submitted via Slack: ${newFeedback.id}`);
-
       // Return success with confirmation message
       return {
         response_action: "update",
