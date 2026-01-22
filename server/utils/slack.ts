@@ -312,18 +312,17 @@ export function extractUserIdFromMention(text: string): string | null {
 
 /**
  * Extract plain text name from @mention
- * E.g., "@anna", "@anna.smith", "@annasmith" returns "anna"
+ * Supports: @anna, @anna.smith, @Alex Britten (with spaces)
  */
 export function extractMentionedName(text: string): string | null {
-  // Match @username patterns (letters, dots, hyphens, underscores)
-  // Examples: @anna, @anna.smith, @anna-smith, @anna_smith
-  const match = text.match(/@([a-zA-Z][a-zA-Z0-9._-]*)/);
+  // Match @username patterns with support for:
+  // - Single names: @anna
+  // - Dotted names: @anna.smith
+  // - Hyphenated names: @anna-smith
+  // - Full names with spaces: @Alex Britten, @Anna Marie Smith
+  const match = text.match(/@([A-Za-z]+(?:[._\-\s][A-Za-z]+)*)/);
   if (match) {
-    // Return the name part, split by dots/hyphens for better matching
-    // "@anna.smith" -> "anna" (first part is usually first name)
-    const fullMatch = match[1];
-    const nameParts = fullMatch.split(/[._-]/);
-    return nameParts[0]; // Return first part for matching
+    return match[1].trim();
   }
 
   return null;
@@ -332,13 +331,15 @@ export function extractMentionedName(text: string): string | null {
 /**
  * Extract feedback text from command after the user mention
  * E.g., "/submit @user Great work!" returns "Great work!"
+ * E.g., "/submit @Alex Britten Great work!" returns "Great work!"
  */
 export function extractFeedbackText(text: string): string | null {
   // Remove Slack user ID mentions: <@U12345> or <@U12345|username>
   let cleanText = text.replace(/<@[A-Z0-9]+(?:\|[^>]+)?>/g, "").trim();
 
-  // Remove plain text @mentions: @anna, @anna.smith, etc.
-  cleanText = cleanText.replace(/@[a-zA-Z][a-zA-Z0-9._-]*/g, "").trim();
+  // Remove plain text @mentions with support for full names with spaces
+  // Matches: @anna, @anna.smith, @Alex Britten, @Anna Marie Smith
+  cleanText = cleanText.replace(/@[A-Za-z]+(?:[._\-\s][A-Za-z]+)*/g, "").trim();
 
   return cleanText.length > 0 ? cleanText : null;
 }
