@@ -195,6 +195,11 @@ export default defineEventHandler(async (event) => {
         console.log("[Slack Command] Extracted plain text name:", mentionedName);
 
         if (mentionedName) {
+          // Normalize name for searching: convert dots/hyphens to spaces
+          // E.g., "alex.britten" -> "alex britten"
+          const normalizedName = mentionedName.replace(/[._-]/g, " ");
+          console.log("[Slack Command] Normalized name for search:", normalizedName);
+
           // Search for users whose name contains the mentioned name (case-insensitive)
           const matchingUsers = await db
             .select()
@@ -202,7 +207,7 @@ export default defineEventHandler(async (event) => {
             .where(
               and(
                 eq(users.workspaceId, workspaceId),
-                ilike(users.name, `%${mentionedName}%`)
+                ilike(users.name, `%${normalizedName}%`)
               )
             );
 
@@ -215,7 +220,7 @@ export default defineEventHandler(async (event) => {
           } else if (matchingUsers.length > 1) {
             console.log("[Slack Command] Multiple matches found, not pre-selecting:", matchingUsers.map(u => u.name).join(", "));
           } else {
-            console.log("[Slack Command] No matching users found for name:", mentionedName);
+            console.log("[Slack Command] No matching users found for name:", normalizedName);
           }
         }
       }
