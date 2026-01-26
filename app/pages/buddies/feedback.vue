@@ -21,16 +21,19 @@ const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useFetch(
     selectedBuddyId.value
       ? `/api/feedback/buddy-received?buddyId=${selectedBuddyId.value}`
       : null,
+  { key: () => `buddy-received-${selectedBuddyId.value}` },
 );
 const buddyReceivedFeedback = computed(
   () => buddyReceivedData.value?.feedback || [],
 );
 
 // Fetch incoming (unpublished) feedback for selected buddy
-const { data: incomingData, refresh: refreshIncoming } = useFetch(() =>
-  selectedBuddyId.value
-    ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
-    : null,
+const { data: incomingData, refresh: refreshIncoming } = useFetch(
+  () =>
+    selectedBuddyId.value
+      ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
+      : null,
+  { key: () => `buddy-incoming-${selectedBuddyId.value}` },
 );
 const incomingFeedback = computed(() => {
   const assignments = incomingData.value?.buddyAssignments || [];
@@ -348,4 +351,7 @@ v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
       </div>
     </template>
   </UDashboardPanel>
+
+  <!-- Feedback Modal -->
+  <FeedbackModal v-model="isModalOpen" :feedback="selectedFeedback" />
 </template>

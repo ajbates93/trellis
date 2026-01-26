@@ -64,6 +64,9 @@ const { isLoading } = useLoadingIndicator();
 // Fetch unread feedback count
 const { unreadCount } = useUnreadCount();
 
+// Fetch incoming feedback count for buddies
+const { incomingCount } = useIncomingFeedbackCount();
+
 // Dashboard link (top level)
 const dashboardLink = computed(() => ({
   label: "Dashboard",
@@ -132,6 +135,7 @@ const buddyLinks = computed(() => {
       label: "Feedback",
       icon: "i-heroicons-chat-bubble-left-right",
       to: "/buddies/feedback",
+      badge: incomingCount.value > 0 ? incomingCount.value.toString() : undefined,
       active: route.path.startsWith("/buddies/feedback"),
     },
     {
