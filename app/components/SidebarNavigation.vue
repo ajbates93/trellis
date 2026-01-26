@@ -148,6 +148,12 @@ const isItemOrChildActive = (item: NavItem): boolean => {
           <span v-if="!collapsed" class="flex-1 text-sm font-medium">
             {{ item.label }}
           </span>
+          <UBadge
+            v-if="item.badge && !collapsed"
+            :label="item.badge"
+            size="xs"
+            color="primary"
+          />
         </NuxtLink>
       </div>
     </div>
