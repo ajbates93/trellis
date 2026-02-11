@@ -3,6 +3,7 @@ import { feedback } from "../../database/schema";
 import { format } from "date-fns";
 import { validateBody, validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
+import { notifyBuddyOfNewFeedback } from "../../utils/notifications";
 
 export default defineEventHandler(async (event) => {
   // Get session/user from better-auth
@@ -42,6 +43,9 @@ export default defineEventHandler(async (event) => {
         isRead: false,
       })
       .returning();
+
+    // Notify buddy (fire-and-forget)
+    notifyBuddyOfNewFeedback(body.revieweeId);
 
     // Validate response
     const response = {

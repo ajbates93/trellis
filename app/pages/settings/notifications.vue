@@ -48,7 +48,27 @@ to="/settings/integrations" class="border-b-2 py-4 px-1 text-sm font-medium" :cl
           </div>
         </div>
 
-        <ComingSoon title="Notification Settings" description="Email and in-app notification preferences coming soon" />
+        <div class="space-y-6">
+          <UCard>
+            <template #header>
+              <h2 class="text-lg font-medium">Email Notifications</h2>
+            </template>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-900 dark:text-white font-medium">Feedback notifications</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Receive email notifications when you have new feedback to review or when feedback is published for you.
+                </p>
+              </div>
+              <USwitch
+                v-model="emailNotifications"
+                :loading="saving"
+                @update:model-value="toggleEmailNotifications"
+              />
+            </div>
+          </UCard>
+        </div>
       </div>
     </template>
   </UDashboardPanel>
@@ -62,4 +82,40 @@ definePageMeta({
 useHead({
   title: "Notification Settings",
 });
+
+const { user, refreshSession } = useAuth();
+const toast = useToast();
+
+const emailNotifications = ref(user.value?.emailNotifications !== false);
+const saving = ref(false);
+
+watch(() => user.value?.emailNotifications, (val) => {
+  emailNotifications.value = val !== false;
+});
+
+async function toggleEmailNotifications(value: boolean) {
+  saving.value = true;
+  try {
+    await $fetch("/api/users/profile", {
+      method: "PATCH",
+      body: { emailNotifications: value },
+    });
+    await refreshSession();
+    toast.add({
+      title: "Success",
+      description: value ? "Email notifications enabled" : "Email notifications disabled",
+      color: "success",
+    });
+  } catch (error) {
+    console.error("Error updating notification preference:", error);
+    emailNotifications.value = !value;
+    toast.add({
+      title: "Error",
+      description: "Failed to update notification preference",
+      color: "error",
+    });
+  } finally {
+    saving.value = false;
+  }
+}
 </script>

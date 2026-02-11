@@ -89,6 +89,7 @@ export default defineEventHandler(async (event) => {
     if ("communicationPreferences" in body)
       updateData.communicationPreferences = body.communicationPreferences || null;
     if ("timezone" in body) updateData.timezone = body.timezone || null;
+    if ("emailNotifications" in body) updateData.emailNotifications = !!body.emailNotifications;
 
     // Handle avatar upload to S3
     if ("avatarUrl" in body) {

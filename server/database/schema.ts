@@ -72,6 +72,7 @@ export const users = pgTable("users", {
   reviewPreference: varchar("review_preference", { length: 20 }), // in-person, remote, hybrid, no-preference
   communicationPreferences: text("communication_preferences"),
   timezone: varchar("timezone", { length: 100 }), // IANA timezone (e.g., Europe/London)
+  emailNotifications: boolean("email_notifications").default(true),
   // Onboarding wizard progress
   onboardingTasks: text("onboarding_tasks").array().default([]),
   // Admin plugin fields

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 // import { assignFeedbackToReview } from "../../../utils/reviews";
 import { validateBody, validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
+import { notifyRevieweeOfPublishedFeedback } from "../../../utils/notifications";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -96,6 +97,9 @@ export default defineEventHandler(async (event) => {
     //     feedbackItem.createdAt
     //   );
     // }
+
+    // Notify reviewee (fire-and-forget)
+    notifyRevieweeOfPublishedFeedback([feedbackItem.revieweeId]);
 
     const response = { success: true, feedback: updatedFeedback };
     return validateResponse(response, apiSchemas.SuccessResponseSchema);
