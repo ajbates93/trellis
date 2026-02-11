@@ -120,6 +120,74 @@ export const emailTemplates = {
     </html>
   `,
 
+  buddyFeedbackReceived: (buddyName: string, revieweeName: string, appUrl: string) => `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>New Feedback to Review</title>
+      </head>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669;">Trellis</h1>
+          </div>
+
+          <p>Hi ${buddyName},</p>
+
+          <p>New feedback has been submitted for <strong>${revieweeName}</strong>. Log in to review and publish it.</p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/feedback/inbox"
+               style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+              Review Feedback
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Trellis - Peer feedback made simple
+          </p>
+        </div>
+      </body>
+    </html>
+  `,
+
+  feedbackPublished: (revieweeName: string, appUrl: string) => `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>New Feedback Published</title>
+      </head>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669;">Trellis</h1>
+          </div>
+
+          <p>Hi ${revieweeName},</p>
+
+          <p>You have new feedback! Log in to read it.</p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/feedback/inbox"
+               style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+              View Feedback
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Trellis - Peer feedback made simple
+          </p>
+        </div>
+      </body>
+    </html>
+  `,
+
   emailVerification: (name: string, verifyUrl: string) => `
     <!DOCTYPE html>
     <html>

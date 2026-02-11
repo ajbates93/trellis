@@ -85,6 +85,13 @@
       "when": 1768320097845,
       "tag": "0011_mighty_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1770843028311,
+      "tag": "0012_loud_colonel_america",
+      "breakpoints": true
     }
   ]
 }

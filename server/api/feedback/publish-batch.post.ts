@@ -4,6 +4,7 @@ import { inArray } from "drizzle-orm";
 // import { assignFeedbackToReview } from "../../utils/reviews";
 import { validateBody, validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
+import { notifyRevieweeOfPublishedFeedback } from "../../utils/notifications";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -92,6 +93,9 @@ export default defineEventHandler(async (event) => {
     //     );
     //   }
     // }
+
+    // Notify reviewees (fire-and-forget, one email per unique reviewee)
+    notifyRevieweeOfPublishedFeedback(revieweeIds);
 
     const response = {
       success: true,
