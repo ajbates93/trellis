@@ -112,7 +112,7 @@ const publishBatch = async (feedbackIds: string[]) => {
   try {
     await $fetch("/api/feedback/publish-batch", {
       method: "POST",
-      body: { feedbackIds },
+      body: { feedbackIds, publish: true },
     });
     await refreshIncoming();
     toast.add({

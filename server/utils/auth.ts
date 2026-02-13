@@ -115,6 +115,10 @@ export const auth = betterAuth({
         type: "boolean",
         required: false,
       },
+      emailNotifications: {
+        type: "boolean",
+        required: false,
+      },
     },
   },
   plugins: [

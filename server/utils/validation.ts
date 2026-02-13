@@ -31,7 +31,7 @@ export async function validateBody<T extends z.ZodType>(
       throw createError({
         statusCode: 400,
         message: 'Validation failed',
-        data: error.errors.map((e) => ({
+        data: error.issues.map((e) => ({
           path: e.path.join('.'),
           message: e.message,
         })),
@@ -61,8 +61,8 @@ export function validateResponse<T extends z.ZodType>(
 
   if (!result.success) {
     console.error('❌ Response validation failed!');
-    if (result.error?.errors) {
-      result.error.errors.forEach((err, index) => {
+    if (result.error?.issues) {
+      result.error.issues.forEach((err, index) => {
         console.error(`  ${index + 1}. [${err.path.join('.')}]: ${err.message}`);
       });
     } else {

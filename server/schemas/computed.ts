@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 import {
   UserSchema,
   FeedbackSchema,
@@ -6,7 +6,7 @@ import {
   GoalSchema,
   GoalMilestoneSchema,
   BuddyCheckinSchema,
-} from './base';
+} from "./base";
 
 // ===== FEEDBACK SCHEMAS =====
 
@@ -16,7 +16,6 @@ export const FeedbackWithReviewerSchema = z.object({
   content: z.string(),
   createdAt: z.coerce.date().nullable(),
   publishedAt: z.coerce.date().nullable(),
-  isRead: z.boolean().nullable(),
   isRead: z.boolean().nullable(),
   // reviewScheduleId: z.uuid().nullable(),
   reviewer: z.object({
@@ -41,7 +40,6 @@ export const FeedbackWithRevieweeSchema = z.object({
   publishedAt: z.coerce.date().nullable(),
   isRead: z.boolean().nullable(),
   published: z.boolean().nullable(),
-  weekYear: z.string().nullable(),
   weekYear: z.string().nullable(),
   // reviewScheduleId: z.uuid().nullable(),
   reviewee: z.object({
@@ -78,7 +76,7 @@ export const UserWithBuddySchema = z.object({
   banReason: z.string().nullable(),
   nextReviewDate: z.string().nullable(),
   buddyName: z.string().nullable(),
-  status: z.enum(['active', 'invited']),
+  status: z.enum(["active", "invited"]),
 });
 
 // For user profile pages - user with full public info
@@ -129,10 +127,12 @@ export const BuddyCheckinWithUsersSchema = BuddyCheckinSchema.extend({
     email: z.email(),
     avatarUrl: z.string().nullable(),
   }),
-  reviewSchedule: z.object({
-    id: z.uuid(),
-    name: z.string().nullable(),
-    scheduledDate: z.string(),
-    status: z.string().nullable(),
-  }).nullable(),
+  reviewSchedule: z
+    .object({
+      id: z.uuid(),
+      name: z.string().nullable(),
+      scheduledDate: z.string(),
+      status: z.string().nullable(),
+    })
+    .nullable(),
 });

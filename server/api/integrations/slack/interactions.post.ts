@@ -3,6 +3,7 @@ import { slackWorkspaces, users, feedback } from "../../../database/schema";
 import { eq, and } from "drizzle-orm";
 import { verifySlackSignature, getSlackUserInfo } from "../../../utils/slack";
 import { format } from "date-fns";
+import { notifyBuddyOfNewFeedback } from "../../../utils/notifications";
 
 /**
  * Handle Slack modal interactions (submissions)
@@ -198,6 +199,9 @@ export default defineEventHandler(async (event) => {
           published: false, // Draft by default
         })
         .returning();
+
+      // Notify buddy (fire-and-forget)
+      notifyBuddyOfNewFeedback(reviewee.id);
 
       // Return success with confirmation message
       return {
