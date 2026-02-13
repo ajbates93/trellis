@@ -257,6 +257,9 @@ export const reviewSchedules = pgTable("review_schedules", {
   reflectionConcerns: text("reflection_concerns"), // "Are you worried about anything right now?"
   // Buddy comments (filled by buddy - HTML content from TipTap)
   buddyComments: text("buddy_comments"),
+  // Email reminder tracking
+  reminderSent7d: boolean("reminder_sent_7d").default(false),
+  reminderSent1d: boolean("reminder_sent_1d").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

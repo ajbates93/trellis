@@ -188,6 +188,78 @@ export const emailTemplates = {
     </html>
   `,
 
+  reviewReminder: (revieweeName: string, buddyName: string, reviewDate: string, daysUntil: number, appUrl: string) => `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Upcoming Review Reminder</title>
+      </head>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669;">Trellis</h1>
+          </div>
+
+          <p>Hi ${revieweeName},</p>
+
+          <p>Your review with <strong>${buddyName}</strong> is ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} (${reviewDate}).</p>
+
+          <p>${daysUntil <= 1 ? "Make sure you're prepared and have completed any reflections." : "This is a good time to start preparing your reflections and reviewing your goals."}</p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/reviews"
+               style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+              View Review
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Trellis - Peer feedback made simple
+          </p>
+        </div>
+      </body>
+    </html>
+  `,
+
+  reviewReminderBuddy: (buddyName: string, revieweeName: string, reviewDate: string, daysUntil: number, appUrl: string) => `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Upcoming Review Reminder</title>
+      </head>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669;">Trellis</h1>
+          </div>
+
+          <p>Hi ${buddyName},</p>
+
+          <p>Your review with <strong>${revieweeName}</strong> is ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} (${reviewDate}).</p>
+
+          <p>${daysUntil <= 1 ? "Make sure you've reviewed their recent feedback and goals before the session." : "This is a good time to review their recent feedback and check in on their goals."}</p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/reviews"
+               style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+              View Review
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Trellis - Peer feedback made simple
+          </p>
+        </div>
+      </body>
+    </html>
+  `,
+
   emailVerification: (name: string, verifyUrl: string) => `
     <!DOCTYPE html>
     <html>
