@@ -3,6 +3,8 @@ import { reviewSchedules, users } from "../database/schema";
 import { eq, and, between } from "drizzle-orm";
 import { sendEmail, emailTemplates } from "../utils/email";
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default defineTask({
   meta: {
     name: "review-reminders",
@@ -35,15 +37,19 @@ export default defineTask({
         );
 
       for (const review of sevenDayReviews) {
-        emailsSent += await sendReminders(review, 7, appUrl);
-        await db
-          .update(reviewSchedules)
-          .set({ reminderSent7d: true })
-          .where(eq(reviewSchedules.id, review.id));
+        const sent = await sendReminders(review, 7, appUrl);
+        emailsSent += sent;
+        if (sent > 0) {
+          await db
+            .update(reviewSchedules)
+            .set({ reminderSent7d: true })
+            .where(eq(reviewSchedules.id, review.id));
+        }
       }
 
-      // 1-day reminders: scheduledDate is 0-2 days from now
+      // 1-day reminders: scheduledDate is tomorrow (1-2 days from now)
       const oneDayStart = new Date(now);
+      oneDayStart.setDate(oneDayStart.getDate() + 1);
       oneDayStart.setHours(0, 0, 0, 0);
 
       const oneDayEnd = new Date(now);
@@ -62,11 +68,14 @@ export default defineTask({
         );
 
       for (const review of oneDayReviews) {
-        emailsSent += await sendReminders(review, 1, appUrl);
-        await db
-          .update(reviewSchedules)
-          .set({ reminderSent1d: true })
-          .where(eq(reviewSchedules.id, review.id));
+        const sent = await sendReminders(review, 1, appUrl);
+        emailsSent += sent;
+        if (sent > 0) {
+          await db
+            .update(reviewSchedules)
+            .set({ reminderSent1d: true })
+            .where(eq(reviewSchedules.id, review.id));
+        }
       }
 
       console.log(`[review-reminders] Completed. Sent ${emailsSent} reminder emails.`);
@@ -112,7 +121,7 @@ async function sendReminders(
     try {
       await sendEmail({
         to: reviewee.email,
-        subject: `Review reminder: ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} with ${buddy.name}`,
+        subject: `Review reminder: tomorrow with ${buddy.name}`,
         html: emailTemplates.reviewReminder(
           reviewee.name,
           buddy.name,
@@ -127,12 +136,15 @@ async function sendReminders(
     }
   }
 
+  // Delay to respect Resend rate limit (2 req/s)
+  await sleep(600);
+
   // Send to buddy if they have email notifications enabled
   if (buddy.emailNotifications !== false) {
     try {
       await sendEmail({
         to: buddy.email,
-        subject: `Review reminder: ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} with ${reviewee.name}`,
+        subject: `Review reminder: tomorrow with ${reviewee.name}`,
         html: emailTemplates.reviewReminderBuddy(
           buddy.name,
           reviewee.name,
