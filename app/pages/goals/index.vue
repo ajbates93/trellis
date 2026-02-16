@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="goals">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Page header with Add button -->
         <div class="flex items-start justify-between mb-6">
           <div>

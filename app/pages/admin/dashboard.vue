@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="admin-dashboard">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Header -->
         <div class="mb-8">
           <div class="flex items-center justify-between">

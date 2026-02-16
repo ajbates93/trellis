@@ -233,7 +233,7 @@ const tipsAccordionItems: AccordionItem[] = [
 <template>
   <UDashboardPanel id="give-feedback">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Success State -->
         <div v-if="showSuccess" class="max-w-md mx-auto text-center py-20 space-y-8">
           <div class="relative w-24 h-24 mx-auto">
