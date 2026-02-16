@@ -100,16 +100,16 @@ export default defineEventHandler(async (event) => {
     // Build reason text
     let reason: string;
     if (pick.neverReviewed) {
-      reason = `You've never reviewed ${pick.user.name}`;
+      reason = `You've never given feedback to ${pick.user.name}`;
     } else {
       const lastDate = new Date(pick.lastReviewedAt!);
       const weeksAgo = Math.round(
         (Date.now() - lastDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
       );
       if (weeksAgo <= 1) {
-        reason = `It's been about a week since you reviewed ${pick.user.name}`;
+        reason = `It's been about a week since you gave feedback to ${pick.user.name}`;
       } else {
-        reason = `It's been ${weeksAgo} weeks since you reviewed ${pick.user.name}`;
+        reason = `It's been ${weeksAgo} weeks since you gave feedback to ${pick.user.name}`;
       }
     }
 

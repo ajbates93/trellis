@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StepperItem, AccordionItem } from "@nuxt/ui";
+import type { AccordionItem } from "@nuxt/ui";
 import { formatDistanceToNow } from "date-fns";
 
 definePageMeta({
@@ -14,26 +14,8 @@ const { user } = useAuth();
 const toast = useToast();
 const { markTaskComplete } = useOnboarding();
 
-// Stepper
-const stepper = useTemplateRef("stepper");
-const currentStep = ref<string | number>("choose");
-
-const steps: StepperItem[] = [
-  {
-    title: "Choose a Colleague",
-    description: "Who would you like to review?",
-    icon: "i-heroicons-users",
-    value: "choose",
-    slot: "choose",
-  },
-  {
-    title: "Write Feedback",
-    description: "Share your thoughts",
-    icon: "i-heroicons-pencil-square",
-    value: "write",
-    slot: "write",
-  },
-];
+// Flow state (manual, no stepper component)
+const currentStep = ref<"choose" | "write">("choose");
 
 // Form state
 const selectedUserId = ref<string | null>(null);
@@ -84,7 +66,7 @@ const randomizePrompt = async () => {
   isRefreshingPrompt.value = false;
 };
 
-// User review status (checked per-user when we have feedback history from suggestion endpoint)
+// User review status
 const canReviewUser = ref(true);
 const alreadyReviewedWarning = ref(false);
 
@@ -94,8 +76,6 @@ const selectedUserObject = computed(() => {
   return availableUsers.value.find((u) => u.id === selectedUserId.value) || null;
 });
 
-// Build user review info from suggestion data
-// We'll fetch can-review status when a user is selected
 const checkCanReview = async (userId: string) => {
   try {
     const { alreadyReviewedThisWeek } = await $fetch(`/api/feedback/can-review/${userId}`);
@@ -111,12 +91,12 @@ const checkCanReview = async (userId: string) => {
 const selectUser = async (userId: string) => {
   selectedUserId.value = userId;
   await checkCanReview(userId);
-  stepper.value?.next();
+  currentStep.value = "write";
 };
 
 // Go back to step 1
-const goBackToStep1 = () => {
-  stepper.value?.prev();
+const goBackToChoose = () => {
+  currentStep.value = "choose";
 };
 
 // Search filtered users
@@ -130,12 +110,12 @@ const filteredUsers = computed(() => {
   );
 });
 
-// Get last reviewed text for a user from the reviewStatus map
+// Get last reviewed text for a user
 const getLastReviewedText = (userId: string) => {
   const status = reviewStatus.value[userId];
   if (!status) return "";
-  if (!status.lastReviewedAt) return "Never reviewed";
-  return `Last reviewed ${formatDistanceToNow(new Date(status.lastReviewedAt), { addSuffix: true })}`;
+  if (!status.lastReviewedAt) return "Not yet given feedback";
+  return `Feedback given ${formatDistanceToNow(new Date(status.lastReviewedAt), { addSuffix: true })}`;
 };
 
 // Check if user was reviewed this week
@@ -197,6 +177,18 @@ const reviewAnother = () => {
   refreshSuggestion();
 };
 
+// Role-based text color for role labels
+const getRoleColor = (roleType: string | null | undefined): string => {
+  switch (roleType) {
+    case "dev": return "text-blue-600 dark:text-blue-400";
+    case "design": return "text-purple-600 dark:text-purple-400";
+    case "qa": return "text-amber-600 dark:text-amber-400";
+    case "growth": return "text-emerald-600 dark:text-emerald-400";
+    case "management": return "text-rose-600 dark:text-rose-400";
+    default: return "text-gray-500 dark:text-gray-400";
+  }
+};
+
 // Role label helper
 const getRoleLabel = (roleType: string | null | undefined) => {
   if (!roleType) return null;
@@ -243,297 +235,258 @@ const tipsAccordionItems: AccordionItem[] = [
     <template #body>
       <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         <!-- Success State -->
-        <div v-if="showSuccess" class="max-w-lg mx-auto text-center py-16 space-y-6">
-          <div
-            class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-teal-400 to-green-500 flex items-center justify-center"
-          >
-            <UIcon name="i-heroicons-check" class="w-10 h-10 text-white" />
+        <div v-if="showSuccess" class="max-w-md mx-auto text-center py-20 space-y-8">
+          <div class="relative w-24 h-24 mx-auto">
+            <div class="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500/20 to-teal-500/20 animate-ping" style="animation-duration: 2s;" />
+            <div class="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center shadow-xl shadow-primary-500/25">
+              <UIcon name="i-heroicons-check" class="w-12 h-12 text-white" />
+            </div>
           </div>
 
-          <div>
+          <div class="space-y-2">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
               Feedback Submitted!
             </h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
+            <p class="text-gray-500 dark:text-gray-400">
               Your feedback for
-              <span class="font-semibold">{{ selectedUserObject?.name }}</span>
+              <span class="font-semibold text-gray-900 dark:text-white">{{ selectedUserObject?.name }}</span>
               will be shared during their next buddy review.
             </p>
           </div>
 
-          <div class="flex items-center justify-center gap-3">
+          <div class="flex items-center justify-center gap-3 pt-2">
             <UButton color="primary" size="lg" @click="reviewAnother">
               Review Another Colleague
             </UButton>
-            <UButton to="/" variant="outline" color="neutral" size="lg">
+            <UButton to="/" variant="ghost" color="neutral" size="lg">
               Back to Dashboard
             </UButton>
           </div>
         </div>
 
-        <!-- Stepper Flow -->
-        <div v-else>
-          <!-- Header -->
-          <div class="mb-8">
+        <!-- Step 1: Choose a Colleague -->
+        <div v-else-if="currentStep === 'choose'" class="space-y-6">
+          <div>
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
               Submit Feedback
             </h1>
-            <p class="mt-2 text-gray-500 dark:text-gray-400">
-              Share constructive feedback with your colleagues
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+              Pick a colleague to share feedback with
             </p>
           </div>
 
-          <UStepper
-            ref="stepper"
-            v-model="currentStep"
-            :items="steps"
-            disabled
-            class="w-full"
+          <!-- Smart Suggestion -->
+          <div
+            v-if="suggestion && !suggestionsExhausted"
+            class="relative overflow-hidden rounded-xl border border-primary-500/20 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.07] via-teal-500/[0.04] to-transparent dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
           >
-            <!-- Step 1: Choose a Colleague -->
-            <template #choose>
-              <div class="mt-8 space-y-6">
-                <!-- Smart Suggestion Card -->
-                <div
-                  v-if="suggestion && !suggestionsExhausted"
-                  class="bg-gradient-to-br from-primary-500/10 to-teal-500/10 dark:from-primary-900/30 dark:to-teal-900/30 border border-primary-200/50 dark:border-primary-700/30 rounded-xl p-5"
-                >
-                  <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0">
-                      <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-primary-700 dark:text-primary-300 mb-3">
-                        Suggested for you
-                      </p>
-                      <div class="flex items-center gap-3 mb-2">
-                        <UAvatar
-                          :src="suggestion.user.image || suggestion.user.avatarUrl || undefined"
-                          :alt="suggestion.user.name"
-                          size="lg"
-                        />
-                        <div>
-                          <p class="font-semibold text-gray-900 dark:text-white">
-                            {{ suggestion.user.name }}
-                          </p>
-                          <UBadge
-                            v-if="suggestion.user.roleType"
-                            :label="getRoleLabel(suggestion.user.roleType) || ''"
-                            size="xs"
-                            color="neutral"
-                            variant="subtle"
-                          />
-                        </div>
-                      </div>
-                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        {{ suggestion.reason }}
-                      </p>
-                      <div class="flex items-center gap-2">
-                        <UButton
-                          color="primary"
-                          @click="selectUser(suggestion.user.id)"
-                        >
-                          Review {{ suggestion.user.name.split(' ')[0] }}
-                        </UButton>
-                        <UButton
-                          variant="ghost"
-                          color="neutral"
-                          :loading="suggestionStatus === 'pending'"
-                          @click="suggestSomeoneElse"
-                        >
-                          Suggest someone else
-                        </UButton>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl" />
 
-                <!-- Exhausted message -->
-                <div
-                  v-else-if="suggestionsExhausted"
-                  class="bg-green-50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-700/30 rounded-xl p-4 text-center"
-                >
-                  <UIcon name="i-heroicons-check-circle" class="w-8 h-8 text-green-500 mx-auto mb-2" />
-                  <p class="font-medium text-green-800 dark:text-green-200">
-                    You've reviewed everyone recently!
-                  </p>
-                  <p class="text-sm text-green-600 dark:text-green-400 mt-1">
-                    You can still select someone below to give additional feedback.
-                  </p>
-                </div>
-
-                <!-- Search -->
-                <UInput
-                  v-model="searchQuery"
-                  placeholder="Search colleagues..."
-                  icon="i-heroicons-magnifying-glass"
-                  size="lg"
-                  class="w-full"
-                />
-
-                <!-- User Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <FeedbackUserReviewCard
-                    v-for="u in filteredUsers"
-                    :key="u.id"
-                    :user="u"
-                    :is-reviewed-this-week="isReviewedThisWeek(u.id)"
-                    :last-reviewed-text="getLastReviewedText(u.id)"
-                    :is-selected="selectedUserId === u.id"
-                    @select="selectUser(u.id)"
-                  />
-                </div>
-
-                <div v-if="filteredUsers.length === 0" class="text-center py-8">
-                  <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p class="text-gray-500 dark:text-gray-400">
-                    No colleagues found matching "{{ searchQuery }}"
-                  </p>
-                </div>
-              </div>
-            </template>
-
-            <!-- Step 2: Write Feedback -->
-            <template #write>
-              <div class="mt-8">
-                <!-- Selected user header -->
-                <div
-                  class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl mb-6"
-                >
+            <div class="relative p-5 sm:p-6">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex items-center gap-4 flex-1 min-w-0">
                   <UAvatar
-                    v-if="selectedUserObject"
-                    :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
-                    :alt="selectedUserObject.name"
-                    size="lg"
+                    :src="suggestion.user.image || suggestion.user.avatarUrl || undefined"
+                    :alt="suggestion.user.name"
+                    size="xl"
                   />
-                  <div class="flex-1">
-                    <p class="font-semibold text-gray-900 dark:text-white">
-                      {{ selectedUserObject?.name }}
+                  <div class="min-w-0">
+                    <p class="text-lg font-bold text-gray-900 dark:text-white">
+                      {{ suggestion.user.name }}
                     </p>
-                    <UBadge
-                      v-if="selectedUserObject?.roleType"
-                      :label="getRoleLabel(selectedUserObject.roleType) || ''"
-                      size="xs"
-                      color="neutral"
-                      variant="subtle"
-                    />
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                      {{ suggestion.reason }} — want to share some thoughts?
+                    </p>
                   </div>
-                  <UButton variant="ghost" color="neutral" @click="goBackToStep1">
-                    Change
+                </div>
+
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <UButton
+                    color="primary"
+                    @click="selectUser(suggestion.user.id)"
+                  >
+                    Review {{ suggestion.user.name.split(' ')[0] }}
+                  </UButton>
+                  <UButton
+                    variant="ghost"
+                    color="neutral"
+                    icon="i-heroicons-arrow-path"
+                    :loading="suggestionStatus === 'pending'"
+                    @click="suggestSomeoneElse"
+                  >
+                    Skip
                   </UButton>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                <!-- Already reviewed warning -->
-                <UAlert
-                  v-if="alreadyReviewedWarning"
-                  icon="i-heroicons-exclamation-triangle"
-                  color="warning"
-                  title="Already reviewed this week"
-                  description="You've already given feedback to this person this week. You can still submit more feedback if needed."
-                  class="mb-6"
+          <!-- Exhausted -->
+          <div
+            v-else-if="suggestionsExhausted"
+            class="rounded-xl border border-green-500/20 dark:border-green-500/15 bg-green-500/[0.05] dark:bg-green-500/[0.08] p-4 text-center"
+          >
+            <p class="font-medium text-green-800 dark:text-green-200">
+              You've reviewed everyone recently — nice work!
+            </p>
+            <p class="text-sm text-green-600/80 dark:text-green-400/70 mt-1">
+              You can still select someone below to add more feedback.
+            </p>
+          </div>
+
+          <!-- Search + count -->
+          <div class="flex items-center gap-3">
+            <UInput
+              v-model="searchQuery"
+              placeholder="Search colleagues..."
+              icon="i-heroicons-magnifying-glass"
+              class="flex-1"
+            />
+            <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+              {{ filteredUsers.length }} {{ filteredUsers.length === 1 ? 'person' : 'people' }}
+            </span>
+          </div>
+
+          <!-- User Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <FeedbackUserReviewCard
+              v-for="u in filteredUsers"
+              :key="u.id"
+              :user="u"
+              :is-reviewed-this-week="isReviewedThisWeek(u.id)"
+              :last-reviewed-text="getLastReviewedText(u.id)"
+              :is-selected="selectedUserId === u.id"
+              :role-color="getRoleColor(u.roleType)"
+              @select="selectUser(u.id)"
+            />
+          </div>
+
+          <div v-if="filteredUsers.length === 0" class="text-center py-12">
+            <p class="text-gray-400 dark:text-gray-500">
+              No one found matching "{{ searchQuery }}"
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2: Write Feedback -->
+        <div v-else-if="currentStep === 'write'" class="space-y-6">
+          <!-- Breadcrumb back -->
+          <button
+            class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            @click="goBackToChoose"
+          >
+            <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+            Choose someone else
+          </button>
+
+          <!-- Selected user header -->
+          <div class="flex items-center gap-4">
+            <UAvatar
+              v-if="selectedUserObject"
+              :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
+              :alt="selectedUserObject.name"
+              size="xl"
+            />
+            <div>
+              <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+                Feedback for {{ selectedUserObject?.name }}
+              </h1>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                This will be shared during their next buddy review
+              </p>
+            </div>
+          </div>
+
+          <!-- Already reviewed warning -->
+          <UAlert
+            v-if="alreadyReviewedWarning"
+            icon="i-heroicons-exclamation-triangle"
+            color="warning"
+            variant="subtle"
+            title="Already reviewed this week"
+            description="You've already given feedback to this person this week. You can still submit more if needed."
+          />
+
+          <!-- Two-column layout -->
+          <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Left: Textarea + buttons -->
+            <div class="flex-1">
+              <form class="space-y-4" @submit.prevent="submitFeedback">
+                <div>
+                  <UTextarea
+                    v-model="feedbackText"
+                    :rows="14"
+                    placeholder="What have you noticed about their work recently? Be specific — examples make feedback actionable."
+                    class="w-full"
+                    autofocus
+                  />
+                  <p
+                    class="mt-2 text-xs"
+                    :class="[
+                      feedbackText.length < 10 && feedbackText.length > 0
+                        ? 'text-red-500 dark:text-red-400'
+                        : 'text-gray-400 dark:text-gray-500',
+                    ]"
+                  >
+                    {{ feedbackText.length }} characters (minimum 10)
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                  <UButton
+                    type="submit"
+                    color="primary"
+                    size="lg"
+                    :disabled="!isFormValid || isSubmitting"
+                    :loading="isSubmitting"
+                  >
+                    Submit Feedback
+                  </UButton>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right: Tips sidebar -->
+            <div class="lg:w-[320px] flex-shrink-0">
+              <div class="lg:sticky lg:top-8 space-y-5">
+                <UAccordion
+                  :items="tipsAccordionItems"
+                  type="multiple"
+                  :default-value="['What to Write About']"
                 />
 
-                <!-- Two-column layout -->
-                <div class="flex flex-col lg:flex-row gap-8">
-                  <!-- Left: Textarea + buttons -->
-                  <div class="flex-1 space-y-4">
-                    <form class="space-y-4" @submit.prevent="submitFeedback">
-                      <div>
-                        <UTextarea
-                          v-model="feedbackText"
-                          :rows="14"
-                          placeholder="Share your feedback here... Be specific, constructive, and kind."
-                          class="w-full"
-                          autofocus
-                        />
-                        <div class="mt-2 flex items-center justify-between">
-                          <p
-                            class="text-sm"
-                            :class="[
-                              feedbackText.length < 10 && feedbackText.length > 0
-                                ? 'text-red-500 dark:text-red-400'
-                                : 'text-gray-500 dark:text-gray-400',
-                            ]"
-                          >
-                            {{ feedbackText.length }} characters (minimum 10)
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="flex items-center justify-between pt-2">
-                        <UButton variant="ghost" color="neutral" @click="goBackToStep1">
-                          Cancel
-                        </UButton>
-                        <UButton
-                          type="submit"
-                          color="primary"
-                          size="lg"
-                          :disabled="!isFormValid || isSubmitting"
-                          :loading="isSubmitting"
-                        >
-                          {{ isSubmitting ? "Submitting..." : "Submit Feedback" }}
-                        </UButton>
-                      </div>
-                    </form>
+                <!-- Question Generator -->
+                <div
+                  v-if="currentPrompt"
+                  class="rounded-xl bg-gradient-to-br from-primary-50 to-teal-50 dark:from-primary-900/20 dark:to-teal-900/20 border border-primary-200/60 dark:border-primary-700/40 p-5 space-y-4"
+                >
+                  <div class="flex items-center gap-2">
+                    <UIcon
+                      name="i-heroicons-light-bulb"
+                      class="w-5 h-5 text-primary-500"
+                    />
+                    <span class="text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">Not sure what to write?</span>
                   </div>
-
-                  <!-- Right: Tips sidebar -->
-                  <div class="lg:w-[340px] flex-shrink-0">
-                    <div class="lg:sticky lg:top-8 space-y-5">
-                      <div>
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                          <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-primary-500" />
-                          Writing Great Feedback
-                        </h2>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          Help your colleagues grow
-                        </p>
-                      </div>
-
-                      <UAccordion
-                        :items="tipsAccordionItems"
-                        type="multiple"
-                        :default-value="['What to Write About']"
-                      />
-
-                      <!-- Question Generator -->
-                      <div v-if="currentPrompt" class="space-y-3">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
-                          Need a Starting Point?
-                        </h3>
-                        <div
-                          class="bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200/50 dark:border-primary-700/30 rounded-xl p-4 space-y-3"
-                        >
-                          <div class="flex items-start gap-3">
-                            <UIcon
-                              name="i-heroicons-light-bulb"
-                              class="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0"
-                            />
-                            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                              {{ currentPrompt.question }}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-200 bg-primary-100/50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
-                            :disabled="isRefreshingPrompt"
-                            @click="randomizePrompt"
-                          >
-                            <UIcon
-                              name="i-heroicons-arrow-path"
-                              class="w-4 h-4"
-                              :class="{ 'animate-spin': isRefreshingPrompt }"
-                            />
-                            <span>Generate new question</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <p class="text-sm font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
+                    "{{ currentPrompt.question }}"
+                  </p>
+                  <button
+                    type="button"
+                    class="flex items-center gap-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
+                    :disabled="isRefreshingPrompt"
+                    @click="randomizePrompt"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-3.5 h-3.5"
+                      :class="{ 'animate-spin': isRefreshingPrompt }"
+                    />
+                    <span>Try a different question</span>
+                  </button>
                 </div>
               </div>
-            </template>
-          </UStepper>
+            </div>
+          </div>
         </div>
       </div>
     </template>

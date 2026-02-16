@@ -238,7 +238,7 @@ v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="t
 
             <UCard v-else>
               <UTable :columns="receivedColumns" :data="buddyReceivedFeedback" :ui="{ tr: 'cursor-pointer' }"
-                @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+                @select="(row: any) => openFeedbackModal(row.original ?? row)">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
                     <UAvatar
@@ -292,7 +292,7 @@ v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color=
                 </div>
 
                 <UTable :columns="incomingColumns" :data="incomingFeedback" :ui="{ tr: 'cursor-pointer' }"
-                  @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+                  @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
                       <UAvatar

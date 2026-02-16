@@ -15,6 +15,12 @@ const props = defineProps<{
 }>();
 
 const { getDaysUntilText, getDateColorClass, formatDate } = useReviewHelpers();
+
+const displayName = computed(() => props.review.name || 'Quarterly Review');
+
+console.log('[UpcomingReviewCard] review prop:', JSON.stringify(props.review, null, 2));
+console.log('[UpcomingReviewCard] review.name:', props.review.name, '| type:', typeof props.review.name);
+console.log('[UpcomingReviewCard] displayName:', displayName.value);
 </script>
 
 <template>
@@ -34,7 +40,7 @@ const { getDaysUntilText, getDateColorClass, formatDate } = useReviewHelpers();
             :to="`/reviews/${review.id}`"
             class="text-xl font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
           >
-            {{ review.name }}
+            {{ displayName }}
           </NuxtLink>
           <UBadge
             v-if="index === 0"

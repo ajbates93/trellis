@@ -19,6 +19,14 @@ const { data: reviewData, refresh } = await useFetch(
 
 const review = computed(() => (reviewData.value as any)?.review);
 
+watchEffect(() => {
+  if (review.value) {
+    console.log('[ReviewDetail] review object keys:', Object.keys(review.value));
+    console.log('[ReviewDetail] review.name:', review.value.name, '| type:', typeof review.value.name);
+    console.log('[ReviewDetail] full review:', JSON.stringify(review.value, null, 2));
+  }
+});
+
 useHead({
   title: computed(() => review.value?.name || "Review Details"),
 });
@@ -198,6 +206,10 @@ const selectedFeedback = ref<any>(null);
 
 // Open feedback modal
 const openFeedbackModal = (feedbackItem: any) => {
+  console.log('[ReviewDetail] openFeedbackModal called with:', JSON.stringify(feedbackItem, null, 2));
+  console.log('[ReviewDetail] has reviewer?', !!feedbackItem?.reviewer);
+  console.log('[ReviewDetail] has reviewee?', !!feedbackItem?.reviewee);
+  console.log('[ReviewDetail] has content?', !!feedbackItem?.content);
   selectedFeedback.value = feedbackItem;
   isFeedbackModalOpen.value = true;
 };
@@ -531,7 +543,7 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
                   <UTable
 :columns="feedbackColumns" :data="feedback"
                     :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' }, tr: 'cursor-pointer' }"
-                    @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+                    @select="(row: any) => openFeedbackModal(row.original ?? row)">
                     <template #from-cell="{ row }">
                       <div class="flex items-center gap-2">
                         <UAvatar

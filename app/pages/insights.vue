@@ -142,7 +142,7 @@
 
             <UTable v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback"
               :ui="{ tr: 'cursor-pointer' }"
-              @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+              @select="(row: any) => openFeedbackModal(row.original ?? row)">
               <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
                   <UAvatar

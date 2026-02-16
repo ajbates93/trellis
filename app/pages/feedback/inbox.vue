@@ -292,7 +292,7 @@ name="i-heroicons-arrow-right"
 :columns="receivedColumns" :data="tableFeedback" :ui="{
                   tr: 'cursor-pointer data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
                 }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })"
-                  @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+                  @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
                       <UAvatar
@@ -344,7 +344,7 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
 :columns="receivedColumns" :data="unreadFeedback" :ui="{
                 tr: 'cursor-pointer border-l-2 border-l-primary-500',
               }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })"
-                @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+                @select="(row: any) => openFeedbackModal(row.original ?? row)">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
                     <UAvatar
@@ -406,7 +406,7 @@ v-if="selectedRecipient" variant="ghost" color="primary" icon="i-heroicons-x-mar
                 </div>
 
                 <UTable :columns="givenColumns" :data="filteredGivenFeedback" :ui="{ tr: 'cursor-pointer' }"
-                  @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
+                  @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #to-cell="{ row }">
                     <div class="flex items-center gap-2">
                       <UAvatar

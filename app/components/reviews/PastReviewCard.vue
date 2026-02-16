@@ -13,6 +13,12 @@ const props = defineProps<{
 }>();
 
 const { formatDate } = useReviewHelpers();
+
+const displayName = computed(() => props.review.name || 'Quarterly Review');
+
+console.log('[PastReviewCard] review prop:', JSON.stringify(props.review, null, 2));
+console.log('[PastReviewCard] review.name:', props.review.name, '| type:', typeof props.review.name);
+console.log('[PastReviewCard] displayName:', displayName.value);
 </script>
 
 <template>
@@ -34,7 +40,7 @@ const { formatDate } = useReviewHelpers();
           class="text-gray-400 group-hover:text-primary-500"
         />
       </div>
-      <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
+      <h3 class="font-bold text-lg mb-1">{{ displayName }}</h3>
 
       <!-- Slot for metadata (buddy name, completion date, etc.) -->
       <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
