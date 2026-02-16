@@ -13,6 +13,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "release:sentry": "VERSION=$(node -p \"require('./package.json').version\") && sentry-cli releases new --project trellis \"$VERSION\" && sentry-cli releases set-commits --project trellis \"$VERSION\" --auto && sentry-cli releases finalize --project trellis \"$VERSION\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
