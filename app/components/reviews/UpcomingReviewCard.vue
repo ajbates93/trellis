@@ -30,9 +30,12 @@ const { getDaysUntilText, getDateColorClass, formatDate } = useReviewHelpers();
     >
       <div class="space-y-2">
         <div class="flex items-center gap-3">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+          <NuxtLink
+            :to="`/reviews/${review.id}`"
+            class="text-xl font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+          >
             {{ review.name }}
-          </h3>
+          </NuxtLink>
           <UBadge
             v-if="index === 0"
             label="Next"

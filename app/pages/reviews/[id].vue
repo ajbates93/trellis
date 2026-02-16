@@ -530,7 +530,8 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
                 <div v-else class="max-h-[500px] overflow-y-auto">
                   <UTable
 :columns="feedbackColumns" :data="feedback"
-                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' } }">
+                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' }, tr: 'cursor-pointer' }"
+                    @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
                     <template #from-cell="{ row }">
                       <div class="flex items-center gap-2">
                         <UAvatar
@@ -541,14 +542,7 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
                     </template>
 
                     <template #content-cell="{ row }">
-                      <UButton
-variant="ghost" color="neutral"
-                        class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                        @click="openFeedbackModal(row.original)">
-                        <span class="truncate block">{{
-                          row.original.content
-                          }}</span>
-                      </UButton>
+                      <span class="truncate block">{{ row.original.content }}</span>
                     </template>
 
                     <template #date-cell="{ row }">
@@ -617,7 +611,7 @@ v-for="achievement in achievements" :key="achievement.id"
                           {{ achievement.title }}
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {{ formatDate(achievement.achievedDate) }}
+                          {{ formatDateInUserTZ(achievement.achievedDate, undefined, false) }}
                         </p>
                         <p
 v-if="achievement.description"

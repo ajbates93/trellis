@@ -290,8 +290,9 @@ name="i-heroicons-arrow-right"
               <UCard v-if="tableFeedback.length > 0">
                 <UTable
 :columns="receivedColumns" :data="tableFeedback" :ui="{
-                  tr: 'data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
-                }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })">
+                  tr: 'cursor-pointer data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
+                }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })"
+                  @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
                       <UAvatar
@@ -304,14 +305,7 @@ name="i-heroicons-arrow-right"
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton
-variant="ghost" color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)">
-                      <span class="truncate block">{{
-                        row.original.content
-                        }}</span>
-                    </UButton>
+                    <span class="truncate block">{{ row.original.content }}</span>
                   </template>
 
                   <template #date-cell="{ row }">
@@ -319,16 +313,6 @@ variant="ghost" color="neutral"
                       {{ formatDate(row.original.publishedAt) }}
                     </span>
                   </template>
-
-                  <!-- <template #review-cell="{ row }">
-                    <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                      {{ row.original.review.name }}
-                    </NuxtLink>
-                    <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                      Not assigned
-                    </span>
-                  </template> -->
 
                   <template #status-cell="{ row }">
                     <UBadge
@@ -339,7 +323,7 @@ variant="ghost" color="neutral"
                   <template #actions-cell="{ row }">
                     <UButton
 v-if="!row.original.isRead" loading-auto size="xs" variant="ghost"
-                      @click="markAsRead(row.original.id)">
+                      @click.stop="markAsRead(row.original.id)">
                       Mark as Read
                     </UButton>
                   </template>
@@ -358,8 +342,9 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
             <UCard v-else>
               <UTable
 :columns="receivedColumns" :data="unreadFeedback" :ui="{
-                tr: 'border-l-2 border-l-primary-500',
-              }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })">
+                tr: 'cursor-pointer border-l-2 border-l-primary-500',
+              }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })"
+                @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
                     <UAvatar
@@ -372,14 +357,7 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UButton
-variant="ghost" color="neutral"
-                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)">
-                    <span class="truncate block">{{
-                      row.original.content
-                      }}</span>
-                  </UButton>
+                  <span class="truncate block">{{ row.original.content }}</span>
                 </template>
 
                 <template #date-cell="{ row }">
@@ -388,22 +366,12 @@ variant="ghost" color="neutral"
                   </span>
                 </template>
 
-                <!-- <template #review-cell="{ row }">
-                  <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                    {{ row.original.review.name }}
-                  </NuxtLink>
-                  <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                    Not assigned
-                  </span>
-                </template> -->
-
                 <template #status-cell>
                   <UBadge label="Unread" color="primary" size="sm" />
                 </template>
 
                 <template #actions-cell="{ row }">
-                  <UButton loading-auto size="xs" variant="ghost" @click="markAsRead(row.original.id)">
+                  <UButton loading-auto size="xs" variant="ghost" @click.stop="markAsRead(row.original.id)">
                     Mark as Read
                   </UButton>
                 </template>
@@ -437,7 +405,8 @@ v-if="selectedRecipient" variant="ghost" color="primary" icon="i-heroicons-x-mar
                   </span>
                 </div>
 
-                <UTable :columns="givenColumns" :data="filteredGivenFeedback">
+                <UTable :columns="givenColumns" :data="filteredGivenFeedback" :ui="{ tr: 'cursor-pointer' }"
+                  @select="(_e: Event, row: any) => openFeedbackModal(row.original)">
                   <template #to-cell="{ row }">
                     <div class="flex items-center gap-2">
                       <UAvatar
@@ -450,14 +419,7 @@ v-if="selectedRecipient" variant="ghost" color="primary" icon="i-heroicons-x-mar
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton
-variant="ghost" color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)">
-                      <span class="truncate block">{{
-                        row.original.content
-                        }}</span>
-                    </UButton>
+                    <span class="truncate block">{{ row.original.content }}</span>
                   </template>
 
                   <template #date-cell="{ row }">
@@ -465,16 +427,6 @@ variant="ghost" color="neutral"
                       {{ formatDate(row.original.createdAt) }}
                     </span>
                   </template>
-
-                  <!-- <template #review-cell="{ row }">
-                    <NuxtLink v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                      {{ row.original.review.name }}
-                    </NuxtLink>
-                    <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                      Not assigned
-                    </span>
-                  </template> -->
 
                   <template #status-cell="{ row }">
                     <UBadge
