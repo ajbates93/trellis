@@ -1,5 +1,4 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
 
 // Get credentials from environment (try both naming conventions)
@@ -83,19 +82,30 @@ export async function uploadAvatarToS3(base64Image: string, userId: string): Pro
 
     console.log(`Successfully uploaded to S3`);
 
-    // Generate a signed URL valid for 7 days
-    const getCommand = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: filename,
-    });
-
-    const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 7 * 24 * 60 * 60 }); // 7 days
-
-    console.log(`Signed URL generated (expires in 7 days)`);
-    console.log(`Signed URL: ${signedUrl}`);
-    return signedUrl;
+    // Return proxy URL path (never expires)
+    const proxyUrl = `/api/avatars/${filename}`;
+    console.log(`Proxy URL: ${proxyUrl}`);
+    return proxyUrl;
   } catch (error) {
     console.error("Error uploading avatar to S3:", error);
     throw new Error("Failed to upload avatar");
   }
+}
+
+/**
+ * Get an avatar object from S3 by key
+ * @param key - S3 object key (e.g., "avatars/userId/uuid.png")
+ * @returns Object with Body stream and ContentType, or null if not found
+ */
+export async function getAvatarFromS3(key: string) {
+  const command = new GetObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+  });
+
+  const response = await s3Client.send(command);
+  return {
+    body: response.Body,
+    contentType: response.ContentType || "image/png",
+  };
 }
