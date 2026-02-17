@@ -295,7 +295,7 @@ const tipsAccordionItems: AccordionItem[] = [
                       {{ suggestion.user.name }}
                     </p>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                      {{ suggestion.reason }} — want to share some thoughts?
+                      {{ suggestion.reason }} - want to share some thoughts?
                     </p>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ const tipsAccordionItems: AccordionItem[] = [
             class="rounded-xl border border-green-500/20 dark:border-green-500/15 bg-green-500/[0.05] dark:bg-green-500/[0.08] p-4 text-center"
           >
             <p class="font-medium text-green-800 dark:text-green-200">
-              You've reviewed everyone recently — nice work!
+              You've reviewed everyone recently - nice work!
             </p>
             <p class="text-sm text-green-600/80 dark:text-green-400/70 mt-1">
               You can still select someone below to add more feedback.
@@ -416,7 +416,7 @@ const tipsAccordionItems: AccordionItem[] = [
                   <UTextarea
                     v-model="feedbackText"
                     :rows="14"
-                    placeholder="What have you noticed about their work recently? Be specific — examples make feedback actionable."
+                    placeholder="What have you noticed about their work recently? Be specific - examples make feedback actionable."
                     class="w-full"
                     autofocus
                   />

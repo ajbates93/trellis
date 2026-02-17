@@ -237,7 +237,8 @@ v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="t
               description="This buddy hasn't received any published feedback yet" variant="secondary" />
 
             <UCard v-else>
-              <UTable :columns="receivedColumns" :data="buddyReceivedFeedback" :ui="{ tr: 'cursor-pointer' }"
+              <UTable
+:columns="receivedColumns" :data="buddyReceivedFeedback" :ui="{ tr: 'cursor-pointer' }"
                 @select="(row: any) => openFeedbackModal(row.original ?? row)">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
@@ -291,7 +292,8 @@ v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color=
                   </UButton>
                 </div>
 
-                <UTable :columns="incomingColumns" :data="incomingFeedback" :ui="{ tr: 'cursor-pointer' }"
+                <UTable
+:columns="incomingColumns" :data="incomingFeedback" :ui="{ tr: 'cursor-pointer' }"
                   @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">

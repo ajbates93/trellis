@@ -59,7 +59,7 @@
           >
             {{ formatRoleType(row.original.roleType) }}
           </span>
-          <span v-else class="text-sm text-gray-400 dark:text-gray-500">—</span>
+          <span v-else class="text-sm text-gray-400 dark:text-gray-500">-</span>
         </template>
 
         <!-- Buddy -->

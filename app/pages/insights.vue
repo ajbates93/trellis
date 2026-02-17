@@ -93,7 +93,7 @@
                     {{
                       stats.daysUntilReview !== null
                         ? stats.daysUntilReview
-                        : "—"
+                        : "-"
                     }}
                   </p>
                 </div>
@@ -140,7 +140,8 @@
               </UButton>
             </div>
 
-            <UTable v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback"
+            <UTable
+v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback"
               :ui="{ tr: 'cursor-pointer' }"
               @select="(row: any) => openFeedbackModal(row.original ?? row)">
               <template #from-cell="{ row }">

@@ -405,7 +405,8 @@ v-if="selectedRecipient" variant="ghost" color="primary" icon="i-heroicons-x-mar
                   </span>
                 </div>
 
-                <UTable :columns="givenColumns" :data="filteredGivenFeedback" :ui="{ tr: 'cursor-pointer' }"
+                <UTable
+:columns="givenColumns" :data="filteredGivenFeedback" :ui="{ tr: 'cursor-pointer' }"
                   @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #to-cell="{ row }">
                     <div class="flex items-center gap-2">

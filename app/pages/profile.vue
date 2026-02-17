@@ -33,7 +33,7 @@
                     "
                     :alt="user?.name || 'User avatar'"
                     class="w-32 h-32 rounded-lg object-cover"
-                  />
+                  >
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ user?.name }}
@@ -63,7 +63,7 @@
                       accept="image/*"
                       class="hidden"
                       @change="onAvatarSelected"
-                    />
+                    >
                     <UButton
                       class="flex-1"
                       variant="outline"

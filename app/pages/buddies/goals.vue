@@ -408,7 +408,7 @@ v-if="checkins.length > 0"
                           new Date(row.original.createdAt),
                           "MMM d, yyyy",
                         )
-                        : "—"
+                        : "-"
                     }}
                   </div>
                   <div class="text-xs text-gray-500">
@@ -437,7 +437,7 @@ v-if="
                   ">
                     <UBadge :label="row.original.reviewSchedule.name" variant="subtle" />
                   </div>
-                  <div v-else class="text-xs text-gray-500">—</div>
+                  <div v-else class="text-xs text-gray-500">-</div>
                 </template>
               </UTable>
             </div>
@@ -476,7 +476,7 @@ v-model="showCheckinModal" :buddy="selectedBuddy" :is-loading="isCreatingCheckin
                   new Date(selectedCheckin.createdAt),
                   "MMM d, yyyy 'at' h:mm a",
                 )
-                : "—"
+                : "-"
             }}
           </p>
         </div>
