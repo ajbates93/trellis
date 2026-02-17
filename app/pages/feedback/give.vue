@@ -397,21 +397,50 @@ const tipsAccordionItems: AccordionItem[] = [
             </div>
           </div>
 
-          <!-- Already reviewed warning -->
-          <UAlert
-            v-if="alreadyReviewedWarning"
-            icon="i-heroicons-exclamation-triangle"
-            color="warning"
-            variant="subtle"
-            title="Already reviewed this week"
-            description="You've already given feedback to this person this week. You can still submit more if needed."
-          />
-
           <!-- Two-column layout -->
           <div class="flex flex-col lg:flex-row gap-8">
             <!-- Left: Textarea + buttons -->
             <div class="flex-1">
               <form class="space-y-4" @submit.prevent="submitFeedback">
+                <!-- Already reviewed warning -->
+                <UAlert
+                  v-if="alreadyReviewedWarning"
+                  icon="i-heroicons-exclamation-triangle"
+                  color="warning"
+                  variant="subtle"
+                  title="Already reviewed this week"
+                  description="You've already given feedback to this person this week. You can still submit more if needed."
+                />
+
+                <!-- Question Prompt -->
+                <div
+                  v-if="currentPrompt"
+                  class="flex items-start gap-3 rounded-lg bg-primary-50/60 dark:bg-primary-900/15 border border-primary-200/50 dark:border-primary-700/30 px-4 py-3"
+                >
+                  <UIcon
+                    name="i-heroicons-light-bulb"
+                    class="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      <span class="font-medium text-primary-600 dark:text-primary-400">Need inspiration?</span>
+                      {{ currentPrompt.question }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="flex-shrink-0 text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                    :disabled="isRefreshingPrompt"
+                    @click="randomizePrompt"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-4 h-4"
+                      :class="{ 'animate-spin': isRefreshingPrompt }"
+                    />
+                  </button>
+                </div>
+
                 <div>
                   <UTextarea
                     v-model="feedbackText"
@@ -455,35 +484,6 @@ const tipsAccordionItems: AccordionItem[] = [
                   :default-value="['What to Write About']"
                 />
 
-                <!-- Question Generator -->
-                <div
-                  v-if="currentPrompt"
-                  class="rounded-xl bg-gradient-to-br from-primary-50 to-teal-50 dark:from-primary-900/20 dark:to-teal-900/20 border border-primary-200/60 dark:border-primary-700/40 p-5 space-y-4"
-                >
-                  <div class="flex items-center gap-2">
-                    <UIcon
-                      name="i-heroicons-light-bulb"
-                      class="w-5 h-5 text-primary-500"
-                    />
-                    <span class="text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">Not sure what to write?</span>
-                  </div>
-                  <p class="text-sm font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
-                    "{{ currentPrompt.question }}"
-                  </p>
-                  <button
-                    type="button"
-                    class="flex items-center gap-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
-                    :disabled="isRefreshingPrompt"
-                    @click="randomizePrompt"
-                  >
-                    <UIcon
-                      name="i-heroicons-arrow-path"
-                      class="w-3.5 h-3.5"
-                      :class="{ 'animate-spin': isRefreshingPrompt }"
-                    />
-                    <span>Try a different question</span>
-                  </button>
-                </div>
               </div>
             </div>
           </div>
