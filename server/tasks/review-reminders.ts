@@ -16,13 +16,13 @@ export default defineTask({
     let emailsSent = 0;
 
     try {
-      // 7-day reminders: scheduledDate is 6-8 days from now
+      // 7-day reminders: scheduledDate is 7 days from now
       const sevenDayStart = new Date(now);
-      sevenDayStart.setDate(sevenDayStart.getDate() + 6);
+      sevenDayStart.setDate(sevenDayStart.getDate() + 7);
       sevenDayStart.setHours(0, 0, 0, 0);
 
       const sevenDayEnd = new Date(now);
-      sevenDayEnd.setDate(sevenDayEnd.getDate() + 8);
+      sevenDayEnd.setDate(sevenDayEnd.getDate() + 7);
       sevenDayEnd.setHours(23, 59, 59, 999);
 
       const sevenDayReviews = await db
@@ -47,13 +47,13 @@ export default defineTask({
         }
       }
 
-      // 1-day reminders: scheduledDate is tomorrow (1-2 days from now)
+      // 1-day reminders: scheduledDate is tomorrow
       const oneDayStart = new Date(now);
       oneDayStart.setDate(oneDayStart.getDate() + 1);
       oneDayStart.setHours(0, 0, 0, 0);
 
       const oneDayEnd = new Date(now);
-      oneDayEnd.setDate(oneDayEnd.getDate() + 2);
+      oneDayEnd.setDate(oneDayEnd.getDate() + 1);
       oneDayEnd.setHours(23, 59, 59, 999);
 
       const oneDayReviews = await db
