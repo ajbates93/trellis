@@ -45,6 +45,7 @@ const selectedTab = ref("feedback");
 // Complete review modal state
 const isCompleteModalOpen = ref(false);
 const completionNotes = ref("");
+const showCompletionSuccess = ref(false);
 
 // Edit review modal state
 const isEditModalOpen = ref(false);
@@ -180,11 +181,7 @@ const completeReview = async () => {
     });
     await refresh();
     isCompleteModalOpen.value = false;
-    toast.add({
-      title: "Review completed",
-      color: "success",
-      icon: "i-heroicons-check-circle",
-    });
+    showCompletionSuccess.value = true;
   } catch (error) {
     console.error("Failed to complete review:", error);
     toast.add({
@@ -374,6 +371,36 @@ const feedbackColumns = [
       <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <div v-if="!review" class="text-center py-12">
           <p class="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+
+        <!-- Completion Success State -->
+        <div v-else-if="showCompletionSuccess" class="max-w-md mx-auto text-center py-20 space-y-8">
+          <div class="relative w-24 h-24 mx-auto">
+            <div class="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500/20 to-teal-500/20 animate-ping" style="animation-duration: 2s;" />
+            <div class="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center shadow-xl shadow-primary-500/25">
+              <UIcon name="i-heroicons-check" class="w-12 h-12 text-white" />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              Review Completed!
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400">
+              The review for
+              <span class="font-semibold text-gray-900 dark:text-white">{{ review?.user?.name || review?.name }}</span>
+              has been marked as complete.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <UButton color="primary" size="lg" to="/reviews">
+              Schedule Next Review
+            </UButton>
+            <UButton to="/" variant="ghost" color="neutral" size="lg">
+              Back to Dashboard
+            </UButton>
+          </div>
         </div>
 
         <div v-else>
@@ -639,6 +666,24 @@ v-if="achievement.description"
                 </div>
               </UCard>
             </div>
+          </div>
+
+          <!-- Bottom CTA: Mark as Complete -->
+          <div
+            v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
+            class="mt-10 text-center py-8"
+          >
+            <p class="text-gray-500 dark:text-gray-400 mb-4">
+              All done? Mark this review as complete.
+            </p>
+            <UButton
+              color="primary"
+              size="lg"
+              icon="i-heroicons-check"
+              @click="isCompleteModalOpen = true"
+            >
+              Mark as Completed
+            </UButton>
           </div>
 
           <!-- Completion Notes (if completed) -->

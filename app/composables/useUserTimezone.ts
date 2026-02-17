@@ -74,7 +74,7 @@ export const useUserTimezone = () => {
     // If all day event, show date only (skip "(All day)" suffix when showTime is false)
     if (isAllDay) {
       const dateOnly = formatInTimeZone(dateObj, userTz, "MMM d, yyyy");
-      return showTime ? dateOnly + " (All day)" : dateOnly;
+      return dateOnly;
     }
 
     // Format with time

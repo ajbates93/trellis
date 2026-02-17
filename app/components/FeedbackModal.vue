@@ -24,7 +24,14 @@ const isOpen = computed({
 
 const formatDate = (date: string | Date | undefined) => {
   if (!date) return "";
-  return format(new Date(date), "MMM d, yyyy 'at' h:mm a");
+  return format(new Date(date), "MMM d, yyyy");
+};
+
+const formatWeekYear = (weekYear: string | undefined) => {
+  if (!weekYear) return "";
+  const match = weekYear.match(/^(\d{4})-W(\d{1,2})$/);
+  if (!match) return weekYear;
+  return `Week ${parseInt(match[2])}, ${match[1]}`;
 };
 
 const handleMarkAsRead = () => {
@@ -32,94 +39,76 @@ const handleMarkAsRead = () => {
     emit("markAsRead", props.feedback.id);
   }
 };
-
-const modalTitle = computed(() => {
-  if (!props.feedback) return "Feedback Details";
-  return `Feedback from ${props.feedback.reviewer?.name || "Unknown"}`;
-});
-
-const modalDescription = computed(() => {
-  if (!props.feedback) return "";
-  return formatDate(props.feedback.publishedAt || props.feedback.createdAt);
-});
 </script>
 
 <template>
   <UModal
-v-model:open="isOpen" :title="modalTitle" :description="modalDescription" class="sm:max-w-2xl" :ui="{
-    footer: 'justify-end',
-  }">
+    v-model:open="isOpen" class="sm:max-w-2xl" :ui="{
+      footer: 'justify-end',
+    }">
     <template #body>
-      <div v-if="feedback" class="space-y-6">
-        <!-- From/To Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- From -->
-          <div v-if="feedback.reviewer" class="space-y-2">
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              From
-            </p>
-            <div class="flex items-center gap-3">
+      <div v-if="feedback">
+        <!-- Header Banner -->
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-6 mb-6 -mt-1">
+          <!-- Background Decoration -->
+          <div class="absolute top-0 right-0 -mt-12 -mr-12 w-48 h-48 bg-primary-500/10 rounded-full blur-3xl" />
+          <div class="absolute bottom-0 left-0 -mb-12 -ml-12 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
+
+          <div class="relative z-10">
+            <div class="flex items-center gap-4">
               <UAvatar
-:src="feedback.reviewer.image || feedback.reviewer.avatarUrl" :alt="feedback.reviewer.name"
-                size="md" />
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">
-                  {{ feedback.reviewer.name }}
+                v-if="feedback.reviewer"
+                :src="feedback.reviewer.image || feedback.reviewer.avatarUrl"
+                :alt="feedback.reviewer.name"
+                size="xl"
+                class="ring-2 ring-white/20"
+              />
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">
+                  Feedback from
                 </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+                <p class="text-xl font-bold text-white truncate">
+                  {{ feedback.reviewer?.name || "Unknown" }}
+                </p>
+                <p v-if="feedback.reviewer?.email" class="text-sm text-gray-400 mt-1 truncate">
                   {{ feedback.reviewer.email }}
                 </p>
               </div>
             </div>
           </div>
-
-          <!-- To -->
-          <div v-if="feedback.reviewee" class="space-y-2">
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              To
-            </p>
-            <div class="flex items-center gap-3">
-              <UAvatar
-:src="feedback.reviewee.image || feedback.reviewee.avatarUrl" :alt="feedback.reviewee.name"
-                size="md" />
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">
-                  {{ feedback.reviewee.name }}
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ feedback.reviewee.email }}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Divider -->
-        <div class="border-t border-gray-200 dark:border-gray-700" />
+        <!-- Meta Tags -->
+        <div class="flex items-center gap-2 mb-5 flex-wrap">
+          <span
+            v-if="feedback.publishedAt || feedback.createdAt"
+            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
+          >
+            <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
+            {{ formatDate(feedback.publishedAt || feedback.createdAt) }}
+          </span>
+          <span
+            v-if="(feedback as any).weekYear"
+            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
+          >
+            <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
+            {{ formatWeekYear((feedback as any).weekYear) }}
+          </span>
+          <span
+            v-if="feedback.reviewee"
+            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
+          >
+            <UIcon name="i-heroicons-arrow-right" class="w-3.5 h-3.5" />
+            To {{ feedback.reviewee.name }}
+          </span>
+        </div>
 
         <!-- Feedback Content -->
-        <div class="space-y-2">
-          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Feedback
+        <div class="border-l-4 border-primary-500 pl-5 py-1">
+          <p class="text-base text-gray-900 dark:text-white leading-relaxed whitespace-pre-wrap">
+            {{ feedback.content }}
           </p>
-          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p class="text-gray-900 dark:text-white leading-relaxed whitespace-pre-wrap">
-              {{ feedback.content }}
-            </p>
-          </div>
         </div>
-
-        <!-- Status Badges -->
-        <div class="flex items-center gap-3">
-          <UBadge
-v-if="feedback.isRead !== undefined" :label="feedback.isRead ? 'Read' : 'Unread'"
-            :color="feedback.isRead ? 'neutral' : 'primary'" size="sm" />
-          <UBadge
-v-if="feedback.published !== undefined" :label="feedback.published ? 'Published' : 'Pending'"
-            :color="feedback.published ? 'success' : 'neutral'" size="sm" />
-        </div>
-
-        <!-- Linked Review Section Removed -->
       </div>
     </template>
 

@@ -14,7 +14,7 @@ const props = defineProps<{
   index: number;
 }>();
 
-const { getDaysUntilText, getDateColorClass, formatDate } = useReviewHelpers();
+const { formatDate } = useReviewHelpers();
 
 const displayName = computed(() => props.review.name || 'Quarterly Review');
 
@@ -57,13 +57,6 @@ console.log('[UpcomingReviewCard] displayName:', displayName.value);
           <div class="flex items-center gap-1.5">
             <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
             <span>{{ formatDate(review.scheduledDate) }}</span>
-          </div>
-          <div
-            class="flex items-center gap-1.5"
-            :class="getDateColorClass(review.scheduledDate)"
-          >
-            <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-            <span>{{ getDaysUntilText(review.scheduledDate) }}</span>
           </div>
         </div>
 

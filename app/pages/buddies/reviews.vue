@@ -458,13 +458,8 @@ const getReviewActions = (review: any) => [
                   :review="review"
                 >
                   <template #metadata="{ review }">
-                    <UIcon
-                      name="i-heroicons-check-circle"
-                      class="w-4 h-4 text-green-500"
-                    />
-                    <span
-                      >Completed {{ formatDate(review.completedDate) }}</span
-                    >
+                    <UIcon name="i-heroicons-user" class="w-4 h-4" />
+                    <span>{{ review.user?.name || "Unknown" }}</span>
                   </template>
                 </ReviewsPastReviewCard>
               </div>
