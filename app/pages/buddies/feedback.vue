@@ -201,7 +201,7 @@ const incomingColumns = [
 <template>
   <UDashboardPanel id="buddy-feedback">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Page header -->
         <div class="mb-8">
           <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -237,7 +237,9 @@ v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="t
               description="This buddy hasn't received any published feedback yet" variant="secondary" />
 
             <UCard v-else>
-              <UTable :columns="receivedColumns" :data="buddyReceivedFeedback">
+              <UTable
+:columns="receivedColumns" :data="buddyReceivedFeedback" :ui="{ tr: 'cursor-pointer' }"
+                @select="(row: any) => openFeedbackModal(row.original ?? row)">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">
                     <UAvatar
@@ -250,14 +252,7 @@ v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="t
                 </template>
 
                 <template #content-cell="{ row }">
-                  <UButton
-variant="ghost" color="neutral"
-                    class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                    @click="openFeedbackModal(row.original)">
-                    <span class="truncate block">{{
-                      row.original.content
-                      }}</span>
-                  </UButton>
+                  <span class="truncate block">{{ row.original.content }}</span>
                 </template>
 
                 <template #date-cell="{ row }">
@@ -269,7 +264,8 @@ variant="ghost" color="neutral"
                 <template #review-cell="{ row }">
                   <NuxtLink
 v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                    @click.stop>
                     {{ row.original.review.name }}
                   </NuxtLink>
                   <span v-else class="text-sm text-gray-400 dark:text-gray-600">
@@ -296,7 +292,9 @@ v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color=
                   </UButton>
                 </div>
 
-                <UTable :columns="incomingColumns" :data="incomingFeedback">
+                <UTable
+:columns="incomingColumns" :data="incomingFeedback" :ui="{ tr: 'cursor-pointer' }"
+                  @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
                       <UAvatar
@@ -309,14 +307,7 @@ v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color=
                   </template>
 
                   <template #content-cell="{ row }">
-                    <UButton
-variant="ghost" color="neutral"
-                      class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                      @click="openFeedbackModal(row.original)">
-                      <span class="truncate block">{{
-                        row.original.content
-                        }}</span>
-                    </UButton>
+                    <span class="truncate block">{{ row.original.content }}</span>
                   </template>
 
                   <template #date-cell="{ row }">
@@ -328,7 +319,8 @@ variant="ghost" color="neutral"
                   <template #review-cell="{ row }">
                     <NuxtLink
 v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                      @click.stop>
                       {{ row.original.review.name }}
                     </NuxtLink>
                     <span v-else class="text-sm text-gray-400 dark:text-gray-600">
@@ -338,7 +330,7 @@ v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
 
                   <template #actions-cell="{ row }">
                     <div class="flex gap-2 justify-end">
-                      <UButton loading-auto @click="publishFeedback(row.original.id)">
+                      <UButton loading-auto @click.stop="publishFeedback(row.original.id)">
                         Publish
                       </UButton>
                     </div>

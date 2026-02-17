@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="profile">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Page header -->
         <div class="mb-8">
           <h1
@@ -33,7 +33,7 @@
                     "
                     :alt="user?.name || 'User avatar'"
                     class="w-32 h-32 rounded-lg object-cover"
-                  />
+                  >
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ user?.name }}
@@ -63,7 +63,7 @@
                       accept="image/*"
                       class="hidden"
                       @change="onAvatarSelected"
-                    />
+                    >
                     <UButton
                       class="flex-1"
                       variant="outline"

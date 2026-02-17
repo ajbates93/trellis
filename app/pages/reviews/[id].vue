@@ -19,6 +19,14 @@ const { data: reviewData, refresh } = await useFetch(
 
 const review = computed(() => (reviewData.value as any)?.review);
 
+watchEffect(() => {
+  if (review.value) {
+    console.log('[ReviewDetail] review object keys:', Object.keys(review.value));
+    console.log('[ReviewDetail] review.name:', review.value.name, '| type:', typeof review.value.name);
+    console.log('[ReviewDetail] full review:', JSON.stringify(review.value, null, 2));
+  }
+});
+
 useHead({
   title: computed(() => review.value?.name || "Review Details"),
 });
@@ -198,6 +206,10 @@ const selectedFeedback = ref<any>(null);
 
 // Open feedback modal
 const openFeedbackModal = (feedbackItem: any) => {
+  console.log('[ReviewDetail] openFeedbackModal called with:', JSON.stringify(feedbackItem, null, 2));
+  console.log('[ReviewDetail] has reviewer?', !!feedbackItem?.reviewer);
+  console.log('[ReviewDetail] has reviewee?', !!feedbackItem?.reviewee);
+  console.log('[ReviewDetail] has content?', !!feedbackItem?.content);
   selectedFeedback.value = feedbackItem;
   isFeedbackModalOpen.value = true;
 };
@@ -359,7 +371,7 @@ const feedbackColumns = [
 <template>
   <UDashboardPanel id="review-detail">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <div v-if="!review" class="text-center py-12">
           <p class="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
@@ -530,7 +542,8 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
                 <div v-else class="max-h-[500px] overflow-y-auto">
                   <UTable
 :columns="feedbackColumns" :data="feedback"
-                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' } }">
+                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' }, tr: 'cursor-pointer' }"
+                    @select="(row: any) => openFeedbackModal(row.original ?? row)">
                     <template #from-cell="{ row }">
                       <div class="flex items-center gap-2">
                         <UAvatar
@@ -541,14 +554,7 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
                     </template>
 
                     <template #content-cell="{ row }">
-                      <UButton
-variant="ghost" color="neutral"
-                        class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                        @click="openFeedbackModal(row.original)">
-                        <span class="truncate block">{{
-                          row.original.content
-                          }}</span>
-                      </UButton>
+                      <span class="truncate block">{{ row.original.content }}</span>
                     </template>
 
                     <template #date-cell="{ row }">
@@ -617,7 +623,7 @@ v-for="achievement in achievements" :key="achievement.id"
                           {{ achievement.title }}
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {{ formatDate(achievement.achievedDate) }}
+                          {{ formatDateInUserTZ(achievement.achievedDate, undefined, false) }}
                         </p>
                         <p
 v-if="achievement.description"

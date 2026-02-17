@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const displayValue = computed(() => {
   if (props.value === null || props.value === undefined) {
-    return '—'
+    return '-'
   }
   return props.value
 })

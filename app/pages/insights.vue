@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="insights">
     <template #body>
-      <div class="pt-16 p-4 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
+      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Page header -->
         <div class="mb-8">
           <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -93,7 +93,7 @@
                     {{
                       stats.daysUntilReview !== null
                         ? stats.daysUntilReview
-                        : "—"
+                        : "-"
                     }}
                   </p>
                 </div>
@@ -140,7 +140,10 @@
               </UButton>
             </div>
 
-            <UTable v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback">
+            <UTable
+v-if="recentFeedback.length > 0" :columns="feedbackColumns" :data="recentFeedback"
+              :ui="{ tr: 'cursor-pointer' }"
+              @select="(row: any) => openFeedbackModal(row.original ?? row)">
               <template #from-cell="{ row }">
                 <div class="flex items-center gap-2">
                   <UAvatar
@@ -153,12 +156,7 @@
               </template>
 
               <template #content-cell="{ row }">
-                <UButton
-variant="ghost" color="neutral"
-                  class="w-full truncate text-left justify-start font-normal px-0 -mx-2.5 block overflow-hidden"
-                  @click="openFeedbackModal(row.original)">
-                  <span class="truncate block">{{ row.original.content }}</span>
-                </UButton>
+                <span class="truncate block">{{ row.original.content }}</span>
               </template>
 
               <template #date-cell="{ row }">
