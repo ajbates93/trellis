@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/ajbates93/trellis/compare/cohort-v0.7.0...cohort-v0.7.1) (2026-02-19)
+
+
+### Miscellaneous
+
+* sync package-lock.json ([e7fadff](https://github.com/ajbates93/trellis/commit/e7fadff3a974a48711650e23cacb62da6a39f326))
+
 ## [0.7.0](https://github.com/ajbates93/trellis/compare/cohort-v0.6.2...cohort-v0.7.0) (2026-02-19)
 
 
