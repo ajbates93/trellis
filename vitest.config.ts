@@ -7,9 +7,14 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    setupFiles: ['./server/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: [
+        'server/api/**/*.ts',
+        'server/utils/**/*.ts',
+      ],
       exclude: [
         'node_modules/',
         'dist/',
@@ -17,7 +22,13 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockData',
+        '**/*.test.ts',
       ],
+      thresholds: {
+        statements: 80,
+        branches: 80,
+        lines: 80,
+      },
     },
   },
   resolve: {

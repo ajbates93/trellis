@@ -119,7 +119,6 @@ export const GetForBuddyResponseSchema = z.object({
           content: z.string(),
           createdAt: z.coerce.date().nullable(),
           revieweeId: z.string(),
-          revieweeId: z.string(),
           // reviewScheduleId: z.uuid().nullable(),
           reviewer: z.object({
             id: z.string(),

@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
     "@nuxt/ui",
     "@nuxt/eslint",
-    "nuxt-mcp",
+    // "nuxt-mcp", // disabled: requires nuxi peer dep not available in Nuxt 4
     "nuxt-tiptap-editor",
     "@sentry/nuxt/module",
   ],
@@ -63,6 +63,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    ignore: ["**/*.test.ts"],
     experimental: {
       tasks: true,
     },

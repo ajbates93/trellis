@@ -19,7 +19,8 @@
       "mcp__nuxt-ui-remote__get-documentation-page",
       "Bash(npm run lint:*)",
       "WebFetch(domain:api.slack.com)",
-      "WebFetch(domain:docs.slack.dev)"
+      "WebFetch(domain:docs.slack.dev)",
+      "Bash(npx vitest run:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,38 @@
+import {
+  defineEventHandler,
+  createError,
+  getQuery,
+  getRouterParam,
+  readBody,
+  setResponseStatus,
+  setResponseHeaders,
+  getRequestHeader,
+  getHeader,
+  setHeader,
+  setCookie,
+  getCookie,
+  sendRedirect,
+  getHeaders,
+  toWebRequest,
+  assertMethod,
+} from 'h3'
+
+// Register h3 auto-imports as globals so endpoint files work outside Nuxt context
+Object.assign(globalThis, {
+  defineEventHandler,
+  createError,
+  getQuery,
+  getRouterParam,
+  readBody,
+  setResponseStatus,
+  setResponseHeaders,
+  getRequestHeader,
+  getHeader,
+  setHeader,
+  setCookie,
+  getCookie,
+  sendRedirect,
+  getHeaders,
+  toWebRequest,
+  assertMethod,
+})

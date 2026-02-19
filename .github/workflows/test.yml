@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Lint, Type-Check & Build
+    name: Lint, Type-Check, Test & Build
     runs-on: ubuntu-latest
 
     steps:
@@ -26,27 +26,19 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        continue-on-error: false
 
       - name: Run TypeScript type-check
         run: npx nuxt typecheck
-        continue-on-error: false
+
+      - name: Run tests
+        run: npm run test -- --run
 
       - name: Build application
         run: npm run build
         env:
-          # Mock environment variables for build
           DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
           GOOGLE_CLIENT_ID: mock-client-id
           GOOGLE_CLIENT_SECRET: mock-client-secret
           BETTER_AUTH_SECRET: mock-secret-key-for-testing-only
           BETTER_AUTH_URL: http://localhost:3000
           ANTHROPIC_API_KEY: mock-anthropic-key
-
-      - name: Check for build artifacts
-        run: |
-          if [ ! -d ".output" ]; then
-            echo "Build failed: .output directory not found"
-            exit 1
-          fi
-          echo "Build successful: .output directory exists"

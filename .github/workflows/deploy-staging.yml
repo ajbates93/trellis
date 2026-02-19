@@ -6,12 +6,9 @@ on:
       - staging
 
 jobs:
-  deploy:
-    name: Deploy to Railway Staging
+  migrate:
+    name: Run Staging Migrations
     runs-on: ubuntu-latest
-    environment:
-      name: staging
-      url: ${{ vars.STAGING_URL }}
 
     steps:
       - name: Checkout code
@@ -27,55 +24,6 @@ jobs:
         run: npm ci
 
       - name: Run database migrations
-        id: migrate
         run: npm run db:migrate
-        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-
-      - name: Migration failure help
-        if: steps.migrate.outcome == 'failure'
-        run: |
-          echo "❌ Database migration failed!"
-          echo ""
-          echo "This usually happens when:"
-          echo "1. The staging database schema is out of sync with migrations"
-          echo "2. There are incompatible schema changes (e.g., uuid → text conversion)"
-          echo ""
-          echo "To fix this:"
-          echo "1. Go to Railway Dashboard → Staging Environment → PostgreSQL"
-          echo "2. Delete the database service (Settings → Danger Zone → Delete)"
-          echo "3. Add a new PostgreSQL database"
-          echo "4. Update STAGING_DATABASE_URL secret in GitHub with new connection string"
-          echo "5. Update DATABASE_URL environment variable in Railway staging service"
-          echo "6. Re-run this workflow"
-          echo ""
-          echo "The migrations will create the database from scratch on the fresh database."
-          exit 1
-
-      - name: Deploy to Railway Staging
-        run: |
-          echo "✅ Migrations completed successfully"
-          echo ""
-          echo "Railway will auto-deploy from the staging branch."
-          echo "Configure in Railway Dashboard:"
-          echo "  1. Go to Railway → Staging Environment → Your Service"
-          echo "  2. Settings → Source → Set branch to 'staging'"
-          echo "  3. Railway will auto-deploy on every push to staging branch"
-          echo ""
-          echo "Deployment will happen automatically via Railway Git integration."
-
-      - name: Deployment notification
-        if: success()
-        run: |
-          echo "Staging deployment successful!"
-          echo "URL: ${{ vars.STAGING_URL }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref_name }}"
-
-      - name: Deployment failed notification
-        if: failure()
-        run: |
-          echo "Staging deployment failed!"
-          echo "Check the logs above for details."
-          exit 1
