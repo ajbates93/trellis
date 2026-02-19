@@ -32,8 +32,12 @@ export default defineTask({
           and(
             eq(reviewSchedules.status, "scheduled"),
             eq(reviewSchedules.reminderSent7d, false),
-            between(reviewSchedules.scheduledDate, sevenDayStart.toISOString(), sevenDayEnd.toISOString())
-          )
+            between(
+              reviewSchedules.scheduledDate,
+              sevenDayStart.toISOString(),
+              sevenDayEnd.toISOString(),
+            ),
+          ),
         );
 
       for (const review of sevenDayReviews) {
@@ -63,8 +67,12 @@ export default defineTask({
           and(
             eq(reviewSchedules.status, "scheduled"),
             eq(reviewSchedules.reminderSent1d, false),
-            between(reviewSchedules.scheduledDate, oneDayStart.toISOString(), oneDayEnd.toISOString())
-          )
+            between(
+              reviewSchedules.scheduledDate,
+              oneDayStart.toISOString(),
+              oneDayEnd.toISOString(),
+            ),
+          ),
         );
 
       for (const review of oneDayReviews) {
@@ -78,7 +86,9 @@ export default defineTask({
         }
       }
 
-      console.log(`[review-reminders] Completed. Sent ${emailsSent} reminder emails.`);
+      console.log(
+        `[review-reminders] Completed. Sent ${emailsSent} reminder emails.`,
+      );
       return { result: `Sent ${emailsSent} reminder emails` };
     } catch (error) {
       console.error("[review-reminders] Task failed:", error);
@@ -90,15 +100,18 @@ export default defineTask({
 async function sendReminders(
   review: typeof reviewSchedules.$inferSelect,
   daysUntil: number,
-  appUrl: string
+  appUrl: string,
 ): Promise<number> {
   let sent = 0;
-  const reviewDate = new Date(review.scheduledDate).toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const reviewDate = new Date(review.scheduledDate).toLocaleDateString(
+    "en-GB",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    },
+  );
 
   // Look up reviewee and buddy
   const [reviewee] = await db
@@ -112,7 +125,9 @@ async function sendReminders(
     .where(eq(users.id, review.buddyId));
 
   if (!reviewee || !buddy) {
-    console.warn(`[review-reminders] Missing user data for review ${review.id}`);
+    console.warn(
+      `[review-reminders] Missing user data for review ${review.id}`,
+    );
     return 0;
   }
 
@@ -121,18 +136,21 @@ async function sendReminders(
     try {
       await sendEmail({
         to: reviewee.email,
-        subject: `Review reminder: tomorrow with ${buddy.name}`,
+        subject: `Review reminder: upcoming review with ${buddy.name}`,
         html: emailTemplates.reviewReminder(
           reviewee.name,
           buddy.name,
           reviewDate,
           daysUntil,
-          appUrl
+          appUrl,
         ),
       });
       sent++;
     } catch (error) {
-      console.error(`[review-reminders] Failed to email reviewee ${reviewee.email}:`, error);
+      console.error(
+        `[review-reminders] Failed to email reviewee ${reviewee.email}:`,
+        error,
+      );
     }
   }
 
@@ -144,18 +162,21 @@ async function sendReminders(
     try {
       await sendEmail({
         to: buddy.email,
-        subject: `Review reminder: tomorrow with ${reviewee.name}`,
+        subject: `Review reminder: upcoming review with ${reviewee.name}`,
         html: emailTemplates.reviewReminderBuddy(
           buddy.name,
           reviewee.name,
           reviewDate,
           daysUntil,
-          appUrl
+          appUrl,
         ),
       });
       sent++;
     } catch (error) {
-      console.error(`[review-reminders] Failed to email buddy ${buddy.email}:`, error);
+      console.error(
+        `[review-reminders] Failed to email buddy ${buddy.email}:`,
+        error,
+      );
     }
   }
 
