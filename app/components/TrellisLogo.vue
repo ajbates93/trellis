@@ -1,0 +1,35 @@
+<script setup lang="ts">
+defineProps<{
+  size?: number
+}>()
+</script>
+
+<template>
+  <svg
+    :width="size || 32"
+    :height="size || 32"
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <!-- Trellis structure - grid pattern -->
+    <g opacity="0.6">
+      <line x1="8" y1="6" x2="8" y2="26" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="14" y1="4" x2="14" y2="26" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="20" y1="6" x2="20" y2="28" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="6" y1="10" x2="22" y2="10" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="6" y1="16" x2="22" y2="16" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="6" y1="22" x2="22" y2="22" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+    </g>
+
+    <!-- Growing plant/leaf element -->
+    <g>
+      <path d="M14 26 C14 26, 14 18, 14 12" stroke="#06d6a0" stroke-width="2" stroke-linecap="round" fill="none" />
+      <path d="M14 16 C14 16, 10 14, 8 13 C6 12, 5 11, 6 9 C7 7, 10 8, 12 10 C13 11, 14 13, 14 14" fill="#06d6a0" opacity="0.9" />
+      <path d="M14 14 C14 14, 18 12, 20 11 C22 10, 23 9, 22 7 C21 5, 18 6, 16 8 C15 9, 14 11, 14 12" fill="#10b981" opacity="0.9" />
+      <circle cx="14" cy="10" r="2.5" fill="#06d6a0" />
+      <circle cx="14" cy="10" r="1.5" fill="#10b981" opacity="0.7" />
+      <path d="M14 20 C14 20, 17 19, 18 18.5 C19 18, 19.5 17.5, 19 16.5 C18.5 15.5, 16.5 16, 15 17 C14.5 17.5, 14 18.5, 14 19" fill="#06d6a0" opacity="0.7" />
+    </g>
+  </svg>
+</template>

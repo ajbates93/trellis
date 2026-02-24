@@ -209,9 +209,7 @@ aria-label="Open navigation menu" :aria-expanded="mobileNavOpen" aria-controls="
 
       <!-- App logo/name -->
       <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-          <UIcon name="i-heroicons-users" class="text-white text-sm" />
-        </div>
+        <TrellisLogo :size="28" />
         <span class="font-semibold text-white">Trellis</span>
       </div>
 
@@ -253,9 +251,7 @@ class="hidden lg:flex" collapsible resizable :ui="{
         <!-- Logo and branding -->
         <template #header="{ collapsed }">
           <div class="flex items-center gap-3 px-4 py-4">
-            <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <UIcon name="i-heroicons-users" class="text-white text-lg" />
-            </div>
+            <TrellisLogo :size="32" />
             <span v-if="!collapsed" class="text-lg font-semibold">Trellis</span>
           </div>
         </template>

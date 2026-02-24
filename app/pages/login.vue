@@ -3,9 +3,7 @@
     <div class="text-center space-y-3">
       <!-- Logo -->
       <div class="flex justify-center">
-        <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center">
-          <UIcon name="i-heroicons-users" class="text-white text-3xl" />
-        </div>
+        <TrellisLogo :size="64" />
       </div>
 
       <!-- Title -->

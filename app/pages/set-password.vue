@@ -3,9 +3,7 @@
     <!-- Logo and Title -->
     <div class="text-center space-y-3">
       <div class="flex justify-center">
-        <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center">
-          <UIcon name="i-heroicons-users" class="text-white text-3xl" />
-        </div>
+        <TrellisLogo :size="64" />
       </div>
       <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Set Your Password</h1>
       <p class="text-lg text-gray-600 dark:text-gray-400">
