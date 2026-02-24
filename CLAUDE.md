@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Trellis** is a buddy management and peer feedback platform for Pocketworks. It streamlines feedback collection, provides visibility into personal development, and maintains alignment with Notion-based formal reviews. The platform is being built as an internal tool with potential to evolve into a SaaS product.
+**Trellis** is a buddy management and peer feedback SaaS platform. It streamlines feedback collection, provides visibility into personal development, and maintains alignment with formal reviews. Originally built for Pocketworks, it is now a multi-tenant product available to any organization.
 
 ### Primary Goals
 - Centralize feedback submission and viewing
