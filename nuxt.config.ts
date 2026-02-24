@@ -50,6 +50,40 @@ export default defineNuxtConfig({
       htmlAttrs: {
         class: "dark", // TODO: Remove when light mode is ready
       },
+      link: [
+        {
+          rel: "preconnect",
+          href: "https://fonts.googleapis.com",
+        },
+        {
+          rel: "preconnect",
+          href: "https://fonts.gstatic.com",
+          crossorigin: "",
+        },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&display=swap",
+        },
+        {
+          rel: "icon",
+          type: "image/svg+xml",
+          href: "/icon.svg",
+        },
+        {
+          rel: "icon",
+          type: "image/x-icon",
+          href: "/favicon.ico",
+        },
+        {
+          rel: "apple-touch-icon",
+          sizes: "180x180",
+          href: "/apple-touch-icon.png",
+        },
+        {
+          rel: "manifest",
+          href: "/manifest.webmanifest",
+        },
+      ],
       script: [
         // {
         //   src: "https://app.snaggd.io/embed-loader.js",
@@ -81,3 +115,4 @@ export default defineNuxtConfig({
     client: "hidden",
   },
 });
+

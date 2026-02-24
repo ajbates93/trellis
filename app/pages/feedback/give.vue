@@ -314,7 +314,7 @@ const tipsAccordionItems: AccordionItem[] = [
         </div>
 
         <!-- Main Single-Page Layout -->
-        <div v-else class="max-w-4xl mx-auto space-y-6">
+        <div v-else class="space-y-6">
           <!-- Page Header -->
           <div>
             <h1

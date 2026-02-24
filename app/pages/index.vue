@@ -10,8 +10,9 @@
               Welcome back,
               {{ user?.preferredName || user?.name?.split(" ")[0] || "there" }}
             </h1>
-            <p class="mt-2 text-gray-500 dark:text-gray-400">
-              What would you like to do today?
+            <p class="mt-2 text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5">
+              <TrellisLogo :size="18" />
+              Let's keep growing.
             </p>
           </div>
 
