@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/ajbates93/trellis/compare/cohort-v0.7.1...cohort-v0.7.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* TRELLIS-5 bug fix (date resolution) ([#39](https://github.com/ajbates93/trellis/issues/39)) ([ecf0bfe](https://github.com/ajbates93/trellis/commit/ecf0bfe5dc9d587ff4a079bd5451adf663a7ef41))
+
 ## [0.7.1](https://github.com/ajbates93/trellis/compare/cohort-v0.7.0...cohort-v0.7.1) (2026-02-19)
 
 
