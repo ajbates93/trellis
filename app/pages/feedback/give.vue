@@ -14,15 +14,13 @@ const { user } = useAuth();
 const toast = useToast();
 const { markTaskComplete } = useOnboarding();
 
-// Flow state (manual, no stepper component)
-const currentStep = ref<"choose" | "write">("choose");
-
 // Form state
 const selectedUserId = ref<string | null>(null);
 const feedbackText = ref("");
 const isSubmitting = ref(false);
 const showSuccess = ref(false);
 const searchQuery = ref("");
+const showColleaguePicker = ref(false);
 
 // Fetch users
 const { data: usersData } = await useFetch("/api/users");
@@ -47,13 +45,6 @@ const {
 const suggestion = computed(() => suggestionData.value?.suggestion);
 const suggestionsExhausted = computed(() => suggestionData.value?.exhausted);
 const reviewStatus = computed(() => suggestionData.value?.reviewStatus || {} as Record<string, { lastReviewedAt: string | null; reviewCount: number; reviewedThisWeek: boolean }>);
-
-const suggestSomeoneElse = async () => {
-  if (suggestion.value) {
-    excludeIds.value = [...excludeIds.value, suggestion.value.user.id];
-  }
-  await refreshSuggestion();
-};
 
 // Fetch random feedback prompt
 const { data: promptData, refresh: refreshPrompt } = await useFetch("/api/feedback-prompts/random");
@@ -87,16 +78,20 @@ const checkCanReview = async (userId: string) => {
   }
 };
 
-// Select a user and move to step 2
+// Auto-select suggested user when data loads
+watch(suggestionData, (data) => {
+  if (data?.suggestion && !selectedUserId.value) {
+    selectedUserId.value = data.suggestion.user.id;
+    checkCanReview(data.suggestion.user.id);
+  }
+}, { immediate: true });
+
+// Select a user from the colleague picker
 const selectUser = async (userId: string) => {
   selectedUserId.value = userId;
   await checkCanReview(userId);
-  currentStep.value = "write";
-};
-
-// Go back to step 1
-const goBackToChoose = () => {
-  currentStep.value = "choose";
+  showColleaguePicker.value = false;
+  searchQuery.value = "";
 };
 
 // Search filtered users
@@ -122,6 +117,17 @@ const getLastReviewedText = (userId: string) => {
 const isReviewedThisWeek = (userId: string) => {
   return reviewStatus.value[userId]?.reviewedThisWeek || false;
 };
+
+// Get subtitle text for the selected user card
+const selectedUserSubtext = computed(() => {
+  if (suggestion.value && selectedUserId.value === suggestion.value.user.id) {
+    return suggestion.value.reason;
+  }
+  if (selectedUserId.value) {
+    return getLastReviewedText(selectedUserId.value) || null;
+  }
+  return null;
+});
 
 // Form validation
 const isFormValid = computed(() => {
@@ -173,7 +179,8 @@ const reviewAnother = () => {
   canReviewUser.value = true;
   alreadyReviewedWarning.value = false;
   excludeIds.value = [];
-  currentStep.value = "choose";
+  showColleaguePicker.value = false;
+  searchQuery.value = "";
   refreshSuggestion();
 };
 
@@ -264,142 +271,182 @@ const tipsAccordionItems: AccordionItem[] = [
           </div>
         </div>
 
-        <!-- Step 1: Choose a Colleague -->
-        <div v-else-if="currentStep === 'choose'" class="space-y-6">
+        <!-- Main Single-Page Layout -->
+        <div v-else class="max-w-4xl mx-auto space-y-6">
+          <!-- Page Header -->
           <div>
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
               Submit Feedback
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
-              Pick a colleague to share feedback with
+              Share feedback with a colleague — it'll be shared during their next buddy review
             </p>
           </div>
 
-          <!-- Smart Suggestion -->
-          <div
-            v-if="suggestion && !suggestionsExhausted"
-            class="relative overflow-hidden rounded-xl border border-primary-500/20 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.07] via-teal-500/[0.04] to-transparent dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
-          >
-            <div class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl" />
+          <!-- Selected User Card -->
+          <div v-if="selectedUserObject && !suggestionsExhausted">
+            <div
+              class="relative overflow-hidden rounded-xl border border-primary-500/20 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.07] via-teal-500/[0.04] to-transparent dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
+            >
+              <div class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl" />
 
-            <div class="relative p-5 sm:p-6">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div class="flex items-center gap-4 flex-1 min-w-0">
+              <div class="relative p-5 sm:p-6">
+                <div class="flex items-center gap-4">
                   <UAvatar
-                    :src="suggestion.user.image || suggestion.user.avatarUrl || undefined"
-                    :alt="suggestion.user.name"
+                    :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
+                    :alt="selectedUserObject.name"
                     size="xl"
                   />
-                  <div class="min-w-0">
-                    <p class="text-lg font-bold text-gray-900 dark:text-white">
-                      {{ suggestion.user.name }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                      {{ suggestion.reason }} - want to share some thoughts?
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <p class="text-lg font-bold text-gray-900 dark:text-white">
+                        {{ selectedUserObject.name }}
+                      </p>
+                      <span
+                        v-if="getRoleLabel(selectedUserObject.roleType)"
+                        class="text-xs font-medium"
+                        :class="getRoleColor(selectedUserObject.roleType)"
+                      >
+                        {{ getRoleLabel(selectedUserObject.roleType) }}
+                      </span>
+                    </div>
+                    <p v-if="selectedUserSubtext" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                      {{ selectedUserSubtext }}
                     </p>
                   </div>
-                </div>
-
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <UButton
-                    color="primary"
-                    @click="selectUser(suggestion.user.id)"
+                  <button
+                    class="flex-shrink-0 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+                    @click="showColleaguePicker = !showColleaguePicker"
                   >
-                    Review {{ suggestion.user.name.split(' ')[0] }}
-                  </UButton>
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    icon="i-heroicons-arrow-path"
-                    :loading="suggestionStatus === 'pending'"
-                    @click="suggestSomeoneElse"
-                  >
-                    Skip
-                  </UButton>
+                    Change
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Exhausted -->
-          <div
-            v-else-if="suggestionsExhausted"
-            class="rounded-xl border border-green-500/20 dark:border-green-500/15 bg-green-500/[0.05] dark:bg-green-500/[0.08] p-4 text-center"
-          >
-            <p class="font-medium text-green-800 dark:text-green-200">
-              You've reviewed everyone recently - nice work!
-            </p>
-            <p class="text-sm text-green-600/80 dark:text-green-400/70 mt-1">
-              You can still select someone below to add more feedback.
-            </p>
-          </div>
+          <!-- All Caught Up Banner (when no selected user or suggestions exhausted) -->
+          <div v-else-if="suggestionsExhausted">
+            <div
+              class="rounded-xl border border-green-500/20 dark:border-green-500/15 bg-green-500/[0.05] dark:bg-green-500/[0.08] p-5"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-medium text-green-800 dark:text-green-200">
+                    You've reviewed everyone recently — nice work!
+                  </p>
+                  <p class="text-sm text-green-600/80 dark:text-green-400/70 mt-1">
+                    You can still select someone below to add more feedback.
+                  </p>
+                </div>
+                <button
+                  class="flex-shrink-0 text-sm text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 font-medium transition-colors"
+                  @click="showColleaguePicker = !showColleaguePicker"
+                >
+                  {{ selectedUserObject ? 'Change' : 'Choose' }}
+                </button>
+              </div>
+            </div>
 
-          <!-- Search + count -->
-          <div class="flex items-center gap-3">
-            <UInput
-              v-model="searchQuery"
-              placeholder="Search colleagues..."
-              icon="i-heroicons-magnifying-glass"
-              class="flex-1"
-            />
-            <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-              {{ filteredUsers.length }} {{ filteredUsers.length === 1 ? 'person' : 'people' }}
-            </span>
-          </div>
-
-          <!-- User Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <FeedbackUserReviewCard
-              v-for="u in filteredUsers"
-              :key="u.id"
-              :user="u"
-              :is-reviewed-this-week="isReviewedThisWeek(u.id)"
-              :last-reviewed-text="getLastReviewedText(u.id)"
-              :is-selected="selectedUserId === u.id"
-              :role-color="getRoleColor(u.roleType)"
-              @select="selectUser(u.id)"
-            />
-          </div>
-
-          <div v-if="filteredUsers.length === 0" class="text-center py-12">
-            <p class="text-gray-400 dark:text-gray-500">
-              No one found matching "{{ searchQuery }}"
-            </p>
-          </div>
-        </div>
-
-        <!-- Step 2: Write Feedback -->
-        <div v-else-if="currentStep === 'write'" class="space-y-6">
-          <!-- Breadcrumb back -->
-          <button
-            class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-            @click="goBackToChoose"
-          >
-            <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
-            Choose someone else
-          </button>
-
-          <!-- Selected user header -->
-          <div class="flex items-center gap-4">
-            <UAvatar
-              v-if="selectedUserObject"
-              :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
-              :alt="selectedUserObject.name"
-              size="xl"
-            />
-            <div>
-              <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-                Feedback for {{ selectedUserObject?.name }}
-              </h1>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                This will be shared during their next buddy review
-              </p>
+            <!-- Show selected user below the banner if one is picked -->
+            <div v-if="selectedUserObject" class="mt-3 flex items-center gap-3 px-1">
+              <UAvatar
+                :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
+                :alt="selectedUserObject.name"
+                size="md"
+              />
+              <div>
+                <p class="font-semibold text-gray-900 dark:text-white">{{ selectedUserObject.name }}</p>
+                <span
+                  v-if="getRoleLabel(selectedUserObject.roleType)"
+                  class="text-xs font-medium"
+                  :class="getRoleColor(selectedUserObject.roleType)"
+                >
+                  {{ getRoleLabel(selectedUserObject.roleType) }}
+                </span>
+              </div>
             </div>
           </div>
 
-          <!-- Two-column layout -->
-          <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Left: Textarea + buttons -->
+          <!-- Loading state while suggestion loads -->
+          <div v-else-if="suggestionStatus === 'pending'" class="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+              <div class="space-y-2">
+                <div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div class="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Colleague Picker -->
+          <div v-if="selectedUserId || suggestionsExhausted">
+            <button
+              class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              @click="showColleaguePicker = !showColleaguePicker"
+            >
+              <UIcon
+                name="i-heroicons-chevron-right"
+                class="w-4 h-4 transition-transform duration-200"
+                :class="{ 'rotate-90': showColleaguePicker }"
+              />
+              <span>Choose a different colleague ({{ availableUsers.length }})</span>
+            </button>
+
+            <div v-if="showColleaguePicker" class="mt-3 space-y-3">
+              <!-- Search -->
+              <UInput
+                v-model="searchQuery"
+                placeholder="Search colleagues..."
+                icon="i-heroicons-magnifying-glass"
+                class="w-full"
+              />
+
+              <!-- Compact list -->
+              <div class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto">
+                <button
+                  v-for="u in filteredUsers"
+                  :key="u.id"
+                  class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  :class="{ 'bg-primary-50/50 dark:bg-primary-900/10': selectedUserId === u.id }"
+                  @click="selectUser(u.id)"
+                >
+                  <UAvatar
+                    :src="u.image || u.avatarUrl || undefined"
+                    :alt="u.name"
+                    size="sm"
+                  />
+                  <span class="font-medium text-sm text-gray-900 dark:text-white truncate">{{ u.name }}</span>
+                  <span
+                    v-if="getRoleLabel(u.roleType)"
+                    class="text-xs font-medium"
+                    :class="getRoleColor(u.roleType)"
+                  >
+                    {{ getRoleLabel(u.roleType) }}
+                  </span>
+                  <span
+                    v-if="isReviewedThisWeek(u.id)"
+                    class="text-xs text-green-600 dark:text-green-400"
+                  >
+                    Reviewed
+                  </span>
+                  <span class="ml-auto text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">
+                    {{ getLastReviewedText(u.id) }}
+                  </span>
+                </button>
+              </div>
+
+              <div v-if="filteredUsers.length === 0" class="text-center py-6">
+                <p class="text-gray-400 dark:text-gray-500 text-sm">
+                  No one found matching "{{ searchQuery }}"
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feedback Form + Writing Tips -->
+          <div v-if="selectedUserId" class="flex flex-col lg:flex-row gap-8">
+            <!-- Left: Form -->
             <div class="flex-1">
               <form class="space-y-4" @submit.prevent="submitFeedback">
                 <!-- Already reviewed warning -->
@@ -445,7 +492,7 @@ const tipsAccordionItems: AccordionItem[] = [
                   <UTextarea
                     v-model="feedbackText"
                     :rows="14"
-                    placeholder="What have you noticed about their work recently? Be specific - examples make feedback actionable."
+                    placeholder="What have you noticed about their work recently? Be specific — examples make feedback actionable."
                     class="w-full"
                     autofocus
                   />
@@ -475,7 +522,7 @@ const tipsAccordionItems: AccordionItem[] = [
               </form>
             </div>
 
-            <!-- Right: Tips sidebar -->
+            <!-- Right: Writing Tips sidebar -->
             <div class="lg:w-[320px] flex-shrink-0">
               <div class="lg:sticky lg:top-8 space-y-5">
                 <UAccordion
@@ -483,7 +530,6 @@ const tipsAccordionItems: AccordionItem[] = [
                   type="multiple"
                   :default-value="['What to Write About']"
                 />
-
               </div>
             </div>
           </div>
