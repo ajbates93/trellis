@@ -37,17 +37,36 @@ const {
   data: suggestionData,
   refresh: refreshSuggestion,
   status: suggestionStatus,
-} = useFetch(() => {
-  const params = excludeIds.value.length > 0 ? `?excludeIds=${excludeIds.value.join(",")}` : "";
-  return `/api/feedback/suggestions${params}`;
-}, { key: () => `suggestion-${excludeIds.value.join(",")}` });
+} = useFetch(
+  () => {
+    const params =
+      excludeIds.value.length > 0
+        ? `?excludeIds=${excludeIds.value.join(",")}`
+        : "";
+    return `/api/feedback/suggestions${params}`;
+  },
+  { key: () => `suggestion-${excludeIds.value.join(",")}` },
+);
 
 const suggestion = computed(() => suggestionData.value?.suggestion);
 const suggestionsExhausted = computed(() => suggestionData.value?.exhausted);
-const reviewStatus = computed(() => suggestionData.value?.reviewStatus || {} as Record<string, { lastReviewedAt: string | null; reviewCount: number; reviewedThisWeek: boolean }>);
+const reviewStatus = computed(
+  () =>
+    suggestionData.value?.reviewStatus ||
+    ({} as Record<
+      string,
+      {
+        lastReviewedAt: string | null;
+        reviewCount: number;
+        reviewedThisWeek: boolean;
+      }
+    >),
+);
 
 // Fetch random feedback prompt
-const { data: promptData, refresh: refreshPrompt } = await useFetch("/api/feedback-prompts/random");
+const { data: promptData, refresh: refreshPrompt } = await useFetch(
+  "/api/feedback-prompts/random",
+);
 const currentPrompt = computed(() => promptData.value?.prompt);
 const isRefreshingPrompt = ref(false);
 
@@ -64,12 +83,16 @@ const alreadyReviewedWarning = ref(false);
 // Get selected user object
 const selectedUserObject = computed(() => {
   if (!selectedUserId.value) return null;
-  return availableUsers.value.find((u) => u.id === selectedUserId.value) || null;
+  return (
+    availableUsers.value.find((u) => u.id === selectedUserId.value) || null
+  );
 });
 
 const checkCanReview = async (userId: string) => {
   try {
-    const { alreadyReviewedThisWeek } = await $fetch(`/api/feedback/can-review/${userId}`);
+    const { alreadyReviewedThisWeek } = await $fetch(
+      `/api/feedback/can-review/${userId}`,
+    );
     canReviewUser.value = !alreadyReviewedThisWeek;
     alreadyReviewedWarning.value = alreadyReviewedThisWeek;
   } catch {
@@ -79,12 +102,16 @@ const checkCanReview = async (userId: string) => {
 };
 
 // Auto-select suggested user when data loads
-watch(suggestionData, (data) => {
-  if (data?.suggestion && !selectedUserId.value) {
-    selectedUserId.value = data.suggestion.user.id;
-    checkCanReview(data.suggestion.user.id);
-  }
-}, { immediate: true });
+watch(
+  suggestionData,
+  (data) => {
+    if (data?.suggestion && !selectedUserId.value) {
+      selectedUserId.value = data.suggestion.user.id;
+      checkCanReview(data.suggestion.user.id);
+    }
+  },
+  { immediate: true },
+);
 
 // Select a user from the colleague picker
 const selectUser = async (userId: string) => {
@@ -100,8 +127,7 @@ const filteredUsers = computed(() => {
   const q = searchQuery.value.toLowerCase();
   return availableUsers.value.filter(
     (u) =>
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
+      u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
   );
 });
 
@@ -187,12 +213,18 @@ const reviewAnother = () => {
 // Role-based text color for role labels
 const getRoleColor = (roleType: string | null | undefined): string => {
   switch (roleType) {
-    case "dev": return "text-blue-600 dark:text-blue-400";
-    case "design": return "text-purple-600 dark:text-purple-400";
-    case "qa": return "text-amber-600 dark:text-amber-400";
-    case "growth": return "text-emerald-600 dark:text-emerald-400";
-    case "management": return "text-rose-600 dark:text-rose-400";
-    default: return "text-gray-500 dark:text-gray-400";
+    case "dev":
+      return "text-blue-600 dark:text-blue-400";
+    case "design":
+      return "text-purple-600 dark:text-purple-400";
+    case "qa":
+      return "text-amber-600 dark:text-amber-400";
+    case "growth":
+      return "text-emerald-600 dark:text-emerald-400";
+    case "management":
+      return "text-rose-600 dark:text-rose-400";
+    default:
+      return "text-gray-500 dark:text-gray-400";
   }
 };
 
@@ -242,10 +274,18 @@ const tipsAccordionItems: AccordionItem[] = [
     <template #body>
       <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2">
         <!-- Success State -->
-        <div v-if="showSuccess" class="max-w-md mx-auto text-center py-20 space-y-8">
+        <div
+          v-if="showSuccess"
+          class="max-w-md mx-auto text-center py-20 space-y-8"
+        >
           <div class="relative w-24 h-24 mx-auto">
-            <div class="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500/20 to-teal-500/20 animate-ping" style="animation-duration: 2s;" />
-            <div class="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center shadow-xl shadow-primary-500/25">
+            <div
+              class="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500/20 to-teal-500/20 animate-ping"
+              style="animation-duration: 2s"
+            />
+            <div
+              class="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center shadow-xl shadow-primary-500/25"
+            >
               <UIcon name="i-heroicons-check" class="w-12 h-12 text-white" />
             </div>
           </div>
@@ -256,7 +296,9 @@ const tipsAccordionItems: AccordionItem[] = [
             </h1>
             <p class="text-gray-500 dark:text-gray-400">
               Your feedback for
-              <span class="font-semibold text-gray-900 dark:text-white">{{ selectedUserObject?.name }}</span>
+              <span class="font-semibold text-gray-900 dark:text-white">{{
+                selectedUserObject?.name
+              }}</span>
               will be shared during their next buddy review.
             </p>
           </div>
@@ -275,11 +317,14 @@ const tipsAccordionItems: AccordionItem[] = [
         <div v-else class="max-w-4xl mx-auto space-y-6">
           <!-- Page Header -->
           <div>
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+            <h1
+              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+            >
               Submit Feedback
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
-              Share feedback with a colleague — it'll be shared during their next buddy review
+              Share feedback with a colleague - it'll be shared during their
+              next buddy review
             </p>
           </div>
 
@@ -288,18 +333,26 @@ const tipsAccordionItems: AccordionItem[] = [
             <div
               class="relative overflow-hidden rounded-xl border border-primary-500/20 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.07] via-teal-500/[0.04] to-transparent dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
             >
-              <div class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl" />
+              <div
+                class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl"
+              />
 
               <div class="relative p-5 sm:p-6">
                 <div class="flex items-center gap-4">
                   <UAvatar
-                    :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
+                    :src="
+                      selectedUserObject.image ||
+                      selectedUserObject.avatarUrl ||
+                      undefined
+                    "
                     :alt="selectedUserObject.name"
                     size="xl"
                   />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <p class="text-lg font-bold text-gray-900 dark:text-white">
+                      <p
+                        class="text-lg font-bold text-gray-900 dark:text-white"
+                      >
                         {{ selectedUserObject.name }}
                       </p>
                       <span
@@ -310,7 +363,10 @@ const tipsAccordionItems: AccordionItem[] = [
                         {{ getRoleLabel(selectedUserObject.roleType) }}
                       </span>
                     </div>
-                    <p v-if="selectedUserSubtext" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p
+                      v-if="selectedUserSubtext"
+                      class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"
+                    >
                       {{ selectedUserSubtext }}
                     </p>
                   </div>
@@ -333,9 +389,11 @@ const tipsAccordionItems: AccordionItem[] = [
               <div class="flex items-center justify-between">
                 <div>
                   <p class="font-medium text-green-800 dark:text-green-200">
-                    You've reviewed everyone recently — nice work!
+                    You've reviewed everyone recently - nice work!
                   </p>
-                  <p class="text-sm text-green-600/80 dark:text-green-400/70 mt-1">
+                  <p
+                    class="text-sm text-green-600/80 dark:text-green-400/70 mt-1"
+                  >
                     You can still select someone below to add more feedback.
                   </p>
                 </div>
@@ -343,20 +401,29 @@ const tipsAccordionItems: AccordionItem[] = [
                   class="flex-shrink-0 text-sm text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 font-medium transition-colors"
                   @click="showColleaguePicker = !showColleaguePicker"
                 >
-                  {{ selectedUserObject ? 'Change' : 'Choose' }}
+                  {{ selectedUserObject ? "Change" : "Choose" }}
                 </button>
               </div>
             </div>
 
             <!-- Show selected user below the banner if one is picked -->
-            <div v-if="selectedUserObject" class="mt-3 flex items-center gap-3 px-1">
+            <div
+              v-if="selectedUserObject"
+              class="mt-3 flex items-center gap-3 px-1"
+            >
               <UAvatar
-                :src="selectedUserObject.image || selectedUserObject.avatarUrl || undefined"
+                :src="
+                  selectedUserObject.image ||
+                  selectedUserObject.avatarUrl ||
+                  undefined
+                "
                 :alt="selectedUserObject.name"
                 size="md"
               />
               <div>
-                <p class="font-semibold text-gray-900 dark:text-white">{{ selectedUserObject.name }}</p>
+                <p class="font-semibold text-gray-900 dark:text-white">
+                  {{ selectedUserObject.name }}
+                </p>
                 <span
                   v-if="getRoleLabel(selectedUserObject.roleType)"
                   class="text-xs font-medium"
@@ -369,12 +436,21 @@ const tipsAccordionItems: AccordionItem[] = [
           </div>
 
           <!-- Loading state while suggestion loads -->
-          <div v-else-if="suggestionStatus === 'pending'" class="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <div
+            v-else-if="suggestionStatus === 'pending'"
+            class="rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+          >
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+              <div
+                class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"
+              />
               <div class="space-y-2">
-                <div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                <div class="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div
+                  class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+                />
+                <div
+                  class="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+                />
               </div>
             </div>
           </div>
@@ -390,7 +466,11 @@ const tipsAccordionItems: AccordionItem[] = [
                 class="w-4 h-4 transition-transform duration-200"
                 :class="{ 'rotate-90': showColleaguePicker }"
               />
-              <span>Choose a different colleague ({{ availableUsers.length }})</span>
+              <span
+                >Choose a different colleague ({{
+                  availableUsers.length
+                }})</span
+              >
             </button>
 
             <div v-if="showColleaguePicker" class="mt-3 space-y-3">
@@ -403,12 +483,17 @@ const tipsAccordionItems: AccordionItem[] = [
               />
 
               <!-- Compact list -->
-              <div class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto">
+              <div
+                class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto"
+              >
                 <button
                   v-for="u in filteredUsers"
                   :key="u.id"
                   class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                  :class="{ 'bg-primary-50/50 dark:bg-primary-900/10': selectedUserId === u.id }"
+                  :class="{
+                    'bg-primary-50/50 dark:bg-primary-900/10':
+                      selectedUserId === u.id,
+                  }"
                   @click="selectUser(u.id)"
                 >
                   <UAvatar
@@ -416,7 +501,10 @@ const tipsAccordionItems: AccordionItem[] = [
                     :alt="u.name"
                     size="sm"
                   />
-                  <span class="font-medium text-sm text-gray-900 dark:text-white truncate">{{ u.name }}</span>
+                  <span
+                    class="font-medium text-sm text-gray-900 dark:text-white truncate"
+                    >{{ u.name }}</span
+                  >
                   <span
                     v-if="getRoleLabel(u.roleType)"
                     class="text-xs font-medium"
@@ -430,7 +518,9 @@ const tipsAccordionItems: AccordionItem[] = [
                   >
                     Reviewed
                   </span>
-                  <span class="ml-auto text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">
+                  <span
+                    class="ml-auto text-xs text-gray-400 dark:text-gray-500 hidden sm:inline"
+                  >
                     {{ getLastReviewedText(u.id) }}
                   </span>
                 </button>
@@ -469,8 +559,13 @@ const tipsAccordionItems: AccordionItem[] = [
                     class="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5"
                   />
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                      <span class="font-medium text-primary-600 dark:text-primary-400">Need inspiration?</span>
+                    <p
+                      class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                    >
+                      <span
+                        class="font-medium text-primary-600 dark:text-primary-400"
+                        >Need inspiration?</span
+                      >
                       {{ currentPrompt.question }}
                     </p>
                   </div>
@@ -492,7 +587,7 @@ const tipsAccordionItems: AccordionItem[] = [
                   <UTextarea
                     v-model="feedbackText"
                     :rows="14"
-                    placeholder="What have you noticed about their work recently? Be specific — examples make feedback actionable."
+                    placeholder="What have you noticed about their work recently? Be specific - examples make feedback actionable."
                     class="w-full"
                     autofocus
                   />

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { format } from "date-fns";
-import type { FeedbackWithReviewer } from "~/types";
+import type { FeedbackWithReviewer, FeedbackWithReviewee } from "~/types";
 
 interface Props {
   modelValue: boolean;
-  feedback: FeedbackWithReviewer | null;
+  feedback: (FeedbackWithReviewer | FeedbackWithReviewee) | null;
   showMarkAsRead?: boolean;
 }
 
@@ -27,12 +27,17 @@ const formatDate = (date: string | Date | undefined) => {
   return format(new Date(date), "MMM d, yyyy");
 };
 
-const formatWeekYear = (weekYear: string | undefined) => {
-  if (!weekYear) return "";
-  const match = weekYear.match(/^(\d{4})-W(\d{1,2})$/);
-  if (!match) return weekYear;
-  return `Week ${parseInt(match[2])}, ${match[1]}`;
-};
+// Resolve the primary person to display based on available data
+const displayPerson = computed(() => {
+  if (!props.feedback) return null;
+  if ("reviewer" in props.feedback && props.feedback.reviewer) {
+    return { label: "Feedback from", ...props.feedback.reviewer };
+  }
+  if ("reviewee" in props.feedback && props.feedback.reviewee) {
+    return { label: "Feedback to", ...props.feedback.reviewee };
+  }
+  return null;
+});
 
 const handleMarkAsRead = () => {
   if (props.feedback) {
@@ -43,9 +48,16 @@ const handleMarkAsRead = () => {
 
 <template>
   <UModal
-    v-model:open="isOpen" class="sm:max-w-2xl" :ui="{
+    v-model:open="isOpen"
+    :title="displayPerson ? `${displayPerson.label} ${displayPerson.name}` : 'Feedback'"
+    :description="feedback?.content?.slice(0, 100) || 'View feedback details'"
+    class="sm:max-w-2xl"
+    :ui="{
       footer: 'justify-end',
-    }">
+      title: 'sr-only',
+      description: 'sr-only',
+    }"
+  >
     <template #body>
       <div v-if="feedback">
         <!-- Header Banner -->
@@ -57,51 +69,34 @@ const handleMarkAsRead = () => {
           <div class="relative z-10">
             <div class="flex items-center gap-4">
               <UAvatar
-                v-if="feedback.reviewer"
-                :src="feedback.reviewer.image || feedback.reviewer.avatarUrl"
-                :alt="feedback.reviewer.name"
+                v-if="displayPerson"
+                :src="displayPerson.image || displayPerson.avatarUrl"
+                :alt="displayPerson.name"
                 size="xl"
                 class="ring-2 ring-white/20"
               />
               <div class="flex-1 min-w-0">
                 <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">
-                  Feedback from
+                  {{ displayPerson?.label || "Feedback" }}
                 </p>
                 <p class="text-xl font-bold text-white truncate">
-                  {{ feedback.reviewer?.name || "Unknown" }}
+                  {{ displayPerson?.name || "Unknown" }}
                 </p>
-                <p v-if="feedback.reviewer?.email" class="text-sm text-gray-400 mt-1 truncate">
-                  {{ feedback.reviewer.email }}
+                <p v-if="displayPerson?.email" class="text-sm text-gray-400 mt-1 truncate">
+                  {{ displayPerson.email }}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Meta Tags -->
-        <div class="flex items-center gap-2 mb-5 flex-wrap">
-          <span
-            v-if="feedback.publishedAt || feedback.createdAt"
-            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
-          >
-            <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
-            {{ formatDate(feedback.publishedAt || feedback.createdAt) }}
-          </span>
-          <span
-            v-if="(feedback as any).weekYear"
-            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
-          >
-            <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
-            {{ formatWeekYear((feedback as any).weekYear) }}
-          </span>
-          <span
-            v-if="feedback.reviewee"
-            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
-          >
-            <UIcon name="i-heroicons-arrow-right" class="w-3.5 h-3.5" />
-            To {{ feedback.reviewee.name }}
-          </span>
-        </div>
+        <!-- Date -->
+        <p
+          v-if="feedback.publishedAt || feedback.createdAt"
+          class="text-xs text-gray-500 dark:text-gray-400 mb-5"
+        >
+          {{ formatDate(feedback.publishedAt || feedback.createdAt) }}
+        </p>
 
         <!-- Feedback Content -->
         <div class="border-l-4 border-primary-500 pl-5 py-1">
