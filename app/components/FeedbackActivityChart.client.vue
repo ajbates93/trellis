@@ -19,7 +19,11 @@ const data = ref<DataRecord[]>([])
 const fetchData = async () => {
   try {
     const response = await $fetch<{ timeline: DataRecord[] }>('/api/analytics/feedback-timeline')
-    data.value = response.timeline
+    // Parse date strings back into Date objects (JSON serialization converts them to strings)
+    data.value = response.timeline.map(d => ({
+      ...d,
+      date: new Date(d.date),
+    }))
   } catch (error) {
     console.error('Failed to fetch feedback timeline:', error)
     // Fallback to empty data if fetch fails
@@ -51,6 +55,7 @@ const xTicks = (i: number) => {
 }
 
 const template = (d: DataRecord) => {
+  if (!d?.date) return ''
   return `
     <div style="padding: 8px;">
       <div style="font-weight: 600; margin-bottom: 4px;">${formatDate(d.date)}</div>
