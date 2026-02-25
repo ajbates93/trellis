@@ -337,6 +337,8 @@ export const UpdateReviewScheduleRequestSchema = z.object({
   reflectionConcerns: z.string().nullable().optional(),
   // Buddy comments (editable by buddy)
   buddyComments: z.string().nullable().optional(),
+  // Reviewee additional comments
+  revieweeComments: z.string().nullable().optional(),
 });
 
 export const GetReviewSchedulesResponseSchema = z.object({
@@ -364,6 +366,7 @@ export const UpdateReviewScheduleResponseSchema = z.object({
     reflectionHighlights: z.string().nullable(),
     reflectionConcerns: z.string().nullable(),
     buddyComments: z.string().nullable(),
+    revieweeComments: z.string().nullable(),
     createdAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
   }),
@@ -384,6 +387,7 @@ export const GetReviewDetailsResponseSchema = z.object({
     reflectionHighlights: z.string().nullable(),
     reflectionConcerns: z.string().nullable(),
     buddyComments: z.string().nullable(),
+    revieweeComments: z.string().nullable(),
     createdAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
     user: z.object({

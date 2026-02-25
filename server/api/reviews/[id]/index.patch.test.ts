@@ -115,6 +115,49 @@ describe('PATCH /api/reviews/:id', () => {
     expect(mockDb.update).toHaveBeenCalled()
   })
 
+  it('rejects updates on completed reviews', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-1',
+      buddyId: 'user-2',
+      status: 'completed',
+    })
+
+    mockSelect([review])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: { reflectionLearnings: 'Trying to update' },
+    })
+
+    await expect(handler(event)).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'Cannot update a completed review',
+    })
+  })
+
+  it('allows reviewee to update revieweeComments', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-1',
+      buddyId: 'user-2',
+    })
+    const updatedReview = { ...review, revieweeComments: 'Some additional thoughts' }
+
+    mockSelect([review])
+    mockUpdate([updatedReview])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: { revieweeComments: 'Some additional thoughts' },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toEqual({ success: true, review: updatedReview })
+    expect(mockDb.update).toHaveBeenCalled()
+  })
+
   it('allows admin to update any review', async () => {
     const review = buildReviewSchedule({
       id: 'review-1',

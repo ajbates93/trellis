@@ -102,6 +102,7 @@ export function buildReviewSchedule(overrides: Record<string, unknown> = {}) {
     reflectionHighlights: null,
     reflectionConcerns: null,
     buddyComments: null,
+    revieweeComments: null,
     reminderSent7d: false,
     reminderSent1d: false,
     createdAt: new Date('2025-01-01'),

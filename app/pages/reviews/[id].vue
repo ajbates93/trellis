@@ -21,9 +21,20 @@ const review = computed(() => (reviewData.value as any)?.review);
 
 watchEffect(() => {
   if (review.value) {
-    console.log('[ReviewDetail] review object keys:', Object.keys(review.value));
-    console.log('[ReviewDetail] review.name:', review.value.name, '| type:', typeof review.value.name);
-    console.log('[ReviewDetail] full review:', JSON.stringify(review.value, null, 2));
+    console.log(
+      "[ReviewDetail] review object keys:",
+      Object.keys(review.value),
+    );
+    console.log(
+      "[ReviewDetail] review.name:",
+      review.value.name,
+      "| type:",
+      typeof review.value.name,
+    );
+    console.log(
+      "[ReviewDetail] full review:",
+      JSON.stringify(review.value, null, 2),
+    );
   }
 });
 
@@ -69,8 +80,10 @@ const isBuddy = computed(() => {
 });
 
 const isAdmin = computed(() => {
-  return currentUser.value?.role === 'admin';
+  return currentUser.value?.role === "admin";
 });
+
+const isCompleted = computed(() => review.value?.status === "completed");
 
 // Open edit modal
 const openEditModal = () => {
@@ -88,9 +101,11 @@ const openEditModal = () => {
 
     // Convert from UTC to user's configured timezone using date-fns-tz
     // Extract date in user's timezone
-    editScheduledDate.value = formatTz(utcDate, 'yyyy-MM-dd', { timeZone: userTz });
+    editScheduledDate.value = formatTz(utcDate, "yyyy-MM-dd", {
+      timeZone: userTz,
+    });
     // Extract time in user's timezone
-    editScheduledTime.value = formatTz(utcDate, 'HH:mm', { timeZone: userTz });
+    editScheduledTime.value = formatTz(utcDate, "HH:mm", { timeZone: userTz });
 
     editIncludeTime.value = !isAllDay;
   } else {
@@ -128,9 +143,9 @@ const updateReview = async () => {
     const userTz = getUserTimezone();
 
     // Parse date/time components
-    const [datePart, timePart] = dateTimeString.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hours, minutes] = timePart.split(':').map(Number);
+    const [datePart, timePart] = dateTimeString.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hours, minutes] = timePart.split(":").map(Number);
 
     // Create UTC timestamp for this date/time
     const utcMs = Date.UTC(year, month - 1, day, hours, minutes);
@@ -192,6 +207,34 @@ const completeReview = async () => {
   }
 };
 
+// Re-open review
+const isReopening = ref(false);
+const reopenReview = async () => {
+  isReopening.value = true;
+  try {
+    await $fetch(`/api/reviews/${reviewId}/reopen`, {
+      method: "PATCH",
+    });
+    await refresh();
+    toast.add({
+      title: "Review re-opened",
+      description: "The review is now editable again",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to re-open review:", error);
+    toast.add({
+      title: "Failed to re-open review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    isReopening.value = false;
+  }
+};
+
 // Format date helper using user's configured timezone
 const formatDate = (date: string) => {
   return formatDateInUserTZ(date);
@@ -203,10 +246,13 @@ const selectedFeedback = ref<any>(null);
 
 // Open feedback modal
 const openFeedbackModal = (feedbackItem: any) => {
-  console.log('[ReviewDetail] openFeedbackModal called with:', JSON.stringify(feedbackItem, null, 2));
-  console.log('[ReviewDetail] has reviewer?', !!feedbackItem?.reviewer);
-  console.log('[ReviewDetail] has reviewee?', !!feedbackItem?.reviewee);
-  console.log('[ReviewDetail] has content?', !!feedbackItem?.content);
+  console.log(
+    "[ReviewDetail] openFeedbackModal called with:",
+    JSON.stringify(feedbackItem, null, 2),
+  );
+  console.log("[ReviewDetail] has reviewer?", !!feedbackItem?.reviewer);
+  console.log("[ReviewDetail] has reviewee?", !!feedbackItem?.reviewee);
+  console.log("[ReviewDetail] has content?", !!feedbackItem?.content);
   selectedFeedback.value = feedbackItem;
   isFeedbackModalOpen.value = true;
 };
@@ -216,6 +262,7 @@ const reflectionLearnings = ref("");
 const reflectionHighlights = ref("");
 const reflectionConcerns = ref("");
 const buddyComments = ref("");
+const revieweeComments = ref("");
 
 // Initialize reflection state from review data
 watch(
@@ -226,6 +273,7 @@ watch(
       reflectionHighlights.value = newReview.reflectionHighlights || "";
       reflectionConcerns.value = newReview.reflectionConcerns || "";
       buddyComments.value = newReview.buddyComments || "";
+      revieweeComments.value = newReview.revieweeComments || "";
     }
   },
   { immediate: true },
@@ -292,6 +340,7 @@ const debouncedSave = (field: string, value: string) => {
 watch(reflectionLearnings, (newValue, oldValue) => {
   if (
     isReviewee.value &&
+    !isCompleted.value &&
     newValue !== (review.value?.reflectionLearnings || "") &&
     oldValue !== ""
   ) {
@@ -302,6 +351,7 @@ watch(reflectionLearnings, (newValue, oldValue) => {
 watch(reflectionHighlights, (newValue, oldValue) => {
   if (
     isReviewee.value &&
+    !isCompleted.value &&
     newValue !== (review.value?.reflectionHighlights || "") &&
     oldValue !== ""
   ) {
@@ -312,6 +362,7 @@ watch(reflectionHighlights, (newValue, oldValue) => {
 watch(reflectionConcerns, (newValue, oldValue) => {
   if (
     isReviewee.value &&
+    !isCompleted.value &&
     newValue !== (review.value?.reflectionConcerns || "") &&
     oldValue !== ""
   ) {
@@ -322,10 +373,22 @@ watch(reflectionConcerns, (newValue, oldValue) => {
 watch(buddyComments, (newValue, oldValue) => {
   if (
     isBuddy.value &&
+    !isCompleted.value &&
     newValue !== (review.value?.buddyComments || "") &&
     oldValue !== ""
   ) {
     debouncedSave("buddyComments", newValue);
+  }
+});
+
+watch(revieweeComments, (newValue, oldValue) => {
+  if (
+    isReviewee.value &&
+    !isCompleted.value &&
+    newValue !== (review.value?.revieweeComments || "") &&
+    oldValue !== ""
+  ) {
+    debouncedSave("revieweeComments", newValue);
   }
 });
 
@@ -374,10 +437,18 @@ const feedbackColumns = [
         </div>
 
         <!-- Completion Success State -->
-        <div v-else-if="showCompletionSuccess" class="max-w-md mx-auto text-center py-20 space-y-8">
+        <div
+          v-else-if="showCompletionSuccess"
+          class="max-w-md mx-auto text-center py-20 space-y-8"
+        >
           <div class="relative w-24 h-24 mx-auto">
-            <div class="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500/20 to-teal-500/20 animate-ping" style="animation-duration: 2s;" />
-            <div class="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center shadow-xl shadow-primary-500/25">
+            <div
+              class="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500/20 to-teal-500/20 animate-ping"
+              style="animation-duration: 2s"
+            />
+            <div
+              class="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center shadow-xl shadow-primary-500/25"
+            >
               <UIcon name="i-heroicons-check" class="w-12 h-12 text-white" />
             </div>
           </div>
@@ -388,14 +459,20 @@ const feedbackColumns = [
             </h1>
             <p class="text-gray-500 dark:text-gray-400">
               The review for
-              <span class="font-semibold text-gray-900 dark:text-white">{{ review?.user?.name || review?.name }}</span>
+              <span class="font-semibold text-gray-900 dark:text-white">{{
+                review?.user?.name || review?.name
+              }}</span>
               has been marked as complete.
             </p>
           </div>
 
           <div class="flex items-center justify-center gap-3 pt-2">
-            <UButton color="primary" size="lg" :to="isBuddy ? '/buddies/reviews' : '/reviews'">
-              {{ isBuddy ? 'Back to Buddy Reviews' : 'Schedule Next Review' }}
+            <UButton
+              color="primary"
+              size="lg"
+              :to="isBuddy ? '/buddies/reviews' : '/reviews'"
+            >
+              {{ isBuddy ? "Back to Buddy Reviews" : "Schedule Next Review" }}
             </UButton>
             <UButton to="/" variant="ghost" color="neutral" size="lg">
               Back to Dashboard
@@ -406,29 +483,40 @@ const feedbackColumns = [
         <div v-else>
           <!-- Hero Header -->
           <div
-            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg">
+            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg"
+          >
             <!-- Background Decoration -->
-            <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"/>
-            <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"/>
+            <div
+              class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
+            />
+            <div
+              class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"
+            />
 
             <div class="relative z-10">
-              <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+              <div
+                class="flex flex-col md:flex-row md:items-start justify-between gap-6"
+              >
                 <!-- Title and Date -->
                 <div>
                   <div class="flex items-center gap-3 mb-2">
                     <UBadge
-:label="review.status === 'completed'
-                      ? 'Completed'
-                      : 'Scheduled'
-                      " variant="solid" :class="[
+                      :label="
+                        review.status === 'completed'
+                          ? 'Completed'
+                          : 'Scheduled'
+                      "
+                      variant="solid"
+                      :class="[
                         'capitalize',
                         review.status === 'completed'
                           ? '!bg-green-500 !text-white'
                           : '!bg-blue-500 !text-white',
-                      ]" />
+                      ]"
+                    />
                     <span class="text-gray-400 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
-                      }}</span>
+                    }}</span>
                   </div>
                   <h1 class="text-3xl sm:text-4xl md:text-4xl font-bold mb-2">
                     {{ review.name || "Quarterly Review" }}
@@ -436,12 +524,19 @@ const feedbackColumns = [
                 </div>
 
                 <!-- Buddy Card -->
-                <div class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[240px]">
+                <div
+                  class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[240px]"
+                >
                   <UAvatar
-:src="review.buddy?.avatarUrl" :alt="review.buddy?.name" size="md"
-                    class="ring-2 ring-white/20" />
+                    :src="review.buddy?.avatarUrl"
+                    :alt="review.buddy?.name"
+                    size="md"
+                    class="ring-2 ring-white/20"
+                  />
                   <div>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+                    <p
+                      class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5"
+                    >
                       Your Buddy
                     </p>
                     <p class="font-medium text-white">
@@ -459,8 +554,20 @@ const feedbackColumns = [
                   variant="solid"
                   icon="i-heroicons-check"
                   class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
-                  @click="isCompleteModalOpen = true">
+                  @click="isCompleteModalOpen = true"
+                >
                   Mark as Completed
+                </UButton>
+                <UButton
+                  v-if="(isBuddy || isAdmin) && review.status === 'completed'"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-heroicons-arrow-path"
+                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  :loading="isReopening"
+                  @click="reopenReview"
+                >
+                  Re-open Review
                 </UButton>
                 <UButton
                   v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
@@ -468,15 +575,18 @@ const feedbackColumns = [
                   variant="ghost"
                   icon="i-heroicons-pencil-square"
                   class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
-                  @click="openEditModal">
+                  @click="openEditModal"
+                >
                   Edit Details
                 </UButton>
                 <UButton
+                  v-if="review.status === 'scheduled'"
                   color="neutral"
                   variant="ghost"
                   icon="i-heroicons-calendar"
                   class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
-                  @click="downloadICalFile(review)">
+                  @click="downloadICalFile(review)"
+                >
                   Add to Calendar
                 </UButton>
               </div>
@@ -488,13 +598,22 @@ const feedbackColumns = [
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-light-bulb" class="w-5 h-5 text-primary-500" />
+                  <UIcon
+                    name="i-heroicons-light-bulb"
+                    class="w-5 h-5 text-primary-500"
+                  />
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     Reflections
                   </h3>
                 </div>
-                <div v-if="isSavingReflections" class="flex items-center gap-2 text-sm text-gray-500">
-                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+                <div
+                  v-if="isSavingReflections"
+                  class="flex items-center gap-2 text-sm text-gray-500"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-4 h-4 animate-spin"
+                  />
                   Saving...
                 </div>
               </div>
@@ -502,20 +621,64 @@ const feedbackColumns = [
 
             <div class="space-y-6">
               <ReviewsReflectionEditor
-v-model="reflectionLearnings"
-                label="What have I learnt in the past three months?" icon="i-heroicons-academic-cap"
+                v-model="reflectionLearnings"
+                label="What have I learnt in the past three months?"
+                icon="i-heroicons-academic-cap"
                 placeholder="Think about technical skills, soft skills, or domain knowledge..."
-                :readonly="!isReviewee" />
+                :readonly="!isReviewee || isCompleted"
+              />
 
               <ReviewsReflectionEditor
-v-model="reflectionHighlights" label="Any highlights?" icon="i-heroicons-star"
-                placeholder="Projects delivered, problems solved, or team contributions..." :readonly="!isReviewee" />
+                v-model="reflectionHighlights"
+                label="Any highlights?"
+                icon="i-heroicons-star"
+                placeholder="Projects delivered, problems solved, or team contributions..."
+                :readonly="!isReviewee || isCompleted"
+              />
 
               <ReviewsReflectionEditor
-v-model="reflectionConcerns" label="Are you worried about anything right now?"
+                v-model="reflectionConcerns"
+                label="Are you worried about anything right now?"
                 icon="i-heroicons-exclamation-triangle"
-                placeholder="Blockers, uncertainties, or support you might need..." :readonly="!isReviewee" />
+                placeholder="Blockers, uncertainties, or support you might need..."
+                :readonly="!isReviewee || isCompleted"
+              />
             </div>
+          </UCard>
+
+          <!-- Reviewee Additional Comments Section -->
+          <UCard class="mb-6">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <UIcon
+                    name="i-heroicons-pencil-square"
+                    class="w-5 h-5 text-primary-500"
+                  />
+                  <h3 class="font-semibold text-gray-900 dark:text-white">
+                    Additional Comments
+                  </h3>
+                </div>
+                <div
+                  v-if="isSavingReflections"
+                  class="flex items-center gap-2 text-sm text-gray-500"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-4 h-4 animate-spin"
+                  />
+                  Saving...
+                </div>
+              </div>
+            </template>
+
+            <ReviewsReflectionEditor
+              v-model="revieweeComments"
+              label="Anything else you'd like to add?"
+              icon="i-heroicons-chat-bubble-left-ellipsis"
+              placeholder="Any other thoughts, questions, or comments for your buddy..."
+              :readonly="!isReviewee || isCompleted"
+            />
           </UCard>
 
           <!-- Buddy Comments Section -->
@@ -523,21 +686,34 @@ v-model="reflectionConcerns" label="Are you worried about anything right now?"
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-5 h-5 text-primary-500" />
+                  <UIcon
+                    name="i-heroicons-chat-bubble-bottom-center-text"
+                    class="w-5 h-5 text-primary-500"
+                  />
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     Buddy Comments
                   </h3>
                 </div>
-                <div v-if="isSavingBuddyComments" class="flex items-center gap-2 text-sm text-gray-500">
-                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+                <div
+                  v-if="isSavingBuddyComments"
+                  class="flex items-center gap-2 text-sm text-gray-500"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-4 h-4 animate-spin"
+                  />
                   Saving...
                 </div>
               </div>
             </template>
 
             <ReviewsReflectionEditor
-v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
-              placeholder="Add comments about the review..." :readonly="!isBuddy" />
+              v-model="buddyComments"
+              label="Notes from your buddy"
+              icon="i-heroicons-user"
+              placeholder="Add comments about the review..."
+              :readonly="!isBuddy || isCompleted"
+            />
           </UCard>
 
           <!-- Supporting Data Header -->
@@ -560,28 +736,46 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
             <div v-if="selectedTab === 'feedback'">
               <UCard>
                 <div v-if="feedback.length === 0" class="text-center py-12">
-                  <UIcon name="i-heroicons-chat-bubble-left" class="text-gray-400 text-4xl mb-2" />
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <UIcon
+                    name="i-heroicons-chat-bubble-left"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     No feedback for this review
                   </p>
                 </div>
 
                 <div v-else class="max-h-[500px] overflow-y-auto">
                   <UTable
-:columns="feedbackColumns" :data="feedback"
-                    :ui="{ th: { base: 'sticky top-0 z-10 bg-white dark:bg-gray-900' }, tr: 'cursor-pointer' }"
-                    @select="(row: any) => openFeedbackModal(row.original ?? row)">
+                    :columns="feedbackColumns"
+                    :data="feedback"
+                    :ui="{
+                      th: {
+                        base: 'sticky top-0 z-10 bg-white dark:bg-gray-900',
+                      },
+                      tr: 'cursor-pointer',
+                    }"
+                    @select="
+                      (row: any) => openFeedbackModal(row.original ?? row)
+                    "
+                  >
                     <template #from-cell="{ row }">
                       <div class="flex items-center gap-2">
                         <UAvatar
-:src="row.original.reviewer.avatarUrl || undefined" :alt="row.original.reviewer.name"
-                          size="xs" />
+                          :src="row.original.reviewer.avatarUrl || undefined"
+                          :alt="row.original.reviewer.name"
+                          size="xs"
+                        />
                         <span>{{ row.original.reviewer.name }}</span>
                       </div>
                     </template>
 
                     <template #content-cell="{ row }">
-                      <span class="truncate block">{{ row.original.content }}</span>
+                      <span class="truncate block">{{
+                        row.original.content
+                      }}</span>
                     </template>
 
                     <template #date-cell="{ row }">
@@ -598,16 +792,27 @@ v-model="buddyComments" label="Notes from your buddy" icon="i-heroicons-user"
             <div v-else-if="selectedTab === 'goals'">
               <UCard>
                 <div v-if="goals.length === 0" class="text-center py-12">
-                  <UIcon name="i-heroicons-flag" class="text-gray-400 text-4xl mb-2" />
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <UIcon
+                    name="i-heroicons-flag"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     No goals
                   </p>
                 </div>
 
-                <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                <div
+                  v-else
+                  class="divide-y divide-gray-200 dark:divide-gray-700"
+                >
                   <NuxtLink
-v-for="goal in goals" :key="goal.id" :to="isReviewee ? '/goals' : '/buddies/goals'"
-                    class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors -mx-4 first:-mt-4 last:-mb-4">
+                    v-for="goal in goals"
+                    :key="goal.id"
+                    :to="isReviewee ? '/goals' : '/buddies/goals'"
+                    class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors -mx-4 first:-mt-4 last:-mb-4"
+                  >
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <p class="font-medium text-gray-900 dark:text-white">
@@ -615,12 +820,18 @@ v-for="goal in goals" :key="goal.id" :to="isReviewee ? '/goals' : '/buddies/goal
                         </p>
                         <div class="flex items-center gap-2 mt-2">
                           <UBadge :label="goal.status" size="xs" />
-                          <span v-if="goal.targetDate" class="text-sm text-gray-500 dark:text-gray-400">
+                          <span
+                            v-if="goal.targetDate"
+                            class="text-sm text-gray-500 dark:text-gray-400"
+                          >
                             Target: {{ formatDate(goal.targetDate) }}
                           </span>
                         </div>
                       </div>
-                      <UIcon name="i-heroicons-chevron-right" class="w-5 h-5 text-gray-400" />
+                      <UIcon
+                        name="i-heroicons-chevron-right"
+                        class="w-5 h-5 text-gray-400"
+                      />
                     </div>
                   </NuxtLink>
                 </div>
@@ -631,8 +842,13 @@ v-for="goal in goals" :key="goal.id" :to="isReviewee ? '/goals' : '/buddies/goal
             <div v-else-if="selectedTab === 'achievements'">
               <UCard>
                 <div v-if="achievements.length === 0" class="text-center py-12">
-                  <UIcon name="i-heroicons-star" class="text-gray-400 text-4xl mb-2" />
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <UIcon
+                    name="i-heroicons-star"
+                    class="text-gray-400 text-4xl mb-2"
+                  />
+                  <p
+                    class="text-lg font-semibold text-gray-900 dark:text-white"
+                  >
                     No achievements recorded
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -642,24 +858,38 @@ v-for="goal in goals" :key="goal.id" :to="isReviewee ? '/goals' : '/buddies/goal
 
                 <div v-else class="space-y-4">
                   <div
-v-for="achievement in achievements" :key="achievement.id"
-                    class="p-4 border-l-4 border-l-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+                    v-for="achievement in achievements"
+                    :key="achievement.id"
+                    class="p-4 border-l-4 border-l-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-lg"
+                  >
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <p class="font-medium text-gray-900 dark:text-white">
                           {{ achievement.title }}
                         </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {{ formatDateInUserTZ(achievement.achievedDate, undefined, false) }}
+                        <p
+                          class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                        >
+                          {{
+                            formatDateInUserTZ(
+                              achievement.achievedDate,
+                              undefined,
+                              false,
+                            )
+                          }}
                         </p>
                         <p
-v-if="achievement.description"
-                          class="mt-3 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                          v-if="achievement.description"
+                          class="mt-3 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
+                        >
                           {{ achievement.description }}
                         </p>
                       </div>
                       <div class="flex-shrink-0 text-2xl ml-4">
-                        <UIcon name="i-heroicons-star" class="text-gray-400 text-4xl mb-2" />
+                        <UIcon
+                          name="i-heroicons-star"
+                          class="text-gray-400 text-4xl mb-2"
+                        />
                       </div>
                     </div>
                   </div>
@@ -686,20 +916,47 @@ v-if="achievement.description"
             </UButton>
           </div>
 
+          <!-- Bottom CTA: Re-open Review -->
+          <div
+            v-if="(isBuddy || isAdmin) && review.status === 'completed'"
+            class="mt-10 text-center py-8"
+          >
+            <p class="text-gray-500 dark:text-gray-400 mb-4">
+              Need to make changes? Re-open this review.
+            </p>
+            <UButton
+              color="neutral"
+              variant="outline"
+              size="lg"
+              icon="i-heroicons-arrow-path"
+              :loading="isReopening"
+              @click="reopenReview"
+            >
+              Re-open Review
+            </UButton>
+          </div>
+
           <!-- Completion Notes (if completed) -->
           <UCard
-v-if="review.status === 'completed' && review.completionNotes"
-            class="mt-6 bg-primary-50 dark:bg-primary-900/10 ring-1 ring-primary-200 dark:ring-primary-800">
+            v-if="review.status === 'completed' && review.completionNotes"
+            class="mt-6 bg-primary-50 dark:bg-primary-900/10 ring-1 ring-primary-200 dark:ring-primary-800"
+          >
             <div class="flex items-start gap-4">
               <UAvatar
-:src="review.buddy?.avatarUrl" :alt="review.buddy?.name" size="md"
-                class="ring-2 ring-white dark:ring-gray-900" />
+                :src="review.buddy?.avatarUrl"
+                :alt="review.buddy?.name"
+                size="md"
+                class="ring-2 ring-white dark:ring-gray-900"
+              />
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     Review Summary from {{ review.buddy?.name }}
                   </h3>
-                  <span v-if="review.completedDate" class="text-sm text-gray-500 dark:text-gray-400">
+                  <span
+                    v-if="review.completedDate"
+                    class="text-sm text-gray-500 dark:text-gray-400"
+                  >
                     Review completed on {{ formatDate(review.completedDate) }}
                   </span>
                 </div>
@@ -713,11 +970,19 @@ v-if="review.status === 'completed' && review.completionNotes"
       </div>
       <!-- Complete Review Modal -->
       <UModal
-v-model:open="isCompleteModalOpen" title="Complete Review" :ui="{
-        footer: 'justify-end',
-      }">
+        v-model:open="isCompleteModalOpen"
+        title="Complete Review"
+        :ui="{
+          footer: 'justify-end',
+        }"
+      >
         <template #body>
-          <UTextarea v-model="completionNotes" class="w-full" placeholder="Add summary notes (optional)" :rows="6" />
+          <UTextarea
+            v-model="completionNotes"
+            class="w-full"
+            placeholder="Add summary notes (optional)"
+            :rows="6"
+          />
         </template>
 
         <template #footer>
@@ -729,13 +994,21 @@ v-model:open="isCompleteModalOpen" title="Complete Review" :ui="{
       </UModal>
 
       <!-- Feedback Modal -->
-      <FeedbackModal v-model="isFeedbackModalOpen" :feedback="selectedFeedback" :show-mark-as-read="false" />
+      <FeedbackModal
+        v-model="isFeedbackModalOpen"
+        :feedback="selectedFeedback"
+        :show-mark-as-read="false"
+      />
 
       <!-- Edit Review Modal -->
       <UModal
-v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
-        footer: 'justify-end',
-      }">
+        v-model:open="isEditModalOpen"
+        title="Edit Review"
+        class="sm:max-w-2xl"
+        :ui="{
+          footer: 'justify-end',
+        }"
+      >
         <template #body>
           <div class="space-y-4">
             <!-- Scheduled Date -->
@@ -743,22 +1016,27 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
               <label class="block text-sm font-medium mb-2">
                 Scheduled Date <span class="text-red-500">*</span>
               </label>
-              <UInput v-model="editScheduledDate" type="date" :min="new Date().toISOString().split('T')[0]" />
+              <UInput
+                v-model="editScheduledDate"
+                type="date"
+                :min="new Date().toISOString().split('T')[0]"
+              />
             </div>
 
             <!-- Include Time Checkbox -->
             <div class="flex items-center gap-2">
               <UCheckbox v-model="editIncludeTime" />
-              <label class="text-sm font-medium cursor-pointer" @click="editIncludeTime = !editIncludeTime">
+              <label
+                class="text-sm font-medium cursor-pointer"
+                @click="editIncludeTime = !editIncludeTime"
+              >
                 Schedule at specific time
               </label>
             </div>
 
             <!-- Time Picker (conditional) -->
             <div v-if="editIncludeTime">
-              <label class="block text-sm font-medium mb-2">
-                Time
-              </label>
+              <label class="block text-sm font-medium mb-2"> Time </label>
               <UInput v-model="editScheduledTime" type="time" class="w-auto" />
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Review will be scheduled at {{ editScheduledTime }}
@@ -774,16 +1052,29 @@ v-model:open="isEditModalOpen" title="Edit Review" class="sm:max-w-2xl" :ui="{
               <label class="block text-sm font-medium mb-2">
                 Review Name
               </label>
-              <UInput v-model="editReviewName" placeholder="e.g., January 2026" size="lg" />
+              <UInput
+                v-model="editReviewName"
+                placeholder="e.g., January 2026"
+                size="lg"
+              />
             </div>
           </div>
         </template>
 
         <template #footer>
-          <UButton color="neutral" variant="ghost" :disabled="isEditing" @click="isEditModalOpen = false">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="isEditing"
+            @click="isEditModalOpen = false"
+          >
             Cancel
           </UButton>
-          <UButton :loading="isEditing" :disabled="!editScheduledDate" @click="updateReview">
+          <UButton
+            :loading="isEditing"
+            :disabled="!editScheduledDate"
+            @click="updateReview"
+          >
             Save Changes
           </UButton>
         </template>

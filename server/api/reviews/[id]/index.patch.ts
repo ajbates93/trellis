@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
     reflectionHighlights,
     reflectionConcerns,
     buddyComments,
+    revieweeComments,
   } = body;
 
   try {
@@ -50,6 +51,14 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 404,
         message: "Review not found",
+      });
+    }
+
+    // Reject updates on completed reviews
+    if (existingReview.status === 'completed') {
+      throw createError({
+        statusCode: 400,
+        message: "Cannot update a completed review",
       });
     }
 
@@ -96,6 +105,9 @@ export default defineEventHandler(async (event) => {
       }
       if (reflectionConcerns !== undefined) {
         updateData.reflectionConcerns = reflectionConcerns;
+      }
+      if (revieweeComments !== undefined) {
+        updateData.revieweeComments = revieweeComments;
       }
     }
 

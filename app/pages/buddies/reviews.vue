@@ -277,6 +277,30 @@ const completeReview = async (reviewId: string) => {
   }
 };
 
+// Re-open review
+const reopenReview = async (reviewId: string) => {
+  try {
+    await $fetch(`/api/reviews/${reviewId}/reopen`, {
+      method: "PATCH",
+    });
+    await Promise.all([refreshUpcoming(), refreshPast()]);
+    toast.add({
+      title: "Review re-opened",
+      description: "The review is now editable again",
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to re-open review:", error);
+    toast.add({
+      title: "Failed to re-open review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
 // Delete review
 const deleteReview = async (reviewId: string) => {
   try {
@@ -305,8 +329,8 @@ const deleteReview = async (reviewId: string) => {
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 // Get dropdown actions for a review
-const getReviewActions = (review: any) => [
-  [
+const getReviewActions = (review: any) => {
+  const actions: any[] = [
     {
       label: "Edit",
       icon: "i-heroicons-pencil-square",
@@ -317,21 +341,36 @@ const getReviewActions = (review: any) => [
       icon: "i-heroicons-calendar",
       onSelect: () => downloadICalFile(review),
     },
-    {
+  ];
+
+  if (review.status === 'scheduled') {
+    actions.push({
       label: "Mark Complete",
       icon: "i-heroicons-check-circle",
       onSelect: () => completeReview(review.id),
-    },
-  ],
-  [
-    {
-      label: "Delete",
-      icon: "i-heroicons-trash",
-      color: "error" as const,
-      onSelect: () => deleteReview(review.id),
-    },
-  ],
-];
+    });
+  }
+
+  if (review.status === 'completed') {
+    actions.push({
+      label: "Re-open",
+      icon: "i-heroicons-arrow-path",
+      onSelect: () => reopenReview(review.id),
+    });
+  }
+
+  return [
+    actions,
+    [
+      {
+        label: "Delete",
+        icon: "i-heroicons-trash",
+        color: "error" as const,
+        onSelect: () => deleteReview(review.id),
+      },
+    ],
+  ];
+};
 </script>
 
 <template>
