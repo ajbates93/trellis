@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/ajbates93/trellis/compare/v0.8.0...v0.8.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* [TRE-12] reviews epic. Fixes TRE-6,7 & 8. Adds additional comments freeform textbox to reviews. Allow re-opening of completed reviews. ([#45](https://github.com/ajbates93/trellis/issues/45)) ([25779c8](https://github.com/ajbates93/trellis/commit/25779c83777c165ddb8b953c4522e6b904dd0cfc))
+
 ## [0.8.0](https://github.com/ajbates93/trellis/compare/v0.7.2...v0.8.0) (2026-02-24)
 
 
