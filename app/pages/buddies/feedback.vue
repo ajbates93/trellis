@@ -76,6 +76,22 @@ const tabs = computed<TabsItem[]>(() => [
 // Get unread count refresh function
 const { refreshUnreadCount } = useUnreadCount();
 
+// Fetch all buddy incoming counts (no buddyId filter)
+const { data: allIncomingData, refresh: refreshAllIncoming } = useFetch(
+  "/api/feedback/for-buddy",
+  { key: "buddy-incoming-all" },
+);
+const buddyIncomingCounts = computed(() => {
+  const counts: Record<string, number> = {};
+  const assignments = allIncomingData.value?.buddyAssignments || [];
+  for (const assignment of assignments as Array<{ user: { id: string }; pendingCount: number }>) {
+    if (assignment.pendingCount > 0) {
+      counts[assignment.user.id] = assignment.pendingCount;
+    }
+  }
+  return counts;
+});
+
 // Handle buddy selection
 const handleBuddySelected = (buddyId: string) => {
   selectedBuddyId.value = buddyId;
@@ -88,7 +104,7 @@ const publishFeedback = async (feedbackId: string) => {
       method: "PATCH",
       body: { publish: true },
     });
-    await refreshIncoming();
+    await Promise.all([refreshIncoming(), refreshAllIncoming()]);
     toast.add({
       title: "Feedback published",
       description: "The feedback is now visible to the recipient.",
@@ -114,7 +130,7 @@ const publishBatch = async (feedbackIds: string[]) => {
       method: "POST",
       body: { feedbackIds, publish: true },
     });
-    await refreshIncoming();
+    await Promise.all([refreshIncoming(), refreshAllIncoming()]);
     toast.add({
       title: `Published ${feedbackIds.length} feedback items`,
       description: "All feedback is now visible to recipients.",
@@ -214,7 +230,7 @@ const incomingColumns = [
 
         <!-- Buddy Selector -->
         <div v-if="hasBuddies" class="mb-6">
-          <BuddySelector :buddy-id="selectedBuddyId || undefined" @buddy-selected="handleBuddySelected" />
+          <BuddySelector :buddy-id="selectedBuddyId || undefined" :counts="buddyIncomingCounts" @buddy-selected="handleBuddySelected" />
         </div>
 
         <!-- Tabs -->
