@@ -1,0 +1,1 @@
+ALTER TABLE "review_schedules" ADD COLUMN "reviewee_comments" text;
