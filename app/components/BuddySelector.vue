@@ -3,6 +3,7 @@ import type { User } from "~/types";
 
 interface Props {
   buddyId?: string;
+  counts?: Record<string, number>;
 }
 
 interface Emits {
@@ -57,12 +58,18 @@ const getBuddyAvatar = (buddy: User) => {
         </template>
 
         <template #item="{ item: buddy }">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 w-full">
             <UAvatar :src="getBuddyAvatar(buddy)" :alt="buddy.name" size="xs" />
-            <div class="flex flex-col">
+            <div class="flex flex-col flex-1 min-w-0">
               <span class="font-medium">{{ buddy.name }}</span>
               <span class="text-xs text-gray-400">{{ buddy.email }}</span>
             </div>
+            <UBadge
+              v-if="props.counts?.[buddy.id]"
+              :label="props.counts[buddy.id].toString()"
+              size="sm"
+              color="success"
+            />
           </div>
         </template>
 

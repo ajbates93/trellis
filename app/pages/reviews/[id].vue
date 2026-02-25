@@ -394,8 +394,8 @@ const feedbackColumns = [
           </div>
 
           <div class="flex items-center justify-center gap-3 pt-2">
-            <UButton color="primary" size="lg" to="/reviews">
-              Schedule Next Review
+            <UButton color="primary" size="lg" :to="isBuddy ? '/buddies/reviews' : '/reviews'">
+              {{ isBuddy ? 'Back to Buddy Reviews' : 'Schedule Next Review' }}
             </UButton>
             <UButton to="/" variant="ghost" color="neutral" size="lg">
               Back to Dashboard
