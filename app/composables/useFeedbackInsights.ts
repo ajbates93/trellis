@@ -42,6 +42,7 @@ export const useFeedbackInsights = () => {
   const feedbackCount = computed(() => insightsSummary.value?.feedbackCount || 0)
   const newFeedbackCount = computed(() => insightsSummary.value?.newFeedbackSinceAnalysis || 0)
   const sentimentData = computed(() => insightsSummary.value?.data?.sentimentData || null)
+  const summary = computed(() => insightsSummary.value?.data?.sentimentData?.summary || null)
   const themes = computed(() => insightsSummary.value?.data?.themes || [])
   const suggestedGoals = computed(() => insightsSummary.value?.data?.suggestedGoals || [])
 
@@ -151,6 +152,7 @@ export const useFeedbackInsights = () => {
     totalPublishedFeedback,
     newFeedbackCount,
     sentimentData,
+    summary,
     themes,
     suggestedGoals,
     daysSinceAnalysis,

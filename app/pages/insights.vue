@@ -5,8 +5,10 @@
         <!-- Community Insights Section -->
         <div class="mb-10">
           <div class="mb-6">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-              Community Insights
+            <h1
+              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white flex gap-3 items-center"
+            >
+              Community Insights<UBadge variant="subtle" size="sm">Beta</UBadge>
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
               See how your team is doing together
@@ -32,20 +34,15 @@
             Your Insights
           </h2>
           <p class="text-gray-600 dark:text-gray-400 mb-6">
-            Track your feedback activity and discover patterns
+            AI-powered analysis of your feedback to surface themes, sentiment
+            trends, and actionable goals
           </p>
 
-          <!-- Feedback network + Sentiment side by side -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-            <FeedbackNetwork />
-            <SentimentAnalysis />
-          </div>
+          <SentimentAnalysis />
         </div>
-
       </div>
     </template>
   </UDashboardPanel>
-
 </template>
 
 <script setup lang="ts">
@@ -56,5 +53,4 @@ definePageMeta({
 useHead({
   title: "Insights",
 });
-
 </script>
