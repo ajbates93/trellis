@@ -128,7 +128,7 @@ Return JSON:`
   try {
     // Call Claude 3.5 Haiku
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2000,
       temperature: 0.3, // Lower temperature for more consistent analysis
       messages: [
