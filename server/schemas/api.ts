@@ -926,8 +926,14 @@ export const GetFeedbackNetworkResponseSchema = z.object({
 });
 
 export const GetActivitySummaryResponseSchema = z.object({
-  totalFeedbackThisWeek: z.number().int().nonnegative(),
-  activeContributors: z.number().int().nonnegative(),
+  feedbackSubmitted: z.number().int().nonnegative(),
+  previousPeriodCount: z.number().int().nonnegative(),
+  periodChange: z.number().int(),
+  participationRate: z.object({
+    active: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+  }),
+  uniquePairs: z.number().int().nonnegative(),
   longestActiveStreak: z.number().int().nonnegative(),
   streakHolder: z
     .object({
@@ -935,8 +941,11 @@ export const GetActivitySummaryResponseSchema = z.object({
       avatarUrl: z.string().nullable(),
     })
     .nullable(),
-  totalWorkspaceUsers: z.number().int().nonnegative(),
-  lastWeekFeedbackCount: z.number().int().nonnegative(),
-  weekOverWeekChange: z.number().int(),
-  avgFeedbackPerContributor: z.number().nonnegative(),
+  mostConnected: z
+    .object({
+      name: z.string(),
+      avatarUrl: z.string().nullable(),
+      connectionCount: z.number().int().nonnegative(),
+    })
+    .nullable(),
 });
