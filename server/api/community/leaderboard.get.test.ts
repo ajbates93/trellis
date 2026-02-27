@@ -29,7 +29,7 @@ describe('GET /api/community/leaderboard', () => {
     })
   })
 
-  it('returns empty leaderboard when no feedback exists', async () => {
+  it('includes users with no feedback at zero score', async () => {
     // First query: feedback rows
     mockSelect([])
     // Second query: workspace users
@@ -40,7 +40,9 @@ describe('GET /api/community/leaderboard', () => {
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
-    expect(result.leaderboard).toEqual([])
+    expect(result.leaderboard).toHaveLength(1)
+    expect(result.leaderboard[0].userId).toBe('user-1')
+    expect(result.leaderboard[0].totalScore).toBe(0)
     expect(result.period).toBe('12weeks')
   })
 
@@ -88,7 +90,7 @@ describe('GET /api/community/leaderboard', () => {
     expect(result.period).toBe('12weeks')
   })
 
-  it('filters out zero-score users', async () => {
+  it('ranks active users above zero-score users', async () => {
     mockSelect([
       { reviewerId: 'user-1', revieweeId: 'user-2', weekYear: '2025-W03' },
     ])
@@ -100,10 +102,11 @@ describe('GET /api/community/leaderboard', () => {
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
-    // Only user-1 has feedback, user-2 has none given
-    const userIds = result.leaderboard.map((e: any) => e.userId)
-    expect(userIds).toContain('user-1')
-    expect(userIds).not.toContain('user-2')
+    // Both users appear, but user-1 ranks higher
+    expect(result.leaderboard).toHaveLength(2)
+    expect(result.leaderboard[0].userId).toBe('user-1')
+    expect(result.leaderboard[1].userId).toBe('user-2')
+    expect(result.leaderboard[1].totalScore).toBe(0)
   })
 
   it('throws 500 on database error', async () => {

@@ -132,9 +132,8 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    // Sort by total score descending, filter out zero-score users
+    // Sort by total score descending
     const leaderboard = entries
-      .filter((e) => e.totalScore > 0)
       .sort((a, b) => b.totalScore - a.totalScore);
 
     return validateResponse(
