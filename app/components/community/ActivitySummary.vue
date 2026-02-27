@@ -61,17 +61,6 @@
         </p>
       </div>
 
-      <!-- Unique pairs -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <UIcon name="i-heroicons-arrows-right-left" class="text-blue-600 dark:text-blue-400" />
-          </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Unique pairs</p>
-        </div>
-        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ summary.uniquePairs }}</p>
-      </div>
-
       <!-- Longest streak -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">

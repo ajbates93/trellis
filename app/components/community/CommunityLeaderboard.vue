@@ -127,9 +127,9 @@
             </p>
             <p
               v-if="entry.roleType"
-              class="text-xs text-gray-500 dark:text-gray-400 capitalize"
+              class="text-xs text-gray-500 dark:text-gray-400"
             >
-              {{ entry.roleType }}
+              {{ getRoleLabel(entry.roleType) }}
             </p>
           </div>
         </div>
@@ -174,6 +174,7 @@
 </template>
 
 <script setup lang="ts">
+const { getRoleLabel } = useRoleLabel();
 const { data: workspaceData } = useFetch("/api/workspace/current");
 const workspaceName = computed(
   () => workspaceData.value?.workspace?.name || "your team",
