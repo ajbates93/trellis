@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/ajbates93/trellis/compare/v0.9.1...v0.9.2) (2026-02-27)
+
+
+### Bug Fixes
+
+* role label on scoreboard and drop unique pairs metric ([95fb3cc](https://github.com/ajbates93/trellis/commit/95fb3ccfbb5469b0b04431446a1b9375eb44df2b))
+
 ## [0.9.1](https://github.com/ajbates93/trellis/compare/v0.9.0...v0.9.1) (2026-02-27)
 
 
