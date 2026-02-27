@@ -103,7 +103,7 @@ export default defineEventHandler(async (event) => {
             actedUpon: false,
           }))
         ),
-        llmModel: "claude-3-5-haiku-20241022",
+        llmModel: "claude-haiku-4-5-20251001",
         status: "completed",
       })
       .returning();

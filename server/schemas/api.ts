@@ -876,3 +876,76 @@ export const GetAllUsersResponseSchema = z.object({
     }),
   ),
 });
+
+// ===== COMMUNITY INSIGHTS SCHEMAS =====
+
+export const GetPlantHealthResponseSchema = z.object({
+  state: z.enum(["dead", "wilting", "growing", "healthy", "thriving"]),
+  healthPercent: z.number().min(0).max(100),
+  feedbackCount: z.number().int().nonnegative(),
+  expectedCount: z.number().int().nonnegative(),
+  message: z.string(),
+});
+
+export const GetCommunityLeaderboardResponseSchema = z.object({
+  leaderboard: z.array(
+    z.object({
+      userId: z.string(),
+      name: z.string(),
+      email: z.string(),
+      avatarUrl: z.string().nullable(),
+      image: z.string().nullable(),
+      roleType: z.string().nullable(),
+      streakWeeks: z.number().int().nonnegative(),
+      varietyCount: z.number().int().nonnegative(),
+      regularityScore: z.number().nonnegative(),
+      totalScore: z.number().nonnegative(),
+    }),
+  ),
+  period: z.string(),
+});
+
+export const GetFeedbackNetworkResponseSchema = z.object({
+  connections: z.array(
+    z.object({
+      userId: z.string(),
+      name: z.string(),
+      avatarUrl: z.string().nullable(),
+      givenCount: z.number().int().nonnegative(),
+      receivedCount: z.number().int().nonnegative(),
+      lastExchangeDate: z.coerce.date().nullable(),
+    }),
+  ),
+  gaps: z.array(
+    z.object({
+      userId: z.string(),
+      name: z.string(),
+      avatarUrl: z.string().nullable(),
+    }),
+  ),
+});
+
+export const GetActivitySummaryResponseSchema = z.object({
+  feedbackSubmitted: z.number().int().nonnegative(),
+  previousPeriodCount: z.number().int().nonnegative(),
+  periodChange: z.number().int(),
+  participationRate: z.object({
+    active: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+  }),
+  uniquePairs: z.number().int().nonnegative(),
+  longestActiveStreak: z.number().int().nonnegative(),
+  streakHolder: z
+    .object({
+      name: z.string(),
+      avatarUrl: z.string().nullable(),
+    })
+    .nullable(),
+  mostConnected: z
+    .object({
+      name: z.string(),
+      avatarUrl: z.string().nullable(),
+      connectionCount: z.number().int().nonnegative(),
+    })
+    .nullable(),
+});

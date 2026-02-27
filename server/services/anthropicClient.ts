@@ -27,6 +27,7 @@ export interface SentimentData {
   positive: number
   constructive: number
   neutral: number
+  summary?: string
 }
 
 export interface AnalysisResult {
@@ -76,14 +77,21 @@ export async function analyzeFeedback(
    - Feedback IDs that contain this theme
 
 2. **Suggested Goals** (1-2 actionable goals):
-   - Specific, actionable goal text (1-2 sentences, under 100 characters)
+   - Goal text MUST reference specific details from the feedback: project names, tools, technologies, team members, or situations that were actually mentioned. Never write a generic goal that could apply to anyone — ground it in the concrete context of this person's feedback.
+   - 1-2 sentences, up to 200 characters
    - Which theme it addresses
    - Confidence score (0.0-1.0)
 
-3. **Sentiment Distribution**:
+3. **Summary** (1 short paragraph, 2-3 sentences):
+   - Write a personalised narrative summary addressed to ${userName} in second person ("Your colleagues highlighted...").
+   - Weave in the key themes naturally. Don't just list them — explain what the feedback says about the person.
+   - Reference specific details, projects, or examples from the feedback where possible.
+   - Keep a warm, encouraging but honest tone.
+
+4. **Sentiment Distribution**:
    - Percentage breakdown (must sum to 100): positive, constructive, neutral
 
-4. **Overall Sentiment**:
+5. **Overall Sentiment**:
    - positive | neutral | constructive | mixed
 
 Return ONLY valid JSON matching this exact schema:
@@ -100,11 +108,12 @@ Return ONLY valid JSON matching this exact schema:
   ],
   "suggestedGoals": [
     {
-      "goalText": "Improve client communication by scheduling weekly update meetings",
-      "basedOnTheme": "Client Communication",
+      "goalText": "Add integration tests to the checkout flow in Project Atlas, where edge case bugs were flagged in recent feedback",
+      "basedOnTheme": "Test Coverage",
       "confidence": 0.80
     }
   ],
+  "summary": "Your colleagues consistently praised your technical depth and willingness to help others debug tricky issues. A recurring theme is that your communication around project timelines could be clearer — several people mentioned wanting earlier heads-up when deadlines shift. Overall, the feedback paints a picture of a strong engineer who'd benefit from tightening up async communication habits.",
   "sentimentData": {
     "positive": 60,
     "constructive": 30,
@@ -119,7 +128,7 @@ ${feedbackList}
 Important guidelines:
 - Be specific in theme names (avoid generic terms like "Work Quality")
 - Ensure sentiment percentages sum to exactly 100
-- Keep goal suggestions concise and actionable
+- Goals MUST cite specific projects, tools, codebases, or situations from the feedback — e.g. "Add unit tests to the payments module" not "Increase test coverage". If feedback mentions a project by name, use that name in the goal.
 - Match feedbackIds to actual IDs provided
 - Focus on patterns, not individual feedback items
 
@@ -128,7 +137,7 @@ Return JSON:`
   try {
     // Call Claude 3.5 Haiku
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2000,
       temperature: 0.3, // Lower temperature for more consistent analysis
       messages: [
@@ -194,6 +203,7 @@ function parseAnalysisResponse(
       positive: Math.round((positive / total) * 100),
       constructive: Math.round((constructive / total) * 100),
       neutral: Math.round((neutral / total) * 100),
+      summary: parsed.summary || undefined,
     }
 
     // Adjust for rounding errors to ensure exact 100%
