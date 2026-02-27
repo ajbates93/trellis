@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/ajbates93/trellis/compare/v0.9.0...v0.9.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* don't filter out zero-score users on leaderboard ([7be9dd0](https://github.com/ajbates93/trellis/commit/7be9dd0d89aae08f5e65f9c95aca7f02a448d815))
+
 ## [0.9.0](https://github.com/ajbates93/trellis/compare/v0.8.1...v0.9.0) (2026-02-27)
 
 
