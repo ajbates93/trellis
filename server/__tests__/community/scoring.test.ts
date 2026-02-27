@@ -8,6 +8,8 @@ import {
   computeVariety,
   computeRegularity,
   computeTotalScore,
+  getISOWeekString,
+  getWeeksInRange,
 } from '../../utils/community-scoring'
 
 describe('getPlantState', () => {
@@ -161,13 +163,13 @@ describe('computeRegularity', () => {
     expect(computeRegularity([])).toBe(0)
   })
 
-  it('returns max score (20) for perfectly regular (single value)', () => {
-    expect(computeRegularity([1])).toBe(20)
+  it('returns max score (50) for perfectly regular (single value)', () => {
+    expect(computeRegularity([1])).toBe(50)
   })
 
-  it('returns high score for consistent counts', () => {
+  it('returns max score for consistent counts', () => {
     const score = computeRegularity([2, 2, 2, 2])
-    expect(score).toBe(20)
+    expect(score).toBe(50)
   })
 
   it('returns lower score for irregular counts', () => {
@@ -175,16 +177,79 @@ describe('computeRegularity', () => {
     const irregular = computeRegularity([0, 5, 1])
     expect(regular).toBeGreaterThan(irregular)
   })
+
+  it('returns 0 for all-zero counts (no activity)', () => {
+    expect(computeRegularity([0, 0, 0, 0])).toBe(0)
+  })
+
+  it('penalises gaps when zero-activity weeks are included', () => {
+    // Feedback in 2 out of 6 weeks (with zeros filled in)
+    const withGaps = computeRegularity([1, 0, 0, 0, 0, 1])
+    // Feedback every week
+    const consistent = computeRegularity([1, 1, 1, 1, 1, 1])
+    expect(consistent).toBeGreaterThan(withGaps)
+  })
 })
 
 describe('computeTotalScore', () => {
-  it('computes weighted sum', () => {
-    // streak=3 → 30, variety=4 → 20, regularity=15
+  it('uses log-scaled streak: streak=3 gives log2(4)*10 = 20', () => {
+    // streak=3 → log2(4)*10 = 20, variety=4 → 20, regularity=15
     const score = computeTotalScore(3, 4, 15)
-    expect(score).toBe(65)
+    expect(score).toBe(55)
   })
 
   it('returns 0 for zero inputs', () => {
     expect(computeTotalScore(0, 0, 0)).toBe(0)
+  })
+
+  it('streak has diminishing returns', () => {
+    // 1 week: log2(2)*10 = 10
+    // 4 weeks: log2(5)*10 ≈ 23.2
+    // 12 weeks: log2(13)*10 ≈ 37
+    // 52 weeks: log2(53)*10 ≈ 57
+    const score1 = computeTotalScore(1, 0, 0)
+    const score4 = computeTotalScore(4, 0, 0)
+    const score12 = computeTotalScore(12, 0, 0)
+    const score52 = computeTotalScore(52, 0, 0)
+
+    expect(score1).toBeCloseTo(10, 0)
+    expect(score4).toBeCloseTo(23.2, 0)
+    expect(score12).toBeCloseTo(37, 0)
+    expect(score52).toBeCloseTo(57, 0)
+
+    // Verify diminishing: doubling streak does NOT double score
+    expect(score4).toBeLessThan(score1 * 4)
+    expect(score52).toBeLessThan(score1 * 52)
+  })
+})
+
+describe('getISOWeekString', () => {
+  it('returns correct ISO week for a known date', () => {
+    // 2025-01-20 is a Monday in W04
+    const date = new Date(2025, 0, 20)
+    expect(getISOWeekString(date)).toBe('2025-W04')
+  })
+
+  it('handles year boundary correctly', () => {
+    // 2024-12-30 is a Monday in W01 of 2025
+    const date = new Date(2024, 11, 30)
+    expect(getISOWeekString(date)).toBe('2025-W01')
+  })
+})
+
+describe('getWeeksInRange', () => {
+  it('returns all weeks between two dates', () => {
+    const start = new Date(2025, 0, 6)  // W02
+    const end = new Date(2025, 0, 27)   // W05
+    const weeks = getWeeksInRange(start, end)
+    expect(weeks.length).toBeGreaterThanOrEqual(3)
+    expect(weeks[0]).toBe('2025-W02')
+  })
+
+  it('returns single week for same-week dates', () => {
+    const start = new Date(2025, 0, 6)  // Monday W02
+    const end = new Date(2025, 0, 10)   // Friday W02
+    const weeks = getWeeksInRange(start, end)
+    expect(weeks).toEqual(['2025-W02'])
   })
 })

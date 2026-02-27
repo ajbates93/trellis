@@ -9,6 +9,7 @@ import {
   computeVariety,
   computeRegularity,
   computeTotalScore,
+  getWeeksInRange,
   type WeekFeedback,
 } from "../../utils/community-scoring";
 import { apiSchemas } from "../../schemas";
@@ -76,6 +77,11 @@ export default defineEventHandler(async (event) => {
         ),
       );
 
+    // Determine the full set of weeks in this period for regularity calculation
+    const periodStart = cutoff || new Date(0);
+    const periodEnd = new Date();
+    const allWeeksInPeriod = getWeeksInRange(periodStart, periodEnd);
+
     // Build leaderboard entries
     const entries = workspaceUsers.map((user) => {
       const userFeedback = feedbackRows.filter(
@@ -94,8 +100,11 @@ export default defineEventHandler(async (event) => {
         user.id,
       );
 
-      // Regularity: build weekly counts
+      // Regularity: build weekly counts including zero-activity weeks
       const weekCounts = new Map<string, number>();
+      for (const week of allWeeksInPeriod) {
+        weekCounts.set(week, 0);
+      }
       for (const f of userFeedback) {
         if (f.weekYear) {
           weekCounts.set(f.weekYear, (weekCounts.get(f.weekYear) || 0) + 1);

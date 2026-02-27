@@ -164,18 +164,60 @@ export function computeVariety(
 /**
  * Compute regularity score based on standard deviation of weekly submission counts.
  * Lower stddev = more regular = higher score.
- * Score = (1 / (1 + stddev)) * 20
+ * Score = (1 / (1 + stddev)) * 50
  */
 export function computeRegularity(weeklyCounts: number[]): number {
   if (weeklyCounts.length === 0) return 0;
 
-  const mean = weeklyCounts.reduce((a, b) => a + b, 0) / weeklyCounts.length;
+  const total = weeklyCounts.reduce((a, b) => a + b, 0);
+  if (total === 0) return 0;
+
+  const mean = total / weeklyCounts.length;
   const variance =
     weeklyCounts.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) /
     weeklyCounts.length;
   const stddev = Math.sqrt(variance);
 
-  return parseFloat(((1 / (1 + stddev)) * 20).toFixed(1));
+  return parseFloat(((1 / (1 + stddev)) * 50).toFixed(1));
+}
+
+// ===== WEEK ENUMERATION =====
+
+/**
+ * Get the ISO week string (e.g. '2025-W03') for a given date.
+ */
+export function getISOWeekString(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, "0")}`;
+}
+
+/**
+ * Enumerate all ISO week strings between two dates (inclusive).
+ */
+export function getWeeksInRange(start: Date, end: Date): string[] {
+  const weeks: string[] = [];
+  const seen = new Set<string>();
+  const current = new Date(start);
+
+  while (current <= end) {
+    const week = getISOWeekString(current);
+    if (!seen.has(week)) {
+      seen.add(week);
+      weeks.push(week);
+    }
+    current.setDate(current.getDate() + 7);
+  }
+
+  // Ensure the end date's week is included
+  const endWeek = getISOWeekString(end);
+  if (!seen.has(endWeek)) {
+    weeks.push(endWeek);
+  }
+
+  return weeks;
 }
 
 // ===== TOTAL SCORE =====
@@ -185,7 +227,7 @@ export function computeTotalScore(
   varietyCount: number,
   regularityScore: number,
 ): number {
-  const streakScore = streakWeeks * 10;
+  const streakScore = Math.log2(streakWeeks + 1) * 10;
   const varietyScore = varietyCount * 5;
   return parseFloat((streakScore + varietyScore + regularityScore).toFixed(1));
 }

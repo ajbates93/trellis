@@ -32,7 +32,7 @@
                     <UIcon name="i-heroicons-fire" class="text-amber-500" />
                     <span class="text-gray-600 dark:text-gray-400"
                       ><strong>Streak</strong> - consecutive weeks with feedback
-                      (10 points/week)</span
+                      (diminishing returns)</span
                     >
                   </div>
                   <div class="flex items-center gap-2">
@@ -49,7 +49,7 @@
                     <UIcon name="i-heroicons-clock" class="text-green-500" />
                     <span class="text-gray-600 dark:text-gray-400"
                       ><strong>Regularity</strong> - steady weekly cadence (up
-                      to 20 points)</span
+                      to 50 points)</span
                     >
                   </div>
                 </div>
@@ -137,13 +137,13 @@
         <!-- Score breakdown -->
         <div class="flex items-center gap-3">
           <UTooltip :text="`${entry.streakWeeks} week streak`">
-            <UBadge color="warning" variant="subtle" size="xs">
+            <UBadge color="warning" variant="subtle" size="sm">
               <UIcon name="i-heroicons-fire" class="mr-0.5" />
               {{ entry.streakWeeks }}
             </UBadge>
           </UTooltip>
           <UTooltip :text="`${entry.varietyCount} unique recipients`">
-            <UBadge color="info" variant="subtle" size="xs">
+            <UBadge color="info" variant="subtle" size="sm">
               <UIcon name="i-heroicons-user-group" class="mr-0.5" />
               {{ entry.varietyCount }}
             </UBadge>

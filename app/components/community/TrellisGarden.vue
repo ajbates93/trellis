@@ -139,11 +139,11 @@ const plantComponent = computed(() => plantComponents[health.value.state]);
 
 const stateLabel = computed(() => {
   const labels: Record<string, string> = {
-    dead: "Plant needs help!",
-    wilting: "Plant is wilting",
-    growing: "Plant is growing",
-    healthy: "Plant is healthy!",
-    thriving: "Plant is thriving!",
+    dead: "Needs some sunlight!",
+    wilting: "Could use some water",
+    growing: "Sprouting nicely",
+    healthy: "Looking good!",
+    thriving: "In full bloom!",
   };
   return labels[health.value.state];
 });
