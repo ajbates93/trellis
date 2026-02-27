@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/ajbates93/trellis/compare/v0.8.1...v0.9.0) (2026-02-27)
+
+
+### Features
+
+* community insights beta ([216013f](https://github.com/ajbates93/trellis/commit/216013fac1b35389e87ec2bcaf4e7169dd870973))
+
 ## [0.8.1](https://github.com/ajbates93/trellis/compare/v0.8.0...v0.8.1) (2026-02-25)
 
 
