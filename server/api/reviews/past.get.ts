@@ -63,6 +63,9 @@ export default defineEventHandler(async (event) => {
         name: reviewSchedules.name,
         notes: reviewSchedules.notes,
         completionNotes: reviewSchedules.completionNotes,
+        reflectionLearnings: reviewSchedules.reflectionLearnings,
+        reflectionHighlights: reviewSchedules.reflectionHighlights,
+        reflectionConcerns: reviewSchedules.reflectionConcerns,
         createdAt: reviewSchedules.createdAt,
         user: {
           id: users.id,
