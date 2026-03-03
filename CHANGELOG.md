@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.3](https://github.com/ajbates93/trellis/compare/v0.9.2...v0.9.3) (2026-03-03)
+
+
+### Bug Fixes
+
+* add review breakdown section to admin reports ([75f6f94](https://github.com/ajbates93/trellis/commit/75f6f947ae7937a2b2e01837b68c72203198886e))
+
 ## [0.9.2](https://github.com/ajbates93/trellis/compare/v0.9.1...v0.9.2) (2026-02-27)
 
 
