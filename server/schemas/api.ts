@@ -444,6 +444,9 @@ export const GetReviewsWithDetailsResponseSchema = z.object({
       name: z.string().nullable(),
       notes: z.string().nullable(),
       completionNotes: z.string().nullable().optional(),
+      reflectionLearnings: z.string().nullable().optional(),
+      reflectionHighlights: z.string().nullable().optional(),
+      reflectionConcerns: z.string().nullable().optional(),
       createdAt: z.coerce.date(),
       user: z.object({
         id: z.string(),

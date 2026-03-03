@@ -63,52 +63,77 @@ v-else name="i-heroicons-chevron-down-20-solid"
         <div v-if="selectedUser" class="space-y-8">
 
 
-          <!-- Reviews Section -->
+          <!-- Review Breakdown Section -->
           <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <UIcon name="i-heroicons-clipboard-document-check" class="text-primary-500" />
-              Past Reviews
-            </h2>
+            <div class="flex items-center gap-4 mb-4">
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <UIcon name="i-heroicons-clipboard-document-check" class="text-primary-500" />
+                Review Breakdown
+              </h2>
+              <USelectMenu
+                v-model="selectedReflectionType"
+                :items="reflectionFilterOptions"
+                value-key="value"
+                :searchable="false"
+                class="w-48"
+              />
+            </div>
 
-            <div v-if="loadingReviews" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <UCard v-for="i in 3" :key="i" class="h-full">
-                <div class="flex justify-between items-start mb-4">
-                  <USkeleton class="h-5 w-24" />
-                  <USkeleton class="h-5 w-5 rounded-full" />
+            <div v-if="loadingReviews">
+              <div class="space-y-3">
+                <div v-for="i in 3" :key="i" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <USkeleton class="h-5 w-1/3 mb-2" />
+                  <USkeleton class="h-4 w-full" />
                 </div>
-                <USkeleton class="h-6 w-3/4 mb-2" />
-                <div class="flex items-center gap-2 mb-4">
-                  <USkeleton class="h-4 w-4 rounded-full" />
-                  <USkeleton class="h-4 w-32" />
-                </div>
-                <USkeleton class="h-16 w-full" />
-              </UCard>
+              </div>
             </div>
 
             <div v-else-if="reviews.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <p class="text-gray-500">
-                No completed reviews found for this user.
-              </p>
+              <p class="text-gray-500">No completed reviews found for this user.</p>
             </div>
 
-            <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <NuxtLink v-for="review in reviews" :key="review.id" :to="`/reviews/${review.id}`" class="block group">
-                <UCard class="h-full hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer">
-                  <div class="flex justify-between items-start mb-4">
-                    <UBadge :label="formatDate(review.completedDate)" color="neutral" variant="solid" />
-                    <UIcon name="i-heroicons-arrow-right" class="text-gray-400 group-hover:text-primary-500" />
-                  </div>
-                  <h3 class="font-bold text-lg mb-1">{{ review.name }}</h3>
-                  <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                    <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                    <span>Buddy: {{ review.buddy?.name || "Unassigned" }}</span>
-                  </div>
-                  <div v-if="review.completionNotes" class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                    {{ review.completionNotes }}
-                  </div>
-                </UCard>
-              </NuxtLink>
+            <div v-else-if="reviewsWithReflections.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <p class="text-gray-500">No reflections recorded for this user.</p>
             </div>
+
+            <UAccordion v-else :items="reflectionAccordionItems" type="multiple">
+              <template #body="{ item }">
+                <div class="pb-4">
+                  <template v-if="selectedFilterValue === 'all'">
+                    <div class="space-y-3">
+                      <div v-if="item.review.reflectionLearnings" class="rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                          <UIcon name="i-heroicons-academic-cap" class="text-blue-500" />
+                          <span class="font-semibold text-sm text-blue-700 dark:text-blue-300">Learnings</span>
+                        </div>
+                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="item.review.reflectionLearnings" />
+                      </div>
+                      <div v-if="item.review.reflectionHighlights" class="rounded-lg border border-yellow-200 dark:border-yellow-900/40 bg-yellow-50/50 dark:bg-yellow-950/20 p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                          <UIcon name="i-heroicons-sparkles" class="text-yellow-500" />
+                          <span class="font-semibold text-sm text-yellow-700 dark:text-yellow-300">Highlights</span>
+                        </div>
+                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="item.review.reflectionHighlights" />
+                      </div>
+                      <div v-if="item.review.reflectionConcerns" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/20 p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                          <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500" />
+                          <span class="font-semibold text-sm text-red-700 dark:text-red-300">Concerns</span>
+                        </div>
+                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="item.review.reflectionConcerns" />
+                      </div>
+                    </div>
+                    <p v-if="!item.review.reflectionLearnings && !item.review.reflectionHighlights && !item.review.reflectionConcerns" class="text-gray-500 text-sm">
+                      No reflections recorded
+                    </p>
+                  </template>
+                  <template v-else>
+                    <div v-if="item.reflectionContent" class="prose prose-sm dark:prose-invert max-w-none" v-html="item.reflectionContent" />
+                    <p v-else class="text-gray-500 text-sm">No reflections recorded</p>
+                  </template>
+                </div>
+              </template>
+            </UAccordion>
           </section>
 
           <!-- Achievements Section -->
@@ -438,6 +463,47 @@ watch(selectedUser, async (user) => {
   } finally {
     loadingFeedback.value = false;
   }
+});
+
+// Reflections
+const reflectionFilterOptions = [
+  { label: 'All Reflections', value: 'all' },
+  { label: 'Learnings', value: 'learnings' },
+  { label: 'Highlights', value: 'highlights' },
+  { label: 'Concerns', value: 'concerns' },
+];
+const selectedReflectionType = ref<string>('all');
+
+const selectedFilterValue = computed((): string => selectedReflectionType.value || 'all');
+
+const reflectionFieldMap: Record<string, string> = {
+  learnings: 'reflectionLearnings',
+  highlights: 'reflectionHighlights',
+  concerns: 'reflectionConcerns',
+};
+
+const getReflectionField = (review: any, filterValue: string): string | null => {
+  const field = reflectionFieldMap[filterValue];
+  return field ? review[field] : null;
+};
+
+const reviewsWithReflections = computed(() => {
+  return reviews.value.filter((r: any) => {
+    if (selectedFilterValue.value === 'all') {
+      return r.reflectionLearnings || r.reflectionHighlights || r.reflectionConcerns;
+    }
+    return getReflectionField(r, selectedFilterValue.value);
+  });
+});
+
+const reflectionAccordionItems = computed(() => {
+  return reviewsWithReflections.value.map((review: any) => ({
+    label: `Review: ${review.name || 'Untitled'}`,
+    review,
+    reflectionContent: selectedFilterValue.value !== 'all'
+      ? getReflectionField(review, selectedFilterValue.value)
+      : null,
+  }));
 });
 
 const sortedGoals = computed(() => {
