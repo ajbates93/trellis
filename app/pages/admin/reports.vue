@@ -98,7 +98,7 @@ v-else name="i-heroicons-chevron-down-20-solid"
 
             <UAccordion v-else :items="reflectionAccordionItems" type="multiple">
               <template #body="{ item }">
-                <div class="px-4 pb-4">
+                <div class="pb-4">
                   <template v-if="selectedFilterValue === 'all'">
                     <div class="space-y-3">
                       <div v-if="item.review.reflectionLearnings" class="rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 p-4">
