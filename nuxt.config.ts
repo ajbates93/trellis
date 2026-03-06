@@ -96,6 +96,29 @@ export default defineNuxtConfig({
     },
   },
 
+  vite: {
+    optimizeDeps: {
+      include: [
+        "vue",
+        "vue-router",
+        "@vueuse/core",
+        "better-auth/vue",
+        "better-auth/client/plugins",
+        "date-fns",
+        "date-fns-tz",
+        "zod",
+        "@vue/devtools-core",
+        "@vue/devtools-kit",
+        "@sentry/nuxt",
+        "@unovis/vue",
+        "@tiptap/vue-3",
+        "@tiptap/starter-kit",
+        "@tiptap/extension-task-list",
+        "@tiptap/extension-task-item",
+      ],
+    },
+  },
+
   nitro: {
     ignore: ["**/*.test.ts"],
     experimental: {
