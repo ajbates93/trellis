@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.4](https://github.com/ajbates93/trellis/compare/v0.9.3...v0.9.4) (2026-03-06)
+
+
+### Bug Fixes
+
+* bug fixes ([#53](https://github.com/ajbates93/trellis/issues/53)) ([0b0eb9f](https://github.com/ajbates93/trellis/commit/0b0eb9f2b098e0e4481adbed34ee60e8af44485a))
+
 ## [0.9.3](https://github.com/ajbates93/trellis/compare/v0.9.2...v0.9.3) (2026-03-03)
 
 
