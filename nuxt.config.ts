@@ -50,6 +50,11 @@ export default defineNuxtConfig({
       htmlAttrs: {
         class: "dark", // TODO: Remove when light mode is ready
       },
+      style: [
+        {
+          innerHTML: "body:not(.hydrated) { opacity: 0; }",
+        },
+      ],
       link: [
         {
           rel: "preconnect",
