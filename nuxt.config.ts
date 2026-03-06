@@ -50,6 +50,11 @@ export default defineNuxtConfig({
       htmlAttrs: {
         class: "dark", // TODO: Remove when light mode is ready
       },
+      style: [
+        {
+          innerHTML: "body:not(.hydrated) { opacity: 0; }",
+        },
+      ],
       link: [
         {
           rel: "preconnect",
@@ -92,6 +97,29 @@ export default defineNuxtConfig({
         //   "data-theme": "auto",
         //   "data-debug": true,
         // },
+      ],
+    },
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: [
+        "vue",
+        "vue-router",
+        "@vueuse/core",
+        "better-auth/vue",
+        "better-auth/client/plugins",
+        "date-fns",
+        "date-fns-tz",
+        "zod",
+        "@vue/devtools-core",
+        "@vue/devtools-kit",
+        "@sentry/nuxt",
+        "@unovis/vue",
+        "@tiptap/vue-3",
+        "@tiptap/starter-kit",
+        "@tiptap/extension-task-list",
+        "@tiptap/extension-task-item",
       ],
     },
   },
