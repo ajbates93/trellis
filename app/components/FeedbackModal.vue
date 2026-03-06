@@ -90,13 +90,18 @@ const handleMarkAsRead = () => {
           </div>
         </div>
 
-        <!-- Date -->
-        <p
+        <!-- Dates -->
+        <div
           v-if="feedback.publishedAt || feedback.createdAt"
-          class="text-xs text-gray-500 dark:text-gray-400 mb-5"
+          class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mb-5"
         >
-          {{ formatDate(feedback.publishedAt || feedback.createdAt) }}
-        </p>
+          <span v-if="feedback.createdAt">
+            Submitted {{ formatDate(feedback.createdAt) }}
+          </span>
+          <span v-if="feedback.publishedAt">
+            Published {{ formatDate(feedback.publishedAt) }}
+          </span>
+        </div>
 
         <!-- Feedback Content -->
         <div class="border-l-4 border-primary-500 pl-5 py-1">
