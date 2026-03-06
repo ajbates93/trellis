@@ -10,6 +10,9 @@ const isLocal = connectionString.includes('localhost') || connectionString.inclu
 export const client = postgres(connectionString, {
   prepare: false,
   ssl: isLocal ? false : 'require',
+  max: isLocal ? 5 : 20,
+  idle_timeout: 20,
+  max_lifetime: 60 * 30,
 })
 
 export const db = drizzle(client, { schema })
