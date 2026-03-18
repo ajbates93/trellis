@@ -1,6 +1,6 @@
 import { db } from "../../../database/connection";
 import { users, feedback, goals, reviewSchedules } from "../../../database/schema";
-import { eq, or } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 import { validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
 
@@ -38,8 +38,12 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Get the user to be deleted
-  const [userToDelete] = await db.select().from(users).where(eq(users.id, userId));
+  // Get the user to be deleted — scoped to admin's workspace
+  const adminWorkspaceId = event.context.workspace?.id;
+  const [userToDelete] = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.id, userId), eq(users.workspaceId, adminWorkspaceId)));
 
   if (!userToDelete) {
     throw createError({
@@ -50,11 +54,11 @@ export default defineEventHandler(async (event) => {
 
   // Delete related data in a transaction
   try {
-    // Find the first available admin to reassign buddies
+    // Find the first available admin in the same workspace to reassign buddies
     const [firstAdmin] = await db
       .select()
       .from(users)
-      .where(eq(users.role, "admin"))
+      .where(and(eq(users.role, "admin"), eq(users.workspaceId, adminWorkspaceId)))
       .limit(1);
 
     // Delete feedback where user is reviewer or reviewee

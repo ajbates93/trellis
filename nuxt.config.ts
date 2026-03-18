@@ -32,6 +32,7 @@ export default defineNuxtConfig({
     slackClientId: process.env.SLACK_CLIENT_ID || "",
     slackClientSecret: process.env.SLACK_CLIENT_SECRET || "",
     slackSigningSecret: process.env.SLACK_SIGNING_SECRET || "",
+    slackTokenEncryptionKey: process.env.SLACK_TOKEN_ENCRYPTION_KEY || "",
 
     public: {
       baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
@@ -126,6 +127,19 @@ export default defineNuxtConfig({
 
   nitro: {
     ignore: ["**/*.test.ts"],
+    routeRules: {
+      "/**": {
+        headers: {
+          "X-Frame-Options": "SAMEORIGIN",
+          "X-Content-Type-Options": "nosniff",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+          "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+          "Content-Security-Policy":
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io; frame-ancestors 'none'",
+        },
+      },
+    },
     experimental: {
       tasks: true,
     },

@@ -1,3 +1,4 @@
+import { randomBytes, createHmac } from "crypto";
 import { getWorkspaceId } from "../../../utils/workspace";
 
 /**
@@ -20,15 +21,19 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Generate state token with workspace ID and random nonce for CSRF protection
-    const nonce = Math.random().toString(36).substring(7);
-    const state = Buffer.from(
+    // Generate state token with workspace ID and cryptographic nonce for CSRF protection
+    const nonce = randomBytes(32).toString("hex");
+    const payload = Buffer.from(
       JSON.stringify({
         workspaceId,
         nonce,
         timestamp: Date.now(),
       })
     ).toString("base64");
+
+    // HMAC-sign the payload to prevent forgery
+    const hmac = createHmac("sha256", config.slackClientSecret).update(payload).digest("hex");
+    const state = `${payload}.${hmac}`;
 
     // Build Slack OAuth URL
     const scopes = [

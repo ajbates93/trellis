@@ -11,8 +11,6 @@ export default defineEventHandler(async (event) => {
     "/api/integrations/slack/commands", // Slack slash commands (signature verified)
     "/api/integrations/slack/interactions", // Slack modal interactions (signature verified)
     "/api/integrations/slack/callback", // OAuth callback
-    "/api/integrations/slack/ping", // Debug endpoint
-    "/api/integrations/slack/test", // Debug endpoint
     "/login",
   ];
   const path = event.path;

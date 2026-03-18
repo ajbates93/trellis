@@ -1,6 +1,7 @@
 import { db } from "../../../database/connection";
 import { slackWorkspaces, users } from "../../../database/schema";
 import { eq, and, ilike } from "drizzle-orm";
+import { decrypt } from "../../../utils/encryption";
 import {
   verifySlackSignature,
   getSlackUserInfo,
@@ -71,7 +72,8 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    const { accessToken, workspaceId } = slackWorkspace;
+    const { accessToken: encryptedToken, workspaceId } = slackWorkspace;
+    const accessToken = decrypt(encryptedToken);
 
     // Get Slack user info
     let slackUser;

@@ -33,7 +33,7 @@ export const slackWorkspaces = pgTable("slack_workspaces", {
     .references(() => workspaces.id, { onDelete: "cascade" }),
   slackTeamId: text("slack_team_id").notNull().unique(), // Slack workspace ID
   slackTeamName: text("slack_team_name"),
-  accessToken: text("access_token").notNull(), // Bot token (should be encrypted in production)
+  accessToken: text("access_token").notNull(), // Bot token (AES-256-GCM encrypted)
   botUserId: text("bot_user_id"), // Bot's Slack user ID
   installedBy: text("installed_by").references(() => users.id),
   installedAt: timestamp("installed_at").defaultNow(),

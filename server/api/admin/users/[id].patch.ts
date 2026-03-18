@@ -1,6 +1,6 @@
 import { db } from "../../../database/connection";
 import { users } from "../../../database/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { validateBody, validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
 
@@ -30,6 +30,21 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // Verify target user belongs to same workspace
+  const adminWorkspaceId = event.context.workspace?.id;
+  const [targetUser] = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.id, userId), eq(users.workspaceId, adminWorkspaceId)))
+    .limit(1);
+
+  if (!targetUser) {
+    throw createError({
+      statusCode: 404,
+      message: "User not found",
+    });
+  }
+
   // Validate request body
   const body = await validateBody(event, apiSchemas.UpdateUserRequestSchema);
 
@@ -45,11 +60,11 @@ export default defineEventHandler(async (event) => {
   if (body.email !== undefined) updateData.email = body.email;
   if (body.banned !== undefined) updateData.banned = body.banned;
 
-  // Update user
+  // Update user (scoped to workspace)
   const [updatedUser] = await db
     .update(users)
     .set(updateData)
-    .where(eq(users.id, userId))
+    .where(and(eq(users.id, userId), eq(users.workspaceId, adminWorkspaceId)))
     .returning();
 
   if (!updatedUser) {

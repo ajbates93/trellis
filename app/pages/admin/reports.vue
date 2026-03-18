@@ -106,21 +106,21 @@ v-else name="i-heroicons-chevron-down-20-solid"
                           <UIcon name="i-heroicons-academic-cap" class="text-blue-500" />
                           <span class="font-semibold text-sm text-blue-700 dark:text-blue-300">Learnings</span>
                         </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="item.review.reflectionLearnings" />
+                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionLearnings)" />
                       </div>
                       <div v-if="item.review.reflectionHighlights" class="rounded-lg border border-yellow-200 dark:border-yellow-900/40 bg-yellow-50/50 dark:bg-yellow-950/20 p-4">
                         <div class="flex items-center gap-2 mb-3">
                           <UIcon name="i-heroicons-sparkles" class="text-yellow-500" />
                           <span class="font-semibold text-sm text-yellow-700 dark:text-yellow-300">Highlights</span>
                         </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="item.review.reflectionHighlights" />
+                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionHighlights)" />
                       </div>
                       <div v-if="item.review.reflectionConcerns" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/20 p-4">
                         <div class="flex items-center gap-2 mb-3">
                           <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500" />
                           <span class="font-semibold text-sm text-red-700 dark:text-red-300">Concerns</span>
                         </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="item.review.reflectionConcerns" />
+                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionConcerns)" />
                       </div>
                     </div>
                     <p v-if="!item.review.reflectionLearnings && !item.review.reflectionHighlights && !item.review.reflectionConcerns" class="text-gray-500 text-sm">
@@ -128,7 +128,7 @@ v-else name="i-heroicons-chevron-down-20-solid"
                     </p>
                   </template>
                   <template v-else>
-                    <div v-if="item.reflectionContent" class="prose prose-sm dark:prose-invert max-w-none" v-html="item.reflectionContent" />
+                    <div v-if="item.reflectionContent" class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.reflectionContent)" />
                     <p v-else class="text-gray-500 text-sm">No reflections recorded</p>
                   </template>
                 </div>
@@ -360,6 +360,8 @@ v-else
 <script setup lang="ts">
 import { format, formatDistanceToNow } from "date-fns";
 import type { User, FeedbackWithReviewer } from "~/types";
+
+const { sanitize } = useSanitizeHtml();
 
 definePageMeta({
   layout: "default",

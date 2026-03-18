@@ -1,6 +1,7 @@
 import { db } from "../../../database/connection";
 import { slackWorkspaces, users, feedback } from "../../../database/schema";
 import { eq, and } from "drizzle-orm";
+import { decrypt } from "../../../utils/encryption";
 import { verifySlackSignature, getSlackUserInfo } from "../../../utils/slack";
 import { format } from "date-fns";
 import { notifyBuddyOfNewFeedback } from "../../../utils/notifications";
@@ -110,7 +111,8 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    const { accessToken, workspaceId } = slackWorkspace;
+    const { accessToken: encryptedToken, workspaceId } = slackWorkspace;
+    const accessToken = decrypt(encryptedToken);
 
     // Get Slack user info
     let slackUser;
