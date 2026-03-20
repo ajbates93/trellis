@@ -24,7 +24,8 @@
       "mcp__linear-server__list_issues",
       "mcp__linear-server__get_issue",
       "mcp__linear-server__list_teams",
-      "mcp__linear-server__list_projects"
+      "mcp__linear-server__list_projects",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

@@ -7,7 +7,7 @@ import {
 } from '../../../__tests__/helpers/mock-event'
 import { buildUser } from '../../../__tests__/helpers/factories'
 
-const { mockDb, mockUpdate } = createMockDb()
+const { mockDb, mockSelect, mockUpdate } = createMockDb()
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../../utils/validation', () => ({
@@ -45,8 +45,8 @@ describe('PATCH /api/admin/users/:id', () => {
   })
 
   it('returns 404 when user is not found', async () => {
-    // Update returns an empty result (no matching row)
-    mockUpdate([])
+    // Workspace check returns no user
+    mockSelect([])
 
     const event = createAdminEvent({
       params: { id: 'nonexistent-id' },
@@ -66,6 +66,7 @@ describe('PATCH /api/admin/users/:id', () => {
       emailVerified: true,
     })
 
+    mockSelect([updatedUser]) // workspace check
     mockUpdate([updatedUser])
 
     const event = createAdminEvent({
@@ -93,6 +94,7 @@ describe('PATCH /api/admin/users/:id', () => {
       banned: true,
     })
 
+    mockSelect([updatedUser]) // workspace check
     mockUpdate([updatedUser])
 
     const event = createAdminEvent({
@@ -112,6 +114,7 @@ describe('PATCH /api/admin/users/:id', () => {
       emailVerified: true,
     })
 
+    mockSelect([updatedUser]) // workspace check
     mockUpdate([updatedUser])
 
     const event = createAdminEvent({
@@ -133,6 +136,7 @@ describe('PATCH /api/admin/users/:id', () => {
       emailVerified: true,
     })
 
+    mockSelect([updatedUser]) // workspace check
     mockUpdate([updatedUser])
 
     const event = createAdminEvent({

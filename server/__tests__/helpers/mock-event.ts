@@ -21,6 +21,7 @@ interface MockEventOptions {
   headers?: Record<string, string>
   session?: { user: MockUser } | null
   user?: MockUser | null
+  workspace?: { id: string; name: string } | null
 }
 
 const defaultUser: MockUser = {
@@ -49,6 +50,7 @@ export function createMockEvent(options: MockEventOptions = {}): H3Event {
     headers = {},
     session,
     user,
+    workspace,
   } = options
 
   // Build query string
@@ -81,6 +83,9 @@ export function createMockEvent(options: MockEventOptions = {}): H3Event {
   if (user !== undefined) {
     event.context.user = user
   }
+  if (workspace !== undefined) {
+    event.context.workspace = workspace
+  }
 
   // Store raw body object for mocked validateBody to use.
   // Endpoints that use readBody() directly should mock readBody globally.
@@ -110,6 +115,9 @@ export function createAdminEvent(
     ...overrides,
     session: { user },
     user,
+    workspace: overrides.workspace !== undefined
+      ? overrides.workspace
+      : { id: 'workspace-1', name: 'Test Workspace' },
   })
 }
 

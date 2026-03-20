@@ -7,6 +7,10 @@ const { mockDb, mockSelect } = createMockDb()
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
 
+vi.mock('../../../utils/encryption', () => ({
+  decrypt: vi.fn().mockImplementation((token: string) => token),
+}))
+
 vi.mock('../../../utils/slack', () => ({
   verifySlackSignature: vi.fn(),
   getSlackUserInfo: vi.fn(),
