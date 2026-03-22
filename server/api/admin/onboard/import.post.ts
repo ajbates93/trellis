@@ -1,6 +1,6 @@
 import { db } from "../../../database/connection";
 import { users, onboardingImports } from "../../../database/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { auth } from "../../../utils/auth";
 import { validateBody, validateResponse } from "../../../utils/validation";
 import { apiSchemas } from "../../../schemas";
@@ -198,7 +198,7 @@ export default defineEventHandler(async (event) => {
           const buddy = await db
             .select()
             .from(users)
-            .where(eq(users.email, row.buddyEmail))
+            .where(and(eq(users.email, row.buddyEmail), eq(users.workspaceId, workspaceId)))
             .limit(1);
 
           if (buddy.length > 0) {

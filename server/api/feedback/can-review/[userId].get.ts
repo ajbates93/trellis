@@ -1,5 +1,5 @@
 import { db } from "../../../database/connection";
-import { feedback } from "../../../database/schema";
+import { feedback, users } from "../../../database/schema";
 import { and, eq } from "drizzle-orm";
 import { format } from "date-fns";
 import { validateResponse } from "../../../utils/validation";
@@ -23,6 +23,23 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       message: "User ID is required",
     });
+  }
+
+  // Verify target user is in the same workspace
+  const adminWorkspaceId = event.context.workspace?.id;
+  if (adminWorkspaceId) {
+    const [targetUser] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.id, userId), eq(users.workspaceId, adminWorkspaceId)))
+      .limit(1);
+
+    if (!targetUser) {
+      throw createError({
+        statusCode: 404,
+        message: "User not found",
+      });
+    }
   }
 
   // Calculate current week-year format

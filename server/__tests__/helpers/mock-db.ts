@@ -46,6 +46,7 @@ function createChain(resolveValue: unknown[] = []): ChainableQuery {
 
 export interface MockDb {
   select: MockFn
+  selectDistinct: MockFn
   insert: MockFn
   update: MockFn
   delete: MockFn
@@ -56,6 +57,8 @@ interface MockDbResult {
   mockDb: MockDb
   /** Configure what `db.select().from().where()...` resolves to */
   mockSelect: (data: unknown[]) => ChainableQuery
+  /** Configure what `db.selectDistinct().from().where()...` resolves to */
+  mockSelectDistinct: (data: unknown[]) => ChainableQuery
   /** Configure what `db.insert().values().returning()...` resolves to */
   mockInsert: (data: unknown[]) => ChainableQuery
   /** Configure what `db.update().set().where().returning()...` resolves to */
@@ -67,6 +70,7 @@ interface MockDbResult {
 export function createMockDb(): MockDbResult {
   const mockDb: MockDb = {
     select: vi.fn(),
+    selectDistinct: vi.fn(),
     insert: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -76,6 +80,12 @@ export function createMockDb(): MockDbResult {
   function mockSelect(data: unknown[] = []) {
     const chain = createChain(data)
     mockDb.select.mockReturnValueOnce(chain)
+    return chain
+  }
+
+  function mockSelectDistinct(data: unknown[] = []) {
+    const chain = createChain(data)
+    mockDb.selectDistinct.mockReturnValueOnce(chain)
     return chain
   }
 
@@ -97,5 +107,5 @@ export function createMockDb(): MockDbResult {
     return chain
   }
 
-  return { mockDb, mockSelect, mockInsert, mockUpdate, mockDelete }
+  return { mockDb, mockSelect, mockSelectDistinct, mockInsert, mockUpdate, mockDelete }
 }

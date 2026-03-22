@@ -1,3 +1,4 @@
+import { createHmac } from 'crypto'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '../../../__tests__/helpers/mock-db'
 import { createMockEvent } from '../../../__tests__/helpers/mock-event'
@@ -13,6 +14,10 @@ vi.mock('../../../utils/auth', () => ({
       getSession: vi.fn(),
     },
   },
+}))
+
+vi.mock('../../../utils/encryption', () => ({
+  encrypt: vi.fn().mockImplementation((token: string) => `encrypted:${token}`),
 }))
 
 vi.stubGlobal('useRuntimeConfig', () => ({
@@ -32,7 +37,7 @@ vi.stubGlobal('fetch', mockFetch)
 const { default: handler } = await import('./callback.get')
 import { auth } from '../../../utils/auth'
 
-// Helper: build a valid base64-encoded state with workspace-1 and recent timestamp
+// Helper: build a valid HMAC-signed state with workspace-1 and recent timestamp
 function buildState(overrides: Partial<{ workspaceId: string; nonce: string; timestamp: number }> = {}) {
   const stateData = {
     workspaceId: 'workspace-1',
@@ -40,7 +45,9 @@ function buildState(overrides: Partial<{ workspaceId: string; nonce: string; tim
     timestamp: Date.now(),
     ...overrides,
   }
-  return Buffer.from(JSON.stringify(stateData)).toString('base64')
+  const payload = Buffer.from(JSON.stringify(stateData)).toString('base64')
+  const hmac = createHmac('sha256', 'test-client-secret').update(payload).digest('hex')
+  return `${payload}.${hmac}`
 }
 
 // Helper: mock a successful Slack token exchange

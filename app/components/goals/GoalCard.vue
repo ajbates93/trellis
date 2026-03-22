@@ -2,6 +2,8 @@
 import { format, differenceInDays, isPast, isToday } from "date-fns";
 import type { GoalMilestone, GoalWithMilestones } from "~/types";
 
+const { sanitize } = useSanitizeHtml();
+
 const props = defineProps<{
   goal: GoalWithMilestones;
   mode: "owner" | "buddy";
@@ -467,12 +469,10 @@ const actionMenuItems = computed(() => {
           <!-- Description -->
           <div v-if="goal.description">
             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Description</label>
-            <!-- eslint-disable vue/no-v-html -->
             <div
               class="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
-              v-html="goal.description"
+              v-html="sanitize(goal.description)"
             />
-            <!-- eslint-enable vue/no-v-html -->
           </div>
 
           <!-- Milestones -->

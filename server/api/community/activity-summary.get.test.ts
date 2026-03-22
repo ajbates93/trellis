@@ -5,7 +5,7 @@ import {
   createUnauthenticatedEvent,
 } from '../../__tests__/helpers/mock-event'
 
-const { mockDb, mockSelect } = createMockDb()
+const { mockDb, mockSelect, mockSelectDistinct } = createMockDb()
 
 vi.mock('../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../utils/validation', () => ({
@@ -38,7 +38,8 @@ describe('GET /api/community/activity-summary', () => {
     mockSelect([{ count: 0 }])
     // total workspace users
     mockSelect([{ count: 5 }])
-    // unique pairs
+    // unique pairs (outer select wraps selectDistinct subquery)
+    mockSelectDistinct([])
     mockSelect([{ count: 0 }])
     // period feedback (for mostConnected)
     mockSelect([])
@@ -69,7 +70,8 @@ describe('GET /api/community/activity-summary', () => {
     mockSelect([{ count: 3 }])
     // total workspace users
     mockSelect([{ count: 10 }])
-    // unique pairs
+    // unique pairs (outer select wraps selectDistinct subquery)
+    mockSelectDistinct([])
     mockSelect([{ count: 4 }])
     // period feedback (for mostConnected)
     mockSelect([

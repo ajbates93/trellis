@@ -1,7 +1,9 @@
+import { createHmac, timingSafeEqual } from "crypto";
 import { db } from "../../../database/connection";
 import { slackWorkspaces } from "../../../database/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "../../../utils/auth";
+import { encrypt } from "../../../utils/encryption";
 
 /**
  * Handles Slack OAuth callback
@@ -33,10 +35,23 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Verify and decode state
+    // Verify and decode state (format: payload.hmac)
     let stateData: { workspaceId: string; nonce: string; timestamp: number };
     try {
-      stateData = JSON.parse(Buffer.from(state, "base64").toString());
+      const [payload, signature] = state.split(".");
+      if (!payload || !signature) {
+        throw new Error("Missing signature");
+      }
+
+      // Verify HMAC signature
+      const expectedHmac = createHmac("sha256", config.slackClientSecret).update(payload).digest("hex");
+      const signatureBuffer = Buffer.from(signature, "hex");
+      const expectedBuffer = Buffer.from(expectedHmac, "hex");
+      if (signatureBuffer.length !== expectedBuffer.length || !timingSafeEqual(signatureBuffer, expectedBuffer)) {
+        throw new Error("Invalid signature");
+      }
+
+      stateData = JSON.parse(Buffer.from(payload, "base64").toString());
     } catch (error) {
       throw createError({
         statusCode: 400,
@@ -83,6 +98,7 @@ export default defineEventHandler(async (event) => {
 
     // Extract tokens and team info
     const accessToken = tokenData.access_token;
+    const encryptedAccessToken = encrypt(accessToken);
     const slackTeamId = tokenData.team.id;
     const slackTeamName = tokenData.team.name;
     const botUserId = tokenData.bot_user_id;
@@ -123,7 +139,7 @@ export default defineEventHandler(async (event) => {
         .set({
           workspaceId,
           slackTeamName,
-          accessToken, // TODO: Encrypt in production
+          accessToken: encryptedAccessToken,
           botUserId,
           installedBy: user.id,
           installedAt: new Date(),
@@ -135,7 +151,7 @@ export default defineEventHandler(async (event) => {
         workspaceId,
         slackTeamId,
         slackTeamName,
-        accessToken, // TODO: Encrypt in production
+        accessToken: encryptedAccessToken,
         botUserId,
         installedBy: user.id,
         installedAt: new Date(),
