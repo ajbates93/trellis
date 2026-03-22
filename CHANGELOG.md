@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.5](https://github.com/ajbates93/trellis/compare/v0.9.4...v0.9.5) (2026-03-22)
+
+
+### Bug Fixes
+
+* audit security critical and high priority fixes ([205b126](https://github.com/ajbates93/trellis/commit/205b1267bdb913098b247abab4961d9f491671da))
+* repair tests with new workspace changes ([ed2e8b3](https://github.com/ajbates93/trellis/commit/ed2e8b3cc315735e3bdb65147d06c9aca0ef275e))
+
 ## [0.9.4](https://github.com/ajbates93/trellis/compare/v0.9.3...v0.9.4) (2026-03-06)
 
 
