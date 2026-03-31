@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.6](https://github.com/ajbates93/trellis/compare/v0.9.5...v0.9.6) (2026-03-31)
+
+
+### Bug Fixes
+
+* convert landing into proper vue components ([12af24e](https://github.com/ajbates93/trellis/commit/12af24e77fc8949e7858a1e8f47a7db7ffcdf30f))
+* formatting and fix quote ([84bfb85](https://github.com/ajbates93/trellis/commit/84bfb859db046dcbb48cade91949b909c1463666))
+* initial landing vue component ([00a4beb](https://github.com/ajbates93/trellis/commit/00a4beb4aad011bbeba4cf886695c434a6a58f3c))
+
 ## [0.9.5](https://github.com/ajbates93/trellis/compare/v0.9.4...v0.9.5) (2026-03-22)
 
 
