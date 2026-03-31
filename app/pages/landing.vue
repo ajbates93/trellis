@@ -182,11 +182,8 @@ const showcaseTabs = [
           <a href="#features" class="hover:text-[#059669] transition-colors"
             >Features</a
           >
-          <a href="#how-it-works" class="hover:text-[#059669] transition-colors"
-            >How It Works</a
-          >
-          <a href="#integrations" class="hover:text-[#059669] transition-colors"
-            >Integrations</a
+          <a href="#showcase" class="hover:text-[#059669] transition-colors"
+            >See It In Action</a
           >
         </div>
 
@@ -376,7 +373,7 @@ const showcaseTabs = [
     </section>
 
     <!-- PRODUCT SHOWCASE - Interactive Panels -->
-    <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <section id="showcase" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
       <div :ref="setFadeUpRef" class="fade-up mb-12">
         <span
           class="inline-block bg-[#d1fae5] text-[#047857] text-xs font-semibold px-3 py-1.5 rounded-full mb-6"
@@ -911,6 +908,12 @@ const showcaseTabs = [
     </footer>
   </div>
 </template>
+
+<style>
+html {
+  scroll-behavior: smooth;
+}
+</style>
 
 <style scoped>
 /* Fade-in on scroll */
