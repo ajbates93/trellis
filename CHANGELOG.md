@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.7](https://github.com/ajbates93/trellis/compare/v0.9.6...v0.9.7) (2026-03-31)
+
+
+### Bug Fixes
+
+* navigation items ([0ddafc3](https://github.com/ajbates93/trellis/commit/0ddafc3d43d32be1cf02f968a53cecdf1620e01e))
+
 ## [0.9.6](https://github.com/ajbates93/trellis/compare/v0.9.5...v0.9.6) (2026-03-31)
 
 
