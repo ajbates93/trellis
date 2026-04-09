@@ -339,7 +339,7 @@ const debouncedSave = (field: string, value: string) => {
 // Only watch if the user has permission to edit that field to avoid unnecessary saves on load
 watch(reflectionLearnings, (newValue, oldValue) => {
   if (
-    isReviewee.value &&
+    (isReviewee.value || isBuddy.value) &&
     !isCompleted.value &&
     newValue !== (review.value?.reflectionLearnings || "") &&
     oldValue !== ""
@@ -350,7 +350,7 @@ watch(reflectionLearnings, (newValue, oldValue) => {
 
 watch(reflectionHighlights, (newValue, oldValue) => {
   if (
-    isReviewee.value &&
+    (isReviewee.value || isBuddy.value) &&
     !isCompleted.value &&
     newValue !== (review.value?.reflectionHighlights || "") &&
     oldValue !== ""
@@ -361,7 +361,7 @@ watch(reflectionHighlights, (newValue, oldValue) => {
 
 watch(reflectionConcerns, (newValue, oldValue) => {
   if (
-    isReviewee.value &&
+    (isReviewee.value || isBuddy.value) &&
     !isCompleted.value &&
     newValue !== (review.value?.reflectionConcerns || "") &&
     oldValue !== ""
@@ -372,7 +372,7 @@ watch(reflectionConcerns, (newValue, oldValue) => {
 
 watch(buddyComments, (newValue, oldValue) => {
   if (
-    isBuddy.value &&
+    (isReviewee.value || isBuddy.value) &&
     !isCompleted.value &&
     newValue !== (review.value?.buddyComments || "") &&
     oldValue !== ""
@@ -383,7 +383,7 @@ watch(buddyComments, (newValue, oldValue) => {
 
 watch(revieweeComments, (newValue, oldValue) => {
   if (
-    isReviewee.value &&
+    (isReviewee.value || isBuddy.value) &&
     !isCompleted.value &&
     newValue !== (review.value?.revieweeComments || "") &&
     oldValue !== ""
@@ -625,7 +625,7 @@ const feedbackColumns = [
                 label="What have I learnt in the past three months?"
                 icon="i-heroicons-academic-cap"
                 placeholder="Think about technical skills, soft skills, or domain knowledge..."
-                :readonly="!isReviewee || isCompleted"
+                :readonly="(!isReviewee && !isBuddy) || isCompleted"
               />
 
               <ReviewsReflectionEditor
@@ -633,7 +633,7 @@ const feedbackColumns = [
                 label="Any highlights?"
                 icon="i-heroicons-star"
                 placeholder="Projects delivered, problems solved, or team contributions..."
-                :readonly="!isReviewee || isCompleted"
+                :readonly="(!isReviewee && !isBuddy) || isCompleted"
               />
 
               <ReviewsReflectionEditor
@@ -641,7 +641,7 @@ const feedbackColumns = [
                 label="Are you worried about anything right now?"
                 icon="i-heroicons-exclamation-triangle"
                 placeholder="Blockers, uncertainties, or support you might need..."
-                :readonly="!isReviewee || isCompleted"
+                :readonly="(!isReviewee && !isBuddy) || isCompleted"
               />
             </div>
           </UCard>
@@ -677,7 +677,7 @@ const feedbackColumns = [
               label="Anything else you'd like to add?"
               icon="i-heroicons-chat-bubble-left-ellipsis"
               placeholder="Any other thoughts, questions, or comments for your buddy..."
-              :readonly="!isReviewee || isCompleted"
+              :readonly="(!isReviewee && !isBuddy) || isCompleted"
             />
           </UCard>
 
@@ -712,7 +712,7 @@ const feedbackColumns = [
               label="Notes from your buddy"
               icon="i-heroicons-user"
               placeholder="Add comments about the review..."
-              :readonly="!isBuddy || isCompleted"
+              :readonly="(!isReviewee && !isBuddy) || isCompleted"
             />
           </UCard>
 
