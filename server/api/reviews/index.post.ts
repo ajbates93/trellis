@@ -53,10 +53,14 @@ export default defineEventHandler(async (event) => {
     const selectedDate = new Date(scheduledDate);
     const now = new Date();
 
-    if (selectedDate < now) {
+    // Compare dates only (not times) so same-day scheduling is allowed
+    const selectedDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (selectedDay < today) {
       throw createError({
         statusCode: 400,
-        message: "Scheduled date and time must be in the future",
+        message: "Scheduled date must not be in the past",
       });
     }
 
