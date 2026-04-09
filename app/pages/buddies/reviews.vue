@@ -176,11 +176,36 @@ const includeTime = ref(false);
 const reviewName = ref<string>("");
 const isCreating = ref(false);
 
-// Watch scheduled date to auto-generate review name
+// Helper to get the next hour as "HH:mm"
+const getNextHourTime = () => {
+  const now = new Date();
+  const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1);
+  return format(nextHour, "HH:mm");
+};
+
+// Check if a date string is today
+const todayString = computed(() => new Date().toISOString().split("T")[0]);
+const isCreateDateToday = computed(() => scheduledDate.value === todayString.value);
+const isEditDateToday = computed(() => editingReview.scheduledDate === todayString.value);
+
+// When create date changes to today, auto-enable time picker with next hour
 watch(scheduledDate, (newDate) => {
   if (newDate) {
     const date = new Date(newDate);
     reviewName.value = format(date, "MMMM yyyy");
+
+    if (newDate === todayString.value) {
+      includeTime.value = true;
+      scheduledTime.value = getNextHourTime();
+    }
+  }
+});
+
+// When edit date changes to today, auto-enable time picker with next hour
+watch(() => editingReview.scheduledDate, (newDate) => {
+  if (newDate === todayString.value) {
+    editingReview.includeTime = true;
+    editingReview.scheduledTime = getNextHourTime();
   }
 });
 
@@ -636,8 +661,8 @@ const getReviewActions = (review: any) => {
           />
         </div>
 
-        <!-- Include Time Checkbox -->
-        <div class="flex items-center gap-2">
+        <!-- Include Time Checkbox (hidden when date is today) -->
+        <div v-if="!isCreateDateToday" class="flex items-center gap-2">
           <UCheckbox v-model="includeTime" />
           <label
             class="text-sm font-medium cursor-pointer"
@@ -647,7 +672,7 @@ const getReviewActions = (review: any) => {
           </label>
         </div>
 
-        <!-- Time Picker (conditional) -->
+        <!-- Time Picker (conditional, always shown for today) -->
         <div v-if="includeTime">
           <label class="block text-sm font-medium mb-2"> Time </label>
           <UInput v-model="scheduledTime" type="time" class="w-auto" />
@@ -722,8 +747,8 @@ const getReviewActions = (review: any) => {
           />
         </div>
 
-        <!-- Include Time Checkbox -->
-        <div class="flex items-center gap-2">
+        <!-- Include Time Checkbox (hidden when date is today) -->
+        <div v-if="!isEditDateToday" class="flex items-center gap-2">
           <UCheckbox v-model="editingReview.includeTime" />
           <label
             class="text-sm font-medium cursor-pointer"
@@ -733,7 +758,7 @@ const getReviewActions = (review: any) => {
           </label>
         </div>
 
-        <!-- Time Picker (conditional) -->
+        <!-- Time Picker (conditional, always shown for today) -->
         <div v-if="editingReview.includeTime">
           <label class="block text-sm font-medium mb-2"> Time </label>
           <UInput
