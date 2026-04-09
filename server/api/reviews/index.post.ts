@@ -49,20 +49,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Client sends UTC timestamp already (e.g., "2026-05-29T09:00:00.000Z")
-    // No timezone conversion needed on server
     const selectedDate = new Date(scheduledDate);
-    const now = new Date();
-
-    // Compare dates only (not times) so same-day scheduling is allowed
-    const selectedDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    if (selectedDay < today) {
-      throw createError({
-        statusCode: 400,
-        message: "Scheduled date must not be in the past",
-      });
-    }
 
     // Auto-generate name if not provided
     const reviewName = name || format(selectedDate, "MMMM yyyy");
