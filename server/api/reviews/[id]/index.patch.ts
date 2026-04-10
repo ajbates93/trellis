@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
     // Build update object with role-based field access
     const updateData: Record<string, unknown> = {};
 
-    // Fields only buddy/admin can update
+    // Scheduling fields: only buddy/admin can update
     if (isBuddy || isAdmin) {
       if (scheduledDate !== undefined) {
         // Client sends UTC timestamp already, store as-is
@@ -90,13 +90,10 @@ export default defineEventHandler(async (event) => {
       if (notes !== undefined) {
         updateData.notes = notes;
       }
-      if (buddyComments !== undefined) {
-        updateData.buddyComments = buddyComments;
-      }
     }
 
-    // Fields only reviewee/admin can update
-    if (isReviewee || isAdmin) {
+    // Reflection and comment fields: both buddy and reviewee can update
+    if (isBuddy || isReviewee || isAdmin) {
       if (reflectionLearnings !== undefined) {
         updateData.reflectionLearnings = reflectionLearnings;
       }
@@ -108,6 +105,9 @@ export default defineEventHandler(async (event) => {
       }
       if (revieweeComments !== undefined) {
         updateData.revieweeComments = revieweeComments;
+      }
+      if (buddyComments !== undefined) {
+        updateData.buddyComments = buddyComments;
       }
     }
 

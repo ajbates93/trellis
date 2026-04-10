@@ -78,23 +78,6 @@ describe('POST /api/reviews', () => {
     })
   })
 
-  it('returns 400 when scheduled date is in the past', async () => {
-    // buddyId matches session user 'user-1'
-    mockSelect([{ buddyId: 'user-1' }])
-
-    const event = createAuthenticatedEvent({
-      body: {
-        userId: 'user-2',
-        scheduledDate: '2000-01-01T00:00:00.000Z',
-      },
-    })
-
-    await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 400,
-      message: 'Scheduled date and time must be in the future',
-    })
-  })
-
   it('creates a review successfully', async () => {
     const newReview = buildReviewSchedule({
       userId: 'user-2',

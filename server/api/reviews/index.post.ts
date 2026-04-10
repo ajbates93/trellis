@@ -49,16 +49,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Client sends UTC timestamp already (e.g., "2026-05-29T09:00:00.000Z")
-    // No timezone conversion needed on server
     const selectedDate = new Date(scheduledDate);
-    const now = new Date();
-
-    if (selectedDate < now) {
-      throw createError({
-        statusCode: 400,
-        message: "Scheduled date and time must be in the future",
-      });
-    }
 
     // Auto-generate name if not provided
     const reviewName = name || format(selectedDate, "MMMM yyyy");

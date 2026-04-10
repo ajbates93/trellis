@@ -60,9 +60,11 @@ const headingClasses = computed(() => {
     : "text-lg font-semibold text-gray-900 dark:text-white mb-2";
 });
 
+const slots = useSlots();
+
 const descriptionClasses = computed(() => {
   const base = "text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto";
-  const margin = props.buttonText ? "mb-6" : "";
+  const margin = props.buttonText || slots.actions ? "mb-6" : "";
   return `${base} ${margin}`;
 });
 
@@ -84,14 +86,16 @@ const handleButtonClick = () => {
     <p v-if="description" :class="descriptionClasses">
       {{ description }}
     </p>
-    <UButton
-      v-if="buttonText"
-      :icon="buttonIcon"
-      :size="buttonSize"
-      :to="buttonTo"
-      @click="handleButtonClick"
-    >
-      {{ buttonText }}
-    </UButton>
+    <slot name="actions">
+      <UButton
+        v-if="buttonText"
+        :icon="buttonIcon"
+        :size="buttonSize"
+        :to="buttonTo"
+        @click="handleButtonClick"
+      >
+        {{ buttonText }}
+      </UButton>
+    </slot>
   </div>
 </template>

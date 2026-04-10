@@ -175,14 +175,52 @@ const scheduledTime = ref<string>("09:00");
 const includeTime = ref(false);
 const reviewName = ref<string>("");
 const isCreating = ref(false);
+const isStartingNow = ref(false);
 
-// Watch scheduled date to auto-generate review name
+// Helper to get the next hour as "HH:mm"
+const getNextHourTime = () => {
+  const now = new Date();
+  const nextHour = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours() + 1,
+  );
+  return format(nextHour, "HH:mm");
+};
+
+// Check if a date string is today
+const todayString = computed(() => new Date().toISOString().split("T")[0]);
+const isCreateDateToday = computed(
+  () => scheduledDate.value === todayString.value,
+);
+const isEditDateToday = computed(
+  () => editingReview.scheduledDate === todayString.value,
+);
+
+// When create date changes to today, auto-enable time picker with next hour
 watch(scheduledDate, (newDate) => {
   if (newDate) {
     const date = new Date(newDate);
     reviewName.value = format(date, "MMMM yyyy");
+
+    if (newDate === todayString.value) {
+      includeTime.value = true;
+      scheduledTime.value = getNextHourTime();
+    }
   }
 });
+
+// When edit date changes to today, auto-enable time picker with next hour
+watch(
+  () => editingReview.scheduledDate,
+  (newDate) => {
+    if (newDate === todayString.value) {
+      editingReview.includeTime = true;
+      editingReview.scheduledTime = getNextHourTime();
+    }
+  },
+);
 
 // Reset create review form
 const resetForm = () => {
@@ -249,6 +287,39 @@ const createReview = async () => {
     });
   } finally {
     isCreating.value = false;
+  }
+};
+
+// Start review immediately and navigate to detail page
+const startReviewNow = async () => {
+  if (!selectedBuddyId.value) return;
+
+  isStartingNow.value = true;
+
+  try {
+    const now = new Date();
+    const reviewName = format(now, "MMMM yyyy");
+
+    const response = await $fetch("/api/reviews", {
+      method: "POST",
+      body: {
+        userId: selectedBuddyId.value,
+        scheduledDate: now.toISOString(),
+        name: reviewName,
+      },
+    });
+
+    await navigateTo(`/reviews/${(response as any).review.id}`);
+  } catch (error: any) {
+    console.error("Failed to start review:", error);
+    toast.add({
+      title: "Failed to start review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    isStartingNow.value = false;
   }
 };
 
@@ -343,7 +414,7 @@ const getReviewActions = (review: any) => {
     },
   ];
 
-  if (review.status === 'scheduled') {
+  if (review.status === "scheduled") {
     actions.push({
       label: "Mark Complete",
       icon: "i-heroicons-check-circle",
@@ -351,7 +422,7 @@ const getReviewActions = (review: any) => {
     });
   }
 
-  if (review.status === 'completed') {
+  if (review.status === "completed") {
     actions.push({
       label: "Re-open",
       icon: "i-heroicons-arrow-path",
@@ -397,13 +468,23 @@ const getReviewActions = (review: any) => {
               @buddy-selected="handleBuddySelected"
             />
           </div>
-          <UButton
-            v-if="selectedBuddyId"
-            icon="i-heroicons-plus"
-            @click="isCreateModalOpen = true"
-          >
-            Create Review
-          </UButton>
+          <div v-if="selectedBuddyId" class="flex items-center gap-2">
+            <UButton
+              icon="i-heroicons-play"
+              color="primary"
+              :loading="isStartingNow"
+              @click="startReviewNow"
+            >
+              Start Now
+            </UButton>
+            <UButton
+              icon="i-heroicons-plus"
+              color="neutral"
+              @click="isCreateModalOpen = true"
+            >
+              Schedule Review
+            </UButton>
+          </div>
         </div>
 
         <!-- Tabbed Reviews Interface -->
@@ -414,11 +495,30 @@ const getReviewActions = (review: any) => {
             icon="i-heroicons-calendar-days"
             heading="No reviews yet"
             :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
-            button-text="Create First Review"
-            button-icon="i-heroicons-plus"
             variant="primary"
-            @button-click="isCreateModalOpen = true"
-          />
+          >
+            <template #actions>
+              <div class="flex items-center justify-center gap-2">
+                <UButton
+                  icon="i-heroicons-play"
+                  color="primary"
+                  size="lg"
+                  :loading="isStartingNow"
+                  @click="startReviewNow"
+                >
+                  Start Now
+                </UButton>
+                <UButton
+                  icon="i-heroicons-plus"
+                  color="neutral"
+                  size="lg"
+                  @click="isCreateModalOpen = true"
+                >
+                  Schedule Review
+                </UButton>
+              </div>
+            </template>
+          </EmptyState>
 
           <div v-else class="space-y-12">
             <!-- Upcoming Review Section -->
@@ -471,11 +571,28 @@ const getReviewActions = (review: any) => {
                 icon-bg-color="bg-gray-100 dark:bg-gray-800"
                 heading="No upcoming review"
                 :description="`${selectedBuddy?.name} has no scheduled reviews coming up`"
-                button-text="Schedule Review"
-                button-icon="i-heroicons-plus"
                 variant="secondary"
-                @button-click="isCreateModalOpen = true"
-              />
+              >
+                <template #actions>
+                  <div class="flex items-center justify-center gap-2">
+                    <UButton
+                      icon="i-heroicons-play"
+                      color="primary"
+                      :loading="isStartingNow"
+                      @click="startReviewNow"
+                    >
+                      Start Now
+                    </UButton>
+                    <UButton
+                      icon="i-heroicons-plus"
+                      color="neutral"
+                      @click="isCreateModalOpen = true"
+                    >
+                      Schedule Review
+                    </UButton>
+                  </div>
+                </template>
+              </EmptyState>
             </section>
 
             <!-- Past Reviews Section -->
@@ -636,8 +753,8 @@ const getReviewActions = (review: any) => {
           />
         </div>
 
-        <!-- Include Time Checkbox -->
-        <div class="flex items-center gap-2">
+        <!-- Include Time Checkbox (hidden when date is today) -->
+        <div v-if="!isCreateDateToday" class="flex items-center gap-2">
           <UCheckbox v-model="includeTime" />
           <label
             class="text-sm font-medium cursor-pointer"
@@ -647,7 +764,7 @@ const getReviewActions = (review: any) => {
           </label>
         </div>
 
-        <!-- Time Picker (conditional) -->
+        <!-- Time Picker (conditional, always shown for today) -->
         <div v-if="includeTime">
           <label class="block text-sm font-medium mb-2"> Time </label>
           <UInput v-model="scheduledTime" type="time" class="w-auto" />
@@ -722,8 +839,8 @@ const getReviewActions = (review: any) => {
           />
         </div>
 
-        <!-- Include Time Checkbox -->
-        <div class="flex items-center gap-2">
+        <!-- Include Time Checkbox (hidden when date is today) -->
+        <div v-if="!isEditDateToday" class="flex items-center gap-2">
           <UCheckbox v-model="editingReview.includeTime" />
           <label
             class="text-sm font-medium cursor-pointer"
@@ -733,7 +850,7 @@ const getReviewActions = (review: any) => {
           </label>
         </div>
 
-        <!-- Time Picker (conditional) -->
+        <!-- Time Picker (conditional, always shown for today) -->
         <div v-if="editingReview.includeTime">
           <label class="block text-sm font-medium mb-2"> Time </label>
           <UInput

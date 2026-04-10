@@ -121,6 +121,7 @@ export default defineNuxtConfig({
         "@tiptap/starter-kit",
         "@tiptap/extension-task-list",
         "@tiptap/extension-task-item",
+        "tiptap-markdown",
       ],
     },
   },

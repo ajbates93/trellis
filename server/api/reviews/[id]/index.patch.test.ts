@@ -158,6 +158,50 @@ describe('PATCH /api/reviews/:id', () => {
     expect(mockDb.update).toHaveBeenCalled()
   })
 
+  it('allows buddy to update reflection fields', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-2',
+      buddyId: 'user-1',
+    })
+    const updatedReview = { ...review, reflectionLearnings: 'Buddy typed this up' }
+
+    mockSelect([review])
+    mockUpdate([updatedReview])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: { reflectionLearnings: 'Buddy typed this up' },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toEqual({ success: true, review: updatedReview })
+    expect(mockDb.update).toHaveBeenCalled()
+  })
+
+  it('allows reviewee to update buddy comments', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-1',
+      buddyId: 'user-2',
+    })
+    const updatedReview = { ...review, buddyComments: 'Reviewee added this' }
+
+    mockSelect([review])
+    mockUpdate([updatedReview])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: { buddyComments: 'Reviewee added this' },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toEqual({ success: true, review: updatedReview })
+    expect(mockDb.update).toHaveBeenCalled()
+  })
+
   it('allows admin to update any review', async () => {
     const review = buildReviewSchedule({
       id: 'review-1',
