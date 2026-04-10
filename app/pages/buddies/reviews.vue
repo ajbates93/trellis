@@ -175,6 +175,7 @@ const scheduledTime = ref<string>("09:00");
 const includeTime = ref(false);
 const reviewName = ref<string>("");
 const isCreating = ref(false);
+const isStartingNow = ref(false);
 
 // Helper to get the next hour as "HH:mm"
 const getNextHourTime = () => {
@@ -274,6 +275,46 @@ const createReview = async () => {
     });
   } finally {
     isCreating.value = false;
+  }
+};
+
+// Start review immediately and navigate to detail page
+const startReviewNow = async () => {
+  if (!selectedBuddyId.value) return;
+
+  isStartingNow.value = true;
+
+  try {
+    const now = new Date();
+    const reviewName = format(now, "MMMM yyyy");
+
+    // Convert current time from user's timezone to UTC
+    const { getUserTimezone } = useUserTimezone();
+    const userTz = getUserTimezone();
+    const dateTimeString = format(now, "yyyy-MM-dd'T'HH:mm");
+    const utcDate = fromZonedTime(dateTimeString, userTz);
+    const utcDateString = utcDate.toISOString();
+
+    const response = await $fetch("/api/reviews", {
+      method: "POST",
+      body: {
+        userId: selectedBuddyId.value,
+        scheduledDate: utcDateString,
+        name: reviewName,
+      },
+    });
+
+    await navigateTo(`/reviews/${(response as any).review.id}`);
+  } catch (error: any) {
+    console.error("Failed to start review:", error);
+    toast.add({
+      title: "Failed to start review",
+      description: error?.data?.message || "Please try again",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  } finally {
+    isStartingNow.value = false;
   }
 };
 
