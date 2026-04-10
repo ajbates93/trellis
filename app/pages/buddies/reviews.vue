@@ -490,11 +490,30 @@ const getReviewActions = (review: any) => {
             icon="i-heroicons-calendar-days"
             heading="No reviews yet"
             :description="`${selectedBuddy.name} doesn't have any scheduled reviews yet.`"
-            button-text="Create First Review"
-            button-icon="i-heroicons-plus"
             variant="primary"
-            @button-click="isCreateModalOpen = true"
-          />
+          >
+            <template #actions>
+              <div class="flex items-center justify-center gap-2">
+                <UButton
+                  icon="i-heroicons-play"
+                  color="primary"
+                  size="lg"
+                  :loading="isStartingNow"
+                  @click="startReviewNow"
+                >
+                  Start Now
+                </UButton>
+                <UButton
+                  icon="i-heroicons-plus"
+                  color="info"
+                  size="lg"
+                  @click="isCreateModalOpen = true"
+                >
+                  Schedule Review
+                </UButton>
+              </div>
+            </template>
+          </EmptyState>
 
           <div v-else class="space-y-12">
             <!-- Upcoming Review Section -->
@@ -547,11 +566,28 @@ const getReviewActions = (review: any) => {
                 icon-bg-color="bg-gray-100 dark:bg-gray-800"
                 heading="No upcoming review"
                 :description="`${selectedBuddy?.name} has no scheduled reviews coming up`"
-                button-text="Schedule Review"
-                button-icon="i-heroicons-plus"
                 variant="secondary"
-                @button-click="isCreateModalOpen = true"
-              />
+              >
+                <template #actions>
+                  <div class="flex items-center justify-center gap-2">
+                    <UButton
+                      icon="i-heroicons-play"
+                      color="primary"
+                      :loading="isStartingNow"
+                      @click="startReviewNow"
+                    >
+                      Start Now
+                    </UButton>
+                    <UButton
+                      icon="i-heroicons-plus"
+                      color="info"
+                      @click="isCreateModalOpen = true"
+                    >
+                      Schedule Review
+                    </UButton>
+                  </div>
+                </template>
+              </EmptyState>
             </section>
 
             <!-- Past Reviews Section -->
