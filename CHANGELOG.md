@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.10.0](https://github.com/ajbates93/trellis/compare/v0.9.7...v0.10.0) (2026-04-10)
+
+
+### Features
+
+* add #actions slot to EmptyState component ([2572e56](https://github.com/ajbates93/trellis/commit/2572e568d803a86907a23b4b95a9fa5e6286df30))
+* add Start Now and Schedule Review header buttons ([9407fd7](https://github.com/ajbates93/trellis/commit/9407fd742d7c51107b1f10a6e4b01203bcf11a51))
+* add startReviewNow function to buddy reviews ([a10e4ce](https://github.com/ajbates93/trellis/commit/a10e4ceb2e127632e13d7c41d0c12fd1f4513e60))
+* update empty states with Start Now + Schedule Review buttons ([652d26f](https://github.com/ajbates93/trellis/commit/652d26f55810c9aafad17023e81066d915a44ff2))
+
+
+### Bug Fixes
+
+* add goals button to post-review ([be10262](https://github.com/ajbates93/trellis/commit/be102627ac32c9758715e3e89ecece7cb73e447e))
+* add spacing between description and actions slot in EmptyState ([4ca8b86](https://github.com/ajbates93/trellis/commit/4ca8b861dcbf0db7105630a55e0cf39859ac0f0e))
+* add tiptap markdown extension for reviews ([1d0715e](https://github.com/ajbates93/trellis/commit/1d0715e939d6460c9414a0855532252f6cad1af1))
+* allow same day reviews ([537b1fa](https://github.com/ajbates93/trellis/commit/537b1fa101d6bfb97b597308375c3b7aa36b8930))
+* auto-show time picker when selecting date in review ([acf092c](https://github.com/ajbates93/trellis/commit/acf092c0821cf515df66d1121365179477074677))
+* buddy and reviewee can edit all fields in review ([dfa0939](https://github.com/ajbates93/trellis/commit/dfa093981e5e10e08826ecd58e4c5d95e616a8d1))
+* remove date validation entirely from reviews ([0758422](https://github.com/ajbates93/trellis/commit/075842271f7251db85151d3c0598c95d91eba686))
+* simplify startReviewNow to use ISO string directly ([fdaa773](https://github.com/ajbates93/trellis/commit/fdaa773e1c873ef168abc4f93013f9cd3a7b50b6))
+* use neutral color for Schedule Review buttons ([f09b20b](https://github.com/ajbates93/trellis/commit/f09b20b30c02a444015e3349e1b51c2f49c3d4d6))
+
+
+### Documentation
+
+* add design spec for Start Review Now (TRE-27) ([1eb9656](https://github.com/ajbates93/trellis/commit/1eb9656be9c64bf18ef680aa3919c1a6957cf029))
+* add implementation plan for Start Review Now (TRE-27) ([efe04f0](https://github.com/ajbates93/trellis/commit/efe04f0c2654b11d816c409431e6051f4e138d06))
+
+
+### Miscellaneous
+
+* update gitignore ([9081134](https://github.com/ajbates93/trellis/commit/9081134dcaf0f90fab4d0f3259246c5721ced217))
+
 ## [0.9.7](https://github.com/ajbates93/trellis/compare/v0.9.6...v0.9.7) (2026-03-31)
 
 
