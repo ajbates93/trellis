@@ -180,14 +180,23 @@ const isStartingNow = ref(false);
 // Helper to get the next hour as "HH:mm"
 const getNextHourTime = () => {
   const now = new Date();
-  const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1);
+  const nextHour = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours() + 1,
+  );
   return format(nextHour, "HH:mm");
 };
 
 // Check if a date string is today
 const todayString = computed(() => new Date().toISOString().split("T")[0]);
-const isCreateDateToday = computed(() => scheduledDate.value === todayString.value);
-const isEditDateToday = computed(() => editingReview.scheduledDate === todayString.value);
+const isCreateDateToday = computed(
+  () => scheduledDate.value === todayString.value,
+);
+const isEditDateToday = computed(
+  () => editingReview.scheduledDate === todayString.value,
+);
 
 // When create date changes to today, auto-enable time picker with next hour
 watch(scheduledDate, (newDate) => {
@@ -203,12 +212,15 @@ watch(scheduledDate, (newDate) => {
 });
 
 // When edit date changes to today, auto-enable time picker with next hour
-watch(() => editingReview.scheduledDate, (newDate) => {
-  if (newDate === todayString.value) {
-    editingReview.includeTime = true;
-    editingReview.scheduledTime = getNextHourTime();
-  }
-});
+watch(
+  () => editingReview.scheduledDate,
+  (newDate) => {
+    if (newDate === todayString.value) {
+      editingReview.includeTime = true;
+      editingReview.scheduledTime = getNextHourTime();
+    }
+  },
+);
 
 // Reset create review form
 const resetForm = () => {
@@ -288,18 +300,11 @@ const startReviewNow = async () => {
     const now = new Date();
     const reviewName = format(now, "MMMM yyyy");
 
-    // Convert current time from user's timezone to UTC
-    const { getUserTimezone } = useUserTimezone();
-    const userTz = getUserTimezone();
-    const dateTimeString = format(now, "yyyy-MM-dd'T'HH:mm");
-    const utcDate = fromZonedTime(dateTimeString, userTz);
-    const utcDateString = utcDate.toISOString();
-
     const response = await $fetch("/api/reviews", {
       method: "POST",
       body: {
         userId: selectedBuddyId.value,
-        scheduledDate: utcDateString,
+        scheduledDate: now.toISOString(),
         name: reviewName,
       },
     });
@@ -409,7 +414,7 @@ const getReviewActions = (review: any) => {
     },
   ];
 
-  if (review.status === 'scheduled') {
+  if (review.status === "scheduled") {
     actions.push({
       label: "Mark Complete",
       icon: "i-heroicons-check-circle",
@@ -417,7 +422,7 @@ const getReviewActions = (review: any) => {
     });
   }
 
-  if (review.status === 'completed') {
+  if (review.status === "completed") {
     actions.push({
       label: "Re-open",
       icon: "i-heroicons-arrow-path",
