@@ -21,7 +21,7 @@
         </div>
         <div class="h-1.5 rounded-full bg-gray-800 overflow-hidden">
           <div
-            class="h-full rounded-full transition-all duration-600"
+            class="h-full rounded-full transition-all duration-500"
             :style="{ width: `${goal.percent}%` }"
             :class="progressBarClass(goal.percent)"
           />

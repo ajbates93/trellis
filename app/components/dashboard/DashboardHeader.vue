@@ -32,6 +32,8 @@ const displayName = computed(() => props.userName || 'there')
 const subtitle = computed(() => {
   if (props.daysUntilReview !== null && props.daysUntilReview <= 30) {
     const withBuddy = props.buddyName ? ` with ${props.buddyName}` : ''
+    if (props.daysUntilReview === 0) return `Your review${withBuddy} is today. You've got this!`
+    if (props.daysUntilReview === 1) return `Your review${withBuddy} is tomorrow. Here's where you stand.`
     return `Your review${withBuddy} is in ${props.daysUntilReview} days. Here's where you stand.`
   }
   if (props.unreadCount > 0) {
