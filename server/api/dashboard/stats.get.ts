@@ -128,38 +128,34 @@ export default defineEventHandler(async (event) => {
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    // Calculate feedback streak (consecutive weeks with at least 1 feedback given)
+    // Calculate feedback streak (consecutive ISO weeks with at least 1 feedback given)
+    // Single query: fetch all distinct ISO weeks with feedback, then count consecutive in JS
     let feedbackStreak = 0;
-    const weekCursor = new Date(startOfThisWeek);
 
-    // Check current week first — only count it if there's feedback
-    if (feedbackGivenCount > 0) {
-      feedbackStreak = 1;
-      weekCursor.setDate(weekCursor.getDate() - 7);
+    const weekRows = await db
+      .select({ weekYear: sql<string>`to_char(${feedback.createdAt}, 'IYYY-"W"IW')` })
+      .from(feedback)
+      .where(eq(feedback.reviewerId, session.user.id))
+      .groupBy(sql`to_char(${feedback.createdAt}, 'IYYY-"W"IW')`);
 
-      // Walk backwards through previous weeks
-      let keepChecking = true;
-      while (keepChecking) {
-        const weekEnd = new Date(weekCursor);
-        weekEnd.setDate(weekEnd.getDate() + 7);
+    if (weekRows.length > 0) {
+      const weekSet = new Set(weekRows.map(r => r.weekYear));
 
-        const [result] = await db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(feedback)
-          .where(
-            and(
-              eq(feedback.reviewerId, session.user.id),
-              gte(feedback.createdAt, weekCursor),
-              lt(feedback.createdAt, weekEnd)
-            )
-          );
+      // Helper: compute ISO week string for a given date
+      function toISOWeek(date: Date): string {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+        const yearStart = new Date(d.getFullYear(), 0, 1);
+        const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+        return `${d.getFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
+      }
 
-        if (result.count > 0) {
-          feedbackStreak++;
-          weekCursor.setDate(weekCursor.getDate() - 7);
-        } else {
-          keepChecking = false;
-        }
+      // Walk backwards from current week, 7 days at a time
+      const cursor = new Date(now);
+      while (weekSet.has(toISOWeek(cursor))) {
+        feedbackStreak++;
+        cursor.setDate(cursor.getDate() - 7);
       }
     }
 
