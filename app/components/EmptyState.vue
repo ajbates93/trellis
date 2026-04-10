@@ -84,14 +84,16 @@ const handleButtonClick = () => {
     <p v-if="description" :class="descriptionClasses">
       {{ description }}
     </p>
-    <UButton
-      v-if="buttonText"
-      :icon="buttonIcon"
-      :size="buttonSize"
-      :to="buttonTo"
-      @click="handleButtonClick"
-    >
-      {{ buttonText }}
-    </UButton>
+    <slot name="actions">
+      <UButton
+        v-if="buttonText"
+        :icon="buttonIcon"
+        :size="buttonSize"
+        :to="buttonTo"
+        @click="handleButtonClick"
+      >
+        {{ buttonText }}
+      </UButton>
+    </slot>
   </div>
 </template>
