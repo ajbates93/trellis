@@ -5,7 +5,7 @@
         <div ref="container" class="space-y-6">
           <!-- Header -->
           <div class="animate-item" :style="{ '--delay': '0ms' }">
-            <DashboardDashboardHeader
+            <DashboardHeader
               :user-name="user?.preferredName || user?.name?.split(' ')[0] || null"
               :days-until-review="daysUntilReview"
               :buddy-name="nextReviewBuddyName"
