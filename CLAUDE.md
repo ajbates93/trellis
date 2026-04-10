@@ -724,6 +724,10 @@ The example dashboard UI (`docs/example-dashboard-ui.png`) demonstrates the desi
 
 This visual style should guide the implementation using Nuxt UI components.
 
+## Git Commit Rules
+
+- **Never** add `Co-Authored-By` trailers to commits
+
 ## Notes
 
 - ESLint config extends from `.nuxt/eslint.config.mjs` (auto-generated)
