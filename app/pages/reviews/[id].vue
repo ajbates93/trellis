@@ -466,13 +466,21 @@ const feedbackColumns = [
             </p>
           </div>
 
-          <div class="flex items-center justify-center gap-3 pt-2">
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
             <UButton
               color="primary"
               size="lg"
               :to="isBuddy ? '/buddies/reviews' : '/reviews'"
             >
               {{ isBuddy ? "Back to Buddy Reviews" : "Schedule Next Review" }}
+            </UButton>
+            <UButton
+              :to="isBuddy ? '/buddies/goals' : '/goals'"
+              variant="soft"
+              size="lg"
+              icon="i-heroicons-flag"
+            >
+              Review Goals
             </UButton>
             <UButton to="/" variant="ghost" color="neutral" size="lg">
               Back to Dashboard
