@@ -35,7 +35,7 @@
             <OnboardingWidget :is-static="true" />
           </div>
 
-          <!-- Primary Row: Review Countdown + Goals Progress -->
+          <!-- NEW: Primary Row: Review Countdown + Activity Feed -->
           <div
             v-if="daysUntilReview !== null"
             class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-item"
@@ -49,15 +49,31 @@
               :goals="allGoals"
               :achievements-count="achievementsCount"
             />
-            <DashboardGoalProgress :goals="allGoals" />
+            <DashboardActivityFeed :activities="activities" />
           </div>
 
-          <!-- If no review scheduled, show GoalProgress full width -->
+          <!-- NEW: If no review, Activity Feed full width -->
           <div
             v-else
             class="animate-item"
             :style="{ '--delay': '250ms' }"
           >
+            <DashboardActivityFeed :activities="activities" />
+          </div>
+
+          <!-- NEW: Secondary Row: Streak Badge (narrow) + Feedback Pulse (wide) -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-item"
+            :style="{ '--delay': '300ms' }"
+          >
+            <DashboardStreakBadge :streak="feedbackStreak" />
+            <div class="md:col-span-2">
+              <DashboardFeedbackPulse :weeks="pulseWeeks" />
+            </div>
+          </div>
+
+          <!-- NEW: Tertiary Row: Goals Progress (was previously in primary row) -->
+          <div class="animate-item" :style="{ '--delay': '350ms' }">
             <DashboardGoalProgress :goals="allGoals" />
           </div>
         </div>
@@ -87,6 +103,8 @@ const { data: statsData } = await useFetch('/api/dashboard/stats')
 const { data: goalsData } = await useFetch('/api/goals')
 const { data: reviewsData } = await useFetch('/api/reviews/upcoming')
 const { data: achievementsData } = await useFetch('/api/achievements')
+const { data: activityData } = await useFetch('/api/dashboard/activity')
+const { data: pulseData } = await useFetch('/api/dashboard/feedback-pulse')
 
 // Computed values
 const daysUntilReview = computed(() => statsData.value?.daysUntilReview ?? null)
@@ -108,6 +126,12 @@ const nextReviewBuddyName = computed(() => nextReview.value?.buddy?.name || null
 const nextReviewDate = computed(() => nextReview.value?.scheduledDate || null)
 
 const achievementsCount = computed(() => achievementsData.value?.achievements?.length || 0)
+
+const feedbackStreak = computed(() => statsData.value?.feedbackStreak ?? 0)
+
+const activities = computed(() => activityData.value?.activities || [])
+
+const pulseWeeks = computed(() => pulseData.value?.weeks || [])
 </script>
 
 <style scoped>
