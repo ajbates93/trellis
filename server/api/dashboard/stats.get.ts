@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
-import { eq, and, gte, lt, desc } from "drizzle-orm";
+import { eq, and, gte, lt, desc, sql } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
 
@@ -128,6 +128,41 @@ export default defineEventHandler(async (event) => {
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
+    // Calculate feedback streak (consecutive weeks with at least 1 feedback given)
+    let feedbackStreak = 0;
+    const weekCursor = new Date(startOfThisWeek);
+
+    // Check current week first — only count it if there's feedback
+    if (feedbackGivenCount > 0) {
+      feedbackStreak = 1;
+      weekCursor.setDate(weekCursor.getDate() - 7);
+
+      // Walk backwards through previous weeks
+      let keepChecking = true;
+      while (keepChecking) {
+        const weekEnd = new Date(weekCursor);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+
+        const [result] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(feedback)
+          .where(
+            and(
+              eq(feedback.reviewerId, session.user.id),
+              gte(feedback.createdAt, weekCursor),
+              lt(feedback.createdAt, weekEnd)
+            )
+          );
+
+        if (result.count > 0) {
+          feedbackStreak++;
+          weekCursor.setDate(weekCursor.getDate() - 7);
+        } else {
+          keepChecking = false;
+        }
+      }
+    }
+
     return validateResponse(
       {
         feedbackGiven: feedbackGivenCount,
@@ -135,6 +170,7 @@ export default defineEventHandler(async (event) => {
         feedbackReceived: feedbackReceivedCount,
         feedbackReceivedTrend,
         daysUntilReview,
+        feedbackStreak,
       },
       apiSchemas.GetDashboardStatsResponseSchema
     );
