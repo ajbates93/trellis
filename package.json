@@ -54,6 +54,7 @@
     "nuxt-tiptap-editor": "^2.3.1",
     "postgres": "^3.4.7",
     "resend": "^6.6.0",
+    "tiptap-markdown": "^0.8.10",
     "typescript": "^5.9.3",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1",

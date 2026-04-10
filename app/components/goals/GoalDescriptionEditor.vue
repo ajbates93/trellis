@@ -16,6 +16,9 @@ const editor = useEditor({
     TiptapTaskItem.configure({
       nested: true,
     }),
+    TiptapMarkdown.configure({
+      transformPastedText: true,
+    }),
   ],
   editorProps: {
     attributes: {
