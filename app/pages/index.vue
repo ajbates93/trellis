@@ -76,6 +76,23 @@
           <div class="animate-item" :style="{ '--delay': '350ms' }">
             <DashboardGoalProgress :goals="allGoals" />
           </div>
+
+          <!-- Feedback Themes (full width) -->
+          <div class="animate-item" :style="{ '--delay': '400ms' }">
+            <DashboardFeedbackThemes
+              :has-analysis="insightsHasAnalysis"
+              :sentiment="insightsSentiment"
+              :themes="insightsThemes"
+            />
+          </div>
+
+          <!-- Buddy Section (conditional) -->
+          <div v-if="hasBuddies" class="animate-item" :style="{ '--delay': '450ms' }">
+            <DashboardBuddySection
+              :buddees="buddySummary"
+              :total-feedback-to-publish="totalFeedbackToPublish"
+            />
+          </div>
         </div>
       </div>
     </template>
@@ -105,6 +122,8 @@ const { data: reviewsData } = await useFetch('/api/reviews/upcoming')
 const { data: achievementsData } = await useFetch('/api/achievements')
 const { data: activityData } = await useFetch('/api/dashboard/activity')
 const { data: pulseData } = await useFetch('/api/dashboard/feedback-pulse')
+const { data: buddySummaryData } = await useFetch('/api/buddies/dashboard-summary')
+const { data: insightsData } = await useFetch('/api/insights/user-summary')
 
 // Computed values
 const daysUntilReview = computed(() => statsData.value?.daysUntilReview ?? null)
@@ -132,6 +151,16 @@ const feedbackStreak = computed(() => statsData.value?.feedbackStreak ?? 0)
 const activities = computed(() => activityData.value?.activities || [])
 
 const pulseWeeks = computed(() => pulseData.value?.weeks || [])
+
+const buddySummary = computed(() => buddySummaryData.value?.buddees || [])
+const totalFeedbackToPublish = computed(() => buddySummaryData.value?.totalFeedbackToPublish ?? 0)
+
+const insightsHasAnalysis = computed(() => insightsData.value?.hasAnalysis === true)
+const insightsSentiment = computed(() => insightsData.value?.data?.sentimentData ?? null)
+const insightsThemes = computed(() => {
+  const themes = insightsData.value?.data?.themes
+  return Array.isArray(themes) ? themes : []
+})
 </script>
 
 <style scoped>
