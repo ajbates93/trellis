@@ -879,6 +879,25 @@ export const GetFeedbackPulseResponseSchema = z.object({
   ),
 });
 
+export const GetBuddyDashboardSummaryResponseSchema = z.object({
+  buddees: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      preferredName: z.string().nullable(),
+      avatarUrl: z.string().nullable(),
+      roleType: z.string().nullable(),
+      feedbackToPublish: z.int().nonnegative(),
+      feedbackReceived: z.int().nonnegative(),
+      activeGoals: z.int().nonnegative(),
+      nextReviewDate: z.string().nullable(),
+      nextReviewDays: z.int().nullable(),
+      status: z.enum(["on_track", "needs_attention", "review_soon"]),
+    }),
+  ),
+  totalFeedbackToPublish: z.int().nonnegative(),
+});
+
 // ===== FEEDBACK PROMPTS RESPONSE SCHEMAS =====
 
 export const GetRandomFeedbackPromptResponseSchema = z.object({
