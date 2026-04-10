@@ -1,6 +1,6 @@
 {
   "name": "trellis",
-  "version": "0.9.7",
+  "version": "0.10.0",
   "type": "module",
   "private": true,
   "engines": {
