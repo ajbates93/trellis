@@ -853,6 +853,30 @@ export const GetDashboardStatsResponseSchema = z.object({
   feedbackReceived: z.int().nonnegative(),
   feedbackReceivedTrend: z.int(),
   daysUntilReview: z.int().nonnegative().nullable(),
+  feedbackStreak: z.int().nonnegative(),
+});
+
+export const GetDashboardActivityResponseSchema = z.object({
+  activities: z.array(
+    z.object({
+      id: z.string(),
+      type: z.enum(["feedback_received", "feedback_given"]),
+      description: z.string(),
+      personName: z.string(),
+      isRead: z.boolean().nullable(),
+      createdAt: z.string(),
+    }),
+  ),
+});
+
+export const GetFeedbackPulseResponseSchema = z.object({
+  weeks: z.array(
+    z.object({
+      week: z.string(),
+      given: z.int().nonnegative(),
+      received: z.int().nonnegative(),
+    }),
+  ),
 });
 
 // ===== FEEDBACK PROMPTS RESPONSE SCHEMAS =====
