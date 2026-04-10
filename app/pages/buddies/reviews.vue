@@ -463,13 +463,23 @@ const getReviewActions = (review: any) => {
               @buddy-selected="handleBuddySelected"
             />
           </div>
-          <UButton
-            v-if="selectedBuddyId"
-            icon="i-heroicons-plus"
-            @click="isCreateModalOpen = true"
-          >
-            Create Review
-          </UButton>
+          <div v-if="selectedBuddyId" class="flex items-center gap-2">
+            <UButton
+              icon="i-heroicons-play"
+              color="primary"
+              :loading="isStartingNow"
+              @click="startReviewNow"
+            >
+              Start Now
+            </UButton>
+            <UButton
+              icon="i-heroicons-plus"
+              color="info"
+              @click="isCreateModalOpen = true"
+            >
+              Schedule Review
+            </UButton>
+          </div>
         </div>
 
         <!-- Tabbed Reviews Interface -->
