@@ -474,7 +474,7 @@ const getReviewActions = (review: any) => {
             </UButton>
             <UButton
               icon="i-heroicons-plus"
-              color="info"
+              color="neutral"
               @click="isCreateModalOpen = true"
             >
               Schedule Review
@@ -505,7 +505,7 @@ const getReviewActions = (review: any) => {
                 </UButton>
                 <UButton
                   icon="i-heroicons-plus"
-                  color="info"
+                  color="neutral"
                   size="lg"
                   @click="isCreateModalOpen = true"
                 >
@@ -580,7 +580,7 @@ const getReviewActions = (review: any) => {
                     </UButton>
                     <UButton
                       icon="i-heroicons-plus"
-                      color="info"
+                      color="neutral"
                       @click="isCreateModalOpen = true"
                     >
                       Schedule Review
