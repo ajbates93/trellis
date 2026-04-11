@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
         <UIcon name="i-heroicons-user-group" class="text-purple-400 text-lg" />
-        <h2 class="text-[15px] font-semibold text-white">Your Buddees</h2>
+        <h2 class="text-[15px] font-semibold text-white">Your Buddies</h2>
         <span
           v-if="!pending"
           class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-900/20 text-purple-400 border border-purple-500/20"
