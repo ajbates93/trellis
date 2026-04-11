@@ -1,5 +1,61 @@
 # Changelog
 
+## [0.11.0](https://github.com/ajbates93/trellis/compare/v0.10.0...v0.11.0) (2026-04-11)
+
+
+### Features
+
+* **dashboard:** add activity feed endpoint (feedback-only MVP) ([0698fe0](https://github.com/ajbates93/trellis/commit/0698fe0d15dae93453f52c94dc298caa02120090))
+* **dashboard:** add ActivityFeed component with relative timestamps ([fe62933](https://github.com/ajbates93/trellis/commit/fe6293383dde78b7e9c22988b986d87d76c558d1))
+* **dashboard:** add BuddeeCard component with metrics and actions ([7d15b41](https://github.com/ajbates93/trellis/commit/7d15b4194e55bb806d59c56e6fd860a1d5791a6d))
+* **dashboard:** add buddy dashboard summary endpoint ([d977c70](https://github.com/ajbates93/trellis/commit/d977c70bc2231b535d619c1e5789c18f46a96cf3))
+* **dashboard:** add BuddySection with nudge bar and buddee cards ([7bee89e](https://github.com/ajbates93/trellis/commit/7bee89efd1b94465509a0ac967c37ab00b0dc967))
+* **dashboard:** add DashboardHeader component with time-based greeting ([0ae4eef](https://github.com/ajbates93/trellis/commit/0ae4eef7ae2e091d775875303b22412d97ec02ce))
+* **dashboard:** add feedback-pulse endpoint (12-week given/received) ([e9a1089](https://github.com/ajbates93/trellis/commit/e9a108936f5e9a143a42fba6513177a0b4069922))
+* **dashboard:** add FeedbackPulse chart component (Unovis) ([728f78b](https://github.com/ajbates93/trellis/commit/728f78b7ae9af20dc2edf64fe7e27e1aab0e663c))
+* **dashboard:** add feedbackStreak to stats endpoint ([64a122e](https://github.com/ajbates93/trellis/commit/64a122ed461dca5c54444abd75aeb0001354f738))
+* **dashboard:** add FeedbackThemes component with sentiment bar ([aeb8bfb](https://github.com/ajbates93/trellis/commit/aeb8bfb4513a441e17d306927ab74708ea54caac))
+* **dashboard:** add GoalProgress with milestone progress bars ([42f67f3](https://github.com/ajbates93/trellis/commit/42f67f307fd300504c5088a2d8af3f4269bc18e6))
+* **dashboard:** add MiniStats component with conditional buddy stat ([79bcb52](https://github.com/ajbates93/trellis/commit/79bcb52bdd3fc11e92cd472b6fda39823d5cb2a8))
+* **dashboard:** add QuickActions component with 3 action buttons ([1b72a1e](https://github.com/ajbates93/trellis/commit/1b72a1e7dc4d6cc1ae75812cb22635dcb5c33ee5))
+* **dashboard:** add ReviewCountdown with prep checklist and circular progress ([1481ba5](https://github.com/ajbates93/trellis/commit/1481ba5b5289804a8bdf5b1f3028eb5932f00906))
+* **dashboard:** add StreakBadge component with motivational states ([d3d0459](https://github.com/ajbates93/trellis/commit/d3d0459b645522caa9bc5b585ea4c094ac8cfbe9))
+* **dashboard:** add Zod schema for buddy dashboard summary ([2546d82](https://github.com/ajbates93/trellis/commit/2546d823b7bd2245b5a201cf0e2e81f79c1eb0a2))
+* **dashboard:** add Zod schemas for activity, feedback-pulse, and streak ([6145cd9](https://github.com/ajbates93/trellis/commit/6145cd9dfa4c186bf0e49f358b044c2f8c9f9c98))
+* **dashboard:** deep-link buddy zone pages via ?buddy query param ([5636e7c](https://github.com/ajbates93/trellis/commit/5636e7c247086b29b84c25ad8a998d5aa506aaf4))
+* **dashboard:** expand recent activity feed to all 6 event types ([3ef1a5a](https://github.com/ajbates93/trellis/commit/3ef1a5a98a33844fd8e3394deed68f57719eff52))
+* **dashboard:** rewrite dashboard with new personalised layout (Phase 1) ([7bb9ddf](https://github.com/ajbates93/trellis/commit/7bb9ddf0b126ada81aa11dc9071e17d914b2d5a2))
+* **dashboard:** wire ActivityFeed, FeedbackPulse, and StreakBadge into layout ([e1d830a](https://github.com/ajbates93/trellis/commit/e1d830a3656f2d9a7b8464e20a4654f8436db32f))
+* **dashboard:** wire FeedbackThemes and BuddySection into layout ([7229025](https://github.com/ajbates93/trellis/commit/7229025d71a8c5cd23d3891f7b0fd7febb8b10a4))
+
+
+### Bug Fixes
+
+* activity fixes ([f6bd989](https://github.com/ajbates93/trellis/commit/f6bd989a7f8a5df541cd10863d2214fb1245ad14))
+* copilot fixes ([7c405d8](https://github.com/ajbates93/trellis/commit/7c405d84626e4b1651e6713e1ec16e616d9344ac))
+* **dashboard:** avoid v-html in BuddySection nudge messages ([e52f855](https://github.com/ajbates93/trellis/commit/e52f855648a11b4bb3b5043f60ae015577d70530))
+* **dashboard:** extract theme labels from insight objects and add no-review empty state ([220d9ab](https://github.com/ajbates93/trellis/commit/220d9ab616e3f8db9de13161a067f683669ea7dd))
+* **dashboard:** fix invalid Tailwind duration class and subtitle edge cases ([95e2289](https://github.com/ajbates93/trellis/commit/95e2289b208ccf43e8a44847188791f983ed899b))
+* **dashboard:** refactor streak to single query with ISO week alignment ([b24aa65](https://github.com/ajbates93/trellis/commit/b24aa65fbf351aad9dd191846922743af378dd85))
+* ssr blocking requests ([d8fedfe](https://github.com/ajbates93/trellis/commit/d8fedfec545d1aa619d1f2c0c396ffdfe8639fad))
+
+
+### Refactoring
+
+* **dashboard:** rename DashboardHeader to Header to avoid redundant prefix ([462cc90](https://github.com/ajbates93/trellis/commit/462cc90852b6facdef6a614300bfda6d2c4240d8))
+
+
+### Documentation
+
+* add git commit rules to CLAUDE.md (no co-authored-by) ([f8b0b39](https://github.com/ajbates93/trellis/commit/f8b0b398b38b622033a2c8cfe90b797a476bf856))
+* implementation plan for buddy deep links and activity feed ([b9e5fc2](https://github.com/ajbates93/trellis/commit/b9e5fc2874ec9d97041619478e234317002c517c))
+* spec for buddy deep links and full recent activity feed ([3b81819](https://github.com/ajbates93/trellis/commit/3b8181983ff8e952efd85316ef4201c8506c7a24))
+
+
+### Tests
+
+* **dashboard:** add 7th mockSelect for feedbackStreak query in stats tests ([1b0056e](https://github.com/ajbates93/trellis/commit/1b0056eddcd1612d1991d3fd97928f7dbd967ae2))
+
 ## [0.10.0](https://github.com/ajbates93/trellis/compare/v0.9.7...v0.10.0) (2026-04-10)
 
 
