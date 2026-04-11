@@ -62,7 +62,11 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .innerJoin(users, eq(feedback.reviewerId, users.id))
       .where(
-        and(eq(feedback.revieweeId, userId), eq(feedback.published, true)),
+        and(
+          eq(feedback.revieweeId, userId),
+          eq(feedback.published, true),
+          isNotNull(feedback.publishedAt),
+        ),
       )
       .orderBy(desc(feedback.publishedAt))
       .limit(PER_SOURCE_LIMIT);
@@ -76,7 +80,9 @@ export default defineEventHandler(async (event) => {
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.revieweeId, users.id))
-      .where(eq(feedback.reviewerId, userId))
+      .where(
+        and(eq(feedback.reviewerId, userId), isNotNull(feedback.createdAt)),
+      )
       .orderBy(desc(feedback.createdAt))
       .limit(PER_SOURCE_LIMIT);
 
@@ -107,7 +113,12 @@ export default defineEventHandler(async (event) => {
         createdAt: achievements.createdAt,
       })
       .from(achievements)
-      .where(eq(achievements.userId, userId))
+      .where(
+        and(
+          eq(achievements.userId, userId),
+          isNotNull(achievements.createdAt),
+        ),
+      )
       .orderBy(desc(achievements.createdAt))
       .limit(PER_SOURCE_LIMIT);
 
@@ -127,6 +138,7 @@ export default defineEventHandler(async (event) => {
               and(
                 inArray(feedback.revieweeId, buddeeIds),
                 eq(feedback.published, true),
+                isNotNull(feedback.publishedAt),
               ),
             )
             .orderBy(desc(feedback.publishedAt))
@@ -159,6 +171,7 @@ export default defineEventHandler(async (event) => {
       .where(
         and(
           eq(reviewSchedules.status, "completed"),
+          isNotNull(reviewSchedules.completedDate),
           or(
             eq(reviewSchedules.userId, userId),
             eq(reviewSchedules.buddyId, userId),
@@ -168,59 +181,72 @@ export default defineEventHandler(async (event) => {
       .orderBy(desc(reviewSchedules.completedDate))
       .limit(PER_SOURCE_LIMIT);
 
-    // Normalise all sources into a single Activity array
+    // Normalise all sources into a single Activity array.
+    // Null timestamps are filtered out in the queries above, but Drizzle still
+    // types the columns as nullable — defensively drop any stragglers here
+    // rather than fall back to `new Date()` (which would rank broken rows
+    // as the most recent event and corrupt sort order).
     const activities: Activity[] = [
-      ...received.map<Activity>((r) => ({
-        id: `feedback_received:${r.id}`,
-        type: "feedback_received",
-        description: `You received feedback from ${r.personName}`,
-        href: "/feedback/inbox",
-        isRead: r.isRead ?? null,
-        createdAt: (r.createdAt ?? new Date()).toISOString(),
-      })),
-      ...given.map<Activity>((g) => ({
-        id: `feedback_given:${g.id}`,
-        type: "feedback_given",
-        description: `You submitted feedback for ${g.personName}`,
-        href: "/feedback/inbox?tab=given",
-        isRead: null,
-        createdAt: (g.createdAt ?? new Date()).toISOString(),
-      })),
-      ...milestones.map<Activity>((m) => ({
-        id: `goal_milestone:${m.id}`,
-        type: "goal_milestone",
-        description: `Milestone completed: "${m.title}"`,
-        href: "/goals",
-        isRead: null,
-        createdAt: (m.completedAt ?? new Date()).toISOString(),
-      })),
-      ...userAchievements.map<Activity>((a) => ({
-        id: `brag_bucket:${a.id}`,
-        type: "brag_bucket",
-        description: `You added to your brag bucket: "${a.title}"`,
-        href: "/brag-bucket",
-        isRead: null,
-        createdAt: (a.createdAt ?? new Date()).toISOString(),
-      })),
-      ...buddyFeedbackRaw.map<Activity>((b) => ({
-        id: `buddy_feedback:${b.id}`,
-        type: "buddy_feedback",
-        description: `${b.reviewerName} submitted feedback for ${buddeeNameById.get(b.buddeeId) ?? "your buddy"}`,
-        href: `/buddies/feedback?buddy=${b.buddeeId}`,
-        isRead: null,
-        createdAt: (b.publishedAt ?? new Date()).toISOString(),
-      })),
-      ...reviews.map<Activity>((r) => ({
-        id: `review_completed:${r.id}`,
-        type: "review_completed",
-        description: `Review with ${r.userName} completed`,
-        href: "/reviews",
-        isRead: null,
-        createdAt: (r.completedDate
-          ? new Date(r.completedDate)
-          : new Date()
-        ).toISOString(),
-      })),
+      ...received
+        .filter((r) => r.createdAt != null)
+        .map<Activity>((r) => ({
+          id: `feedback_received:${r.id}`,
+          type: "feedback_received",
+          description: `You received feedback from ${r.personName}`,
+          href: "/feedback/inbox",
+          isRead: r.isRead ?? null,
+          createdAt: r.createdAt!.toISOString(),
+        })),
+      ...given
+        .filter((g) => g.createdAt != null)
+        .map<Activity>((g) => ({
+          id: `feedback_given:${g.id}`,
+          type: "feedback_given",
+          description: `You submitted feedback for ${g.personName}`,
+          href: "/feedback/inbox?tab=given",
+          isRead: null,
+          createdAt: g.createdAt!.toISOString(),
+        })),
+      ...milestones
+        .filter((m) => m.completedAt != null)
+        .map<Activity>((m) => ({
+          id: `goal_milestone:${m.id}`,
+          type: "goal_milestone",
+          description: `Milestone completed: "${m.title}"`,
+          href: "/goals",
+          isRead: null,
+          createdAt: m.completedAt!.toISOString(),
+        })),
+      ...userAchievements
+        .filter((a) => a.createdAt != null)
+        .map<Activity>((a) => ({
+          id: `brag_bucket:${a.id}`,
+          type: "brag_bucket",
+          description: `You added to your brag bucket: "${a.title}"`,
+          href: "/brag-bucket",
+          isRead: null,
+          createdAt: a.createdAt!.toISOString(),
+        })),
+      ...buddyFeedbackRaw
+        .filter((b) => b.publishedAt != null)
+        .map<Activity>((b) => ({
+          id: `buddy_feedback:${b.id}`,
+          type: "buddy_feedback",
+          description: `${b.reviewerName} submitted feedback for ${buddeeNameById.get(b.buddeeId) ?? "your buddy"}`,
+          href: `/buddies/feedback?buddy=${b.buddeeId}`,
+          isRead: null,
+          createdAt: b.publishedAt!.toISOString(),
+        })),
+      ...reviews
+        .filter((r) => r.completedDate != null)
+        .map<Activity>((r) => ({
+          id: `review_completed:${r.id}`,
+          type: "review_completed",
+          description: `Review with ${r.userName} completed`,
+          href: "/reviews",
+          isRead: null,
+          createdAt: new Date(r.completedDate!).toISOString(),
+        })),
     ]
       .sort(
         (a, b) =>

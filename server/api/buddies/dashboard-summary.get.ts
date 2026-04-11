@@ -1,6 +1,6 @@
 import { db } from "../../database/connection";
 import { users, feedback, goals, reviewSchedules } from "../../database/schema";
-import { eq, and, sql, gte } from "drizzle-orm";
+import { eq, and, sql, gte, inArray } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
 
@@ -36,91 +36,139 @@ export default defineEventHandler(async (event) => {
       );
     }
 
+    const buddeeIds = buddees.map((b) => b.id);
     const now = new Date();
+    const todayIso = now.toISOString().split("T")[0];
+
+    // Aggregate all per-buddee metrics in 4 queries total (not 4 × N).
+    const [
+      unpublishedRows,
+      publishedRows,
+      activeGoalsRows,
+      upcomingReviewRows,
+    ] = await Promise.all([
+      // Unpublished feedback count per buddee
+      db
+        .select({
+          revieweeId: feedback.revieweeId,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(feedback)
+        .where(
+          and(
+            inArray(feedback.revieweeId, buddeeIds),
+            eq(feedback.published, false),
+          ),
+        )
+        .groupBy(feedback.revieweeId),
+
+      // Published feedback count per buddee
+      db
+        .select({
+          revieweeId: feedback.revieweeId,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(feedback)
+        .where(
+          and(
+            inArray(feedback.revieweeId, buddeeIds),
+            eq(feedback.published, true),
+          ),
+        )
+        .groupBy(feedback.revieweeId),
+
+      // Active goals count per buddee
+      db
+        .select({
+          userId: goals.userId,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(goals)
+        .where(
+          and(inArray(goals.userId, buddeeIds), eq(goals.status, "active")),
+        )
+        .groupBy(goals.userId),
+
+      // All future scheduled reviews for the buddee set — we'll pick the
+      // earliest per buddee in memory below.
+      db
+        .select({
+          userId: reviewSchedules.userId,
+          scheduledDate: reviewSchedules.scheduledDate,
+        })
+        .from(reviewSchedules)
+        .where(
+          and(
+            inArray(reviewSchedules.userId, buddeeIds),
+            eq(reviewSchedules.status, "scheduled"),
+            gte(reviewSchedules.scheduledDate, todayIso),
+          ),
+        )
+        .orderBy(reviewSchedules.scheduledDate),
+    ]);
+
+    // Build lookup maps keyed by buddee id
+    const unpublishedByBuddee = new Map<string, number>(
+      unpublishedRows.map((r) => [r.revieweeId, r.count]),
+    );
+    const publishedByBuddee = new Map<string, number>(
+      publishedRows.map((r) => [r.revieweeId, r.count]),
+    );
+    const activeGoalsByBuddee = new Map<string, number>(
+      activeGoalsRows.map((r) => [r.userId, r.count]),
+    );
+    // The rows are already sorted ASC by scheduledDate, so the first entry we
+    // see for each buddee is their earliest upcoming review.
+    const nextReviewByBuddee = new Map<string, string>();
+    for (const row of upcomingReviewRows) {
+      if (!row.scheduledDate) continue;
+      if (!nextReviewByBuddee.has(row.userId)) {
+        nextReviewByBuddee.set(row.userId, row.scheduledDate);
+      }
+    }
+
     let totalFeedbackToPublish = 0;
 
-    const buddeesSummary = await Promise.all(
-      buddees.map(async (buddee) => {
-        // Unpublished feedback for this buddee
-        const [unpublished] = await db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(feedback)
-          .where(
-            and(
-              eq(feedback.revieweeId, buddee.id),
-              eq(feedback.published, false),
-            ),
-          );
+    const buddeesSummary = buddees.map((buddee) => {
+      const feedbackToPublish = unpublishedByBuddee.get(buddee.id) ?? 0;
+      const feedbackReceived = publishedByBuddee.get(buddee.id) ?? 0;
+      const activeGoals = activeGoalsByBuddee.get(buddee.id) ?? 0;
 
-        // Published feedback received (total)
-        const [published] = await db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(feedback)
-          .where(
-            and(
-              eq(feedback.revieweeId, buddee.id),
-              eq(feedback.published, true),
-            ),
-          );
+      totalFeedbackToPublish += feedbackToPublish;
 
-        // Active goals count
-        const [goalsCount] = await db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(goals)
-          .where(
-            and(eq(goals.userId, buddee.id), eq(goals.status, "active")),
-          );
+      const scheduledDate = nextReviewByBuddee.get(buddee.id) ?? null;
+      let nextReviewDate: string | null = null;
+      let nextReviewDays: number | null = null;
+      if (scheduledDate) {
+        nextReviewDate = scheduledDate;
+        nextReviewDays = Math.ceil(
+          (new Date(scheduledDate).getTime() - now.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+      }
 
-        // Next scheduled review
-        const nextReview = await db
-          .select({ scheduledDate: reviewSchedules.scheduledDate })
-          .from(reviewSchedules)
-          .where(
-            and(
-              eq(reviewSchedules.userId, buddee.id),
-              eq(reviewSchedules.status, "scheduled"),
-              gte(reviewSchedules.scheduledDate, now.toISOString().split("T")[0]),
-            ),
-          )
-          .orderBy(reviewSchedules.scheduledDate)
-          .limit(1);
+      // Determine status
+      let status: "on_track" | "needs_attention" | "review_soon" = "on_track";
+      if (nextReviewDays !== null && nextReviewDays <= 14) {
+        status = "review_soon";
+      } else if (feedbackReceived === 0) {
+        status = "needs_attention";
+      }
 
-        const feedbackToPublish = unpublished.count;
-        totalFeedbackToPublish += feedbackToPublish;
-
-        let nextReviewDate: string | null = null;
-        let nextReviewDays: number | null = null;
-        if (nextReview.length > 0 && nextReview[0].scheduledDate) {
-          const reviewDate = new Date(nextReview[0].scheduledDate);
-          nextReviewDate = nextReview[0].scheduledDate;
-          nextReviewDays = Math.ceil(
-            (reviewDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-          );
-        }
-
-        // Determine status
-        let status: "on_track" | "needs_attention" | "review_soon" = "on_track";
-        if (nextReviewDays !== null && nextReviewDays <= 14) {
-          status = "review_soon";
-        } else if (published.count === 0) {
-          status = "needs_attention";
-        }
-
-        return {
-          id: buddee.id,
-          name: buddee.name,
-          preferredName: buddee.preferredName,
-          avatarUrl: buddee.avatarUrl,
-          roleType: buddee.roleType,
-          feedbackToPublish,
-          feedbackReceived: published.count,
-          activeGoals: goalsCount.count,
-          nextReviewDate,
-          nextReviewDays,
-          status,
-        };
-      }),
-    );
+      return {
+        id: buddee.id,
+        name: buddee.name,
+        preferredName: buddee.preferredName,
+        avatarUrl: buddee.avatarUrl,
+        roleType: buddee.roleType,
+        feedbackToPublish,
+        feedbackReceived,
+        activeGoals,
+        nextReviewDate,
+        nextReviewDays,
+        status,
+      };
+    });
 
     return validateResponse(
       { buddees: buddeesSummary, totalFeedbackToPublish },

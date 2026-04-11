@@ -1,8 +1,9 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
-import { eq, and, gte, lt, desc, sql } from "drizzle-orm";
+import { eq, and, gte, lt, isNotNull } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
+import { computeStreak } from "../../utils/community-scoring";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -128,36 +129,22 @@ export default defineEventHandler(async (event) => {
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    // Calculate feedback streak (consecutive ISO weeks with at least 1 feedback given)
-    // Single query: fetch all distinct ISO weeks with feedback, then count consecutive in JS
-    let feedbackStreak = 0;
-
+    // Calculate feedback streak using the persisted weekYear column and the
+    // shared computeStreak helper (handles ISO year boundaries correctly).
     const weekRows = await db
-      .select({ weekYear: sql<string>`to_char(${feedback.createdAt}, 'IYYY-"W"IW')` })
+      .selectDistinct({ weekYear: feedback.weekYear })
       .from(feedback)
-      .where(eq(feedback.reviewerId, session.user.id))
-      .groupBy(sql`to_char(${feedback.createdAt}, 'IYYY-"W"IW')`);
+      .where(
+        and(
+          eq(feedback.reviewerId, session.user.id),
+          isNotNull(feedback.weekYear),
+        ),
+      );
 
-    if (weekRows.length > 0) {
-      const weekSet = new Set(weekRows.map(r => r.weekYear));
-
-      // Helper: compute ISO week string for a given date
-      function toISOWeek(date: Date): string {
-        const d = new Date(date);
-        d.setHours(0, 0, 0, 0);
-        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-        const yearStart = new Date(d.getFullYear(), 0, 1);
-        const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-        return `${d.getFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
-      }
-
-      // Walk backwards from current week, 7 days at a time
-      const cursor = new Date(now);
-      while (weekSet.has(toISOWeek(cursor))) {
-        feedbackStreak++;
-        cursor.setDate(cursor.getDate() - 7);
-      }
-    }
+    const weekYears = weekRows
+      .map((r) => r.weekYear)
+      .filter((w): w is string => w !== null);
+    const feedbackStreak = computeStreak(weekYears);
 
     return validateResponse(
       {
