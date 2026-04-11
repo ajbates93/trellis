@@ -40,7 +40,7 @@
     <div class="flex gap-2">
       <NuxtLink
         v-if="buddee.feedbackToPublish > 0"
-        to="/buddies/feedback"
+        :to="`/buddies/feedback?buddy=${buddee.id}`"
         class="flex-1 inline-flex items-center justify-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-purple-600 hover:bg-purple-500 text-white transition-colors"
       >
         Review & publish
