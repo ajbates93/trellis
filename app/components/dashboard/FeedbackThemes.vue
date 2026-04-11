@@ -45,14 +45,14 @@
       </div>
 
       <!-- Theme tags -->
-      <div v-if="themes.length > 0" class="flex flex-wrap gap-1.5">
+      <div v-if="themeLabels.length > 0" class="flex flex-wrap gap-1.5">
         <span
-          v-for="(theme, i) in themes"
+          v-for="(label, i) in themeLabels"
           :key="i"
           class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border"
           :class="themeClasses[i % themeClasses.length]"
         >
-          {{ theme }}
+          {{ label }}
         </span>
       </div>
     </template>
@@ -69,10 +69,22 @@ interface SentimentData {
 interface Props {
   hasAnalysis: boolean
   sentiment: SentimentData | null
-  themes: string[]
+  themes: unknown[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const themeLabels = computed(() => {
+  return props.themes
+    .map((t) => {
+      if (typeof t === 'string') return t
+      if (t && typeof t === 'object' && 'theme' in t && typeof (t as { theme: unknown }).theme === 'string') {
+        return (t as { theme: string }).theme
+      }
+      return null
+    })
+    .filter((label): label is string => typeof label === 'string' && label.length > 0)
+})
 
 const themeClasses = [
   'bg-teal-900/20 text-teal-400 border-teal-500/20',

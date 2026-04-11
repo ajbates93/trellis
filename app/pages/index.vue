@@ -35,13 +35,13 @@
             <OnboardingWidget :is-static="true" />
           </div>
 
-          <!-- NEW: Primary Row: Review Countdown + Activity Feed -->
+          <!-- NEW: Primary Row: Review Countdown (or empty state) + Activity Feed -->
           <div
-            v-if="daysUntilReview !== null"
             class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-item"
             :style="{ '--delay': '250ms' }"
           >
             <DashboardReviewCountdown
+              v-if="daysUntilReview !== null"
               :days-until-review="daysUntilReview"
               :review-date="nextReviewDate"
               :buddy-name="nextReviewBuddyName"
@@ -49,15 +49,21 @@
               :goals="allGoals"
               :achievements-count="achievementsCount"
             />
-            <DashboardActivityFeed :activities="activities" />
-          </div>
-
-          <!-- NEW: If no review, Activity Feed full width -->
-          <div
-            v-else
-            class="animate-item"
-            :style="{ '--delay': '250ms' }"
-          >
+            <UCard v-else class="bg-gray-900/50 border-gray-800 flex items-center justify-center">
+              <div class="text-center py-6">
+                <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800/60 flex items-center justify-center">
+                  <UIcon name="i-heroicons-calendar-days" class="text-gray-500 text-xl" />
+                </div>
+                <p class="text-sm font-medium text-gray-300 mb-1">No review scheduled</p>
+                <p class="text-xs text-gray-500 mb-4">Your next review hasn't been booked yet.</p>
+                <NuxtLink
+                  to="/reviews"
+                  class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-teal-900/20 text-teal-400 border border-teal-500/20 hover:bg-teal-900/30 transition-colors"
+                >
+                  View reviews &rarr;
+                </NuxtLink>
+              </div>
+            </UCard>
             <DashboardActivityFeed :activities="activities" />
           </div>
 
