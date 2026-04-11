@@ -6,7 +6,7 @@ import {
 } from '../../__tests__/helpers/mock-event'
 import { buildUser, buildFeedback, buildReviewSchedule } from '../../__tests__/helpers/factories'
 
-const { mockDb, mockSelect } = createMockDb()
+const { mockDb, mockSelect, mockSelectDistinct } = createMockDb()
 
 vi.mock('../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../utils/validation', () => ({
@@ -60,6 +60,8 @@ describe('GET /api/dashboard/stats', () => {
     mockSelect(feedbackReceivedLastWeek)
     // 6. Upcoming reviews
     mockSelect(upcomingReviews)
+    // 7. Feedback streak week rows (selectDistinct)
+    mockSelectDistinct([])
 
     const event = createAuthenticatedEvent()
     const result = await handler(event)
@@ -68,10 +70,14 @@ describe('GET /api/dashboard/stats', () => {
       feedbackGiven: 1,
       feedbackReceived: 1,
       daysUntilReview: null,
+      feedbackStreak: 0,
     })
     expect(typeof result.feedbackGivenTrend).toBe('number')
     expect(typeof result.feedbackReceivedTrend).toBe('number')
+    expect(typeof result.feedbackStreak).toBe('number')
+    expect(result.feedbackStreak).toBeGreaterThanOrEqual(0)
     expect(mockDb.select).toHaveBeenCalledTimes(6)
+    expect(mockDb.selectDistinct).toHaveBeenCalledTimes(1)
   })
 
   it('calculates daysUntilReview when an upcoming review exists', async () => {
@@ -94,6 +100,7 @@ describe('GET /api/dashboard/stats', () => {
     mockSelect([])
     mockSelect([])
     mockSelect([review])
+    mockSelectDistinct([])
 
     const event = createAuthenticatedEvent()
     const result = await handler(event)
@@ -112,12 +119,36 @@ describe('GET /api/dashboard/stats', () => {
     mockSelect([])
     mockSelect([])
     mockSelect([])
+    mockSelectDistinct([])
 
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
     expect(result.feedbackGiven).toBe(2)
     expect(result.feedbackGivenTrend).toBe(100)
+  })
+
+  it('computes feedbackStreak from persisted weekYear rows, including an ISO year boundary', async () => {
+    const user = buildUser({ id: 'user-1' })
+
+    mockSelect([user])
+    mockSelect([])
+    mockSelect([])
+    mockSelect([])
+    mockSelect([])
+    mockSelect([])
+    // Three consecutive ISO weeks spanning the 2024 → 2025 boundary.
+    // computeStreak sorts/dedupes internally, so order here doesn't matter.
+    mockSelectDistinct([
+      { weekYear: '2024-W52' },
+      { weekYear: '2025-W01' },
+      { weekYear: '2025-W02' },
+    ])
+
+    const event = createAuthenticatedEvent()
+    const result = await handler(event)
+
+    expect(result.feedbackStreak).toBe(3)
   })
 
   it('returns 500 on database error', async () => {

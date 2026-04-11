@@ -1,8 +1,9 @@
 import { db } from "../../database/connection";
 import { feedback, users, reviewSchedules } from "../../database/schema";
-import { eq, and, gte, lt, desc } from "drizzle-orm";
+import { eq, and, gte, lt, isNotNull } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
+import { computeStreak } from "../../utils/community-scoring";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -128,6 +129,23 @@ export default defineEventHandler(async (event) => {
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
+    // Calculate feedback streak using the persisted weekYear column and the
+    // shared computeStreak helper (handles ISO year boundaries correctly).
+    const weekRows = await db
+      .selectDistinct({ weekYear: feedback.weekYear })
+      .from(feedback)
+      .where(
+        and(
+          eq(feedback.reviewerId, session.user.id),
+          isNotNull(feedback.weekYear),
+        ),
+      );
+
+    const weekYears = weekRows
+      .map((r) => r.weekYear)
+      .filter((w): w is string => w !== null);
+    const feedbackStreak = computeStreak(weekYears);
+
     return validateResponse(
       {
         feedbackGiven: feedbackGivenCount,
@@ -135,6 +153,7 @@ export default defineEventHandler(async (event) => {
         feedbackReceived: feedbackReceivedCount,
         feedbackReceivedTrend,
         daysUntilReview,
+        feedbackStreak,
       },
       apiSchemas.GetDashboardStatsResponseSchema
     );

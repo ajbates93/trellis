@@ -2,89 +2,119 @@
   <UDashboardPanel id="home">
     <template #body>
       <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2 max-w-4xl mx-auto">
-        <!-- Staggered animation container -->
-        <div ref="container" class="space-y-8">
-          <!-- Welcome header -->
-          <div class="text-center animate-item" :style="{ '--delay': '0ms' }">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-              Welcome back,
-              {{ user?.preferredName || user?.name?.split(" ")[0] || "there" }}
-            </h1>
-            <p class="mt-2 text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5">
-              <TrellisLogo :size="18" />
-              Let's keep growing.
-            </p>
+        <div ref="container" class="space-y-6">
+          <!-- Header -->
+          <div class="animate-item" :style="{ '--delay': '0ms' }">
+            <DashboardHeader
+              :user-name="user?.preferredName || user?.name?.split(' ')[0] || null"
+              :days-until-review="daysUntilReview"
+              :buddy-name="nextReviewBuddyName"
+              :unread-count="unreadCount"
+            />
           </div>
 
-          <!-- Quick Stats -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-item" :style="{ '--delay': '100ms' }">
-            <QuickStatCard
-:value="stats.feedbackThisWeek" label="Feedback This Week"
-              icon="i-heroicons-chat-bubble-left-right" color="teal" />
-            <QuickStatCard :value="stats.activeGoals" label="Active Goals" icon="i-heroicons-flag" color="purple" />
-            <QuickStatCard
-:value="stats.daysUntilReview" :label="stats.daysUntilReview !== null ? 'Days to Review' : 'Next Review'
-              " icon="i-heroicons-calendar-days" color="amber" />
+          <!-- Quick Actions -->
+          <div class="animate-item" :style="{ '--delay': '100ms' }">
+            <DashboardQuickActions />
           </div>
 
-          <!-- Getting Started Widget -->
-          <div v-if="showOnboarding" class="animate-item flex justify-center" :style="{ '--delay': '150ms' }">
+          <!-- Mini Stats -->
+          <div class="animate-item" :style="{ '--delay': '150ms' }">
+            <DashboardMiniStats
+              :unread-count="unreadCount"
+              :incoming-count="incomingCount"
+              :has-buddies="hasBuddies"
+              :active-goals-count="activeGoalsCount"
+              :total-goals-count="allGoals.length"
+              :days-until-review="daysUntilReview"
+            />
+          </div>
+
+          <!-- Onboarding Widget (existing, kept for new users) -->
+          <div v-if="showOnboarding" class="animate-item flex justify-center" :style="{ '--delay': '200ms' }">
             <OnboardingWidget :is-static="true" />
           </div>
 
-          <!-- Command Palette Trigger -->
-          <div class="animate-item hidden lg:block" :style="{ '--delay': '200ms' }">
-            <button
-              class="w-full flex items-center gap-3 px-4 py-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 group"
-              @click="openCommandPalette">
-              <UIcon name="i-heroicons-magnifying-glass" class="text-xl text-gray-400 dark:text-gray-500" />
-              <span class="flex-1 text-left text-gray-500 dark:text-gray-400">
-                Search actions, pages, or type a command...
-              </span>
-              <div class="hidden sm:flex items-center gap-1">
-                <UKbd>{{ metaKey }}</UKbd>
-                <UKbd>K</UKbd>
+          <!-- NEW: Primary Row: Review Countdown (or empty state) + Activity Feed -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-item"
+            :style="{ '--delay': '250ms' }"
+          >
+            <UCard v-if="statsPending" class="bg-gray-900/50 border-gray-800">
+              <div class="animate-pulse space-y-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-5 h-5 rounded bg-gray-800" />
+                  <div class="h-3 w-24 bg-gray-800 rounded" />
+                </div>
+                <div class="h-12 w-20 bg-gray-800 rounded" />
+                <div class="h-3 w-40 bg-gray-800 rounded" />
+                <div class="space-y-2 pt-2">
+                  <div class="h-8 bg-gray-800 rounded" />
+                  <div class="h-8 bg-gray-800 rounded" />
+                  <div class="h-8 bg-gray-800 rounded" />
+                </div>
               </div>
-            </button>
+            </UCard>
+            <DashboardReviewCountdown
+              v-else-if="daysUntilReview !== null"
+              :days-until-review="daysUntilReview"
+              :review-date="nextReviewDate"
+              :buddy-name="nextReviewBuddyName"
+              :unread-count="unreadCount"
+              :goals="allGoals"
+              :achievements-count="achievementsCount"
+            />
+            <UCard v-else class="bg-gray-900/50 border-gray-800 flex items-center justify-center">
+              <div class="text-center py-6">
+                <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800/60 flex items-center justify-center">
+                  <UIcon name="i-heroicons-calendar-days" class="text-gray-500 text-xl" />
+                </div>
+                <p class="text-sm font-medium text-gray-300 mb-1">No review scheduled</p>
+                <p class="text-xs text-gray-500 mb-4">Your next review hasn't been booked yet.</p>
+                <NuxtLink
+                  to="/reviews"
+                  class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-teal-900/20 text-teal-400 border border-teal-500/20 hover:bg-teal-900/30 transition-colors"
+                >
+                  View reviews &rarr;
+                </NuxtLink>
+              </div>
+            </UCard>
+            <DashboardActivityFeed :activities="activities" :pending="activityPending" />
           </div>
 
-          <!-- Contextual Suggestions -->
-          <div v-if="suggestions.length > 0" class="animate-item" :style="{ '--delay': '300ms' }">
-            <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-              Suggested for you
-            </h2>
-            <div class="flex flex-wrap gap-2">
-              <NuxtLink
-v-for="suggestion in suggestions" :key="suggestion.to" :to="suggestion.to"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 group">
-                <UIcon :name="suggestion.icon" class="text-gray-500 dark:text-gray-400 group-hover:text-primary-500" />
-                <span
-                  class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                  {{ suggestion.label }}
-                </span>
-                <UBadge v-if="suggestion.badge" :label="suggestion.badge" color="primary" variant="subtle" size="xs" />
-              </NuxtLink>
+          <!-- NEW: Secondary Row: Streak Badge (narrow) + Feedback Pulse (wide) -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-item"
+            :style="{ '--delay': '300ms' }"
+          >
+            <DashboardStreakBadge :streak="feedbackStreak" />
+            <div class="md:col-span-2">
+              <DashboardFeedbackPulse :weeks="pulseWeeks" :pending="pulsePending" />
             </div>
           </div>
 
-          <!-- Recent Activity (placeholder for future) -->
+          <!-- NEW: Tertiary Row: Goals Progress (was previously in primary row) -->
+          <div class="animate-item" :style="{ '--delay': '350ms' }">
+            <DashboardGoalProgress :goals="allGoals" :pending="goalsPending" />
+          </div>
+
+          <!-- Feedback Themes (full width) -->
           <div class="animate-item" :style="{ '--delay': '400ms' }">
-            <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-              Quick Links
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <NuxtLink
-v-for="link in quickLinks" :key="link.to" :to="link.to"
-                class="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group">
-                <UIcon
-:name="link.icon"
-                  class="text-2xl text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors" />
-                <span
-                  class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 text-center">
-                  {{ link.label }}
-                </span>
-              </NuxtLink>
-            </div>
+            <DashboardFeedbackThemes
+              :has-analysis="insightsHasAnalysis"
+              :sentiment="insightsSentiment"
+              :themes="insightsThemes"
+              :pending="insightsPending"
+            />
+          </div>
+
+          <!-- Buddy Section (conditional) -->
+          <div v-if="hasBuddies" class="animate-item" :style="{ '--delay': '450ms' }">
+            <DashboardBuddySection
+              :buddees="buddySummary"
+              :total-feedback-to-publish="totalFeedbackToPublish"
+              :pending="buddySummaryPending"
+            />
           </div>
         </div>
       </div>
@@ -94,128 +124,67 @@ v-for="link in quickLinks" :key="link.to" :to="link.to"
 
 <script setup lang="ts">
 definePageMeta({
-  layout: "default",
-});
+  layout: 'default',
+})
 
 useHead({
-  title: "Dashboard",
-});
+  title: 'Dashboard',
+})
 
-const { user } = useAuth();
-const { hasBuddies } = useBuddies();
-const { unreadCount } = useUnreadCount();
-const { incomingCount } = useIncomingFeedbackCount();
-const { shouldShow: showOnboarding } = useOnboarding();
+// Composables
+const { user } = useAuth()
+const { hasBuddies } = useBuddies()
+const { unreadCount } = useUnreadCount()
+const { incomingCount } = useIncomingFeedbackCount()
+const { shouldShow: showOnboarding } = useOnboarding()
 
-// Detect OS for keyboard shortcut display
-const metaKey = computed(() => {
-  if (import.meta.client) {
-    return navigator.platform.includes("Mac") ? "⌘" : "Ctrl";
-  }
-  return "⌘";
-});
+// API data — all fetches are lazy so SSR returns immediately with the page shell
+// and skeletons render while the data loads client-side
+const { data: statsData, pending: statsPending } = useFetch('/api/dashboard/stats', { lazy: true, default: () => null })
+const { data: goalsData, pending: goalsPending } = useFetch('/api/goals', { lazy: true, default: () => null })
+const { data: reviewsData } = useFetch('/api/reviews/upcoming', { lazy: true, default: () => null })
+const { data: achievementsData } = useFetch('/api/achievements', { lazy: true, default: () => null })
+const { data: activityData, pending: activityPending } = useFetch('/api/dashboard/activity', { lazy: true, default: () => null })
+const { data: pulseData, pending: pulsePending } = useFetch('/api/dashboard/feedback-pulse', { lazy: true, default: () => null })
+const { data: buddySummaryData, pending: buddySummaryPending } = useFetch('/api/buddies/dashboard-summary', { lazy: true, default: () => null })
+const { data: insightsData, pending: insightsPending } = useFetch('/api/insights/user-summary', { lazy: true, default: () => null })
 
-// Open command palette by emitting a custom event
-const openCommandPalette = () => {
-  // Trigger keyboard shortcut programmatically
-  const event = new KeyboardEvent("keydown", {
-    key: "k",
-    metaKey: true,
-    bubbles: true,
-  });
-  document.dispatchEvent(event);
-};
+// Computed values
+const daysUntilReview = computed(() => statsData.value?.daysUntilReview ?? null)
 
-// Fetch goals data
-const { data: goalsData } = await useFetch("/api/goals");
-const goals = computed(() => goalsData.value?.goals || []);
+const allGoals = computed(() => goalsData.value?.goals || [])
 
-// Calculate active goals count
 const activeGoalsCount = computed(
-  () => goals.value.filter((g) => g.status === "active").length,
-);
+  () => allGoals.value.filter((g: { status: string | null }) => g.status === 'active').length,
+)
 
-// Fetch dashboard stats
-const { data: dashboardStats } = await useFetch("/api/dashboard/stats");
+const nextReview = computed(() => {
+  const reviews = reviewsData.value?.reviews
+  if (!reviews || reviews.length === 0) return null
+  return reviews[0]
+})
 
-// Combined stats for quick stat cards
-const stats = computed(() => {
-  const given = dashboardStats.value?.feedbackGiven || 0;
-  const received = dashboardStats.value?.feedbackReceived || 0;
+const nextReviewBuddyName = computed(() => nextReview.value?.buddy?.name || null)
 
-  return {
-    feedbackThisWeek: given + received,
-    activeGoals: activeGoalsCount.value,
-    daysUntilReview: dashboardStats.value?.daysUntilReview ?? null,
-  };
-});
+const nextReviewDate = computed(() => nextReview.value?.scheduledDate || null)
 
-// Contextual suggestions based on user state
-const suggestions = computed(() => {
-  const items: Array<{
-    label: string;
-    icon: string;
-    to: string;
-    badge?: string;
-    priority: number;
-  }> = [];
+const achievementsCount = computed(() => achievementsData.value?.achievements?.length || 0)
 
-  // If there's incoming feedback to review (buddy task)
-  if (hasBuddies.value && incomingCount.value > 0) {
-    items.push({
-      label: "Review incoming feedback",
-      icon: "i-heroicons-inbox-arrow-down",
-      to: "/buddies/feedback",
-      badge: `${incomingCount.value} pending`,
-      priority: 1,
-    });
-  }
+const feedbackStreak = computed(() => statsData.value?.feedbackStreak ?? 0)
 
-  // If there's unread feedback
-  if (unreadCount.value > 0) {
-    items.push({
-      label: "Read new feedback",
-      icon: "i-heroicons-chat-bubble-left-right",
-      to: "/feedback/inbox",
-      badge: `${unreadCount.value} unread`,
-      priority: 2,
-    });
-  }
+const activities = computed(() => activityData.value?.activities || [])
 
-  // Always suggest submitting feedback
-  items.push({
-    label: "Submit feedback",
-    icon: "i-heroicons-paper-airplane",
-    to: "/feedback/give",
-    priority: 3,
-  });
+const pulseWeeks = computed(() => pulseData.value?.weeks || [])
 
-  // If review is coming up soon (within 14 days)
-  if (stats.value.daysUntilReview !== null && stats.value.daysUntilReview <= 14) {
-    items.push({
-      label: "Prepare for your review",
-      icon: "i-heroicons-calendar-days",
-      to: "/reviews",
-      badge: `${stats.value.daysUntilReview} days`,
-      priority: 4,
-    });
-  }
+const buddySummary = computed(() => buddySummaryData.value?.buddees || [])
+const totalFeedbackToPublish = computed(() => buddySummaryData.value?.totalFeedbackToPublish ?? 0)
 
-  // Sort by priority and limit to 4
-  return items.sort((a, b) => a.priority - b.priority).slice(0, 4);
-});
-
-// Quick links grid
-const quickLinks = computed(() => {
-  const links = [
-    { label: "Insights", icon: "i-heroicons-chart-bar", to: "/insights" },
-    { label: "Goals", icon: "i-heroicons-flag", to: "/goals" },
-    { label: "Brag Bucket", icon: "i-heroicons-star", to: "/brag-bucket" },
-    { label: "Reviews", icon: "i-heroicons-calendar-days", to: "/reviews" },
-  ];
-
-  return links;
-});
+const insightsHasAnalysis = computed(() => insightsData.value?.hasAnalysis === true)
+const insightsSentiment = computed(() => insightsData.value?.data?.sentimentData ?? null)
+const insightsThemes = computed(() => {
+  const themes = insightsData.value?.data?.themes
+  return Array.isArray(themes) ? themes : []
+})
 </script>
 
 <style scoped>

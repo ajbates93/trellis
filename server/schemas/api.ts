@@ -853,6 +853,56 @@ export const GetDashboardStatsResponseSchema = z.object({
   feedbackReceived: z.int().nonnegative(),
   feedbackReceivedTrend: z.int(),
   daysUntilReview: z.int().nonnegative().nullable(),
+  feedbackStreak: z.int().nonnegative(),
+});
+
+export const GetDashboardActivityResponseSchema = z.object({
+  activities: z.array(
+    z.object({
+      id: z.string(),
+      type: z.enum([
+        "feedback_received",
+        "feedback_given",
+        "goal_milestone",
+        "brag_bucket",
+        "buddy_feedback",
+        "review_completed",
+      ]),
+      description: z.string(),
+      href: z.string().nullable(),
+      isRead: z.boolean().nullable(),
+      createdAt: z.string(),
+    }),
+  ),
+});
+
+export const GetFeedbackPulseResponseSchema = z.object({
+  weeks: z.array(
+    z.object({
+      week: z.string(),
+      given: z.int().nonnegative(),
+      received: z.int().nonnegative(),
+    }),
+  ),
+});
+
+export const GetBuddyDashboardSummaryResponseSchema = z.object({
+  buddees: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      preferredName: z.string().nullable(),
+      avatarUrl: z.string().nullable(),
+      roleType: z.string().nullable(),
+      feedbackToPublish: z.int().nonnegative(),
+      feedbackReceived: z.int().nonnegative(),
+      activeGoals: z.int().nonnegative(),
+      nextReviewDate: z.string().nullable(),
+      nextReviewDays: z.int().nullable(),
+      status: z.enum(["on_track", "needs_attention", "review_soon"]),
+    }),
+  ),
+  totalFeedbackToPublish: z.int().nonnegative(),
 });
 
 // ===== FEEDBACK PROMPTS RESPONSE SCHEMAS =====

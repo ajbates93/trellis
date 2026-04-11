@@ -84,6 +84,11 @@ export type GetBuddyCheckinsResponse = z.infer<typeof apiSchemas.GetBuddyCheckin
 export type GetBuddyCheckinsArrayResponse = z.infer<typeof apiSchemas.GetBuddyCheckinsArrayResponseSchema>;
 export type CreateBuddyCheckinResponse = z.infer<typeof apiSchemas.CreateBuddyCheckinResponseSchema>;
 
+export type GetDashboardStatsResponse = z.infer<typeof apiSchemas.GetDashboardStatsResponseSchema>;
+export type GetDashboardActivityResponse = z.infer<typeof apiSchemas.GetDashboardActivityResponseSchema>;
+export type GetFeedbackPulseResponse = z.infer<typeof apiSchemas.GetFeedbackPulseResponseSchema>;
+export type GetBuddyDashboardSummaryResponse = z.infer<typeof apiSchemas.GetBuddyDashboardSummaryResponseSchema>;
+
 export type SuccessResponse = z.infer<typeof apiSchemas.SuccessResponseSchema>;
 export type ErrorResponse = z.infer<typeof apiSchemas.ErrorResponseSchema>;
 
