@@ -860,9 +860,16 @@ export const GetDashboardActivityResponseSchema = z.object({
   activities: z.array(
     z.object({
       id: z.string(),
-      type: z.enum(["feedback_received", "feedback_given"]),
+      type: z.enum([
+        "feedback_received",
+        "feedback_given",
+        "goal_milestone",
+        "brag_bucket",
+        "buddy_feedback",
+        "review_completed",
+      ]),
       description: z.string(),
-      personName: z.string(),
+      href: z.string().nullable(),
       isRead: z.boolean().nullable(),
       createdAt: z.string(),
     }),
