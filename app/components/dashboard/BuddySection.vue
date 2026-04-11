@@ -24,7 +24,9 @@
     >
       <UIcon name="i-heroicons-exclamation-circle" class="text-purple-400 text-lg flex-shrink-0 mt-0.5" />
       <div class="text-sm text-purple-300 space-x-1">
-        <span v-for="(msg, i) in nudgeMessages" :key="i" v-html="msg" />
+        <span v-for="(msg, i) in nudgeMessages" :key="i">
+          {{ msg.prefix }}<strong>{{ msg.bold }}</strong>{{ msg.suffix }}
+        </span>
       </div>
     </div>
 
@@ -70,21 +72,31 @@ const props = defineProps<Props>()
 
 const displayedBuddees = computed(() => props.buddees.slice(0, 3))
 
-const nudgeMessages = computed(() => {
-  const messages: string[] = []
+interface NudgeMessage {
+  prefix: string
+  bold: string
+  suffix: string
+}
+
+const nudgeMessages = computed<NudgeMessage[]>(() => {
+  const messages: NudgeMessage[] = []
 
   if (props.totalFeedbackToPublish > 0) {
-    messages.push(
-      `You have <strong>${props.totalFeedbackToPublish} feedback</strong> waiting to be published.`,
-    )
+    messages.push({
+      prefix: 'You have ',
+      bold: `${props.totalFeedbackToPublish} feedback`,
+      suffix: ' waiting to be published.',
+    })
   }
 
   const reviewSoonBuddees = props.buddees.filter(b => b.status === 'review_soon')
   for (const b of reviewSoonBuddees) {
     const name = b.preferredName || b.name
-    messages.push(
-      `<strong>${name}</strong>'s review is in ${b.nextReviewDays} days.`,
-    )
+    messages.push({
+      prefix: '',
+      bold: name,
+      suffix: `'s review is in ${b.nextReviewDays} days.`,
+    })
   }
 
   return messages
