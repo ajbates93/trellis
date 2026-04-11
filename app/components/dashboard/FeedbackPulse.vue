@@ -54,15 +54,18 @@
     </div>
 
     <!-- Legend -->
-    <div v-if="weeks.length > 0" class="flex items-center gap-4 mt-3 pt-3 border-t border-gray-800">
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-teal-400" />
-        <span class="text-[11px] text-gray-400">Given</span>
+    <div v-if="weeks.length > 0" class="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-gray-800">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-teal-400" />
+          <span class="text-[11px] text-gray-400">Given</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-purple-400" />
+          <span class="text-[11px] text-gray-400">Received</span>
+        </div>
       </div>
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-purple-400" />
-        <span class="text-[11px] text-gray-400">Received</span>
-      </div>
+      <span class="text-[11px] text-gray-500">x-axis: week commencing (dd/mm)</span>
     </div>
   </UCard>
 </template>
@@ -70,6 +73,7 @@
 <script setup lang="ts">
 import { VisXYContainer, VisLine, VisArea, VisAxis, VisTooltip, VisCrosshair } from "@unovis/vue";
 import { useElementSize } from "@vueuse/core";
+import { format } from "date-fns";
 
 interface WeekData {
   week: string
@@ -106,18 +110,35 @@ const x = (_: ChartDatum, i: number) => i
 const yGiven = (d: ChartDatum) => d.given
 const yReceived = (d: ChartDatum) => d.received
 
+// Convert an ISO week string like "2026-W14" to the Monday of that week (UTC).
+function isoWeekMonday(weekStr: string): Date | null {
+  const match = weekStr.match(/^(\d{4})-W(\d{1,2})$/)
+  if (!match) return null
+  const year = Number(match[1])
+  const week = Number(match[2])
+  // ISO week 1 is the week containing Jan 4.
+  const jan4 = new Date(Date.UTC(year, 0, 4))
+  const jan4Day = jan4.getUTCDay() || 7 // Sun=0 → treat as 7
+  const week1Monday = new Date(jan4)
+  week1Monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1)
+  const target = new Date(week1Monday)
+  target.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7)
+  return target
+}
+
 const formatWeekLabel = (i: number) => {
   const week = props.weeks[i]?.week
   if (!week) return ""
-  // Show abbreviated: "W01", "W05", etc.
-  const match = week.match(/W(\d+)/)
-  return match ? `W${match[1]}` : week
+  const monday = isoWeekMonday(week)
+  return monday ? format(monday, "dd/MM") : week
 }
 
 const tooltipTemplate = (d: ChartDatum) => {
+  const monday = isoWeekMonday(d.week)
+  const heading = monday ? `w/c ${format(monday, "d MMM yyyy")}` : d.week
   return `
     <div style="padding: 8px; font-size: 12px;">
-      <div style="font-weight: 600; margin-bottom: 4px;">${d.week}</div>
+      <div style="font-weight: 600; margin-bottom: 4px;">${heading}</div>
       <div style="color: #2dd4bf;">Given: ${d.given}</div>
       <div style="color: #a78bfa;">Received: ${d.received}</div>
     </div>

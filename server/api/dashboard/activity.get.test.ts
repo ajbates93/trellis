@@ -148,7 +148,7 @@ describe('GET /api/dashboard/activity', () => {
     expect(result.activities[1].id).toContain('fb-old')
   })
 
-  it('limits result to 15 items by default', async () => {
+  it('limits result to 10 items by default', async () => {
     const many = Array.from({ length: 20 }, (_, i) => ({
       id: `fb-${i}`,
       personName: 'Alex',
@@ -167,7 +167,7 @@ describe('GET /api/dashboard/activity', () => {
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
-    expect(result.activities).toHaveLength(15)
+    expect(result.activities).toHaveLength(10)
   })
 
   it('returns empty activities array when no data', async () => {

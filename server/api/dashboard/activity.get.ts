@@ -11,7 +11,7 @@ import { eq, and, desc, inArray, isNotNull, or } from "drizzle-orm";
 import { validateResponse } from "../../utils/validation";
 import { apiSchemas } from "../../schemas";
 
-const DEFAULT_LIMIT = 15;
+const DEFAULT_LIMIT = 10;
 const PER_SOURCE_LIMIT = 20;
 
 type Activity = {

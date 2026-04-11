@@ -1,17 +1,14 @@
 <template>
   <UCard class="bg-gray-900/50 border-gray-800">
-    <div class="flex justify-between items-center mb-4">
+    <div class="mb-4">
       <h3 class="text-[15px] font-semibold text-white">Recent Activity</h3>
-      <NuxtLink to="/feedback/inbox" class="text-xs text-teal-400 font-medium hover:text-teal-300">
-        View all &rarr;
-      </NuxtLink>
     </div>
 
     <div v-if="activities.length === 0" class="text-sm text-gray-500 py-4 text-center">
       No activity yet. <NuxtLink to="/feedback/give" class="text-teal-400 hover:text-teal-300">Submit your first feedback</NuxtLink> to get started.
     </div>
 
-    <div v-else class="space-y-3">
+    <div v-else class="space-y-3 max-h-[338px] overflow-y-auto -mr-2 pr-2">
       <template v-for="activity in activities" :key="activity.id">
         <NuxtLink
           v-if="activity.href"
