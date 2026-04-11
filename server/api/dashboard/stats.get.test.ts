@@ -60,6 +60,8 @@ describe('GET /api/dashboard/stats', () => {
     mockSelect(feedbackReceivedLastWeek)
     // 6. Upcoming reviews
     mockSelect(upcomingReviews)
+    // 7. Feedback streak week rows
+    mockSelect([])
 
     const event = createAuthenticatedEvent()
     const result = await handler(event)
@@ -71,7 +73,7 @@ describe('GET /api/dashboard/stats', () => {
     })
     expect(typeof result.feedbackGivenTrend).toBe('number')
     expect(typeof result.feedbackReceivedTrend).toBe('number')
-    expect(mockDb.select).toHaveBeenCalledTimes(6)
+    expect(mockDb.select).toHaveBeenCalledTimes(7)
   })
 
   it('calculates daysUntilReview when an upcoming review exists', async () => {
@@ -94,6 +96,7 @@ describe('GET /api/dashboard/stats', () => {
     mockSelect([])
     mockSelect([])
     mockSelect([review])
+    mockSelect([])
 
     const event = createAuthenticatedEvent()
     const result = await handler(event)
@@ -108,6 +111,7 @@ describe('GET /api/dashboard/stats', () => {
     mockSelect([user])
     // Given this week: 2, given last week: 0 → trend should be 100
     mockSelect([buildFeedback(), buildFeedback()])
+    mockSelect([])
     mockSelect([])
     mockSelect([])
     mockSelect([])
