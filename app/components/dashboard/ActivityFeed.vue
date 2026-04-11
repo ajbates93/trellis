@@ -4,7 +4,17 @@
       <h3 class="text-[15px] font-semibold text-white">Recent Activity</h3>
     </div>
 
-    <div v-if="activities.length === 0" class="text-sm text-gray-500 py-4 text-center">
+    <div v-if="pending" class="space-y-3">
+      <div v-for="n in 5" :key="n" class="flex items-start gap-3 animate-pulse">
+        <div class="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full bg-gray-800" />
+        <div class="flex-1 min-w-0 space-y-1.5">
+          <div class="h-3 bg-gray-800 rounded w-3/4" />
+          <div class="h-2 bg-gray-800 rounded w-1/4" />
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="activities.length === 0" class="text-sm text-gray-500 py-4 text-center">
       No activity yet. <NuxtLink to="/feedback/give" class="text-teal-400 hover:text-teal-300">Submit your first feedback</NuxtLink> to get started.
     </div>
 
@@ -76,9 +86,10 @@ interface Activity {
 
 interface Props {
   activities: Activity[]
+  pending?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), { pending: false })
 
 function iconName(type: ActivityType): string {
   switch (type) {

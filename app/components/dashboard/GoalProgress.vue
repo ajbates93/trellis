@@ -7,7 +7,17 @@
       </NuxtLink>
     </div>
 
-    <div v-if="activeGoals.length === 0" class="text-sm text-gray-500 py-4 text-center">
+    <div v-if="pending" class="space-y-3.5 animate-pulse">
+      <div v-for="n in 3" :key="n">
+        <div class="flex justify-between items-center mb-1.5">
+          <div class="h-3 bg-gray-800 rounded w-2/3" />
+          <div class="h-2 bg-gray-800 rounded w-8" />
+        </div>
+        <div class="h-1.5 rounded-full bg-gray-800" />
+      </div>
+    </div>
+
+    <div v-else-if="activeGoals.length === 0" class="text-sm text-gray-500 py-4 text-center">
       No active goals. <NuxtLink to="/goals" class="text-teal-400 hover:text-teal-300">Create one</NuxtLink>
     </div>
 
@@ -41,9 +51,10 @@ interface Goal {
 
 interface Props {
   goals: Goal[]
+  pending?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { pending: false })
 
 const activeGoals = computed(() =>
   props.goals

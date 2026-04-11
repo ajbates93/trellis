@@ -5,7 +5,16 @@
       <UIcon name="i-heroicons-chart-bar" class="text-teal-400 text-lg" />
     </div>
 
-    <div v-if="weeks.length === 0" class="text-sm text-gray-500 py-8 text-center">
+    <div v-if="pending" class="h-48 flex items-end gap-2 px-1 animate-pulse">
+      <div
+        v-for="(h, i) in skeletonHeights"
+        :key="i"
+        class="flex-1 bg-gray-800 rounded-sm"
+        :style="{ height: h + '%' }"
+      />
+    </div>
+
+    <div v-else-if="weeks.length === 0" class="text-sm text-gray-500 py-8 text-center">
       Not enough data yet.
     </div>
 
@@ -83,9 +92,13 @@ interface WeekData {
 
 interface Props {
   weeks: WeekData[]
+  pending?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { pending: false })
+
+// Static heights for skeleton bars so SSR and client match
+const skeletonHeights = [35, 55, 40, 70, 50, 65, 45, 60, 75, 50, 65, 55]
 
 const chartContainer = useTemplateRef<HTMLElement | null>("chartContainer");
 const { width: containerWidth } = useElementSize(chartContainer);

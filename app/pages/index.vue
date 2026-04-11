@@ -40,8 +40,23 @@
             class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-item"
             :style="{ '--delay': '250ms' }"
           >
+            <UCard v-if="statsPending" class="bg-gray-900/50 border-gray-800">
+              <div class="animate-pulse space-y-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-5 h-5 rounded bg-gray-800" />
+                  <div class="h-3 w-24 bg-gray-800 rounded" />
+                </div>
+                <div class="h-12 w-20 bg-gray-800 rounded" />
+                <div class="h-3 w-40 bg-gray-800 rounded" />
+                <div class="space-y-2 pt-2">
+                  <div class="h-8 bg-gray-800 rounded" />
+                  <div class="h-8 bg-gray-800 rounded" />
+                  <div class="h-8 bg-gray-800 rounded" />
+                </div>
+              </div>
+            </UCard>
             <DashboardReviewCountdown
-              v-if="daysUntilReview !== null"
+              v-else-if="daysUntilReview !== null"
               :days-until-review="daysUntilReview"
               :review-date="nextReviewDate"
               :buddy-name="nextReviewBuddyName"
@@ -64,7 +79,7 @@
                 </NuxtLink>
               </div>
             </UCard>
-            <DashboardActivityFeed :activities="activities" />
+            <DashboardActivityFeed :activities="activities" :pending="activityPending" />
           </div>
 
           <!-- NEW: Secondary Row: Streak Badge (narrow) + Feedback Pulse (wide) -->
@@ -74,13 +89,13 @@
           >
             <DashboardStreakBadge :streak="feedbackStreak" />
             <div class="md:col-span-2">
-              <DashboardFeedbackPulse :weeks="pulseWeeks" />
+              <DashboardFeedbackPulse :weeks="pulseWeeks" :pending="pulsePending" />
             </div>
           </div>
 
           <!-- NEW: Tertiary Row: Goals Progress (was previously in primary row) -->
           <div class="animate-item" :style="{ '--delay': '350ms' }">
-            <DashboardGoalProgress :goals="allGoals" />
+            <DashboardGoalProgress :goals="allGoals" :pending="goalsPending" />
           </div>
 
           <!-- Feedback Themes (full width) -->
@@ -89,6 +104,7 @@
               :has-analysis="insightsHasAnalysis"
               :sentiment="insightsSentiment"
               :themes="insightsThemes"
+              :pending="insightsPending"
             />
           </div>
 
@@ -97,6 +113,7 @@
             <DashboardBuddySection
               :buddees="buddySummary"
               :total-feedback-to-publish="totalFeedbackToPublish"
+              :pending="buddySummaryPending"
             />
           </div>
         </div>
@@ -121,15 +138,16 @@ const { unreadCount } = useUnreadCount()
 const { incomingCount } = useIncomingFeedbackCount()
 const { shouldShow: showOnboarding } = useOnboarding()
 
-// API data
-const { data: statsData } = await useFetch('/api/dashboard/stats')
-const { data: goalsData } = await useFetch('/api/goals')
-const { data: reviewsData } = await useFetch('/api/reviews/upcoming')
-const { data: achievementsData } = await useFetch('/api/achievements')
-const { data: activityData } = await useFetch('/api/dashboard/activity')
-const { data: pulseData } = await useFetch('/api/dashboard/feedback-pulse')
-const { data: buddySummaryData } = await useFetch('/api/buddies/dashboard-summary')
-const { data: insightsData } = await useFetch('/api/insights/user-summary')
+// API data — all fetches are lazy so SSR returns immediately with the page shell
+// and skeletons render while the data loads client-side
+const { data: statsData, pending: statsPending } = useFetch('/api/dashboard/stats', { lazy: true, default: () => null })
+const { data: goalsData, pending: goalsPending } = useFetch('/api/goals', { lazy: true, default: () => null })
+const { data: reviewsData } = useFetch('/api/reviews/upcoming', { lazy: true, default: () => null })
+const { data: achievementsData } = useFetch('/api/achievements', { lazy: true, default: () => null })
+const { data: activityData, pending: activityPending } = useFetch('/api/dashboard/activity', { lazy: true, default: () => null })
+const { data: pulseData, pending: pulsePending } = useFetch('/api/dashboard/feedback-pulse', { lazy: true, default: () => null })
+const { data: buddySummaryData, pending: buddySummaryPending } = useFetch('/api/buddies/dashboard-summary', { lazy: true, default: () => null })
+const { data: insightsData, pending: insightsPending } = useFetch('/api/insights/user-summary', { lazy: true, default: () => null })
 
 // Computed values
 const daysUntilReview = computed(() => statsData.value?.daysUntilReview ?? null)
