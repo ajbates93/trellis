@@ -296,7 +296,6 @@ v-for="(error, index) in selectedErrorLog" :key="index" icon="i-heroicons-exclam
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
-  middleware: ["auth", "admin"],
 });
 
 useHead({

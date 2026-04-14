@@ -365,7 +365,6 @@ const { sanitize } = useSanitizeHtml();
 
 definePageMeta({
   layout: "default",
-  middleware: ["auth", "admin"],
 });
 
 useHead({

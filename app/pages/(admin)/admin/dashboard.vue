@@ -88,7 +88,6 @@ v-if="stats" title="Active Users" :value="stats.activeUsers"
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
-  middleware: ["auth", "admin"],
 });
 
 useHead({

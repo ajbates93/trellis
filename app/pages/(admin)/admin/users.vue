@@ -94,7 +94,6 @@ import type { User } from "~/types";
 
 definePageMeta({
   layout: "default",
-  middleware: ["auth", "admin"],
 });
 
 useHead({
