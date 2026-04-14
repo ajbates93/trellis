@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
   // Fetch session directly to avoid race conditions
-  const { data: session } = await useFetch('/api/auth/get-session');
+  const { data: session } = await useApi('/auth/get-session');
 
   // Check if user has admin role
   if (session.value?.user?.role !== 'admin') {

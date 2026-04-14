@@ -153,7 +153,7 @@ async function fetchData() {
   loading.value = true
   error.value = false
   try {
-    const data = await $fetch('/api/community/activity-summary', {
+    const data = await $api('/community/activity-summary', {
       params: { period: selectedPeriod.value },
     })
     if (data) summary.value = data

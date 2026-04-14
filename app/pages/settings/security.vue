@@ -235,7 +235,7 @@ const loadingAccounts = ref(true);
 
 const fetchAccounts = async () => {
   try {
-    const data = await $fetch("/api/auth/accounts");
+    const data = await $api("/auth/accounts");
     accounts.value = data || [];
     console.log("Accounts loaded:", accounts.value);
   } catch (error) {
@@ -340,7 +340,7 @@ const handleAddPassword = async () => {
   addingPassword.value = true;
 
   try {
-    await $fetch("/api/auth/add-password", {
+    await $api("/auth/add-password", {
       method: "POST",
       body: {
         password: addPasswordForm.value.password,

@@ -26,17 +26,17 @@ const selectedBuddy = computed(() => {
 });
 
 // Fetch upcoming reviews for buddy (reactive based on selectedBuddyId)
-const { data: upcomingData, refresh: refreshUpcoming } = useFetch(() =>
+const { data: upcomingData, refresh: refreshUpcoming } = useApi(() =>
   selectedBuddyId.value
-    ? `/api/reviews/upcoming?userId=${selectedBuddyId.value}`
+    ? `/reviews/upcoming?userId=${selectedBuddyId.value}`
     : null,
 );
 const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 
 // Fetch past reviews for buddy (reactive based on selectedBuddyId)
-const { data: pastData, refresh: refreshPast } = useFetch(() =>
+const { data: pastData, refresh: refreshPast } = useApi(() =>
   selectedBuddyId.value
-    ? `/api/reviews/past?userId=${selectedBuddyId.value}`
+    ? `/reviews/past?userId=${selectedBuddyId.value}`
     : null,
 );
 const pastReviews = computed(() => pastData.value?.reviews || []);
@@ -138,7 +138,7 @@ const updateReview = async () => {
     const utcDate = fromZonedTime(dateTimeString, userTz);
     const utcDateString = utcDate.toISOString();
 
-    await $fetch(`/api/reviews/${editingReview.id}`, {
+    await $api(`/reviews/${editingReview.id}`, {
       method: "PATCH",
       body: {
         scheduledDate: utcDateString,
@@ -258,7 +258,7 @@ const createReview = async () => {
     const utcDate = fromZonedTime(dateTimeString, userTz);
     const utcDateString = utcDate.toISOString();
 
-    await $fetch("/api/reviews", {
+    await $api("/reviews", {
       method: "POST",
       body: {
         userId: selectedBuddyId.value,
@@ -300,7 +300,7 @@ const startReviewNow = async () => {
     const now = new Date();
     const reviewName = format(now, "MMMM yyyy");
 
-    const response = await $fetch("/api/reviews", {
+    const response = await $api("/reviews", {
       method: "POST",
       body: {
         userId: selectedBuddyId.value,
@@ -326,7 +326,7 @@ const startReviewNow = async () => {
 // Complete review
 const completeReview = async (reviewId: string) => {
   try {
-    await $fetch(`/api/reviews/${reviewId}/complete`, {
+    await $api(`/reviews/${reviewId}/complete`, {
       method: "PATCH",
       body: { completionNotes: "" },
     });
@@ -351,7 +351,7 @@ const completeReview = async (reviewId: string) => {
 // Re-open review
 const reopenReview = async (reviewId: string) => {
   try {
-    await $fetch(`/api/reviews/${reviewId}/reopen`, {
+    await $api(`/reviews/${reviewId}/reopen`, {
       method: "PATCH",
     });
     await Promise.all([refreshUpcoming(), refreshPast()]);
@@ -375,7 +375,7 @@ const reopenReview = async (reviewId: string) => {
 // Delete review
 const deleteReview = async (reviewId: string) => {
   try {
-    await $fetch(`/api/reviews/${reviewId}`, {
+    await $api(`/reviews/${reviewId}`, {
       method: "DELETE",
     });
     await Promise.all([refreshUpcoming(), refreshPast()]);

@@ -81,7 +81,7 @@ const contributors = ref<any[]>([]);
 
 onMounted(async () => {
   try {
-    const data = await $fetch("/api/admin/top-contributors");
+    const data = await $api("/admin/top-contributors");
 
     if (data) {
       contributors.value = data.contributors;

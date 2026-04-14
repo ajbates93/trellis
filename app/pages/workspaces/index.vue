@@ -7,7 +7,7 @@ useHead({
   title: "Workspaces",
 });
 
-const { data: workspacesData, status, refresh } = useFetch("/api/super-admin/workspaces");
+const { data: workspacesData, status, refresh } = useApi("/super-admin/workspaces");
 
 const isCreateModalOpen = ref(false);
 const fileInput = ref<HTMLInputElement>();
@@ -71,7 +71,7 @@ const createWorkspace = async () => {
   isCreating.value = true;
 
   try {
-    await $fetch("/api/super-admin/workspaces", {
+    await $api("/super-admin/workspaces", {
       method: "POST",
       body: {
         name: newWorkspace.value.name,

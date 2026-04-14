@@ -72,7 +72,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    const createdCheckin = await $fetch("/api/checkins", {
+    const createdCheckin = await $api("/checkins", {
       method: "POST",
       body: {
         userId: props.buddy.id,

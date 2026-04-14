@@ -101,7 +101,7 @@ const formatDate = (date: string | Date | null) => {
 
 onMounted(async () => {
   try {
-    const data = await $fetch("/api/admin/recent-activity");
+    const data = await $api("/admin/recent-activity");
 
     if (data) {
       activity.value = data.activity;

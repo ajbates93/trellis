@@ -390,7 +390,7 @@ const loadingFeedback = ref(false);
 const fetchUsers = async () => {
   loadingUsers.value = true;
   try {
-    const data = await $fetch("/api/admin/users");
+    const data = await $api("/admin/users");
     if (data) {
       users.value = data.users;
     }
@@ -420,7 +420,7 @@ watch(selectedUser, async (user) => {
 
   // Fetch Reviews
   try {
-    const data = await $fetch("/api/reviews/past", {
+    const data = await $api("/reviews/past", {
       query: { userId: user.id },
     });
     reviews.value = data.reviews || [];
@@ -432,7 +432,7 @@ watch(selectedUser, async (user) => {
 
   // Fetch Achievements
   try {
-    const data = await $fetch("/api/achievements", {
+    const data = await $api("/achievements", {
       query: { userId: user.id },
     });
     achievements.value = data.achievements || [];
@@ -444,7 +444,7 @@ watch(selectedUser, async (user) => {
 
   // Fetch Goals
   try {
-    const data = await $fetch("/api/goals", {
+    const data = await $api("/goals", {
       query: { userId: user.id },
     });
     goals.value = data.goals || [];
@@ -456,7 +456,7 @@ watch(selectedUser, async (user) => {
 
   // Fetch Feedback
   try {
-    const data = await $fetch("/api/feedback/received", {
+    const data = await $api("/feedback/received", {
       query: { userId: user.id },
     });
     feedback.value = data.feedback || [];

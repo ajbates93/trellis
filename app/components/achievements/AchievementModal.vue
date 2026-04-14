@@ -87,7 +87,7 @@ const handleSubmit = async () => {
 
   try {
     if (props.mode === "create") {
-      const { achievement } = await $fetch("/api/achievements", {
+      const { achievement } = await $api("/achievements", {
         method: "POST",
         body: {
           title: title.value.trim(),
@@ -107,8 +107,8 @@ const handleSubmit = async () => {
         icon: "i-heroicons-check-circle",
       });
     } else if (props.mode === "edit" && props.achievement) {
-      const { achievement } = await $fetch(
-        `/api/achievements/${props.achievement.id}`,
+      const { achievement } = await $api(
+        `/achievements/${props.achievement.id}`,
         {
           method: "PATCH",
           body: {

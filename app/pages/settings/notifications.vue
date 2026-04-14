@@ -96,7 +96,7 @@ watch(() => user.value?.emailNotifications, (val) => {
 async function toggleEmailNotifications(value: boolean) {
   saving.value = true;
   try {
-    await $fetch("/api/users/profile", {
+    await $api("/users/profile", {
       method: "PATCH",
       body: { emailNotifications: value },
     });

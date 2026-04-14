@@ -178,7 +178,7 @@ const onSubmit = async () => {
       ? (formData.value.buddyId as { value: string }).value
       : formData.value.buddyId;
 
-    await $fetch("/api/admin/users", {
+    await $api("/admin/users", {
       method: "POST",
       body: {
         name: formData.value.name,

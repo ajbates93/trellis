@@ -117,7 +117,7 @@ const onTeamUserSelected = (userId: string) => {
 
 onMounted(async () => {
   try {
-    const data = await $fetch("/api/admin/stats");
+    const data = await $api("/admin/stats");
     if (data) {
       stats.value = data;
     }

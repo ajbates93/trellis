@@ -246,7 +246,7 @@ onMounted(async () => {
 async function fetchSlackWorkspace() {
   try {
     isLoading.value = true;
-    const response = await $fetch('/api/integrations/slack/status');
+    const response = await $api('/integrations/slack/status');
     slackWorkspace.value = response.slackWorkspace;
     isAdmin.value = response.isAdmin;
   } catch (error: any) {
@@ -263,7 +263,7 @@ async function fetchSlackWorkspace() {
 async function handleInstallSlack() {
   isInstalling.value = true;
   // Navigate to install endpoint (will redirect to Slack OAuth)
-  window.location.href = '/api/integrations/slack/install';
+  window.location.href = '/integrations/slack/install';
 }
 
 // Handle Slack disconnection
@@ -274,7 +274,7 @@ async function handleDisconnectSlack() {
 
   try {
     isDisconnecting.value = true;
-    await $fetch('/api/integrations/slack/disconnect', {
+    await $api('/integrations/slack/disconnect', {
       method: 'POST',
     });
     slackWorkspace.value = null;

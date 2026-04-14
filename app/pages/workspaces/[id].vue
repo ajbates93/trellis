@@ -6,8 +6,8 @@ definePageMeta({
 const route = useRoute();
 const id = route.params.id as string;
 
-const { data: workspaceData, status, refresh } = useFetch(`/api/super-admin/workspaces/${id}`);
-const { data: usersData } = useFetch(`/api/super-admin/workspaces/${id}/users`);
+const { data: workspaceData, status, refresh } = useApi(`/super-admin/workspaces/${id}`);
+const { data: usersData } = useApi(`/super-admin/workspaces/${id}/users`);
 
 useHead({
   title: computed(() => workspaceData.value?.workspace?.name || "Workspace Details"),
@@ -95,7 +95,7 @@ const saveWorkspace = async () => {
   isSaving.value = true;
 
   try {
-    await $fetch(`/api/super-admin/workspaces/${id}`, {
+    await $api(`/super-admin/workspaces/${id}`, {
       method: "PATCH",
       body: {
         name: editForm.value.name,
@@ -126,7 +126,7 @@ const deleteWorkspace = async () => {
   isDeleting.value = true;
 
   try {
-    await $fetch(`/api/super-admin/workspaces/${id}`, {
+    await $api(`/super-admin/workspaces/${id}`, {
       method: "DELETE",
     });
 

@@ -5,7 +5,7 @@ const { isOpen: mobileNavOpen, toggle: toggleMobileNav } = useMobileNav();
 const { shouldShow: shouldShowOnboarding } = useOnboarding();
 
 // Fetch current workspace (lazy — don't block SSR while this loads)
-const { data: workspaceData } = useFetch("/api/workspace/current", {
+const { data: workspaceData } = useApi("/workspace/current", {
   lazy: true,
   default: () => null,
 });

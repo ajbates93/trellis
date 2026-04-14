@@ -73,7 +73,7 @@ const changeStatus = async (newStatus: string) => {
   isUpdatingStatus.value = true;
 
   try {
-    await $fetch(`/api/goals/${props.goal.id}/status`, {
+    await $api(`/goals/${props.goal.id}/status`, {
       method: "PATCH",
       body: { status: newStatus },
     });
@@ -111,7 +111,7 @@ const deleteGoal = async () => {
   isDeleting.value = true;
 
   try {
-    await $fetch(`/api/goals/${props.goal.id}`, {
+    await $api(`/goals/${props.goal.id}`, {
       method: "DELETE",
     });
 

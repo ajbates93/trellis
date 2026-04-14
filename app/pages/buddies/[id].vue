@@ -13,7 +13,7 @@ const {
   data: buddyData,
   pending,
   error,
-} = useFetch(() => `/api/buddies/${buddyId.value}`, { watch: [buddyId] });
+} = useApi(() => `/buddies/${buddyId.value}`, { watch: [buddyId] });
 
 const buddy = computed(() => buddyData.value?.buddy);
 

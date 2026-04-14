@@ -34,7 +34,7 @@ const handleMilestonesUpdated = async () => {
   if (!props.goal?.id) return;
 
   try {
-    const { goals } = await $fetch<{ goals: GoalWithMilestones[] }>("/api/goals");
+    const { goals } = await $api<{ goals: GoalWithMilestones[] }>("/goals");
     const updatedGoal = goals.find((g) => g.id === props.goal?.id);
     if (updatedGoal?.milestones) {
       milestones.value = updatedGoal.milestones;
@@ -61,7 +61,7 @@ const handleSubmit = async () => {
 
   try {
     if (props.mode === "create") {
-      const { goal } = await $fetch("/api/goals", {
+      const { goal } = await $api("/goals", {
         method: "POST",
         body: {
           goalText: goalText.value.trim(),
@@ -81,7 +81,7 @@ const handleSubmit = async () => {
         icon: "i-heroicons-check-circle",
       });
     } else if (props.mode === "edit" && props.goal) {
-      const { goal } = await $fetch(`/api/goals/${props.goal.id}`, {
+      const { goal } = await $api(`/goals/${props.goal.id}`, {
         method: "PATCH",
         body: {
           goalText: goalText.value.trim(),

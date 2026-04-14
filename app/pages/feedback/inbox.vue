@@ -47,8 +47,8 @@ const tabs = computed<TabsItem[]>(() => [
 ]);
 
 // Fetch received feedback (published only)
-const { data: receivedData, refresh: refreshReceived } = await useFetch(
-  "/api/feedback/received",
+const { data: receivedData, refresh: refreshReceived } = await useApi(
+  "/feedback/received",
 );
 const receivedFeedback = computed(() => receivedData.value?.feedback || []);
 
@@ -71,7 +71,7 @@ const unreadFeedback = computed(() => {
 });
 
 // Fetch given feedback (all)
-const { data: givenData } = await useFetch("/api/feedback/given");
+const { data: givenData } = await useApi("/feedback/given");
 const givenFeedback = computed(() => givenData.value?.feedback || []);
 
 // Get unread count refresh function
@@ -80,7 +80,7 @@ const { refreshUnreadCount } = useUnreadCount();
 // Mark feedback as read
 const markAsRead = async (feedbackId: string) => {
   try {
-    await $fetch(`/api/feedback/${feedbackId}/read`, { method: "PATCH" });
+    await $api(`/feedback/${feedbackId}/read`, { method: "PATCH" });
     await refreshReceived();
     await refreshUnreadCount(); // Refresh unread count globally
     toast.add({

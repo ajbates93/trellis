@@ -88,7 +88,7 @@ export const useOnboarding = () => {
     }, 1500);
 
     try {
-      await $fetch("/api/users/onboarding", {
+      await $api("/users/onboarding", {
         method: "PATCH",
         body: { taskId },
       });

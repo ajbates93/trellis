@@ -32,8 +32,8 @@ const selectedBuddy = computed(() => {
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId
 const { data: buddyGoalsData, refresh: refreshBuddyGoals } =
-  useFetch<GetBuddyGoalsResponse>(
-    () => `/api/goals/buddies?buddyId=${selectedBuddyId.value || ""}`,
+  useApi<GetBuddyGoalsResponse>(
+    () => `/goals/buddies?buddyId=${selectedBuddyId.value || ""}`,
     {
       lazy: true,
       immediate: !!selectedBuddyId.value,
@@ -43,8 +43,8 @@ const { data: buddyGoalsData, refresh: refreshBuddyGoals } =
 
 // Fetch buddy check-ins (filtered by buddyId)
 const { data: checkinsData, refresh: refreshCheckins } =
-  useFetch<GetBuddyCheckinsArrayResponse>(
-    () => `/api/checkins/buddy?buddyId=${selectedBuddyId.value || ""}&limit=10`,
+  useApi<GetBuddyCheckinsArrayResponse>(
+    () => `/checkins/buddy?buddyId=${selectedBuddyId.value || ""}&limit=10`,
     {
       lazy: true,
       immediate: !!selectedBuddyId.value,
@@ -155,8 +155,8 @@ const saveEditedCheckin = async () => {
   isSubmittingEdit.value = true;
 
   try {
-    const response = await $fetch<{ checkin: Checkin }>(
-      `/api/checkins/${selectedCheckin.value.id}`,
+    const response = await $api<{ checkin: Checkin }>(
+      `/checkins/${selectedCheckin.value.id}`,
       {
         method: "PATCH",
         body: {
@@ -212,7 +212,7 @@ const deleteCheckin = async () => {
   isSubmittingEdit.value = true;
 
   try {
-    await $fetch(`/api/checkins/${selectedCheckin.value.id}`, {
+    await $api(`/checkins/${selectedCheckin.value.id}`, {
       method: "DELETE",
     });
 
@@ -263,7 +263,7 @@ const submitCheckin = async (notes: string) => {
   isCreatingCheckin.value = true;
 
   try {
-    await $fetch("/api/checkins", {
+    await $api("/checkins", {
       method: "POST",
       body: {
         userId: selectedBuddyId.value,

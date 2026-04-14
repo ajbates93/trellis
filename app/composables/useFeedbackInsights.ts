@@ -27,8 +27,8 @@ export const useFeedbackInsights = () => {
   const isAnalyzing = ref(false)
 
   // Fetch cached insights summary
-  const { data: insightsSummary, refresh: refreshInsights } = useFetch<InsightsSummary>(
-    '/api/insights/user-summary',
+  const { data: insightsSummary, refresh: refreshInsights } = useApi<InsightsSummary>(
+    '/insights/user-summary',
     {
       key: 'feedback-insights-summary',
       // Don't auto-fetch on server to avoid initial load issues
@@ -47,7 +47,7 @@ export const useFeedbackInsights = () => {
   const suggestedGoals = computed(() => insightsSummary.value?.data?.suggestedGoals || [])
 
   // Also fetch total published feedback count for users who haven't analyzed yet
-  const { data: totalFeedbackData } = useFetch('/api/feedback/received')
+  const { data: totalFeedbackData } = useApi('/feedback/received')
   const totalPublishedFeedback = computed(() => {
     if (hasAnalysis.value) {
       return feedbackCount.value
@@ -95,7 +95,7 @@ export const useFeedbackInsights = () => {
     isAnalyzing.value = true
 
     try {
-      const response = await $fetch<AnalyzeResponse>('/api/insights/analyze', {
+      const response = await $api<AnalyzeResponse>('/insights/analyze', {
         method: 'POST',
       })
 

@@ -13,8 +13,8 @@ const { downloadICalFile } = useCalendarExport();
 const { formatDateInUserTZ } = useUserTimezone();
 
 // Fetch review data
-const { data: reviewData, refresh } = await useFetch(
-  `/api/reviews/${reviewId}`,
+const { data: reviewData, refresh } = await useApi(
+  `/reviews/${reviewId}`,
 );
 
 const review = computed(() => (reviewData.value as any)?.review);
@@ -45,8 +45,8 @@ const feedback = computed(() => (reviewData.value as any)?.feedback || []);
 const goals = computed(() => (reviewData.value as any)?.goals || []);
 
 // Fetch achievements for this review
-const { data: achievementsData } = await useFetch(
-  `/api/achievements/for-review/${reviewId}`,
+const { data: achievementsData } = await useApi(
+  `/achievements/for-review/${reviewId}`,
 );
 const achievements = computed(() => achievementsData.value?.achievements || []);
 
@@ -157,7 +157,7 @@ const updateReview = async () => {
     const correctUtcMs = utcMs - offset;
     const utcDateString = new Date(correctUtcMs).toISOString();
 
-    await $fetch(`/api/reviews/${reviewId}`, {
+    await $api(`/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
         scheduledDate: utcDateString,
@@ -190,7 +190,7 @@ const updateReview = async () => {
 // Complete review
 const completeReview = async () => {
   try {
-    await $fetch(`/api/reviews/${reviewId}/complete`, {
+    await $api(`/reviews/${reviewId}/complete`, {
       method: "PATCH",
       body: { completionNotes: completionNotes.value },
     });
@@ -212,7 +212,7 @@ const isReopening = ref(false);
 const reopenReview = async () => {
   isReopening.value = true;
   try {
-    await $fetch(`/api/reviews/${reviewId}/reopen`, {
+    await $api(`/reviews/${reviewId}/reopen`, {
       method: "PATCH",
     });
     await refresh();
@@ -295,7 +295,7 @@ const saveReflection = async (field: string, value: string) => {
   }
 
   try {
-    await $fetch(`/api/reviews/${reviewId}`, {
+    await $api(`/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
         [field]: value,

@@ -55,8 +55,8 @@ const fetchInsights = async (userId: string) => {
   error.value = null;
 
   try {
-    const data = await $fetch<InsightsResponse>(
-      `/api/admin/insights/${userId}`
+    const data = await $api<InsightsResponse>(
+      `/admin/insights/${userId}`
     );
     insights.value = data;
   } catch (e) {
@@ -76,7 +76,7 @@ const triggerAnalysis = async () => {
   error.value = null;
 
   try {
-    const data = await $fetch<InsightsResponse & { data: { feedbackCount: number } }>(`/api/admin/insights/${selectedUserId.value}`, {
+    const data = await $api<InsightsResponse & { data: { feedbackCount: number } }>(`/admin/insights/${selectedUserId.value}`, {
       method: "POST",
     });
 

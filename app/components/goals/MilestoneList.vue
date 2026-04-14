@@ -25,7 +25,7 @@ const addMilestone = async () => {
   isAdding.value = true;
 
   try {
-    await $fetch(`/api/goals/${props.goalId}/milestones`, {
+    await $api(`/goals/${props.goalId}/milestones`, {
       method: "POST",
       body: { title: newMilestoneTitle.value.trim() },
     });
@@ -52,7 +52,7 @@ const toggleMilestone = async (milestone: GoalMilestone) => {
   updatingIds.value.add(milestone.id);
 
   try {
-    await $fetch(`/api/goals/${props.goalId}/milestones/${milestone.id}`, {
+    await $api(`/goals/${props.goalId}/milestones/${milestone.id}`, {
       method: "PATCH",
       body: { isCompleted: !milestone.isCompleted },
     });
@@ -78,8 +78,8 @@ const deleteMilestone = async (milestone: GoalMilestone) => {
   updatingIds.value.add(milestone.id);
 
   try {
-    const url = `/api/goals/${props.goalId}/milestones/${milestone.id}`;
-    await $fetch(url, { method: "DELETE" });
+    const url = `/goals/${props.goalId}/milestones/${milestone.id}`;
+    await $api(url, { method: "DELETE" });
 
     emit("updated");
   } catch (error) {

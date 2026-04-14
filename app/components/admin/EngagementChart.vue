@@ -79,7 +79,7 @@ const template = (d: { week: string; count: number }) => {
 
 onMounted(async () => {
   try {
-    const data = await $fetch("/api/admin/engagement");
+    const data = await $api("/admin/engagement");
 
     if (data) {
       weeks.value = data.timeline.map((item: { week: string }) => item.week);

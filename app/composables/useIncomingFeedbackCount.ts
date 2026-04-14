@@ -9,7 +9,7 @@ export const useIncomingFeedbackCount = () => {
     data,
     pending,
     refresh: refreshData,
-  } = useFetch("/api/feedback/for-buddy", {
+  } = useApi("/feedback/for-buddy", {
     key: "incoming-feedback-count",
     server: false,
     immediate: true,

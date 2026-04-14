@@ -80,7 +80,7 @@ const template = (d: { label: string; value: number }) => {
 
 onMounted(async () => {
   try {
-    const data = await $fetch("/api/admin/feedback-distribution");
+    const data = await $api("/admin/feedback-distribution");
 
     if (data) {
       chartData.value = Object.entries(data).map(([key, value]) => ({

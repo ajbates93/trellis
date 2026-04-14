@@ -209,7 +209,7 @@ const onSubmit = async () => {
       ? (localUser.value.buddyId as { value: string }).value
       : localUser.value.buddyId;
 
-    await $fetch(`/api/admin/users/${localUser.value.id}`, {
+    await $api(`/admin/users/${localUser.value.id}`, {
       method: "PATCH",
       body: {
         role: roleValue,
