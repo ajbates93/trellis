@@ -42,8 +42,12 @@ const { data: pastData, refresh: refreshPast } = useApi(() =>
 const pastReviews = computed(() => pastData.value?.reviews || []);
 
 // Refresh when buddy changes
+const { announce } = useAnnouncer();
 watch(selectedBuddyId, async () => {
   await Promise.all([refreshUpcoming(), refreshPast()]);
+  // Reviews reload silently — announce for screen readers.
+  const name = selectedBuddy.value?.name;
+  if (name) announce(`Showing reviews for ${name}`, "polite");
 });
 
 // Handle buddy selection

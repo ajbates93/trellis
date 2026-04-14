@@ -12,8 +12,9 @@ useHead({
 });
 
 const toast = useToast();
-const { buddies, hasBuddies } = useBuddies();
+const { buddies, hasBuddies, getBuddyById } = useBuddies();
 const { selectedBuddyId } = useSelectedBuddy();
+const { announce } = useAnnouncer();
 
 // Fetch buddy received feedback (reactive based on selectedBuddyId)
 const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useApi(
@@ -43,8 +44,10 @@ const incomingFeedback = computed(() => {
 });
 
 // Refresh both tabs when buddy changes
-watch(selectedBuddyId, async () => {
+watch(selectedBuddyId, async (id) => {
   await Promise.all([refreshBuddyReceived(), refreshIncoming()]);
+  const name = id ? getBuddyById(id)?.name : null;
+  if (name) announce(`Showing feedback for ${name}`, "polite");
 });
 
 // Tab state
