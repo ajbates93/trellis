@@ -283,6 +283,9 @@ watch(
 const isSavingReflections = ref(false);
 const isSavingBuddyComments = ref(false);
 const saveTimeout = ref<NodeJS.Timeout | null>(null);
+// Per-field AbortController so rapid edits cancel the prior in-flight save
+// and only the latest PATCH can land. Prevents stale-save races.
+const saveControllers = new Map<string, AbortController>();
 
 const saveReflection = async (field: string, value: string) => {
   if (!review.value) return;
@@ -294,14 +297,22 @@ const saveReflection = async (field: string, value: string) => {
     isSavingReflections.value = true;
   }
 
+  // Cancel any in-flight save for this field before starting a new one.
+  saveControllers.get(field)?.abort();
+  const controller = new AbortController();
+  saveControllers.set(field, controller);
+
   try {
     await $api(`/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
         [field]: value,
       },
+      signal: controller.signal,
     });
   } catch (error) {
+    // AbortError just means a newer save superseded this one — ignore.
+    if ((error as Error)?.name === "AbortError") return;
     console.error(`Failed to save ${field}:`, error);
     toast.add({
       title: "Failed to save changes",
@@ -310,10 +321,14 @@ const saveReflection = async (field: string, value: string) => {
       icon: "i-heroicons-x-circle",
     });
   } finally {
-    if (isBuddyComment) {
-      isSavingBuddyComments.value = false;
-    } else {
-      isSavingReflections.value = false;
+    // Only clear the loading flag if this is still the active controller.
+    if (saveControllers.get(field) === controller) {
+      saveControllers.delete(field);
+      if (isBuddyComment) {
+        isSavingBuddyComments.value = false;
+      } else {
+        isSavingReflections.value = false;
+      }
     }
   }
 };
