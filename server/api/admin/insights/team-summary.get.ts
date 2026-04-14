@@ -1,8 +1,8 @@
-import { db } from "../../../database/connection";
-import { feedbackInsights, users } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { feedbackInsights, users } from "#server/database/schema";
 import { eq, desc, sql } from "drizzle-orm";
-import { validateResponse } from "../../../utils/validation";
-import { apiSchemas } from "../../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 interface SentimentData {
   positive: number;

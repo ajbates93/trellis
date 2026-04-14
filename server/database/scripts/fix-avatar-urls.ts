@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { db } from "../connection";
-import { users } from "../schema";
+import { db } from "#server/database/connection";
+import { users } from "#server/database/schema";
 import { eq, isNotNull } from "drizzle-orm";
-import { convertAvatarUrl } from "../../utils/avatar-url";
+import { convertAvatarUrl } from "#server/utils/avatar-url";
 
 /**
  * One-off script to convert existing signed S3 avatar URLs to proxy URL format.

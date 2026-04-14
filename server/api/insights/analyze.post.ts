@@ -1,9 +1,9 @@
-import { db } from "../../database/connection";
-import { feedback, users, feedbackInsights } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users, feedbackInsights } from "#server/database/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
-import { analyzeFeedback } from "../../services/anthropicClient";
-import { validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
+import { analyzeFeedback } from "#server/services/anthropicClient";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

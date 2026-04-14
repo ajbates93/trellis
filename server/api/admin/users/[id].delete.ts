@@ -1,8 +1,8 @@
-import { db } from "../../../database/connection";
-import { users, feedback, goals, reviewSchedules } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { users, feedback, goals, reviewSchedules } from "#server/database/schema";
 import { eq, or, and } from "drizzle-orm";
-import { validateResponse } from "../../../utils/validation";
-import { apiSchemas } from "../../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import * as schemas from '../base'
+import * as schemas from '#server/schemas/base'
 
 describe('Base Schemas', () => {
   describe('UserSchema', () => {

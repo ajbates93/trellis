@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createMockDb } from '../../__tests__/helpers/mock-db'
-import { createMockEvent } from '../../__tests__/helpers/mock-event'
+import { createMockDb } from '#server/__tests__/helpers/mock-db'
+import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 
 const { mockDb, mockSelect } = createMockDb()
 

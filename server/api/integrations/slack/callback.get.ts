@@ -1,9 +1,9 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { db } from "../../../database/connection";
-import { slackWorkspaces } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { slackWorkspaces } from "#server/database/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "../../../utils/auth";
-import { encrypt } from "../../../utils/encryption";
+import { auth } from "#server/utils/auth";
+import { encrypt } from "#server/utils/encryption";
 
 /**
  * Handles Slack OAuth callback

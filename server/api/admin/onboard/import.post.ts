@@ -1,10 +1,10 @@
-import { db } from "../../../database/connection";
-import { users, onboardingImports } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { users, onboardingImports } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
-import { auth } from "../../../utils/auth";
-import { validateBody, validateResponse } from "../../../utils/validation";
-import { apiSchemas } from "../../../schemas";
-import { getWorkspaceId } from "../../../utils/workspace";
+import { auth } from "#server/utils/auth";
+import { validateBody, validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   try {

@@ -1,10 +1,10 @@
-import { db } from "../../../database/connection";
-import { feedback, users } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
-// import { assignFeedbackToReview } from "../../../utils/reviews";
-import { validateBody, validateResponse } from "../../../utils/validation";
-import { apiSchemas } from "../../../schemas";
-import { notifyRevieweeOfPublishedFeedback } from "../../../utils/notifications";
+// import { assignFeedbackToReview } from "#server/utils/reviews";
+import { validateBody, validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
+import { notifyRevieweeOfPublishedFeedback } from "#server/utils/notifications";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

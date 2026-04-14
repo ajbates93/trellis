@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { auth } from "../../utils/auth";
-import { db } from "../../database/connection";
-import { users } from "../../database/schema";
+import { auth } from "#server/utils/auth";
+import { db } from "#server/database/connection";
+import { users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 
 const UpdateTimezoneSchema = z.object({

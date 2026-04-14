@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { db } from "../connection";
-import { users, reviewSchedules } from "../schema";
+import { db } from "#server/database/connection";
+import { users, reviewSchedules } from "#server/database/schema";
 
 // Import sql from drizzle-orm
 import { sql } from "drizzle-orm";

@@ -1,7 +1,7 @@
-import { db } from "../../../database/connection";
-import { slackWorkspaces } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { slackWorkspaces } from "#server/database/schema";
 import { eq } from "drizzle-orm";
-import { getWorkspaceId } from "../../../utils/workspace";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 /**
  * Get Slack workspace connection status

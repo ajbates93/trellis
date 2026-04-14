@@ -1,9 +1,9 @@
-import { db } from "../../../database/connection";
-import { feedback, users } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users } from "#server/database/schema";
 import { and, eq } from "drizzle-orm";
 import { format } from "date-fns";
-import { validateResponse } from "../../../utils/validation";
-import { apiSchemas } from "../../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   // Get session/user from better-auth

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createMockDb } from '../../../__tests__/helpers/mock-db'
-import { createMockEvent } from '../../../__tests__/helpers/mock-event'
-import { buildUser } from '../../../__tests__/helpers/factories'
+import { createMockDb } from '#server/__tests__/helpers/mock-db'
+import { createMockEvent } from '#server/__tests__/helpers/mock-event'
+import { buildUser } from '#server/__tests__/helpers/factories'
 
 const { mockDb, mockSelect } = createMockDb()
 
@@ -29,7 +29,7 @@ import {
   verifySlackSignature,
   getSlackUserInfo,
   openSlackModal,
-} from '../../../utils/slack'
+} from '#server/utils/slack'
 
 // Build URL-encoded form body for /submit command
 function buildCommandBody(overrides: Record<string, string> = {}) {

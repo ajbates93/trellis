@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { db } from "../connection";
-import { feedback, reviewSchedules } from "../schema";
+import { db } from "#server/database/connection";
+import { feedback, reviewSchedules } from "#server/database/schema";
 import { eq, and, gte, isNull, sql } from "drizzle-orm";
 
 /**

@@ -1,9 +1,9 @@
-import { db } from "../../database/connection";
-import { reviewSchedules, users } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { reviewSchedules, users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
-import { validateBody, validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
+import { validateBody, validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

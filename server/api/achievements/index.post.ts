@@ -1,7 +1,7 @@
-import { db } from "../../database/connection";
-import { achievements } from "../../database/schema";
-import { validateBody, validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
+import { db } from "#server/database/connection";
+import { achievements } from "#server/database/schema";
+import { validateBody, validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

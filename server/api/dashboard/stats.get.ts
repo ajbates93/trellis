@@ -1,9 +1,9 @@
-import { db } from "../../database/connection";
-import { feedback, users, reviewSchedules } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users, reviewSchedules } from "#server/database/schema";
 import { eq, and, gte, lt, isNotNull } from "drizzle-orm";
-import { validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
-import { computeStreak } from "../../utils/community-scoring";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
+import { computeStreak } from "#server/utils/community-scoring";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

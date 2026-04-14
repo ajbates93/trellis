@@ -1,8 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
-import { db } from "../database/connection";
-import * as schema from "../database/schema";
+import { db } from "#server/database/connection";
+import * as schema from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { APIError } from "better-auth/api";
 import { sendEmail, emailTemplates } from "./email";

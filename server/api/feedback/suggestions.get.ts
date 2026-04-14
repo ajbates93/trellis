@@ -1,8 +1,8 @@
-import { db } from "../../database/connection";
-import { users, feedback } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { users, feedback } from "#server/database/schema";
 import { eq, and, sql, notInArray } from "drizzle-orm";
 import { format } from "date-fns";
-import { getWorkspaceId } from "../../utils/workspace";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

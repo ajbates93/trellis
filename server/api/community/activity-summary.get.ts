@@ -1,11 +1,11 @@
-import { db } from "../../database/connection";
-import { feedback, users } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users } from "#server/database/schema";
 import { sql, eq, and, gte, lt } from "drizzle-orm";
 import { startOfISOWeek, subWeeks, subDays } from "date-fns";
-import { validateResponse } from "../../utils/validation";
-import { getWorkspaceId } from "../../utils/workspace";
-import { computeStreak } from "../../utils/community-scoring";
-import { apiSchemas } from "../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { getWorkspaceId } from "#server/utils/workspace";
+import { computeStreak } from "#server/utils/community-scoring";
+import { apiSchemas } from "#server/schemas";
 
 type Period = "this-week" | "last-7-days" | "last-30-days" | "all-time";
 

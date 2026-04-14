@@ -10,7 +10,7 @@ import {
   computeTotalScore,
   getISOWeekString,
   getWeeksInRange,
-} from '../../utils/community-scoring'
+} from '#server/utils/community-scoring'
 
 describe('getPlantState', () => {
   it('returns dead for 0-20%', () => {

@@ -1,9 +1,9 @@
-import { db } from "../../database/connection";
-import { feedback, users } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users } from "#server/database/schema";
 import { eq, and, gte } from "drizzle-orm";
 import { subWeeks } from "date-fns";
-import { validateResponse } from "../../utils/validation";
-import { getWorkspaceId } from "../../utils/workspace";
+import { validateResponse } from "#server/utils/validation";
+import { getWorkspaceId } from "#server/utils/workspace";
 import {
   computeStreak,
   computeVariety,
@@ -11,8 +11,8 @@ import {
   computeTotalScore,
   getWeeksInRange,
   type WeekFeedback,
-} from "../../utils/community-scoring";
-import { apiSchemas } from "../../schemas";
+} from "#server/utils/community-scoring";
+import { apiSchemas } from "#server/schemas";
 
 const VALID_PERIODS = ["4weeks", "12weeks", "alltime"] as const;
 type Period = (typeof VALID_PERIODS)[number];

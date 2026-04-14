@@ -1,9 +1,9 @@
-import { db } from "../../database/connection";
-import { feedback } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback } from "#server/database/schema";
 import { format } from "date-fns";
-import { validateBody, validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
-import { notifyBuddyOfNewFeedback } from "../../utils/notifications";
+import { validateBody, validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
+import { notifyBuddyOfNewFeedback } from "#server/utils/notifications";
 
 export default defineEventHandler(async (event) => {
   // Get session/user from better-auth

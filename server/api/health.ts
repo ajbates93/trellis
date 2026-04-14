@@ -1,4 +1,4 @@
-import { db } from "../database/connection";
+import { db } from "#server/database/connection";
 import { sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
