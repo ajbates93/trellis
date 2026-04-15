@@ -18,6 +18,14 @@ export default defineNuxtConfig({
     prefix: "Tiptap", // prefix for Tiptap imports, composables not included
   },
 
+  // Pre-bundle icons into the client chunk so client-side navigation (e.g.
+  // logout → /login) doesn't flash blank icons while the icon module resolves.
+  icon: {
+    clientBundle: {
+      scan: true,
+    },
+  },
+
   eslint: {},
 
   // TODO: Remove this once light mode is ready
