@@ -19,11 +19,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (user.role !== "admin") {
-    throw createError({
-      statusCode: 403,
-      statusMessage: "Forbidden",
-      message:
-        "You do not have permission to access this page. Admin privileges are required.",
-    });
+    // Redirect with a query flag so the landing page can surface a toast.
+    // (A client-side toast here would be lost on SSR redirect.)
+    return navigateTo({ path: "/", query: { denied: "admin" } });
   }
 });

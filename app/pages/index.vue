@@ -138,6 +138,23 @@ const { unreadCount } = useUnreadCount()
 const { incomingCount } = useIncomingFeedbackCount()
 const { shouldShow: showOnboarding } = useOnboarding()
 
+// Surface a toast when redirected here by an access-denied guard
+// (e.g. non-admin hitting /admin/*). See app/middleware/admin.global.ts.
+const route = useRoute()
+const router = useRouter()
+onMounted(() => {
+  if (route.query.denied === 'admin') {
+    useToast().add({
+      title: 'Access denied',
+      description: 'Admin privileges are required for that page.',
+      color: 'error',
+      icon: 'i-heroicons-shield-exclamation',
+    })
+    // Clean up the URL so refresh doesn't re-toast.
+    router.replace({ query: {} })
+  }
+})
+
 // API data — all fetches are lazy so SSR returns immediately with the page shell
 // and skeletons render while the data loads client-side
 const { data: statsData, pending: statsPending } = useApi('/dashboard/stats', { lazy: true, default: () => null })
