@@ -263,7 +263,7 @@ async function fetchSlackWorkspace() {
 async function handleInstallSlack() {
   isInstalling.value = true;
   // Navigate to install endpoint (will redirect to Slack OAuth)
-  window.location.href = '/integrations/slack/install';
+  window.location.href = '/api/integrations/slack/install';
 }
 
 // Handle Slack disconnection
