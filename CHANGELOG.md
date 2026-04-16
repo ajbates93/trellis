@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/ajbates93/trellis/compare/v0.12.0...v0.12.1) (2026-04-16)
+
+
+### Miscellaneous
+
+* upadte package lock ([5d030c8](https://github.com/ajbates93/trellis/commit/5d030c87c0689e87334040e5a743af7ebffbd381))
+
 ## [0.12.0](https://github.com/ajbates93/trellis/compare/v0.11.0...v0.12.0) (2026-04-16)
 
 
