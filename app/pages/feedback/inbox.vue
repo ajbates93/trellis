@@ -187,7 +187,7 @@ const receivedColumns = [
       },
     },
   },
-  { id: "date", accessorKey: "publishedAt", header: "Date" },
+  { id: "date", accessorKey: "createdAt", header: "Submitted" },
   // { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "isRead", header: "Status" },
   { id: "actions", header: "" },
@@ -205,7 +205,7 @@ const givenColumns = [
       },
     },
   },
-  { id: "date", accessorKey: "createdAt", header: "Date" },
+  { id: "date", accessorKey: "createdAt", header: "Submitted" },
   // { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "published", header: "Status" },
 ];
@@ -267,7 +267,7 @@ v-for="feedback in spotlightFeedback" :key="feedback.id"
                             </span>
                           </div>
                           <span class="text-xs text-slate-400 dark:text-slate-400 flex-shrink-0">
-                            {{ formatRelativeTime(feedback.publishedAt) }}
+                            {{ formatRelativeTime(feedback.createdAt) }}
                           </span>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
@@ -310,7 +310,7 @@ name="i-heroicons-arrow-right"
 
                   <template #date-cell="{ row }">
                     <span class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatDate(row.original.publishedAt) }}
+                      {{ formatDate(row.original.createdAt) }}
                     </span>
                   </template>
 
@@ -362,7 +362,7 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
 
                 <template #date-cell="{ row }">
                   <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.publishedAt) }}
+                    {{ formatDate(row.original.createdAt) }}
                   </span>
                 </template>
 
