@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.12.0](https://github.com/ajbates93/trellis/compare/v0.11.0...v0.12.0) (2026-04-16)
+
+
+### Features
+
+* abort stale reflection autosaves ([9d9c014](https://github.com/ajbates93/trellis/commit/9d9c0141babe7717066c39ce05749f7582982425))
+* add NuxtAnnouncer and announce silent buddy switches ([f011504](https://github.com/ajbates93/trellis/commit/f011504829d788f786b24c7d65a88dd45543da00))
+
+
+### Bug Fixes
+
+* pre-bundle icons for client-side navigation ([8c508dd](https://github.com/ajbates93/trellis/commit/8c508dd075551dfd43135b95169acb03fade1607))
+* redirect non-admins to / with a toast instead of throwing ([d04da79](https://github.com/ajbates93/trellis/commit/d04da79262361f83996d856e4ab4f19a27950d7d))
+* show submission date in feedback inbox + fix Slack install URL ([c3cd252](https://github.com/ajbates93/trellis/commit/c3cd25230f4d1a155075e18bf054a413c6db21bf))
+* show submitted date in inbox not published ([2b78443](https://github.com/ajbates93/trellis/commit/2b78443c5b71249ff119a4540cab2d4333a916fa))
+* typo ([3101042](https://github.com/ajbates93/trellis/commit/31010425d7c2306aa6656ad3656ea561be86ffbb))
+
+
+### Refactoring
+
+* add useApi composable, migrate /api/ callsites ([90b1d90](https://github.com/ajbates93/trellis/commit/90b1d909797ac253e0f1efe51d8a758ed2244f6b))
+* use #server alias for imports within server/ ([666c474](https://github.com/ajbates93/trellis/commit/666c4740567f20caae8c5389a94257a13a04ff57))
+* use route groups for admin page auth ([595a076](https://github.com/ajbates93/trellis/commit/595a07662686be3d85555cd9206203ac18890b46))
+
+
+### Miscellaneous
+
+* upgrade Nuxt to 4.4.2 ([c1815f2](https://github.com/ajbates93/trellis/commit/c1815f271806f73fe1ce8d296284bef8944c4641))
+
 ## [0.11.0](https://github.com/ajbates93/trellis/compare/v0.10.0...v0.11.0) (2026-04-11)
 
 
