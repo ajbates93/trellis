@@ -47,8 +47,8 @@ const tabs = computed<TabsItem[]>(() => [
 ]);
 
 // Fetch received feedback (published only)
-const { data: receivedData, refresh: refreshReceived } = await useFetch(
-  "/api/feedback/received",
+const { data: receivedData, refresh: refreshReceived } = await useApi(
+  "/feedback/received",
 );
 const receivedFeedback = computed(() => receivedData.value?.feedback || []);
 
@@ -71,7 +71,7 @@ const unreadFeedback = computed(() => {
 });
 
 // Fetch given feedback (all)
-const { data: givenData } = await useFetch("/api/feedback/given");
+const { data: givenData } = await useApi("/feedback/given");
 const givenFeedback = computed(() => givenData.value?.feedback || []);
 
 // Get unread count refresh function
@@ -80,7 +80,7 @@ const { refreshUnreadCount } = useUnreadCount();
 // Mark feedback as read
 const markAsRead = async (feedbackId: string) => {
   try {
-    await $fetch(`/api/feedback/${feedbackId}/read`, { method: "PATCH" });
+    await $api(`/feedback/${feedbackId}/read`, { method: "PATCH" });
     await refreshReceived();
     await refreshUnreadCount(); // Refresh unread count globally
     toast.add({
@@ -187,7 +187,7 @@ const receivedColumns = [
       },
     },
   },
-  { id: "date", accessorKey: "publishedAt", header: "Date" },
+  { id: "date", accessorKey: "createdAt", header: "Submitted" },
   // { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "isRead", header: "Status" },
   { id: "actions", header: "" },
@@ -205,7 +205,7 @@ const givenColumns = [
       },
     },
   },
-  { id: "date", accessorKey: "createdAt", header: "Date" },
+  { id: "date", accessorKey: "createdAt", header: "Submitted" },
   // { id: "review", accessorKey: "review", header: "Review" },
   { id: "status", accessorKey: "published", header: "Status" },
 ];
@@ -267,7 +267,7 @@ v-for="feedback in spotlightFeedback" :key="feedback.id"
                             </span>
                           </div>
                           <span class="text-xs text-slate-400 dark:text-slate-400 flex-shrink-0">
-                            {{ formatRelativeTime(feedback.publishedAt) }}
+                            {{ formatRelativeTime(feedback.createdAt) }}
                           </span>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
@@ -310,7 +310,7 @@ name="i-heroicons-arrow-right"
 
                   <template #date-cell="{ row }">
                     <span class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatDate(row.original.publishedAt) }}
+                      {{ formatDate(row.original.createdAt) }}
                     </span>
                   </template>
 
@@ -362,7 +362,7 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
 
                 <template #date-cell="{ row }">
                   <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ formatDate(row.original.publishedAt) }}
+                    {{ formatDate(row.original.createdAt) }}
                   </span>
                 </template>
 

@@ -112,7 +112,7 @@ interface PlantHealthData {
   message: string;
 }
 
-const { data: workspaceData } = useFetch("/api/workspace/current");
+const { data: workspaceData } = useApi("/workspace/current");
 const workspaceName = computed(
   () => workspaceData.value?.workspace?.name || "Trellis",
 );
@@ -172,7 +172,7 @@ const barColor = computed(() => {
 
 onMounted(async () => {
   try {
-    const data = await $fetch("/api/community/plant-health");
+    const data = await $api("/community/plant-health");
     if (data) {
       console.log(data);
       health.value = data;

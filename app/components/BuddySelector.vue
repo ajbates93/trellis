@@ -14,7 +14,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 // Fetch buddies
-const { data: buddyData } = await useFetch("/api/users/my-buddies");
+const { data: buddyData } = await useApi("/users/my-buddies");
 
 const buddies = computed(() => buddyData.value?.buddies || []);
 

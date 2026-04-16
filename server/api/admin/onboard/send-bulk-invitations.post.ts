@@ -1,8 +1,8 @@
-import { db } from "../../../database/connection";
-import { users, verifications } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { users, verifications } from "#server/database/schema";
 import { eq, and, inArray } from "drizzle-orm";
-import { auth } from "../../../utils/auth";
-import { sendEmail, emailTemplates } from "../../../utils/email";
+import { auth } from "#server/utils/auth";
+import { sendEmail, emailTemplates } from "#server/utils/email";
 
 export default defineEventHandler(async (event) => {
   try {

@@ -1,5 +1,5 @@
-import { db } from "../database/connection";
-import { reviewSchedules, feedback } from "../database/schema";
+import { db } from "#server/database/connection";
+import { reviewSchedules, feedback } from "#server/database/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
 
 /**

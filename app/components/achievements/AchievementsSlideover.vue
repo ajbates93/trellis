@@ -15,7 +15,7 @@ const isOpen = computed({
 });
 
 // Fetch all achievements
-const { data, status } = await useFetch("/api/achievements");
+const { data, status } = await useApi("/achievements");
 
 const achievements = computed(() => {
   const items = data.value?.achievements || [];

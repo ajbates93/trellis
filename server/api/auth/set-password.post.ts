@@ -1,8 +1,8 @@
-import { db } from "../../database/connection";
-import { users, verifications, accounts } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { users, verifications, accounts } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import { hashPassword } from "../../utils/password";
+import { hashPassword } from "#server/utils/password";
 
 export default defineEventHandler(async (event) => {
   try {

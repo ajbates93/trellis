@@ -107,7 +107,7 @@ const handleSetPassword = async () => {
 
   try {
     // Call custom API to set password for invited user
-    const response = await $fetch("/api/auth/set-password", {
+    const response = await $api("/auth/set-password", {
       method: "POST",
       body: {
         email: email.value,

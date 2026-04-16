@@ -12,14 +12,15 @@ useHead({
 });
 
 const toast = useToast();
-const { buddies, hasBuddies } = useBuddies();
+const { buddies, hasBuddies, getBuddyById } = useBuddies();
 const { selectedBuddyId } = useSelectedBuddy();
+const { announce } = useAnnouncer();
 
 // Fetch buddy received feedback (reactive based on selectedBuddyId)
-const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useFetch(
+const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useApi(
   () =>
     selectedBuddyId.value
-      ? `/api/feedback/buddy-received?buddyId=${selectedBuddyId.value}`
+      ? `/feedback/buddy-received?buddyId=${selectedBuddyId.value}`
       : null,
   { key: () => `buddy-received-${selectedBuddyId.value}` },
 );
@@ -28,10 +29,10 @@ const buddyReceivedFeedback = computed(
 );
 
 // Fetch incoming (unpublished) feedback for selected buddy
-const { data: incomingData, refresh: refreshIncoming } = useFetch(
+const { data: incomingData, refresh: refreshIncoming } = useApi(
   () =>
     selectedBuddyId.value
-      ? `/api/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
+      ? `/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
       : null,
   { key: () => `buddy-incoming-${selectedBuddyId.value}` },
 );
@@ -43,8 +44,10 @@ const incomingFeedback = computed(() => {
 });
 
 // Refresh both tabs when buddy changes
-watch(selectedBuddyId, async () => {
+watch(selectedBuddyId, async (id) => {
   await Promise.all([refreshBuddyReceived(), refreshIncoming()]);
+  const name = id ? getBuddyById(id)?.name : null;
+  if (name) announce(`Showing feedback for ${name}`, "polite");
 });
 
 // Tab state
@@ -77,8 +80,8 @@ const tabs = computed<TabsItem[]>(() => [
 const { refreshUnreadCount } = useUnreadCount();
 
 // Fetch all buddy incoming counts (no buddyId filter)
-const { data: allIncomingData, refresh: refreshAllIncoming } = useFetch(
-  "/api/feedback/for-buddy",
+const { data: allIncomingData, refresh: refreshAllIncoming } = useApi(
+  "/feedback/for-buddy",
   { key: "buddy-incoming-all" },
 );
 const buddyIncomingCounts = computed(() => {
@@ -100,7 +103,7 @@ const handleBuddySelected = (buddyId: string) => {
 // Publish single feedback
 const publishFeedback = async (feedbackId: string) => {
   try {
-    await $fetch(`/api/feedback/${feedbackId}/publish`, {
+    await $api(`/feedback/${feedbackId}/publish`, {
       method: "PATCH",
       body: { publish: true },
     });
@@ -126,7 +129,7 @@ const publishFeedback = async (feedbackId: string) => {
 // Publish batch feedback
 const publishBatch = async (feedbackIds: string[]) => {
   try {
-    await $fetch("/api/feedback/publish-batch", {
+    await $api("/feedback/publish-batch", {
       method: "POST",
       body: { feedbackIds, publish: true },
     });

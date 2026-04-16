@@ -3,7 +3,7 @@ import {
   createAdminEvent,
   createAuthenticatedEvent,
   createMockEvent,
-} from '../../../__tests__/helpers/mock-event'
+} from '#server/__tests__/helpers/mock-event'
 
 vi.mock('../../../utils/workspace', () => ({
   getWorkspaceId: vi.fn().mockReturnValue('workspace-1'),

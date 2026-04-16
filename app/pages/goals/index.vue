@@ -110,7 +110,7 @@ useHead({
 });
 
 // Fetch user's own goals
-const { data: goalsData, refresh: refreshGoals } = await useFetch("/api/goals");
+const { data: goalsData, refresh: refreshGoals } = await useApi("/goals");
 const myGoals = computed(
   () => (goalsData.value?.goals || []) as GoalWithMilestones[],
 );

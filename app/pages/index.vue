@@ -138,16 +138,33 @@ const { unreadCount } = useUnreadCount()
 const { incomingCount } = useIncomingFeedbackCount()
 const { shouldShow: showOnboarding } = useOnboarding()
 
+// Surface a toast when redirected here by an access-denied guard
+// (e.g. non-admin hitting /admin/*). See app/middleware/admin.global.ts.
+const route = useRoute()
+const router = useRouter()
+onMounted(() => {
+  if (route.query.denied === 'admin') {
+    useToast().add({
+      title: 'Access denied',
+      description: 'Admin privileges are required for that page.',
+      color: 'error',
+      icon: 'i-heroicons-shield-exclamation',
+    })
+    // Clean up the URL so refresh doesn't re-toast.
+    router.replace({ query: {} })
+  }
+})
+
 // API data — all fetches are lazy so SSR returns immediately with the page shell
 // and skeletons render while the data loads client-side
-const { data: statsData, pending: statsPending } = useFetch('/api/dashboard/stats', { lazy: true, default: () => null })
-const { data: goalsData, pending: goalsPending } = useFetch('/api/goals', { lazy: true, default: () => null })
-const { data: reviewsData } = useFetch('/api/reviews/upcoming', { lazy: true, default: () => null })
-const { data: achievementsData } = useFetch('/api/achievements', { lazy: true, default: () => null })
-const { data: activityData, pending: activityPending } = useFetch('/api/dashboard/activity', { lazy: true, default: () => null })
-const { data: pulseData, pending: pulsePending } = useFetch('/api/dashboard/feedback-pulse', { lazy: true, default: () => null })
-const { data: buddySummaryData, pending: buddySummaryPending } = useFetch('/api/buddies/dashboard-summary', { lazy: true, default: () => null })
-const { data: insightsData, pending: insightsPending } = useFetch('/api/insights/user-summary', { lazy: true, default: () => null })
+const { data: statsData, pending: statsPending } = useApi('/dashboard/stats', { lazy: true, default: () => null })
+const { data: goalsData, pending: goalsPending } = useApi('/goals', { lazy: true, default: () => null })
+const { data: reviewsData } = useApi('/reviews/upcoming', { lazy: true, default: () => null })
+const { data: achievementsData } = useApi('/achievements', { lazy: true, default: () => null })
+const { data: activityData, pending: activityPending } = useApi('/dashboard/activity', { lazy: true, default: () => null })
+const { data: pulseData, pending: pulsePending } = useApi('/dashboard/feedback-pulse', { lazy: true, default: () => null })
+const { data: buddySummaryData, pending: buddySummaryPending } = useApi('/buddies/dashboard-summary', { lazy: true, default: () => null })
+const { data: insightsData, pending: insightsPending } = useApi('/insights/user-summary', { lazy: true, default: () => null })
 
 // Computed values
 const daysUntilReview = computed(() => statsData.value?.daysUntilReview ?? null)

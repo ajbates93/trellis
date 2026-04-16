@@ -296,7 +296,6 @@ v-for="(error, index) in selectedErrorLog" :key="index" icon="i-heroicons-exclam
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
-  middleware: ["auth", "admin"],
 });
 
 useHead({
@@ -424,7 +423,7 @@ const importCSV = async () => {
       const csvContent = e.target?.result as string;
 
       try {
-        const result = await $fetch("/api/admin/onboard/import", {
+        const result = await $api("/admin/onboard/import", {
           method: "POST",
           body: {
             csvContent,
@@ -468,7 +467,7 @@ const finishImport = () => {
 const downloadTemplate = async () => {
   downloadingTemplate.value = true;
   try {
-    const blob = await $fetch("/api/admin/onboard/template", {
+    const blob = await $api("/admin/onboard/template", {
       method: "GET",
     });
 
@@ -490,8 +489,8 @@ const downloadTemplate = async () => {
 const fetchHistory = async () => {
   loadingHistory.value = true;
   try {
-    const data = await $fetch<{ imports: ImportHistoryItem[] }>(
-      "/api/admin/onboard/history",
+    const data = await $api<{ imports: ImportHistoryItem[] }>(
+      "/admin/onboard/history",
     );
     if (data) {
       importHistory.value = data.imports;

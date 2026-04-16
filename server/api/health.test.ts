@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createMockEvent } from '../__tests__/helpers/mock-event'
+import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 
 // health.ts uses db.execute() directly, so we mock it differently
 const mockExecute = vi.fn()

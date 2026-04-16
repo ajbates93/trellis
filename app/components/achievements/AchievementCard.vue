@@ -35,7 +35,7 @@ const deleteAchievement = async () => {
 
   isDeleting.value = true
   try {
-    await $fetch(`/api/achievements/${props.achievement.id}`, {
+    await $api(`/achievements/${props.achievement.id}`, {
       method: 'DELETE',
     })
 

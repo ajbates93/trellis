@@ -1,10 +1,10 @@
-import { db } from "../../database/connection";
-import { feedback, users } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users } from "#server/database/schema";
 import { sql, gte, eq, and } from "drizzle-orm";
-import { validateResponse } from "../../utils/validation";
-import { getWorkspaceId } from "../../utils/workspace";
-import { computePlantHealth } from "../../utils/community-scoring";
-import { apiSchemas } from "../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { getWorkspaceId } from "#server/utils/workspace";
+import { computePlantHealth } from "#server/utils/community-scoring";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

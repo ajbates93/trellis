@@ -1,9 +1,9 @@
 import { defineEventHandler, createError, getQuery } from "h3";
 import { eq, desc, and } from "drizzle-orm";
-import { db } from "../../database/connection";
-import { users, buddyCheckins } from "../../database/schema";
-import { validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
+import { db } from "#server/database/connection";
+import { users, buddyCheckins } from "#server/database/schema";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

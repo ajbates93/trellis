@@ -1,10 +1,10 @@
-import { db } from "../../../database/connection";
-import { slackWorkspaces, users, feedback } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { slackWorkspaces, users, feedback } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
-import { decrypt } from "../../../utils/encryption";
-import { verifySlackSignature, getSlackUserInfo } from "../../../utils/slack";
+import { decrypt } from "#server/utils/encryption";
+import { verifySlackSignature, getSlackUserInfo } from "#server/utils/slack";
 import { format } from "date-fns";
-import { notifyBuddyOfNewFeedback } from "../../../utils/notifications";
+import { notifyBuddyOfNewFeedback } from "#server/utils/notifications";
 
 /**
  * Handle Slack modal interactions (submissions)

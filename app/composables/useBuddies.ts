@@ -3,7 +3,7 @@
  */
 export const useBuddies = () => {
   // Fetch list of buddies (users where current user is their buddy)
-  const { data: buddyData, pending } = useFetch("/api/users/my-buddies", {
+  const { data: buddyData, pending } = useApi("/users/my-buddies", {
     lazy: true,
     default: () => null,
   });

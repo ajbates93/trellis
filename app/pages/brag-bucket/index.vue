@@ -290,7 +290,7 @@ const initializeExpandedYears = () => {
 const refreshAchievements = async () => {
   isLoading.value = true;
   try {
-    const response = await $fetch("/api/achievements");
+    const response = await $api("/achievements");
     if (response) {
       achievements.value = response.achievements || [];
       initializeExpandedYears();

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import * as apiSchemas from '../api'
+import * as apiSchemas from '#server/schemas/api'
 
 describe('API Schemas', () => {
   describe('CreateFeedbackRequestSchema', () => {

@@ -47,8 +47,8 @@ const fetchTeamData = async (isRefresh = false) => {
   error.value = false;
 
   try {
-    const data = await $fetch<TeamSummaryResponse>(
-      "/api/admin/insights/team-summary"
+    const data = await $api<TeamSummaryResponse>(
+      "/admin/insights/team-summary"
     );
     teamData.value = data;
     showRefreshHint.value = false;

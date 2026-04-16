@@ -94,7 +94,6 @@ import type { User } from "~/types";
 
 definePageMeta({
   layout: "default",
-  middleware: ["auth", "admin"],
 });
 
 useHead({
@@ -156,7 +155,7 @@ const fetchUsers = async (filter?: string) => {
   loading.value = true;
   error.value = false;
   try {
-    const data = await $fetch("/api/admin/users", {
+    const data = await $api("/admin/users", {
       query: { filter },
     });
 
@@ -226,7 +225,7 @@ const handleRemoveUser = async () => {
   const toast = useToast();
 
   try {
-    await $fetch(`/api/admin/users/${userToRemove.value.id}`, {
+    await $api(`/admin/users/${userToRemove.value.id}`, {
       method: "DELETE",
     });
 
@@ -265,7 +264,7 @@ const handleSendInvitation = async (user: User) => {
   const toast = useToast();
 
   try {
-    await $fetch("/api/admin/onboard/send-invitation", {
+    await $api("/admin/onboard/send-invitation", {
       method: "POST",
       body: { userId: user.id },
     });

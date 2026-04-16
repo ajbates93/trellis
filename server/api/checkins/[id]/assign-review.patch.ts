@@ -1,13 +1,13 @@
 import { defineEventHandler, createError, readBody, getRouterParam } from "h3";
 import { eq } from "drizzle-orm";
-import { db } from "../../../database/connection";
+import { db } from "#server/database/connection";
 import {
   buddyCheckins,
   reviewSchedules,
   users,
-} from "../../../database/schema";
-import { validateBody, validateResponse } from "../../../utils/validation";
-import { apiSchemas } from "../../../schemas";
+} from "#server/database/schema";
+import { validateBody, validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;

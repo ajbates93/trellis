@@ -1,7 +1,7 @@
 import type { z } from 'zod';
-import * as baseSchemas from '../schemas/base';
-import * as computedSchemas from '../schemas/computed';
-import * as apiSchemas from '../schemas/api';
+import * as baseSchemas from '#server/schemas/base';
+import * as computedSchemas from '#server/schemas/computed';
+import * as apiSchemas from '#server/schemas/api';
 
 // ===== BASE TYPES (inferred from Zod schemas) =====
 

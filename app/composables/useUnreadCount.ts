@@ -1,5 +1,5 @@
 export const useUnreadCount = () => {
-  const { data, refresh } = useFetch("/api/feedback/unread-count", {
+  const { data, refresh } = useApi("/feedback/unread-count", {
     key: "unread-feedback-count",
     lazy: true,
     default: () => null,

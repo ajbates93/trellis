@@ -1,4 +1,4 @@
-import { getAvatarFromS3 } from "../../utils/s3";
+import { getAvatarFromS3 } from "#server/utils/s3";
 
 export default defineEventHandler(async (event) => {
   const path = getRouterParam(event, "path");

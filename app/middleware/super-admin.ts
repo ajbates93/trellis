@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async () => {
   // Fetch session directly to avoid race conditions
-  const { data: session } = await useFetch("/api/auth/get-session");
+  const { data: session } = await useApi("/auth/get-session");
 
   // If user is not authenticated, redirect to login
   if (!session.value?.user) {

@@ -1,7 +1,7 @@
-import { db } from "../../../database/connection";
-import { slackWorkspaces, users } from "../../../database/schema";
+import { db } from "#server/database/connection";
+import { slackWorkspaces, users } from "#server/database/schema";
 import { eq, and, ilike } from "drizzle-orm";
-import { decrypt } from "../../../utils/encryption";
+import { decrypt } from "#server/utils/encryption";
 import {
   verifySlackSignature,
   getSlackUserInfo,
@@ -10,7 +10,7 @@ import {
   extractUserIdFromMention,
   extractMentionedName,
   extractFeedbackText,
-} from "../../../utils/slack";
+} from "#server/utils/slack";
 
 /**
  * Handle Slack slash commands

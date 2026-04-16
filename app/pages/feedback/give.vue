@@ -23,7 +23,7 @@ const searchQuery = ref("");
 const showColleaguePicker = ref(false);
 
 // Fetch users
-const { data: usersData } = await useFetch("/api/users");
+const { data: usersData } = await useApi("/users");
 const allUsers = computed(() => usersData.value?.users || []);
 
 // Filter out current user
@@ -37,13 +37,13 @@ const {
   data: suggestionData,
   refresh: refreshSuggestion,
   status: suggestionStatus,
-} = useFetch(
+} = useApi(
   () => {
     const params =
       excludeIds.value.length > 0
         ? `?excludeIds=${excludeIds.value.join(",")}`
         : "";
-    return `/api/feedback/suggestions${params}`;
+    return `/feedback/suggestions${params}`;
   },
   { key: () => `suggestion-${excludeIds.value.join(",")}` },
 );
@@ -64,8 +64,8 @@ const reviewStatus = computed(
 );
 
 // Fetch random feedback prompt
-const { data: promptData, refresh: refreshPrompt } = await useFetch(
-  "/api/feedback-prompts/random",
+const { data: promptData, refresh: refreshPrompt } = await useApi(
+  "/feedback-prompts/random",
 );
 const currentPrompt = computed(() => promptData.value?.prompt);
 const isRefreshingPrompt = ref(false);
@@ -90,8 +90,8 @@ const selectedUserObject = computed(() => {
 
 const checkCanReview = async (userId: string) => {
   try {
-    const { alreadyReviewedThisWeek } = await $fetch(
-      `/api/feedback/can-review/${userId}`,
+    const { alreadyReviewedThisWeek } = await $api(
+      `/feedback/can-review/${userId}`,
     );
     canReviewUser.value = !alreadyReviewedThisWeek;
     alreadyReviewedWarning.value = alreadyReviewedThisWeek;
@@ -167,7 +167,7 @@ const submitFeedback = async () => {
   isSubmitting.value = true;
 
   try {
-    await $fetch("/api/feedback", {
+    await $api("/feedback", {
       method: "POST",
       body: {
         revieweeId: selectedUserId.value,

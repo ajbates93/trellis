@@ -13,8 +13,8 @@ const { downloadICalFile } = useCalendarExport();
 const { formatDateInUserTZ } = useUserTimezone();
 
 // Fetch review data
-const { data: reviewData, refresh } = await useFetch(
-  `/api/reviews/${reviewId}`,
+const { data: reviewData, refresh } = await useApi(
+  `/reviews/${reviewId}`,
 );
 
 const review = computed(() => (reviewData.value as any)?.review);
@@ -45,8 +45,8 @@ const feedback = computed(() => (reviewData.value as any)?.feedback || []);
 const goals = computed(() => (reviewData.value as any)?.goals || []);
 
 // Fetch achievements for this review
-const { data: achievementsData } = await useFetch(
-  `/api/achievements/for-review/${reviewId}`,
+const { data: achievementsData } = await useApi(
+  `/achievements/for-review/${reviewId}`,
 );
 const achievements = computed(() => achievementsData.value?.achievements || []);
 
@@ -157,7 +157,7 @@ const updateReview = async () => {
     const correctUtcMs = utcMs - offset;
     const utcDateString = new Date(correctUtcMs).toISOString();
 
-    await $fetch(`/api/reviews/${reviewId}`, {
+    await $api(`/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
         scheduledDate: utcDateString,
@@ -190,7 +190,7 @@ const updateReview = async () => {
 // Complete review
 const completeReview = async () => {
   try {
-    await $fetch(`/api/reviews/${reviewId}/complete`, {
+    await $api(`/reviews/${reviewId}/complete`, {
       method: "PATCH",
       body: { completionNotes: completionNotes.value },
     });
@@ -212,7 +212,7 @@ const isReopening = ref(false);
 const reopenReview = async () => {
   isReopening.value = true;
   try {
-    await $fetch(`/api/reviews/${reviewId}/reopen`, {
+    await $api(`/reviews/${reviewId}/reopen`, {
       method: "PATCH",
     });
     await refresh();
@@ -283,6 +283,9 @@ watch(
 const isSavingReflections = ref(false);
 const isSavingBuddyComments = ref(false);
 const saveTimeout = ref<NodeJS.Timeout | null>(null);
+// Per-field AbortController so rapid edits cancel the prior in-flight save
+// and only the latest PATCH can land. Prevents stale-save races.
+const saveControllers = new Map<string, AbortController>();
 
 const saveReflection = async (field: string, value: string) => {
   if (!review.value) return;
@@ -294,14 +297,22 @@ const saveReflection = async (field: string, value: string) => {
     isSavingReflections.value = true;
   }
 
+  // Cancel any in-flight save for this field before starting a new one.
+  saveControllers.get(field)?.abort();
+  const controller = new AbortController();
+  saveControllers.set(field, controller);
+
   try {
-    await $fetch(`/api/reviews/${reviewId}`, {
+    await $api(`/reviews/${reviewId}`, {
       method: "PATCH",
       body: {
         [field]: value,
       },
+      signal: controller.signal,
     });
   } catch (error) {
+    // AbortError just means a newer save superseded this one — ignore.
+    if ((error as Error)?.name === "AbortError") return;
     console.error(`Failed to save ${field}:`, error);
     toast.add({
       title: "Failed to save changes",
@@ -310,10 +321,14 @@ const saveReflection = async (field: string, value: string) => {
       icon: "i-heroicons-x-circle",
     });
   } finally {
-    if (isBuddyComment) {
-      isSavingBuddyComments.value = false;
-    } else {
-      isSavingReflections.value = false;
+    // Only clear the loading flag if this is still the active controller.
+    if (saveControllers.get(field) === controller) {
+      saveControllers.delete(field);
+      if (isBuddyComment) {
+        isSavingBuddyComments.value = false;
+      } else {
+        isSavingReflections.value = false;
+      }
     }
   }
 };

@@ -175,7 +175,7 @@
 
 <script setup lang="ts">
 const { getRoleLabel } = useRoleLabel();
-const { data: workspaceData } = useFetch("/api/workspace/current");
+const { data: workspaceData } = useApi("/workspace/current");
 const workspaceName = computed(
   () => workspaceData.value?.workspace?.name || "your team",
 );
@@ -208,7 +208,7 @@ async function fetchLeaderboard() {
   loading.value = true;
   error.value = false;
   try {
-    const data = await $fetch("/api/community/leaderboard", {
+    const data = await $api("/community/leaderboard", {
       query: { period: selectedPeriod.value.value },
     });
     if (data) {

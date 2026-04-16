@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 // Fetch all users
-const { data: userData } = await useFetch("/api/users");
+const { data: userData } = await useApi("/users");
 
 const users = computed(() => userData.value?.users || []);
 

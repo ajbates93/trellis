@@ -1,4 +1,4 @@
-import { db } from "../../database/connection";
+import { db } from "#server/database/connection";
 import {
   feedback,
   users,
@@ -6,10 +6,10 @@ import {
   goalMilestones,
   achievements,
   reviewSchedules,
-} from "../../database/schema";
+} from "#server/database/schema";
 import { eq, and, desc, inArray, isNotNull, or } from "drizzle-orm";
-import { validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 const DEFAULT_LIMIT = 10;
 const PER_SOURCE_LIMIT = 20;

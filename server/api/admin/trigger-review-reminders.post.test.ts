@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createMockEvent } from '../../__tests__/helpers/mock-event'
+import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 
 // Mock runTask (Nuxt server task)
 vi.stubGlobal('runTask', vi.fn().mockResolvedValue({ sent: 2 }))

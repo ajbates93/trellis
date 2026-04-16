@@ -13,8 +13,8 @@ const emit = defineEmits<{
 const toast = useToast();
 
 // Fetch notes
-const { data: notesData, refresh: refreshNotes } = await useFetch(
-  `/api/goals/${props.goalId}/notes`,
+const { data: notesData, refresh: refreshNotes } = await useApi(
+  `/goals/${props.goalId}/notes`,
 );
 const notes = computed(() => notesData.value?.notes || []);
 
@@ -37,7 +37,7 @@ const submitNote = async () => {
   isSubmitting.value = true;
 
   try {
-    await $fetch(`/api/goals/${props.goalId}/notes`, {
+    await $api(`/goals/${props.goalId}/notes`, {
       method: "POST",
       body: {
         noteText: noteText.value.trim(),

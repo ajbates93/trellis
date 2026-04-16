@@ -1,8 +1,8 @@
-import { db } from "../../database/connection";
-import { feedback, users } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { feedback, users } from "#server/database/schema";
 import { eq, sql, desc } from "drizzle-orm";
-import { validateResponse } from "../../utils/validation";
-import { apiSchemas } from "../../schemas";
+import { validateResponse } from "#server/utils/validation";
+import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
   try {

@@ -33,7 +33,7 @@ export const useUserTimezone = () => {
    */
   const updateUserTimezone = async (timezone: string) => {
     try {
-      await $fetch("/api/user/timezone", {
+      await $api("/user/timezone", {
         method: "PATCH",
         body: { timezone },
       });

@@ -1,7 +1,7 @@
-import { db } from "../database/connection";
-import { reviewSchedules, users } from "../database/schema";
+import { db } from "#server/database/connection";
+import { reviewSchedules, users } from "#server/database/schema";
 import { eq, and, between } from "drizzle-orm";
-import { sendEmail, emailTemplates } from "../utils/email";
+import { sendEmail, emailTemplates } from "#server/utils/email";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

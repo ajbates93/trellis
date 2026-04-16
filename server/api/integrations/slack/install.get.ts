@@ -1,5 +1,5 @@
 import { randomBytes, createHmac } from "crypto";
-import { getWorkspaceId } from "../../../utils/workspace";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 /**
  * Initiates Slack OAuth install flow

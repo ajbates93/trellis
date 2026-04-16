@@ -1,5 +1,5 @@
-import { db } from "../../database/connection";
-import { workspaces, users, feedback } from "../../database/schema";
+import { db } from "#server/database/connection";
+import { workspaces, users, feedback } from "#server/database/schema";
 import { sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {

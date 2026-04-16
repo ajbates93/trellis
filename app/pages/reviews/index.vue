@@ -10,10 +10,10 @@ useHead({
 const toast = useToast();
 
 // Fetch upcoming and past reviews
-const { data: upcomingData, refresh: refreshUpcoming } = await useFetch(
-  "/api/reviews/upcoming",
+const { data: upcomingData, refresh: refreshUpcoming } = await useApi(
+  "/reviews/upcoming",
 );
-const { data: pastData } = await useFetch("/api/reviews/past");
+const { data: pastData } = await useApi("/reviews/past");
 
 const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 const pastReviews = computed(() => pastData.value?.reviews || []);

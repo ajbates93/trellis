@@ -378,7 +378,7 @@ const previewAvatar = ref<string | null>(null);
 const buddy = ref<User | null>(null);
 
 // Fetch current workspace
-const { data: workspaceData } = useFetch("/api/workspace/current");
+const { data: workspaceData } = useApi("/workspace/current");
 const workspace = computed(() => workspaceData.value?.workspace);
 
 const form = reactive({
@@ -427,7 +427,7 @@ watch(
   async (buddyId) => {
     if (buddyId) {
       try {
-        const allUsers = await $fetch<{ users: User[] }>("/api/users");
+        const allUsers = await $api<{ users: User[] }>("/users");
         buddy.value = allUsers.users.find((u) => u.id === buddyId) || null;
       } catch (error) {
         console.error("Error fetching buddy:", error);
@@ -438,7 +438,7 @@ watch(
 );
 
 // Fetch next upcoming review
-const { data: upcomingReviewsData } = useFetch("/api/reviews/upcoming");
+const { data: upcomingReviewsData } = useApi("/reviews/upcoming");
 const nextReview = computed(() => {
   const reviews = upcomingReviewsData.value?.reviews || [];
   return reviews.length > 0 ? reviews[0] : null;
@@ -598,7 +598,7 @@ const saveProfile = async () => {
       previewAvatar.value = null;
     }
 
-    await $fetch("/api/users/profile", {
+    await $api("/users/profile", {
       method: "PATCH",
       body: updateData,
     });
