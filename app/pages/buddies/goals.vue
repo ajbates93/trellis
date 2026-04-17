@@ -240,7 +240,7 @@ const deleteCheckin = async () => {
 };
 
 // Refresh when buddy changes
-const { announce } = useAnnouncer();
+const { set: announce } = useAnnouncer();
 watch(selectedBuddyId, async () => {
   await Promise.all([refreshBuddyGoals(), refreshCheckins()]);
   const name = selectedBuddy.value?.name;

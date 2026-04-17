@@ -14,7 +14,7 @@ useHead({
 const toast = useToast();
 const { buddies, hasBuddies, getBuddyById } = useBuddies();
 const { selectedBuddyId } = useSelectedBuddy();
-const { announce } = useAnnouncer();
+const { set: announce } = useAnnouncer();
 
 // Fetch buddy received feedback (reactive based on selectedBuddyId)
 const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useApi(
