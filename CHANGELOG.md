@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.2](https://github.com/ajbates93/trellis/compare/v0.12.1...v0.12.2) (2026-04-17)
+
+
+### Bug Fixes
+
+* useAnnoucer correct apis ([419f562](https://github.com/ajbates93/trellis/commit/419f562cfa29acb6a9da1a507b4eab380eea2da4))
+
 ## [0.12.1](https://github.com/ajbates93/trellis/compare/v0.12.0...v0.12.1) (2026-04-16)
 
 
