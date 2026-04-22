@@ -1,5 +1,5 @@
 <template>
-  <UCard class="bg-gray-900/50 border-gray-800 relative overflow-hidden">
+  <UCard class="bg-default/50 border-default relative overflow-hidden">
     <!-- Amber glow for active streaks -->
     <div
       v-if="streak > 0"
@@ -16,16 +16,16 @@
       <template v-if="streak > 0">
         <div class="flex items-baseline gap-2 mb-1">
           <span class="text-4xl font-bold text-white tabular-nums leading-none">{{ streak }}</span>
-          <span class="text-sm text-gray-400">{{ streak === 1 ? 'week' : 'weeks' }}</span>
+          <span class="text-sm text-muted">{{ streak === 1 ? 'week' : 'weeks' }}</span>
         </div>
-        <p class="text-[13px] text-gray-400">
+        <p class="text-[13px] text-muted">
           {{ streakMessage }}
         </p>
       </template>
 
       <!-- No streak -->
       <template v-else>
-        <p class="text-[13px] text-gray-400">
+        <p class="text-[13px] text-muted">
           Start your streak — <NuxtLink to="/feedback/give" class="text-amber-400 hover:text-amber-300">submit feedback</NuxtLink> this week.
         </p>
       </template>

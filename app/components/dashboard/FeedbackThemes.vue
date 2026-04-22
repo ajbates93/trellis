@@ -1,24 +1,24 @@
 <template>
-  <UCard class="bg-gray-900/50 border-gray-800">
+  <UCard class="bg-default/50 border-default">
     <div class="flex items-center gap-2 mb-4">
       <UIcon name="i-heroicons-sparkles" class="text-teal-400 text-lg" />
       <h3 class="text-[15px] font-semibold text-white">Feedback Themes</h3>
     </div>
 
     <div v-if="pending" class="animate-pulse">
-      <div class="h-2 bg-gray-800 rounded-full mb-2" />
+      <div class="h-2 bg-elevated rounded-full mb-2" />
       <div class="flex justify-between mb-4">
-        <div class="h-2 w-16 bg-gray-800 rounded" />
-        <div class="h-2 w-20 bg-gray-800 rounded" />
-        <div class="h-2 w-16 bg-gray-800 rounded" />
+        <div class="h-2 w-16 bg-elevated rounded" />
+        <div class="h-2 w-20 bg-elevated rounded" />
+        <div class="h-2 w-16 bg-elevated rounded" />
       </div>
       <div class="flex flex-wrap gap-1.5">
-        <div v-for="(w, i) in [60, 80, 50, 70, 55]" :key="i" class="h-5 bg-gray-800 rounded" :style="{ width: w + 'px' }" />
+        <div v-for="(w, i) in [60, 80, 50, 70, 55]" :key="i" class="h-5 bg-elevated rounded" :style="{ width: w + 'px' }" />
       </div>
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!hasAnalysis" class="text-sm text-gray-500 py-4 text-center">
+    <div v-else-if="!hasAnalysis" class="text-sm text-dimmed py-4 text-center">
       Not enough feedback for insights yet.
       <NuxtLink to="/insights" class="text-teal-400 hover:text-teal-300">Learn more</NuxtLink>
     </div>
@@ -36,11 +36,11 @@
             :style="{ width: `${sentiment.constructive}%` }"
           />
           <div
-            class="bg-gray-600"
+            class="bg-(--ui-color-neutral-600)"
             :style="{ width: `${sentiment.neutral}%` }"
           />
         </div>
-        <div class="flex justify-between text-[11px] text-gray-500">
+        <div class="flex justify-between text-[11px] text-dimmed">
           <span>
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-400 mr-1" />
             Positive {{ sentiment.positive }}%
@@ -50,7 +50,7 @@
             Constructive {{ sentiment.constructive }}%
           </span>
           <span>
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-gray-600 mr-1" />
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-(--ui-color-neutral-600) mr-1" />
             Neutral {{ sentiment.neutral }}%
           </span>
         </div>

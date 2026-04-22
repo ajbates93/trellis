@@ -3,7 +3,7 @@
     <h1 class="text-2xl sm:text-3xl font-bold text-white">
       {{ greeting }}, {{ displayName }}
     </h1>
-    <p class="mt-1 text-sm sm:text-base text-gray-400">
+    <p class="mt-1 text-sm sm:text-base text-muted">
       {{ subtitle }}
     </p>
   </div>

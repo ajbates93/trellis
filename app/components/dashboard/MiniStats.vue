@@ -4,12 +4,12 @@
       v-for="stat in visibleStats"
       :key="stat.label"
       :to="stat.to"
-      class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-colors"
+      class="flex items-center gap-3 px-4 py-3 rounded-xl border border-default bg-default/50 hover:border-muted transition-colors"
     >
       <UIcon :name="stat.icon" class="text-base" :class="stat.iconClass" />
       <div>
         <span class="text-xl font-bold text-white leading-none">{{ stat.value }}</span>
-        <p class="text-xs text-gray-500 mt-0.5">{{ stat.label }}</p>
+        <p class="text-xs text-dimmed mt-0.5">{{ stat.label }}</p>
       </div>
     </NuxtLink>
   </div>

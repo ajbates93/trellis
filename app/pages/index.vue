@@ -40,18 +40,18 @@
             class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-item"
             :style="{ '--delay': '250ms' }"
           >
-            <UCard v-if="statsPending" class="bg-gray-900/50 border-gray-800">
+            <UCard v-if="statsPending" class="bg-default/50 border-default">
               <div class="animate-pulse space-y-4">
                 <div class="flex items-center gap-2">
-                  <div class="w-5 h-5 rounded bg-gray-800" />
-                  <div class="h-3 w-24 bg-gray-800 rounded" />
+                  <div class="w-5 h-5 rounded bg-elevated" />
+                  <div class="h-3 w-24 bg-elevated rounded" />
                 </div>
-                <div class="h-12 w-20 bg-gray-800 rounded" />
-                <div class="h-3 w-40 bg-gray-800 rounded" />
+                <div class="h-12 w-20 bg-elevated rounded" />
+                <div class="h-3 w-40 bg-elevated rounded" />
                 <div class="space-y-2 pt-2">
-                  <div class="h-8 bg-gray-800 rounded" />
-                  <div class="h-8 bg-gray-800 rounded" />
-                  <div class="h-8 bg-gray-800 rounded" />
+                  <div class="h-8 bg-elevated rounded" />
+                  <div class="h-8 bg-elevated rounded" />
+                  <div class="h-8 bg-elevated rounded" />
                 </div>
               </div>
             </UCard>
@@ -64,13 +64,13 @@
               :goals="allGoals"
               :achievements-count="achievementsCount"
             />
-            <UCard v-else class="bg-gray-900/50 border-gray-800 flex items-center justify-center">
+            <UCard v-else class="bg-default/50 border-default flex items-center justify-center">
               <div class="text-center py-6">
-                <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800/60 flex items-center justify-center">
-                  <UIcon name="i-heroicons-calendar-days" class="text-gray-500 text-xl" />
+                <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-elevated/60 flex items-center justify-center">
+                  <UIcon name="i-heroicons-calendar-days" class="text-dimmed text-xl" />
                 </div>
-                <p class="text-sm font-medium text-gray-300 mb-1">No review scheduled</p>
-                <p class="text-xs text-gray-500 mb-4">Your next review hasn't been booked yet.</p>
+                <p class="text-sm font-medium text-toned mb-1">No review scheduled</p>
+                <p class="text-xs text-dimmed mb-4">Your next review hasn't been booked yet.</p>
                 <NuxtLink
                   to="/reviews"
                   class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-teal-900/20 text-teal-400 border border-teal-500/20 hover:bg-teal-900/30 transition-colors"

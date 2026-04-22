@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Gradient Divider -->
-    <div class="h-px bg-gradient-to-r from-transparent via-gray-800 to-transparent mb-6" />
+    <div class="h-px bg-gradient-to-r from-transparent via-(--ui-color-neutral-800) to-transparent mb-6" />
 
     <!-- Section Header -->
     <div class="flex items-center justify-between mb-4">
@@ -25,21 +25,21 @@
       <div
         v-for="n in 3"
         :key="n"
-        class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 animate-pulse"
+        class="bg-default/50 border border-default rounded-lg p-4 animate-pulse"
       >
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-gray-800" />
+          <div class="w-10 h-10 rounded-full bg-elevated" />
           <div class="flex-1 space-y-1.5">
-            <div class="h-3 bg-gray-800 rounded w-2/3" />
-            <div class="h-2 bg-gray-800 rounded w-1/3" />
+            <div class="h-3 bg-elevated rounded w-2/3" />
+            <div class="h-2 bg-elevated rounded w-1/3" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-2 mb-4">
-          <div class="h-10 bg-gray-800 rounded" />
-          <div class="h-10 bg-gray-800 rounded" />
-          <div class="h-10 bg-gray-800 rounded" />
+          <div class="h-10 bg-elevated rounded" />
+          <div class="h-10 bg-elevated rounded" />
+          <div class="h-10 bg-elevated rounded" />
         </div>
-        <div class="h-8 bg-gray-800 rounded" />
+        <div class="h-8 bg-elevated rounded" />
       </div>
     </div>
 
@@ -68,7 +68,7 @@
     </template>
 
     <!-- Overflow link -->
-    <p v-if="!pending && buddees.length > 3" class="text-xs text-gray-500 mt-3 text-center">
+    <p v-if="!pending && buddees.length > 3" class="text-xs text-dimmed mt-3 text-center">
       <NuxtLink to="/buddies" class="text-purple-400 hover:text-purple-300">
         +{{ buddees.length - 3 }} more &rarr;
       </NuxtLink>
