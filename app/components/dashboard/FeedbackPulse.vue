@@ -1,5 +1,5 @@
 <template>
-  <UCard class="bg-gray-900/50 border-gray-800">
+  <UCard class="bg-default/50 border-default">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-[15px] font-semibold text-white">Feedback Pulse</h3>
       <UIcon name="i-heroicons-chart-bar" class="text-teal-400 text-lg" />
@@ -9,12 +9,12 @@
       <div
         v-for="(h, i) in skeletonHeights"
         :key="i"
-        class="flex-1 bg-gray-800 rounded-sm"
+        class="flex-1 bg-elevated rounded-sm"
         :style="{ height: h + '%' }"
       />
     </div>
 
-    <div v-else-if="weeks.length === 0" class="text-sm text-gray-500 py-8 text-center">
+    <div v-else-if="weeks.length === 0" class="text-sm text-dimmed py-8 text-center">
       Not enough data yet.
     </div>
 
@@ -63,18 +63,18 @@
     </div>
 
     <!-- Legend -->
-    <div v-if="weeks.length > 0" class="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-gray-800">
+    <div v-if="weeks.length > 0" class="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-default">
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-teal-400" />
-          <span class="text-[11px] text-gray-400">Given</span>
+          <span class="text-[11px] text-muted">Given</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-purple-400" />
-          <span class="text-[11px] text-gray-400">Received</span>
+          <span class="text-[11px] text-muted">Received</span>
         </div>
       </div>
-      <span class="text-[11px] text-gray-500">x-axis: week commencing (dd/mm)</span>
+      <span class="text-[11px] text-dimmed">x-axis: week commencing (dd/mm)</span>
     </div>
   </UCard>
 </template>

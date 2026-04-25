@@ -4,7 +4,7 @@
       v-for="action in actions"
       :key="action.to"
       :to="action.to"
-      class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-800 hover:bg-gray-900/50 transition-all duration-150"
+      class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-default hover:bg-default/50 transition-all duration-150"
       :class="action.hoverBorder"
     >
       <UIcon :name="action.icon" class="text-lg" :class="action.iconClass" />

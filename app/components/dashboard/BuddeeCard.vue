@@ -1,11 +1,11 @@
 <template>
-  <UCard class="bg-gray-900/50 border-gray-800">
+  <UCard class="bg-default/50 border-default">
     <!-- Header: Avatar + Name + Status -->
     <div class="flex items-center gap-3 mb-3">
       <UAvatar :text="initials" :src="buddee.avatarUrl || undefined" size="sm" />
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium text-white truncate">{{ displayName }}</p>
-        <p v-if="buddee.roleType" class="text-[11px] text-gray-500 capitalize">{{ buddee.roleType }}</p>
+        <p v-if="buddee.roleType" class="text-[11px] text-dimmed capitalize">{{ buddee.roleType }}</p>
       </div>
       <span
         class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border whitespace-nowrap"
@@ -17,22 +17,22 @@
 
     <!-- Metrics Row -->
     <div class="grid grid-cols-3 gap-2 mb-3">
-      <div class="bg-gray-800/50 rounded-lg p-2 text-center">
+      <div class="bg-elevated/50 rounded-lg p-2 text-center">
         <p
           class="text-lg font-semibold tabular-nums"
           :class="buddee.feedbackToPublish > 0 ? 'text-amber-400' : 'text-white'"
         >
           {{ buddee.feedbackToPublish }}
         </p>
-        <p class="text-[10px] text-gray-500">To publish</p>
+        <p class="text-[10px] text-dimmed">To publish</p>
       </div>
-      <div class="bg-gray-800/50 rounded-lg p-2 text-center">
+      <div class="bg-elevated/50 rounded-lg p-2 text-center">
         <p class="text-lg font-semibold text-white tabular-nums">{{ buddee.feedbackReceived }}</p>
-        <p class="text-[10px] text-gray-500">Received</p>
+        <p class="text-[10px] text-dimmed">Received</p>
       </div>
-      <div class="bg-gray-800/50 rounded-lg p-2 text-center">
+      <div class="bg-elevated/50 rounded-lg p-2 text-center">
         <p class="text-lg font-semibold text-white tabular-nums">{{ buddee.activeGoals }}</p>
-        <p class="text-[10px] text-gray-500">Goals</p>
+        <p class="text-[10px] text-dimmed">Goals</p>
       </div>
     </div>
 
@@ -47,7 +47,7 @@
       </NuxtLink>
       <NuxtLink
         :to="`/buddies/${buddee.id}`"
-        class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+        class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-md text-xs font-medium border border-muted text-toned hover:bg-elevated transition-colors"
         :class="buddee.feedbackToPublish > 0 ? '' : 'flex-1'"
       >
         View profile

@@ -1,5 +1,5 @@
 <template>
-  <UCard class="bg-gray-900/50 border-gray-800 relative overflow-hidden">
+  <UCard class="bg-default/50 border-default relative overflow-hidden">
     <!-- Subtle teal glow -->
     <div class="absolute -top-10 -right-10 w-32 h-32 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -13,9 +13,9 @@
           </div>
           <div class="flex items-baseline gap-2 mb-1">
             <span class="text-5xl font-bold text-white tabular-nums leading-none">{{ daysUntilReview }}</span>
-            <span class="text-base text-gray-400">days away</span>
+            <span class="text-base text-muted">days away</span>
           </div>
-          <p class="text-sm text-gray-400">
+          <p class="text-sm text-muted">
             {{ formattedDate }}<template v-if="buddyName"> with {{ buddyName }}</template>
           </p>
         </div>
@@ -23,7 +23,7 @@
         <!-- Right: circular progress -->
         <div class="relative w-20 h-20 flex-shrink-0">
           <svg viewBox="0 0 80 80" class="-rotate-90">
-            <circle cx="40" cy="40" r="34" fill="none" stroke-width="6" class="stroke-gray-800" />
+            <circle cx="40" cy="40" r="34" fill="none" stroke-width="6" class="stroke-(--ui-color-neutral-800)" />
             <circle
               cx="40" cy="40" r="34" fill="none"
               class="stroke-teal-400"
@@ -36,14 +36,14 @@
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
             <span class="text-lg font-bold text-white">{{ prepDone }}/{{ prepItems.length }}</span>
-            <span class="text-[10px] text-gray-500">ready</span>
+            <span class="text-[10px] text-dimmed">ready</span>
           </div>
         </div>
       </div>
 
       <!-- Prep checklist -->
       <div class="mt-5 space-y-1.5">
-        <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+        <span class="text-[11px] font-semibold text-dimmed uppercase tracking-wide">
           Prepare for your review
         </span>
         <NuxtLink
@@ -51,7 +51,7 @@
           :key="item.label"
           :to="item.to"
           class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors"
-          :class="item.done ? 'bg-teal-900/20' : 'hover:bg-gray-800'"
+          :class="item.done ? 'bg-teal-900/20' : 'hover:bg-elevated'"
         >
           <UIcon
             v-if="item.done"
@@ -60,7 +60,7 @@
           />
           <div
             v-else
-            class="w-4 h-4 rounded-full border-2 border-gray-600 flex-shrink-0"
+            class="w-4 h-4 rounded-full border-2 border-muted flex-shrink-0"
           />
           <div class="flex-1 min-w-0">
             <span
@@ -69,12 +69,12 @@
             >
               {{ item.label }}
             </span>
-            <span class="text-[11px] text-gray-500">{{ item.detail }}</span>
+            <span class="text-[11px] text-dimmed">{{ item.detail }}</span>
           </div>
           <UIcon
             v-if="!item.done"
             name="i-heroicons-chevron-right"
-            class="text-gray-600 text-sm flex-shrink-0"
+            class="text-dimmed text-sm flex-shrink-0"
           />
         </NuxtLink>
       </div>
