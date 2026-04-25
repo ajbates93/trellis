@@ -4,7 +4,7 @@ export default defineAppConfig({
       // Accent — try: emerald, teal, green, indigo, violet, sky, cyan, rose
       primary: "green",
       // Backgrounds/text — try: zinc, slate, neutral, stone, gray
-      neutral: "zinc",
+      neutral: "slate",
     },
   },
 });
