@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0](https://github.com/ajbates93/trellis/compare/v0.12.2...v0.13.0) (2026-04-25)
+
+
+### Features
+
+* **theme:** link dashboard components with app theme ([ad7e91f](https://github.com/ajbates93/trellis/commit/ad7e91ffdfe6fc1e6f6f0f2c43bb4bd80a85fc28))
+
+
+### Bug Fixes
+
+* revert to slate theme for now ([6f4af05](https://github.com/ajbates93/trellis/commit/6f4af05caa5bc4c6edc32f6cbbfc899cf029e674))
+
 ## [0.12.2](https://github.com/ajbates93/trellis/compare/v0.12.1...v0.12.2) (2026-04-17)
 
 
