@@ -1,8 +1,8 @@
 <template>
   <UCard class="bg-default/50 border-default">
     <div class="flex justify-between items-center mb-4">
-      <h3 class="text-[15px] font-semibold text-white">Goals</h3>
-      <NuxtLink to="/goals" class="text-xs text-teal-400 font-medium hover:text-teal-300">
+      <h3 class="text-[15px] font-semibold text-highlighted">Goals</h3>
+      <NuxtLink to="/goals" class="text-xs text-teal-600 dark:text-teal-400 font-medium hover:text-teal-700 dark:hover:text-teal-300">
         View all &rarr;
       </NuxtLink>
     </div>
@@ -18,13 +18,13 @@
     </div>
 
     <div v-else-if="activeGoals.length === 0" class="text-sm text-dimmed py-4 text-center">
-      No active goals. <NuxtLink to="/goals" class="text-teal-400 hover:text-teal-300">Create one</NuxtLink>
+      No active goals. <NuxtLink to="/goals" class="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Create one</NuxtLink>
     </div>
 
     <div v-else class="space-y-3.5">
       <div v-for="goal in activeGoals" :key="goal.id">
         <div class="flex justify-between items-center mb-1.5">
-          <span class="text-[13px] text-white font-medium truncate pr-3">{{ goal.goalText }}</span>
+          <span class="text-[13px] text-highlighted font-medium truncate pr-3">{{ goal.goalText }}</span>
           <span class="text-[11px] text-dimmed flex-shrink-0">
             {{ goal.completedMilestones }}/{{ goal.totalMilestones }}
           </span>

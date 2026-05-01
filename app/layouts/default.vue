@@ -271,7 +271,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       }"
     >
       <UDashboardSidebar
-        class="hidden lg:flex"
+        class="hidden lg:flex bg-default"
         collapsible
         resizable
         :ui="{

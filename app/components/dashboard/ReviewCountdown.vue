@@ -8,11 +8,11 @@
         <!-- Left: countdown -->
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <UIcon name="i-heroicons-calendar-days" class="text-teal-400 text-sm" />
-            <span class="text-xs font-semibold text-teal-400 uppercase tracking-wider">Next Review</span>
+            <UIcon name="i-heroicons-calendar-days" class="text-teal-600 dark:text-teal-400 text-sm" />
+            <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">Next Review</span>
           </div>
           <div class="flex items-baseline gap-2 mb-1">
-            <span class="text-5xl font-bold text-white tabular-nums leading-none">{{ daysUntilReview }}</span>
+            <span class="text-5xl font-bold text-highlighted tabular-nums leading-none">{{ daysUntilReview }}</span>
             <span class="text-base text-muted">days away</span>
           </div>
           <p class="text-sm text-muted">
@@ -35,7 +35,7 @@
             />
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <span class="text-lg font-bold text-white">{{ prepDone }}/{{ prepItems.length }}</span>
+            <span class="text-lg font-bold text-highlighted">{{ prepDone }}/{{ prepItems.length }}</span>
             <span class="text-[10px] text-dimmed">ready</span>
           </div>
         </div>
@@ -51,12 +51,12 @@
           :key="item.label"
           :to="item.to"
           class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors"
-          :class="item.done ? 'bg-teal-900/20' : 'hover:bg-elevated'"
+          :class="item.done ? 'bg-teal-100 dark:bg-teal-900/20' : 'hover:bg-elevated'"
         >
           <UIcon
             v-if="item.done"
             name="i-heroicons-check-circle"
-            class="text-teal-400 text-base flex-shrink-0"
+            class="text-teal-600 dark:text-teal-400 text-base flex-shrink-0"
           />
           <div
             v-else
@@ -65,7 +65,7 @@
           <div class="flex-1 min-w-0">
             <span
               class="text-[13px] block"
-              :class="item.done ? 'text-teal-400/85' : 'text-white'"
+              :class="item.done ? 'text-teal-600 dark:text-teal-400/85' : 'text-highlighted'"
             >
               {{ item.label }}
             </span>

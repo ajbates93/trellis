@@ -6,16 +6,16 @@
     <!-- Section Header -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <UIcon name="i-heroicons-user-group" class="text-purple-400 text-lg" />
-        <h2 class="text-[15px] font-semibold text-white">Your Buddies</h2>
+        <UIcon name="i-heroicons-user-group" class="text-purple-600 dark:text-purple-400 text-lg" />
+        <h2 class="text-[15px] font-semibold text-highlighted">Your Buddies</h2>
         <span
           v-if="!pending"
-          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-900/20 text-purple-400 border border-purple-500/20"
+          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20"
         >
           {{ buddees.length }}
         </span>
       </div>
-      <NuxtLink to="/buddies" class="text-xs text-purple-400 font-medium hover:text-purple-300">
+      <NuxtLink to="/buddies" class="text-xs text-purple-600 dark:text-purple-400 font-medium hover:text-purple-700 dark:text-purple-300">
         View all &rarr;
       </NuxtLink>
     </div>
@@ -47,10 +47,10 @@
       <!-- Nudge Bar -->
       <div
         v-if="nudgeMessages.length > 0"
-        class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 mb-4 flex items-start gap-2"
+        class="bg-purple-100 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-500/20 rounded-lg p-3 mb-4 flex items-start gap-2"
       >
-        <UIcon name="i-heroicons-exclamation-circle" class="text-purple-400 text-lg flex-shrink-0 mt-0.5" />
-        <div class="text-sm text-purple-300 space-x-1">
+        <UIcon name="i-heroicons-exclamation-circle" class="text-purple-600 dark:text-purple-400 text-lg flex-shrink-0 mt-0.5" />
+        <div class="text-sm text-purple-700 dark:text-purple-300 space-x-1">
           <span v-for="(msg, i) in nudgeMessages" :key="i">
             {{ msg.prefix }}<strong>{{ msg.bold }}</strong>{{ msg.suffix }}
           </span>
@@ -69,7 +69,7 @@
 
     <!-- Overflow link -->
     <p v-if="!pending && buddees.length > 3" class="text-xs text-dimmed mt-3 text-center">
-      <NuxtLink to="/buddies" class="text-purple-400 hover:text-purple-300">
+      <NuxtLink to="/buddies" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:text-purple-300">
         +{{ buddees.length - 3 }} more &rarr;
       </NuxtLink>
     </p>

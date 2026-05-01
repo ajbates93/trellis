@@ -69,11 +69,11 @@
                 <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-elevated/60 flex items-center justify-center">
                   <UIcon name="i-heroicons-calendar-days" class="text-dimmed text-xl" />
                 </div>
-                <p class="text-sm font-medium text-toned mb-1">No review scheduled</p>
+                <p class="text-sm font-medium text-highlighted mb-1">No review scheduled</p>
                 <p class="text-xs text-dimmed mb-4">Your next review hasn't been booked yet.</p>
                 <NuxtLink
                   to="/reviews"
-                  class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-teal-900/20 text-teal-400 border border-teal-500/20 hover:bg-teal-900/30 transition-colors"
+                  class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-teal-200 dark:bg-teal-900/20 text-teal-800 dark:text-teal-400 border border-teal-300 dark:border-teal-500/20 hover:bg-teal-300 dark:hover:bg-teal-900/30 transition-colors"
                 >
                   View reviews &rarr;
                 </NuxtLink>

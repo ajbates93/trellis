@@ -16,3 +16,33 @@
   --ui-bg-muted: var(--ui-color-neutral-900);
   --ui-bg-elevated: var(--ui-color-neutral-900);
 }
+
+/* Light mode: flat bordered card language on a subtly dotted page background.
+   Cards are solid white with a visible gray border; the dot grid lives on
+   <body> so it covers the area to the right of the (opaque) sidebar. */
+:root:not(.dark) {
+  --ui-border: var(--ui-color-neutral-300);
+}
+
+:root:not(.dark) body {
+  background-color: #fafaf7;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.13) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+/* Dark mode: same dot grid, but lighter dots that blend into the dark bg. */
+.dark body {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.13) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+:root:not(.dark) .bg-default\/50,
+:root:not(.dark) .light-card {
+  background-color: #ffffff;
+}
+
+:root:not(.dark) .light-card:hover {
+  background-color: var(--ui-color-neutral-50);
+}

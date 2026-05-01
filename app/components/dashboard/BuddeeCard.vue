@@ -4,7 +4,7 @@
     <div class="flex items-center gap-3 mb-3">
       <UAvatar :text="initials" :src="buddee.avatarUrl || undefined" size="sm" />
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-white truncate">{{ displayName }}</p>
+        <p class="text-sm font-medium text-highlighted truncate">{{ displayName }}</p>
         <p v-if="buddee.roleType" class="text-[11px] text-dimmed capitalize">{{ buddee.roleType }}</p>
       </div>
       <span
@@ -20,18 +20,18 @@
       <div class="bg-elevated/50 rounded-lg p-2 text-center">
         <p
           class="text-lg font-semibold tabular-nums"
-          :class="buddee.feedbackToPublish > 0 ? 'text-amber-400' : 'text-white'"
+          :class="buddee.feedbackToPublish > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-highlighted'"
         >
           {{ buddee.feedbackToPublish }}
         </p>
         <p class="text-[10px] text-dimmed">To publish</p>
       </div>
       <div class="bg-elevated/50 rounded-lg p-2 text-center">
-        <p class="text-lg font-semibold text-white tabular-nums">{{ buddee.feedbackReceived }}</p>
+        <p class="text-lg font-semibold text-highlighted tabular-nums">{{ buddee.feedbackReceived }}</p>
         <p class="text-[10px] text-dimmed">Received</p>
       </div>
       <div class="bg-elevated/50 rounded-lg p-2 text-center">
-        <p class="text-lg font-semibold text-white tabular-nums">{{ buddee.activeGoals }}</p>
+        <p class="text-lg font-semibold text-highlighted tabular-nums">{{ buddee.activeGoals }}</p>
         <p class="text-[10px] text-dimmed">Goals</p>
       </div>
     </div>
@@ -90,11 +90,11 @@ const initials = computed(() => {
 const statusClasses = computed(() => {
   switch (props.buddee.status) {
     case 'review_soon':
-      return 'bg-rose-900/20 text-rose-400 border-rose-500/20'
+      return 'bg-rose-100 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'
     case 'needs_attention':
-      return 'bg-amber-900/20 text-amber-400 border-amber-500/20'
+      return 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
     default:
-      return 'bg-teal-900/20 text-teal-400 border-teal-500/20'
+      return 'bg-teal-100 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-500/20'
   }
 })
 
