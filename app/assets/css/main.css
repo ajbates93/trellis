@@ -1,2 +1,18 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Light mode prototype: deeper emerald primary + warm off-white bg.
+   Dark mode keeps the default mint feel via the `.dark` overrides below. */
+:root {
+  --ui-primary: var(--ui-color-primary-700);
+  --ui-bg: #fafaf7;
+  --ui-bg-muted: #f3f4ef;
+  --ui-bg-elevated: #ffffff;
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-400);
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-bg-muted: var(--ui-color-neutral-900);
+  --ui-bg-elevated: var(--ui-color-neutral-900);
+}
