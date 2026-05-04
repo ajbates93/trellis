@@ -17,6 +17,7 @@ export const FeedbackWithReviewerSchema = z.object({
   createdAt: z.coerce.date().nullable(),
   publishedAt: z.coerce.date().nullable(),
   isRead: z.boolean().nullable(),
+  isFavourite: z.boolean(),
   // reviewScheduleId: z.uuid().nullable(),
   reviewer: z.object({
     id: z.string(),
