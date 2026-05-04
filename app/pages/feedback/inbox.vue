@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import type { TabsItem } from '@nuxt/ui'
 import type { FeedbackWithReviewer, FeedbackWithReviewee } from "~/types";
 
@@ -52,18 +52,24 @@ const { data: receivedData, refresh: refreshReceived } = await useApi(
 );
 const receivedFeedback = computed(() => receivedData.value?.feedback || []);
 
-// Get 3 most recent received feedback items for spotlight cards
-const spotlightFeedback = computed(() => {
-  return receivedFeedback.value.slice(0, 3);
-});
+// Table feedback is all received feedback
+const tableFeedback = computed(() => receivedFeedback.value);
 
-// Get spotlight IDs for filtering
-const spotlightIds = computed(() => new Set(spotlightFeedback.value.map((fb: FeedbackWithReviewer) => fb.id)));
+// Favourites
+const favouritesFeedback = computed(() =>
+  receivedFeedback.value.filter((f: FeedbackWithReviewer) => f.isFavourite)
+);
 
-// Table feedback excludes spotlight items
-const tableFeedback = computed(() => {
-  return receivedFeedback.value.filter((fb: FeedbackWithReviewer) => !spotlightIds.value.has(fb.id));
-});
+const setFavouriteLocally = (feedbackId: string, value: boolean) => {
+  if (!receivedData.value?.feedback) return;
+  const idx = receivedData.value.feedback.findIndex((f: FeedbackWithReviewer) => f.id === feedbackId);
+  if (idx !== -1) {
+    receivedData.value.feedback[idx] = {
+      ...receivedData.value.feedback[idx],
+      isFavourite: value,
+    };
+  }
+};
 
 // Unread feedback for Unread tab
 const unreadFeedback = computed(() => {
@@ -104,23 +110,6 @@ const markAsRead = async (feedbackId: string) => {
 const formatDate = (date: string | Date | null) => {
   if (!date) return "N/A";
   return format(new Date(date), "MMM d, yyyy");
-};
-
-// Format relative time helper
-const formatRelativeTime = (date: string | Date | null) => {
-  if (!date) return "";
-  return formatDistanceToNow(new Date(date), { addSuffix: true });
-};
-
-// Get readable role label
-const getRoleLabel = (roleType: string | null) => {
-  if (!roleType) return null;
-  const labels: Record<string, string> = {
-    dev: "Developer",
-    design: "Designer",
-    qa: "QA",
-  };
-  return labels[roleType] || roleType;
 };
 
 // Filter state for Given tab
@@ -242,55 +231,16 @@ v-if="receivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-b
               description="Check back later for feedback from your colleagues" variant="secondary" />
 
             <template v-else>
-              <!-- Spotlight Cards for Recent Feedback -->
-              <div v-if="spotlightFeedback.length > 0" class="mb-6">
-                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wide">
-                  Recent Feedback
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <button
-v-for="feedback in spotlightFeedback" :key="feedback.id"
-                    class="cursor-pointer group text-left flex flex-col items-stretch bg-gradient-to-br from-slate-800/50 to-slate-700/30 dark:from-slate-800/40 dark:to-slate-700/20 rounded-xl p-4 border border-slate-600/40 dark:border-slate-500/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-slate-500/60 dark:hover:border-slate-400/40"
-                    @click="openFeedbackModal(feedback)">
-                    <div class="flex items-start gap-4 flex-1">
-                      <UAvatar
-:src="feedback.reviewer.image || feedback.reviewer.avatarUrl || undefined"
-                        :alt="feedback.reviewer.name" size="lg" class="flex-shrink-0" />
-                      <div class="min-w-0 flex-1">
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                          <div class="min-w-0">
-                            <span class="font-semibold text-gray-900 dark:text-white truncate block">
-                              {{ feedback.reviewer.name }}
-                            </span>
-                            <span v-if="feedback.reviewer.roleType" class="text-xs text-slate-500 dark:text-slate-400">
-                              {{ getRoleLabel(feedback.reviewer.roleType) }}
-                            </span>
-                          </div>
-                          <span class="text-xs text-slate-400 dark:text-slate-400 flex-shrink-0">
-                            {{ formatRelativeTime(feedback.createdAt) }}
-                          </span>
-                        </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {{ feedback.content }}
-                        </p>
-                      </div>
-                    </div>
-                    <div class="mt-3 flex items-center justify-between">
-                      <UBadge
-:label="feedback.isRead ? 'Read' : 'Unread'"
-                        :color="feedback.isRead ? 'neutral' : 'primary'" size="sm" />
-                      <UIcon
-name="i-heroicons-arrow-right"
-                        class="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform group-hover:translate-x-1" />
-                    </div>
-                  </button>
-                </div>
-              </div>
+              <FeedbackFavouritesStrip
+                :favourites="favouritesFeedback"
+                @open="openFeedbackModal"
+                @unfavourite="(id) => setFavouriteLocally(id, false)"
+              />
 
               <UCard v-if="tableFeedback.length > 0">
                 <UTable
 :columns="receivedColumns" :data="tableFeedback" :ui="{
-                  tr: 'cursor-pointer data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
+                  tr: 'group cursor-pointer data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
                 }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })"
                   @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #from-cell="{ row }">
@@ -321,11 +271,21 @@ name="i-heroicons-arrow-right"
                   </template>
 
                   <template #actions-cell="{ row }">
-                    <UButton
+                    <div class="flex items-center justify-end gap-1">
+                      <FeedbackFavouriteToggle
+                        :feedback-id="row.original.id"
+                        :is-favourite="row.original.isFavourite"
+                        size="xs"
+                        class="opacity-0 group-hover:opacity-100 data-[active=true]:opacity-100 transition-opacity"
+                        :data-active="row.original.isFavourite"
+                        @update:is-favourite="(v) => setFavouriteLocally(row.original.id, v)"
+                      />
+                      <UButton
 v-if="!row.original.isRead" loading-auto size="xs" variant="ghost"
-                      @click.stop="markAsRead(row.original.id)">
-                      Mark as Read
-                    </UButton>
+                        @click.stop="markAsRead(row.original.id)">
+                        Mark as Read
+                      </UButton>
+                    </div>
                   </template>
                 </UTable>
               </UCard>
@@ -342,7 +302,7 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
             <UCard v-else>
               <UTable
 :columns="receivedColumns" :data="unreadFeedback" :ui="{
-                tr: 'cursor-pointer border-l-2 border-l-primary-500',
+                tr: 'group cursor-pointer border-l-2 border-l-primary-500',
               }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })"
                 @select="(row: any) => openFeedbackModal(row.original ?? row)">
                 <template #from-cell="{ row }">
@@ -371,9 +331,19 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
                 </template>
 
                 <template #actions-cell="{ row }">
-                  <UButton loading-auto size="xs" variant="ghost" @click.stop="markAsRead(row.original.id)">
-                    Mark as Read
-                  </UButton>
+                  <div class="flex items-center justify-end gap-1">
+                    <FeedbackFavouriteToggle
+                      :feedback-id="row.original.id"
+                      :is-favourite="row.original.isFavourite"
+                      size="xs"
+                      class="opacity-0 group-hover:opacity-100 data-[active=true]:opacity-100 transition-opacity"
+                      :data-active="row.original.isFavourite"
+                      @update:is-favourite="(v) => setFavouriteLocally(row.original.id, v)"
+                    />
+                    <UButton loading-auto size="xs" variant="ghost" @click.stop="markAsRead(row.original.id)">
+                      Mark as Read
+                    </UButton>
+                  </div>
                 </template>
               </UTable>
             </UCard>
