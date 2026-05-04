@@ -62,13 +62,13 @@ const favouritesFeedback = computed(() =>
 
 const setFavouriteLocally = (feedbackId: string, value: boolean) => {
   if (!receivedData.value?.feedback) return;
-  const idx = receivedData.value.feedback.findIndex((f: FeedbackWithReviewer) => f.id === feedbackId);
-  if (idx !== -1) {
-    receivedData.value.feedback[idx] = {
-      ...receivedData.value.feedback[idx],
-      isFavourite: value,
-    };
-  }
+  // useApi returns a shallowRef, so we must replace .value to trigger reactivity.
+  receivedData.value = {
+    ...receivedData.value,
+    feedback: receivedData.value.feedback.map((f: FeedbackWithReviewer) =>
+      f.id === feedbackId ? { ...f, isFavourite: value } : f
+    ),
+  };
 };
 
 // Unread feedback for Unread tab
