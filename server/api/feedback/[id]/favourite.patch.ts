@@ -1,7 +1,7 @@
 import { db } from "#server/database/connection";
 import { feedback } from "#server/database/schema";
 import { eq } from "drizzle-orm";
-import { validateBody, validateResponse } from "#server/utils/validation";
+import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 
 export default defineEventHandler(async (event) => {
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await validateBody(event, apiSchemas.ToggleFavouriteRequestSchema);
+  const body = await readBody(event);
 
   if (typeof body?.isFavourite !== "boolean") {
     throw createError({
@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
     return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error toggling feedback favourite:", error);
-    if (error.statusCode) {
+    if (error && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
     throw createError({

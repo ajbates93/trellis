@@ -9,9 +9,12 @@ const { mockDb, mockSelect, mockUpdate } = createMockDb()
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../../utils/validation', () => ({
-  validateBody: vi.fn().mockImplementation(async (event: any) => event._mockBody ?? {}),
   validateResponse: vi.fn().mockImplementation((data: any) => data),
 }))
+
+// favourite.patch.ts uses readBody() directly
+const mockReadBody = vi.fn()
+vi.stubGlobal('readBody', mockReadBody)
 
 const { default: handler } = await import('./favourite.patch')
 
@@ -23,7 +26,6 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   it('returns 401 when unauthenticated', async () => {
     const event = createUnauthenticatedEvent({
       params: { id: 'feedback-1' },
-      body: { isFavourite: true },
     })
 
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 401 })
@@ -32,7 +34,6 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   it('returns 400 when id param is missing', async () => {
     const event = createAuthenticatedEvent({
       params: {},
-      body: { isFavourite: true },
     })
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -42,9 +43,10 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   })
 
   it('returns 400 when isFavourite body is missing or not boolean', async () => {
+    mockReadBody.mockResolvedValueOnce({})
+
     const event = createAuthenticatedEvent({
       params: { id: 'f1' },
-      body: {},
     })
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -54,11 +56,11 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   })
 
   it('returns 404 when feedback is not found', async () => {
+    mockReadBody.mockResolvedValueOnce({ isFavourite: true })
     mockSelect([])
 
     const event = createAuthenticatedEvent({
       params: { id: 'feedback-1' },
-      body: { isFavourite: true },
     })
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -68,11 +70,11 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   })
 
   it('returns 403 when user is not the reviewee', async () => {
+    mockReadBody.mockResolvedValueOnce({ isFavourite: true })
     mockSelect([{ id: 'f1', revieweeId: 'other-user' }])
 
     const event = createAuthenticatedEvent({
       params: { id: 'f1' },
-      body: { isFavourite: true },
     })
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -82,12 +84,12 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   })
 
   it('updates and returns feedback when reviewee sets favourite', async () => {
+    mockReadBody.mockResolvedValueOnce({ isFavourite: true })
     mockSelect([{ id: 'f1', revieweeId: 'user-1' }])
     mockUpdate([{ id: 'f1', revieweeId: 'user-1', isFavourite: true }])
 
     const event = createAuthenticatedEvent({
       params: { id: 'f1' },
-      body: { isFavourite: true },
     })
 
     const result = await handler(event)
@@ -98,12 +100,12 @@ describe('PATCH /api/feedback/:id/favourite', () => {
   })
 
   it('updates and returns feedback when reviewee unsets favourite', async () => {
+    mockReadBody.mockResolvedValueOnce({ isFavourite: false })
     mockSelect([{ id: 'f1', revieweeId: 'user-1' }])
     mockUpdate([{ id: 'f1', revieweeId: 'user-1', isFavourite: false }])
 
     const event = createAuthenticatedEvent({
       params: { id: 'f1' },
-      body: { isFavourite: false },
     })
 
     const result = await handler(event)
