@@ -506,7 +506,7 @@ const feedbackColumns = [
         <div v-else>
           <!-- Hero Header -->
           <div
-            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg"
+            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 ring-1 ring-emerald-200/60 dark:ring-transparent dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-white p-8 mb-8 shadow-sm dark:shadow-lg"
           >
             <!-- Background Decoration -->
             <div
@@ -537,7 +537,7 @@ const feedbackColumns = [
                           : '!bg-blue-500 !text-white',
                       ]"
                     />
-                    <span class="text-gray-400 text-sm font-medium">{{
+                    <span class="text-gray-600 dark:text-gray-400 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
                     }}</span>
                   </div>
@@ -548,21 +548,21 @@ const feedbackColumns = [
 
                 <!-- Buddy Card -->
                 <div
-                  class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[240px]"
+                  class="flex items-center gap-4 bg-white/70 dark:bg-white/10 ring-1 ring-emerald-200/60 dark:ring-transparent backdrop-blur-sm rounded-lg p-4 min-w-[240px]"
                 >
                   <UAvatar
                     :src="review.buddy?.avatarUrl"
                     :alt="review.buddy?.name"
                     size="md"
-                    class="ring-2 ring-white/20"
+                    class="ring-2 ring-white dark:ring-white/20"
                   />
                   <div>
                     <p
-                      class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5"
+                      class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-0.5"
                     >
                       Your Buddy
                     </p>
-                    <p class="font-medium text-white">
+                    <p class="font-medium text-gray-900 dark:text-white">
                       {{ review.buddy?.name || "Unassigned" }}
                     </p>
                   </div>
@@ -573,10 +573,10 @@ const feedbackColumns = [
               <div class="mt-8 flex gap-3">
                 <UButton
                   v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
-                  color="neutral"
+                  color="primary"
                   variant="solid"
                   icon="i-heroicons-check"
-                  class="!bg-white !text-gray-900 hover:!bg-gray-100 border-none cursor-pointer"
+                  class="dark:!bg-white dark:!text-gray-900 dark:hover:!bg-gray-100 border-none cursor-pointer"
                   @click="isCompleteModalOpen = true"
                 >
                   Mark as Completed
@@ -584,9 +584,9 @@ const feedbackColumns = [
                 <UButton
                   v-if="(isBuddy || isAdmin) && review.status === 'completed'"
                   color="neutral"
-                  variant="ghost"
+                  variant="soft"
                   icon="i-heroicons-arrow-path"
-                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  class="dark:!bg-white/10 dark:!text-white dark:hover:!bg-white/20 cursor-pointer"
                   :loading="isReopening"
                   @click="reopenReview"
                 >
@@ -595,9 +595,9 @@ const feedbackColumns = [
                 <UButton
                   v-if="(isBuddy || isAdmin) && review.status === 'scheduled'"
                   color="neutral"
-                  variant="ghost"
+                  variant="soft"
                   icon="i-heroicons-pencil-square"
-                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  class="dark:!bg-white/10 dark:!text-white dark:hover:!bg-white/20 cursor-pointer"
                   @click="openEditModal"
                 >
                   Edit Details
@@ -605,9 +605,9 @@ const feedbackColumns = [
                 <UButton
                   v-if="review.status === 'scheduled'"
                   color="neutral"
-                  variant="ghost"
+                  variant="soft"
                   icon="i-heroicons-calendar"
-                  class="!bg-white/10 !text-white hover:!bg-white/20 cursor-pointer"
+                  class="dark:!bg-white/10 dark:!text-white dark:hover:!bg-white/20 cursor-pointer"
                   @click="downloadICalFile(review)"
                 >
                   Add to Calendar
