@@ -142,6 +142,7 @@ export const feedback = pgTable("feedback", {
   published: boolean("published").default(false),
   publishedAt: timestamp("published_at"),
   publishedBy: text("published_by").references(() => users.id),
+  isFavourite: boolean("is_favourite").notNull().default(false),
   // reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
 });
 

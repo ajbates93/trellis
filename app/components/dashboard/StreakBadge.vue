@@ -8,15 +8,15 @@
 
     <div class="relative">
       <div class="flex items-center gap-2 mb-3">
-        <UIcon name="i-heroicons-fire" class="text-amber-400 text-sm" />
-        <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Streak</span>
+        <UIcon name="i-heroicons-fire" class="text-amber-600 dark:text-amber-400 text-sm" />
+        <span class="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Streak</span>
       </div>
 
       <!-- Active streak -->
       <template v-if="streak > 0">
         <div class="flex items-baseline gap-2 mb-1">
-          <span class="text-4xl font-bold text-white tabular-nums leading-none">{{ streak }}</span>
-          <span class="text-sm text-muted">{{ streak === 1 ? 'week' : 'weeks' }}</span>
+          <span class="text-4xl font-bold text-highlighted tabular-nums leading-none">{{ streak }}</span>
+          <span class="text-base font-medium text-toned">{{ streak === 1 ? 'week' : 'weeks' }}</span>
         </div>
         <p class="text-[13px] text-muted">
           {{ streakMessage }}
@@ -26,7 +26,7 @@
       <!-- No streak -->
       <template v-else>
         <p class="text-[13px] text-muted">
-          Start your streak — <NuxtLink to="/feedback/give" class="text-amber-400 hover:text-amber-300">submit feedback</NuxtLink> this week.
+          Start your streak — <NuxtLink to="/feedback/give" class="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300">submit feedback</NuxtLink> this week.
         </p>
       </template>
     </div>

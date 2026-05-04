@@ -1,8 +1,8 @@
 <template>
   <UCard class="bg-default/50 border-default">
     <div class="flex items-center gap-2 mb-4">
-      <UIcon name="i-heroicons-sparkles" class="text-teal-400 text-lg" />
-      <h3 class="text-[15px] font-semibold text-white">Feedback Themes</h3>
+      <UIcon name="i-heroicons-sparkles" class="text-teal-600 dark:text-teal-400 text-lg" />
+      <h3 class="text-[15px] font-semibold text-highlighted">Feedback Themes</h3>
     </div>
 
     <div v-if="pending" class="animate-pulse">
@@ -20,7 +20,7 @@
     <!-- Empty state -->
     <div v-else-if="!hasAnalysis" class="text-sm text-dimmed py-4 text-center">
       Not enough feedback for insights yet.
-      <NuxtLink to="/insights" class="text-teal-400 hover:text-teal-300">Learn more</NuxtLink>
+      <NuxtLink to="/insights" class="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Learn more</NuxtLink>
     </div>
 
     <template v-else>
@@ -100,10 +100,10 @@ const themeLabels = computed(() => {
 })
 
 const themeClasses = [
-  'bg-teal-900/20 text-teal-400 border-teal-500/20',
-  'bg-purple-900/20 text-purple-400 border-purple-500/20',
-  'bg-blue-900/20 text-blue-400 border-blue-500/20',
-  'bg-amber-900/20 text-amber-400 border-amber-500/20',
-  'bg-green-900/20 text-green-400 border-green-500/20',
+  'bg-teal-100 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-500/20',
+  'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20',
+  'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20',
+  'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20',
+  'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-500/20',
 ] as const
 </script>

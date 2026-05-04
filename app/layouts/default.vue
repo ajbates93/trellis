@@ -271,7 +271,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       }"
     >
       <UDashboardSidebar
-        class="hidden lg:flex"
+        class="hidden lg:flex bg-default"
         collapsible
         resizable
         :ui="{
@@ -280,18 +280,23 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       >
         <!-- Logo and branding -->
         <template #header="{ collapsed }">
-          <NuxtLink
-            to="/"
-            class="-ml-1 flex items-center gap-2 px-4 py-4 no-underline"
+          <div
+            class="-ml-1 flex w-full items-center justify-between gap-2 px-4 py-4"
           >
-            <TrellisLogo :size="32" />
-            <span
-              v-if="!collapsed"
-              class="text-lg font-bold"
-              style="font-family: &quot;Plus Jakarta Sans&quot;, sans-serif"
-              >Trellis</span
+            <NuxtLink
+              to="/"
+              class="flex items-center gap-2 no-underline"
             >
-          </NuxtLink>
+              <TrellisLogo :size="32" />
+              <span
+                v-if="!collapsed"
+                class="text-lg font-bold"
+                style="font-family: &quot;Plus Jakarta Sans&quot;, sans-serif"
+                >Trellis</span
+              >
+            </NuxtLink>
+            <UColorModeSwitch v-if="!collapsed" />
+          </div>
         </template>
 
         <!-- Main navigation -->

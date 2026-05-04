@@ -1,7 +1,7 @@
 <template>
   <UCard class="bg-default/50 border-default">
     <div class="mb-4">
-      <h3 class="text-[15px] font-semibold text-white">Recent Activity</h3>
+      <h3 class="text-[15px] font-semibold text-highlighted">Recent Activity</h3>
     </div>
 
     <div v-if="pending" class="space-y-3">
@@ -15,7 +15,7 @@
     </div>
 
     <div v-else-if="activities.length === 0" class="text-sm text-dimmed py-4 text-center">
-      No activity yet. <NuxtLink to="/feedback/give" class="text-teal-400 hover:text-teal-300">Submit your first feedback</NuxtLink> to get started.
+      No activity yet. <NuxtLink to="/feedback/give" class="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Submit your first feedback</NuxtLink> to get started.
     </div>
 
     <div v-else class="space-y-3 max-h-[338px] overflow-y-auto -mr-2 pr-2">
@@ -111,32 +111,32 @@ function iconName(type: ActivityType): string {
 function iconBgClass(type: ActivityType): string {
   switch (type) {
     case 'feedback_received':
-      return 'bg-teal-900/30'
+      return 'bg-teal-100 dark:bg-teal-900/30'
     case 'feedback_given':
     case 'buddy_feedback':
-      return 'bg-blue-900/30'
+      return 'bg-blue-100 dark:bg-blue-900/30'
     case 'goal_milestone':
-      return 'bg-purple-900/30'
+      return 'bg-purple-100 dark:bg-purple-900/30'
     case 'brag_bucket':
-      return 'bg-amber-900/30'
+      return 'bg-amber-100 dark:bg-amber-900/30'
     case 'review_completed':
-      return 'bg-green-900/30'
+      return 'bg-green-100 dark:bg-green-900/30'
   }
 }
 
 function iconColorClass(type: ActivityType): string {
   switch (type) {
     case 'feedback_received':
-      return 'text-teal-400'
+      return 'text-teal-600 dark:text-teal-400'
     case 'feedback_given':
     case 'buddy_feedback':
-      return 'text-blue-400'
+      return 'text-blue-600 dark:text-blue-400'
     case 'goal_milestone':
-      return 'text-purple-400'
+      return 'text-purple-600 dark:text-purple-400'
     case 'brag_bucket':
-      return 'text-amber-400'
+      return 'text-amber-600 dark:text-amber-400'
     case 'review_completed':
-      return 'text-green-400'
+      return 'text-green-600 dark:text-green-400'
   }
 }
 

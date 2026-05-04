@@ -64,7 +64,7 @@ to="/settings/integrations" class="border-b-2 py-4 px-1 text-sm font-medium" :cl
                     Choose between light and dark mode
                   </p>
                 </div>
-                <UColorModeSwitch disabled />
+                <UColorModeSwitch />
               </div>
             </div>
           </UCard>

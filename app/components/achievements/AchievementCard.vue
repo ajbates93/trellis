@@ -64,7 +64,7 @@ const deleteAchievement = async () => {
   <div class="group">
     <!-- Achievement Card -->
     <UCard
-      class="hover:shadow-lg transition-shadow duration-200 bg-gray-50 dark:bg-gray-800/50"
+      class="hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800/50 ring-gray-200 dark:ring-(--ui-border)"
     >
       <div class="space-y-2">
         <!-- Title -->

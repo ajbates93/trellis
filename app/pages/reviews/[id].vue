@@ -506,7 +506,7 @@ const feedbackColumns = [
         <div v-else>
           <!-- Hero Header -->
           <div
-            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg"
+            class="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-700 to-teal-800 dark:from-gray-800 dark:to-gray-900 text-white p-8 mb-8 shadow-lg"
           >
             <!-- Background Decoration -->
             <div
@@ -537,7 +537,7 @@ const feedbackColumns = [
                           : '!bg-blue-500 !text-white',
                       ]"
                     />
-                    <span class="text-gray-400 text-sm font-medium">{{
+                    <span class="text-white/80 text-sm font-medium">{{
                       formatDate(review.scheduledDate)
                     }}</span>
                   </div>
@@ -558,7 +558,7 @@ const feedbackColumns = [
                   />
                   <div>
                     <p
-                      class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5"
+                      class="text-xs text-white/70 uppercase tracking-wider font-semibold mb-0.5"
                     >
                       Your Buddy
                     </p>

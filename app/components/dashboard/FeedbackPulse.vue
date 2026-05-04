@@ -1,8 +1,8 @@
 <template>
   <UCard class="bg-default/50 border-default">
     <div class="flex justify-between items-center mb-4">
-      <h3 class="text-[15px] font-semibold text-white">Feedback Pulse</h3>
-      <UIcon name="i-heroicons-chart-bar" class="text-teal-400 text-lg" />
+      <h3 class="text-[15px] font-semibold text-highlighted">Feedback Pulse</h3>
+      <UIcon name="i-heroicons-chart-bar" class="text-teal-600 dark:text-teal-400 text-lg" />
     </div>
 
     <div v-if="pending" class="h-48 flex items-end gap-2 px-1 animate-pulse">

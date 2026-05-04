@@ -4,11 +4,11 @@
       v-for="stat in visibleStats"
       :key="stat.label"
       :to="stat.to"
-      class="flex items-center gap-3 px-4 py-3 rounded-xl border border-default bg-default/50 hover:border-muted transition-colors"
+      class="light-card flex items-center gap-3 px-4 py-3 rounded-xl border border-default bg-default/50 hover:border-muted transition-colors"
     >
       <UIcon :name="stat.icon" class="text-base" :class="stat.iconClass" />
       <div>
-        <span class="text-xl font-bold text-white leading-none">{{ stat.value }}</span>
+        <span class="text-xl font-bold text-highlighted leading-none">{{ stat.value }}</span>
         <p class="text-xs text-dimmed mt-0.5">{{ stat.label }}</p>
       </div>
     </NuxtLink>
@@ -33,7 +33,7 @@ const visibleStats = computed(() => {
       label: 'Unread feedback',
       value: props.unreadCount,
       icon: 'i-heroicons-eye',
-      iconClass: 'text-teal-400',
+      iconClass: 'text-teal-600 dark:text-teal-400',
       to: '/feedback/inbox',
     },
   ]
@@ -43,7 +43,7 @@ const visibleStats = computed(() => {
       label: 'Pending to publish',
       value: props.incomingCount,
       icon: 'i-heroicons-exclamation-circle',
-      iconClass: 'text-amber-400',
+      iconClass: 'text-amber-600 dark:text-amber-400',
       to: '/buddies/feedback',
     })
   } else {
@@ -51,7 +51,7 @@ const visibleStats = computed(() => {
       label: props.daysUntilReview !== null ? 'Days to review' : 'No review scheduled',
       value: props.daysUntilReview !== null ? props.daysUntilReview : '-',
       icon: 'i-heroicons-calendar-days',
-      iconClass: 'text-amber-400',
+      iconClass: 'text-amber-600 dark:text-amber-400',
       to: '/reviews',
     })
   }
@@ -60,7 +60,7 @@ const visibleStats = computed(() => {
     label: 'Goals on track',
     value: `${props.activeGoalsCount}/${props.totalGoalsCount}`,
     icon: 'i-heroicons-arrow-trending-up',
-    iconClass: 'text-purple-400',
+    iconClass: 'text-purple-600 dark:text-purple-400',
     to: '/goals',
   })
 

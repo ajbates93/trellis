@@ -28,9 +28,10 @@ export default defineNuxtConfig({
 
   eslint: {},
 
-  // TODO: Remove this once light mode is ready
+  // Light mode prototype in progress — allow toggling via system preference
+  // or the Nuxt UI color-mode picker. Default still favours dark.
   colorMode: {
-    preference: "dark",
+    preference: "system",
     fallback: "dark",
   },
 
@@ -56,9 +57,6 @@ export default defineNuxtConfig({
     head: {
       title: "Trellis",
       titleTemplate: "%s | Trellis",
-      htmlAttrs: {
-        class: "dark", // TODO: Remove when light mode is ready
-      },
       style: [
         {
           innerHTML: "body:not(.hydrated) { opacity: 0; }",
