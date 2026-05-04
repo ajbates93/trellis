@@ -415,6 +415,10 @@ v-if="selectedRecipient" variant="ghost" color="primary" icon="i-heroicons-x-mar
 
   <!-- Feedback Modal -->
   <FeedbackModal
-v-model="isModalOpen" :feedback="selectedFeedback" :show-mark-as-read="selectedTab === 'received'"
-    @mark-as-read="handleMarkAsReadFromModal" />
+    v-model="isModalOpen"
+    :feedback="selectedFeedback"
+    :show-mark-as-read="selectedTab === 'received'"
+    @mark-as-read="handleMarkAsReadFromModal"
+    @update:is-favourite="(id, v) => setFavouriteLocally(id, v)"
+  />
 </template>

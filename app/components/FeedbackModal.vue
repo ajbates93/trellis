@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   "update:modelValue": [value: boolean];
   markAsRead: [feedbackId: string];
+  "update:isFavourite": [feedbackId: string, value: boolean];
 }>();
 
 const isOpen = computed({
@@ -22,12 +23,11 @@ const isOpen = computed({
   set: (value: boolean) => emit("update:modelValue", value),
 });
 
-const formatDate = (date: string | Date | undefined) => {
+const formatDate = (date: string | Date | undefined | null) => {
   if (!date) return "";
   return format(new Date(date), "MMM d, yyyy");
 };
 
-// Resolve the primary person to display based on available data
 const displayPerson = computed(() => {
   if (!props.feedback) return null;
   if ("reviewer" in props.feedback && props.feedback.reviewer) {
@@ -37,6 +37,13 @@ const displayPerson = computed(() => {
     return { label: "Feedback to", ...props.feedback.reviewee };
   }
   return null;
+});
+
+// Favouriting only applies to feedback the current user received
+// (i.e. when displayPerson is the reviewer, not the reviewee).
+const canFavourite = computed(() => {
+  if (!props.feedback) return false;
+  return "reviewer" in props.feedback && props.feedback.reviewer != null;
 });
 
 const handleMarkAsRead = () => {
@@ -60,35 +67,37 @@ const handleMarkAsRead = () => {
   >
     <template #body>
       <div v-if="feedback">
-        <!-- Header Banner -->
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white p-6 mb-6 -mt-1">
-          <!-- Background Decoration -->
-          <div class="absolute top-0 right-0 -mt-12 -mr-12 w-48 h-48 bg-primary-500/10 rounded-full blur-3xl" />
-          <div class="absolute bottom-0 left-0 -mb-12 -ml-12 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
-
-          <div class="relative z-10">
-            <div class="flex items-center gap-4">
-              <UAvatar
-                v-if="displayPerson"
-                :src="displayPerson.image || displayPerson.avatarUrl"
-                :alt="displayPerson.name"
-                size="xl"
-                class="ring-2 ring-white/20"
-              />
-              <div class="flex-1 min-w-0">
-                <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">
-                  {{ displayPerson?.label || "Feedback" }}
-                </p>
-                <p class="text-xl font-bold text-white truncate">
-                  {{ displayPerson?.name || "Unknown" }}
-                </p>
-                <p v-if="displayPerson?.email" class="text-sm text-gray-400 mt-1 truncate">
-                  {{ displayPerson.email }}
-                </p>
-              </div>
-            </div>
+        <!-- Header -->
+        <div class="flex items-start gap-4 mb-5">
+          <UAvatar
+            v-if="displayPerson"
+            :src="displayPerson.image || displayPerson.avatarUrl"
+            :alt="displayPerson.name"
+            size="lg"
+            class="flex-shrink-0"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="text-xs uppercase tracking-wide font-semibold text-gray-500 dark:text-gray-400 mb-1">
+              {{ displayPerson?.label || "Feedback" }}
+            </p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white truncate">
+              {{ displayPerson?.name || "Unknown" }}
+            </p>
+            <p v-if="displayPerson?.email" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+              {{ displayPerson.email }}
+            </p>
           </div>
+          <FeedbackFavouriteToggle
+            v-if="canFavourite"
+            :feedback-id="feedback.id"
+            :is-favourite="(feedback as FeedbackWithReviewer).isFavourite ?? false"
+            size="sm"
+            @update:is-favourite="(v) => emit('update:isFavourite', feedback!.id, v)"
+          />
         </div>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-200 dark:border-gray-700 mb-4" />
 
         <!-- Dates -->
         <div
@@ -103,7 +112,7 @@ const handleMarkAsRead = () => {
           </span>
         </div>
 
-        <!-- Feedback Content -->
+        <!-- Feedback content -->
         <div class="border-l-4 border-primary-500 pl-5 py-1">
           <p class="text-base text-gray-900 dark:text-white leading-relaxed whitespace-pre-wrap">
             {{ feedback.content }}
