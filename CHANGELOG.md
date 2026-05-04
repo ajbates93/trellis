@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.14.0](https://github.com/ajbates93/trellis/compare/v0.13.0...v0.14.0) (2026-05-04)
+
+
+### Features
+
+* **api:** add PATCH /feedback/:id/favourite endpoint ([5b359fa](https://github.com/ajbates93/trellis/commit/5b359faffc2ff9e987dbe765476a946aa4222028))
+* **api:** return isFavourite from /feedback/received ([d54527a](https://github.com/ajbates93/trellis/commit/d54527a03a0074c15bb4fca2750726b46e6f9143))
+* **db:** add is_favourite column to feedback ([eb56a3b](https://github.com/ajbates93/trellis/commit/eb56a3bf644392e1008c9671e97526018dc74827))
+* **feedback:** add FavouritesStrip component ([1fc73ea](https://github.com/ajbates93/trellis/commit/1fc73ea02bb922a33dc4fcbd618bb38ca2f190d0))
+* **feedback:** add FavouriteToggle component ([bdf9d7a](https://github.com/ajbates93/trellis/commit/bdf9d7a3a6d098a7550c06da266e6ca6d0099df3))
+* **feedback:** redesign modal header + add favourite toggle ([807f95b](https://github.com/ajbates93/trellis/commit/807f95b06fb5a409b60cec708e610f5fcceefdce))
+* **feedback:** replace recent strip with favourites + add row star toggle ([7dea136](https://github.com/ajbates93/trellis/commit/7dea1368825dff92026334fec8e18bb0edb473c3))
+* **schema:** add isFavourite to FeedbackWithReviewerSchema ([d493a51](https://github.com/ajbates93/trellis/commit/d493a51873c05893dd8289f2c4aa3d6f3ee1f5dc))
+* **theme:** enable light mode with deeper emerald primary ([ec260b8](https://github.com/ajbates93/trellis/commit/ec260b8cdb5869818f0ce102f020f6ad1e8b388c))
+* **theme:** light mode pass for dashboard ([9444f1e](https://github.com/ajbates93/trellis/commit/9444f1ef1ebddeb0731b0672737fef34e4c78a7c))
+
+
+### Bug Fixes
+
+* **api:** include isFavourite in buddy-received response ([d0030f3](https://github.com/ajbates93/trellis/commit/d0030f309d59f0ba20f8c302b8067d8dfb136df4))
+* **api:** simplify favourite endpoint to inline body check ([eaf7a18](https://github.com/ajbates93/trellis/commit/eaf7a18254f38c861c5d56cfe9e79c0de7262a76))
+* copilot comments ([b85b2b9](https://github.com/ajbates93/trellis/commit/b85b2b94b5eb0ed5eb17da61c026ce555db3cc20))
+* **feedback:** outline star icons + sync modal on favourite toggle ([7826ed1](https://github.com/ajbates93/trellis/commit/7826ed1815357c402d24c25258634856ce119cae))
+* **feedback:** stabilize favourites card layout ([3b72c28](https://github.com/ajbates93/trellis/commit/3b72c28aea195e9a6addcef9631c733e8adf6b53))
+* **feedback:** trigger reactivity when toggling favourite locally ([fe88253](https://github.com/ajbates93/trellis/commit/fe88253d4653de9b3817291c3b296eaba73456d8))
+* light mode on feedback give ([947a64a](https://github.com/ajbates93/trellis/commit/947a64a38e9b2db579c9858e64f24d555c1d924c))
+* more give feedback updates ([4287ab6](https://github.com/ajbates93/trellis/commit/4287ab656f7196c40712ba61ee23535a5db3b45d))
+* **theme:** improve light-mode contrast on brag bucket cards ([991174a](https://github.com/ajbates93/trellis/commit/991174a07a281f90d7501249badfb2321736bbef))
+* **theme:** light-mode hero on review detail page ([b770286](https://github.com/ajbates93/trellis/commit/b7702861a979ed5c6878f7aa81c4f68ee195229f))
+* **theme:** use rich emerald hero in light mode for review detail ([69a8e5f](https://github.com/ajbates93/trellis/commit/69a8e5f538bc2593d7628d079ebfb75082bad986))
+
+
+### Documentation
+
+* implementation plan for feedback favourites + modal redesign ([fc618ee](https://github.com/ajbates93/trellis/commit/fc618ee78c722ec395f6a452ed2fc1a10ed503ab))
+* spec for feedback favourites + modal redesign ([d304602](https://github.com/ajbates93/trellis/commit/d3046026a6300dfcffa35ca33ac136dc11642880))
+
 ## [0.13.0](https://github.com/ajbates93/trellis/compare/v0.12.2...v0.13.0) (2026-04-25)
 
 
