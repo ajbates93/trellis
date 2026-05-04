@@ -337,7 +337,7 @@ const tipsAccordionItems: AccordionItem[] = [
           <!-- Selected User Card -->
           <div v-if="selectedUserObject && !suggestionsExhausted">
             <div
-              class="relative overflow-hidden rounded-xl border border-primary-500/40 dark:border-primary-500/15 bg-primary-50 dark:bg-transparent bg-gradient-to-br from-primary-500/[0.20] via-teal-500/[0.10] to-primary-500/[0.06] dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
+              class="relative overflow-hidden rounded-xl border border-primary-500/40 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.20] via-teal-500/[0.10] to-primary-500/[0.06] dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent shadow-sm shadow-primary-900/5 dark:shadow-none"
             >
               <div
                 class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl"
@@ -353,6 +353,7 @@ const tipsAccordionItems: AccordionItem[] = [
                     "
                     :alt="selectedUserObject.name"
                     size="xl"
+                    :ui="{ root: 'ring-2 ring-primary-500/30 dark:ring-white/10' }"
                   />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
