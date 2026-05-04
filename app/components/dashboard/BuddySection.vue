@@ -15,7 +15,7 @@
           {{ buddees.length }}
         </span>
       </div>
-      <NuxtLink to="/buddies" class="text-xs text-purple-600 dark:text-purple-400 font-medium hover:text-purple-700 dark:text-purple-300">
+      <NuxtLink to="/buddies" class="text-xs text-purple-600 dark:text-purple-400 font-medium hover:text-purple-700 dark:hover:text-purple-300">
         View all &rarr;
       </NuxtLink>
     </div>
@@ -69,7 +69,7 @@
 
     <!-- Overflow link -->
     <p v-if="!pending && buddees.length > 3" class="text-xs text-dimmed mt-3 text-center">
-      <NuxtLink to="/buddies" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:text-purple-300">
+      <NuxtLink to="/buddies" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
         +{{ buddees.length - 3 }} more &rarr;
       </NuxtLink>
     </p>

@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
       .returning();
 
     const response = { success: true, feedback: updatedFeedback };
-    return validateResponse(response, apiSchemas.SuccessResponseSchema);
+    return validateResponse(response, apiSchemas.ToggleFavouriteResponseSchema);
   } catch (error) {
     console.error("Error toggling feedback favourite:", error);
     if (error && typeof error === "object" && "statusCode" in error) {

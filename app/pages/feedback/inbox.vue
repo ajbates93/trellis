@@ -238,7 +238,7 @@ v-if="receivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-b
               <FeedbackFavouritesStrip
                 :favourites="favouritesFeedback"
                 @open="openFeedbackModal"
-                @unfavourite="(id) => setFavouriteLocally(id, false)"
+                @update:is-favourite="(id, v) => setFavouriteLocally(id, v)"
               />
 
               <UCard v-if="tableFeedback.length > 0">

@@ -7,7 +7,7 @@ defineProps<{
 
 const emit = defineEmits<{
   open: [feedback: FeedbackWithReviewer]
-  'unfavourite': [feedbackId: string]
+  'update:isFavourite': [feedbackId: string, value: boolean]
 }>()
 
 const formatRelativeTime = (date: Date | string | null | undefined) => {
@@ -59,7 +59,7 @@ const formatRelativeTime = (date: Date | string | null | undefined) => {
                 :is-favourite="item.isFavourite"
                 size="xs"
                 class="flex-shrink-0"
-                @update:is-favourite="(v) => !v && emit('unfavourite', item.id)"
+                @update:is-favourite="(v) => emit('update:isFavourite', item.id, v)"
               />
             </div>
             <p class="mt-2 text-sm text-left text-gray-600 dark:text-gray-400 line-clamp-2">
