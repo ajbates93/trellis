@@ -48,6 +48,10 @@ export const PublishFeedbackRequestSchema = z.object({
   publish: z.boolean(),
 });
 
+export const ToggleFavouriteRequestSchema = z.object({
+  isFavourite: z.boolean(),
+});
+
 export const PublishBatchFeedbackRequestSchema = z.object({
   feedbackIds: z.array(z.uuid()).min(1, "At least one feedback ID is required"),
   publish: z.boolean(),
