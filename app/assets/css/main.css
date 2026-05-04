@@ -46,3 +46,11 @@
 :root:not(.dark) .light-card:hover {
   background-color: var(--ui-color-neutral-50);
 }
+
+/* Form controls get a solid white fill in light mode so they read as
+   distinct components on the warm patterned page bg. */
+:root:not(.dark) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+:root:not(.dark) textarea,
+:root:not(.dark) select {
+  background-color: #ffffff;
+}

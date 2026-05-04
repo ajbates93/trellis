@@ -317,11 +317,17 @@ const tipsAccordionItems: AccordionItem[] = [
         <div v-else class="space-y-6">
           <!-- Page Header -->
           <div>
-            <h1
-              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
-            >
-              Submit Feedback
-            </h1>
+            <div class="flex items-center gap-3">
+              <UIcon
+                name="i-heroicons-paper-airplane-solid"
+                class="text-primary-600 dark:text-primary-400 text-3xl sm:text-4xl flex-shrink-0"
+              />
+              <h1
+                class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white"
+              >
+                Submit Feedback
+              </h1>
+            </div>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
               Share feedback with a colleague - it'll be shared during their
               next buddy review
@@ -331,7 +337,7 @@ const tipsAccordionItems: AccordionItem[] = [
           <!-- Selected User Card -->
           <div v-if="selectedUserObject && !suggestionsExhausted">
             <div
-              class="relative overflow-hidden rounded-xl border border-primary-500/20 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.07] via-teal-500/[0.04] to-transparent dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
+              class="relative overflow-hidden rounded-xl border border-primary-500/40 dark:border-primary-500/15 bg-primary-50 dark:bg-transparent bg-gradient-to-br from-primary-500/[0.20] via-teal-500/[0.10] to-primary-500/[0.06] dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent"
             >
               <div
                 class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl"
@@ -484,7 +490,7 @@ const tipsAccordionItems: AccordionItem[] = [
 
               <!-- Compact list -->
               <div
-                class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto"
+                class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto bg-white dark:bg-transparent"
               >
                 <button
                   v-for="u in filteredUsers"
@@ -552,7 +558,7 @@ const tipsAccordionItems: AccordionItem[] = [
                 <!-- Question Prompt -->
                 <div
                   v-if="currentPrompt"
-                  class="flex items-start gap-3 rounded-lg bg-primary-50/60 dark:bg-primary-900/15 border border-primary-200/50 dark:border-primary-700/30 px-4 py-3"
+                  class="flex items-start gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/15 border border-primary-200 dark:border-primary-700/30 px-4 py-3"
                 >
                   <UIcon
                     name="i-heroicons-light-bulb"
