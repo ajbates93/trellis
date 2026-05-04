@@ -46,20 +46,23 @@ const formatRelativeTime = (date: Date | string | null | undefined) => {
           />
           <div class="min-w-0 flex-1">
             <div class="flex items-start justify-between gap-2 mb-1">
-              <span class="font-semibold text-gray-900 dark:text-white truncate block">
-                {{ item.reviewer.name }}
-              </span>
+              <div class="min-w-0 flex-1">
+                <p class="font-semibold text-gray-900 dark:text-white truncate">
+                  {{ item.reviewer.name }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ formatRelativeTime(item.publishedAt ?? item.createdAt) }}
+                </p>
+              </div>
               <FeedbackFavouriteToggle
                 :feedback-id="item.id"
                 :is-favourite="item.isFavourite"
                 size="xs"
+                class="flex-shrink-0"
                 @update:is-favourite="(v) => !v && emit('unfavourite', item.id)"
               />
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              {{ formatRelativeTime(item.publishedAt ?? item.createdAt) }}
-            </p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            <p class="mt-2 text-sm text-left text-gray-600 dark:text-gray-400 line-clamp-2">
               {{ item.content }}
             </p>
           </div>
