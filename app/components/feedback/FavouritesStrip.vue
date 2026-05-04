@@ -27,7 +27,7 @@ const formatRelativeTime = (date: Date | string | null | undefined) => {
 <template>
   <div v-if="favourites.length > 0" class="mb-6">
     <h2 class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wide">
-      <UIcon name="i-heroicons-star-solid" class="w-4 h-4 text-amber-500" />
+      <UIcon name="i-heroicons-star" class="w-4 h-4 text-amber-500" />
       Favourites
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

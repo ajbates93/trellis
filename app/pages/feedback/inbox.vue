@@ -69,6 +69,10 @@ const setFavouriteLocally = (feedbackId: string, value: boolean) => {
       f.id === feedbackId ? { ...f, isFavourite: value } : f
     ),
   };
+  // Keep the modal in sync — selectedFeedback holds a separate object reference.
+  if (selectedFeedback.value?.id === feedbackId) {
+    selectedFeedback.value = { ...selectedFeedback.value, isFavourite: value };
+  }
 };
 
 // Unread feedback for Unread tab

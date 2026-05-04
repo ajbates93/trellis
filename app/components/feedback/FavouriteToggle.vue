@@ -43,7 +43,7 @@ const toggle = async (e: MouseEvent) => {
 
 <template>
   <UButton
-    :icon="isFavourite ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+    icon="i-heroicons-star"
     :color="isFavourite ? 'warning' : 'neutral'"
     variant="ghost"
     :size="size ?? 'sm'"
