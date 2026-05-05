@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/ajbates93/trellis/compare/v0.14.0...v0.14.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* mobile settings access ([71f8bce](https://github.com/ajbates93/trellis/commit/71f8bce24641f5a67691442e6e7bc05ab42342dd))
+
 ## [0.14.0](https://github.com/ajbates93/trellis/compare/v0.13.0...v0.14.0) (2026-05-04)
 
 
