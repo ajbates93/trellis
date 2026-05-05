@@ -499,6 +499,30 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                     class="w-4 h-4 text-gray-500"
                   />
                 </NuxtLink>
+                <NuxtLink
+                  to="/settings/general"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+                  :class="
+                    route.path.startsWith('/settings')
+                      ? 'bg-primary/10 text-primary-400'
+                      : 'text-gray-300 hover:bg-gray-800'
+                  "
+                  @click="mobileNavOpen = false"
+                >
+                  <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5" />
+                  <span class="flex-1 font-medium">Settings</span>
+                  <UIcon
+                    name="i-heroicons-chevron-right"
+                    class="w-4 h-4 text-gray-500"
+                  />
+                </NuxtLink>
+                <div
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300"
+                >
+                  <UIcon name="i-heroicons-swatch" class="w-5 h-5" />
+                  <span class="flex-1 font-medium">Theme</span>
+                  <UColorModeSwitch />
+                </div>
                 <button
                   class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors"
                   @click="isLogoutModalOpen = true"
