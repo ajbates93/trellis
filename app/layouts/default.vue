@@ -70,6 +70,14 @@ const { unreadCount } = useUnreadCount();
 // Fetch incoming feedback count for buddies
 const { incomingCount } = useIncomingFeedbackCount();
 
+// Fetch notifications unread count
+const { unreadCount: notificationsUnread, refreshCount: refreshNotifications } = useNotifications();
+
+if (import.meta.client) {
+  refreshNotifications();
+  watch(() => route.path, () => refreshNotifications());
+}
+
 // Dashboard link (top level)
 const dashboardLink = computed(() => ({
   label: "Dashboard",
@@ -314,7 +322,28 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
             "
             :has-buddies="hasBuddies"
             :collapsed="collapsed"
-          />
+          >
+            <template #notifications>
+              <UPopover :ui="{ content: 'p-0' }">
+                <button
+                  class="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                  :title="collapsed ? 'Notifications' : undefined"
+                >
+                  <UIcon name="i-heroicons-bell" class="w-5 h-5 flex-shrink-0" />
+                  <span v-if="!collapsed" class="flex-1 text-left text-sm font-medium">Notifications</span>
+                  <UBadge
+                    v-if="!collapsed && notificationsUnread > 0"
+                    :label="notificationsUnread > 9 ? '9+' : String(notificationsUnread)"
+                    size="xs"
+                    color="primary"
+                  />
+                </button>
+                <template #content>
+                  <NotificationsPopover />
+                </template>
+              </UPopover>
+            </template>
+          </SidebarNavigation>
         </template>
 
         <!-- Bottom section with user profile -->
