@@ -127,6 +127,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   onboardingImports: many(onboardingImports),
   feedbackInsights: many(feedbackInsights),
   achievements: many(achievements),
+  notifications: many(notifications),
 }));
 
 // Feedback table
