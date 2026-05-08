@@ -27,17 +27,14 @@ export interface CreateNotificationInput {
  */
 export async function createNotification(input: CreateNotificationInput): Promise<void> {
   try {
-    await db
-      .insert(notifications)
-      .values({
-        userId: input.userId,
-        type: input.type,
-        title: input.title,
-        body: input.body ?? null,
-        link: input.link,
-        metadata: input.metadata ?? {},
-      })
-      .returning();
+    await db.insert(notifications).values({
+      userId: input.userId,
+      type: input.type,
+      title: input.title,
+      body: input.body ?? null,
+      link: input.link,
+      metadata: input.metadata ?? {},
+    });
   } catch (error) {
     console.error("[createNotification] failed:", error);
   }

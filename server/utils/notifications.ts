@@ -95,7 +95,7 @@ async function flushPublishedFeedbackNotifications() {
         type: "feedback_received",
         title: "You have new feedback",
         link: "/feedback/inbox",
-        metadata: {},
+        metadata: { revieweeId: reviewee.id },
       });
 
       // Email
