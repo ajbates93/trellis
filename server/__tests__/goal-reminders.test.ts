@@ -27,7 +27,7 @@ describe("goal-reminders task", () => {
     mockSelect([{ id: "g1", userId: "u1", goalText: "Ship feature", targetDate: fmt(sevenOut) }]);
     mockSelect([]); // overdue list
     mockSelect([]); // existing overdue notifs
-    await task.run();
+    await task.run({} as never);
 
     expect(createNotification).toHaveBeenCalledWith(
       expect.objectContaining({ type: "goal_approaching", userId: "u1" }),
@@ -43,7 +43,7 @@ describe("goal-reminders task", () => {
     mockSelect([{ id: "g1", userId: "u1", goalText: "Ship", targetDate: fmt(yesterday) }]);
     mockSelect([]);
 
-    await task.run();
+    await task.run({} as never);
     expect(createNotification).toHaveBeenCalledWith(
       expect.objectContaining({ type: "goal_overdue", userId: "u1" }),
     );
@@ -54,7 +54,7 @@ describe("goal-reminders task", () => {
     mockSelect([{ id: "g1", userId: "u1", goalText: "Ship", targetDate: fmt(yesterday) }]);
     mockSelect([{ goalId: "g1" }]);
 
-    await task.run();
+    await task.run({} as never);
     expect(createNotification).not.toHaveBeenCalled();
   });
 });
