@@ -10,10 +10,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: "Unauthorized - Please log in" });
   }
 
-  const { limit, cursor, filter } = await Promise.resolve(validateQuery(
+  const { limit, cursor, filter } = validateQuery(
     event,
     apiSchemas.ListNotificationsQuerySchema,
-  ));
+  );
 
   const conditions = [eq(notifications.userId, session.user.id)];
   if (filter === "unread") conditions.push(isNull(notifications.readAt));

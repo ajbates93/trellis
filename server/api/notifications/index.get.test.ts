@@ -10,7 +10,7 @@ const { mockDb, mockSelect } = createMockDb();
 vi.mock("../../database/connection", () => ({ db: mockDb }));
 vi.mock("../../utils/validation", () => ({
   validateResponse: vi.fn().mockImplementation((d: unknown) => d),
-  validateQuery: vi.fn(async (event: { query?: Record<string, unknown> }) => ({
+  validateQuery: vi.fn((event: { query?: Record<string, unknown> }) => ({
     limit: 20,
     filter: "all" as const,
     cursor: undefined,
@@ -44,7 +44,7 @@ describe("GET /api/notifications", () => {
 
   it("returns items with nextCursor null when fewer than limit", async () => {
     mockSelect([sample()]);
-    const event = createAuthenticatedEvent({ query: { limit: 20, filter: "all" } });
+    const event = createAuthenticatedEvent({ query: { limit: "20", filter: "all" } });
     const result = await handler(event);
     expect(result.items).toHaveLength(1);
     expect(result.nextCursor).toBeNull();
@@ -55,9 +55,9 @@ describe("GET /api/notifications", () => {
       sample({ id: `n${i}`, createdAt: new Date(2026, 4, 1, 10, 0, i) }),
     );
     mockSelect(rows);
-    const event = createAuthenticatedEvent({ query: { limit: 20, filter: "all" } });
+    const event = createAuthenticatedEvent({ query: { limit: "20", filter: "all" } });
     const result = await handler(event);
     expect(result.items).toHaveLength(20);
-    expect(result.nextCursor).toBe(rows[19].createdAt.toISOString());
+    expect(result.nextCursor).toBe(rows[19]!.createdAt.toISOString());
   });
 });
