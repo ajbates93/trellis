@@ -48,9 +48,6 @@ export const useAuth = () => {
           passwordEnabled: {
             type: "boolean",
           },
-          emailNotifications: {
-            type: "boolean",
-          },
         },
       }),
       adminClient(),
