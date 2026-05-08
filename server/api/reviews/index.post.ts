@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
         .where(eq(users.id, session.user.id))
         .limit(1);
 
-      if (reviewee && buddy) {
+      if (reviewee && buddy && newReview) {
         const revieweeName = reviewee.preferredName || reviewee.name;
         const buddyName = buddy.preferredName || buddy.name;
         const dateStr = format(selectedDate, "EEEE d MMMM yyyy");
