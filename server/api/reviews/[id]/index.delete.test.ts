@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createNotification } from "#server/utils/inAppNotifications"
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import {
   createAuthenticatedEvent,
@@ -13,6 +14,21 @@ vi.mock('../../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../../utils/validation', () => ({
   validateBody: vi.fn().mockImplementation(async (event: any) => event._mockBody ?? {}),
   validateResponse: vi.fn().mockImplementation((data: any) => data),
+}))
+vi.mock("#server/utils/inAppNotifications", () => ({
+  createNotification: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock("#server/utils/emailPreferences", () => ({
+  shouldEmail: vi.fn().mockResolvedValue(true),
+}))
+vi.mock("#server/utils/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue(undefined),
+  emailTemplates: {
+    reviewCreated: vi.fn(() => "<html></html>"),
+    reviewRescheduled: vi.fn(() => "<html></html>"),
+    reviewCancelled: vi.fn(() => "<html></html>"),
+    reviewCompleted: vi.fn(() => "<html></html>"),
+  },
 }))
 
 const { default: handler } = await import('./index.delete')
@@ -69,6 +85,10 @@ describe('DELETE /api/reviews/:id', () => {
 
     // existing review lookup — 'user-1' is the buddy
     mockSelect([review])
+    // recipient lookup (user-2, the reviewee)
+    mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
+    // actor lookup (user-1, the buddy)
+    mockSelect([{ name: 'User One', preferredName: null }])
     mockDelete([])
 
     const event = createAuthenticatedEvent({ params: { id: 'review-1' } })
@@ -87,6 +107,10 @@ describe('DELETE /api/reviews/:id', () => {
 
     // existing review lookup — admin is neither reviewee nor buddy
     mockSelect([review])
+    // recipient lookup (user-5, the reviewee since admin is neither)
+    mockSelect([{ name: 'User Five', preferredName: null, email: 'user5@example.com' }])
+    // actor lookup (admin user)
+    mockSelect([{ name: 'Admin User', preferredName: null }])
     mockDelete([])
 
     const event = createAdminEvent({ params: { id: 'review-1' } })
@@ -94,5 +118,27 @@ describe('DELETE /api/reviews/:id', () => {
 
     expect(result).toEqual({ success: true, message: 'Review deleted successfully' })
     expect(mockDb.delete).toHaveBeenCalled()
+  })
+
+  it('emits review_cancelled notification when a review is deleted', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-2',
+      buddyId: 'user-1',
+    })
+
+    mockSelect([review])
+    // recipient lookup (user-2)
+    mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
+    // actor lookup (user-1)
+    mockSelect([{ name: 'User One', preferredName: null }])
+    mockDelete([])
+
+    const event = createAuthenticatedEvent({ params: { id: 'review-1' } })
+    await handler(event)
+
+    expect(createNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'review_cancelled' }),
+    )
   })
 })

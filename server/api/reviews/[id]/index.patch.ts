@@ -1,8 +1,12 @@
 import { db } from "#server/database/connection";
-import { reviewSchedules } from "#server/database/schema";
+import { reviewSchedules, users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
+import { format } from "date-fns";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { createNotification } from "#server/utils/inAppNotifications";
+import { shouldEmail } from "#server/utils/emailPreferences";
+import { sendEmail, emailTemplates } from "#server/utils/email";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -117,6 +121,58 @@ export default defineEventHandler(async (event) => {
       .set(updateData)
       .where(eq(reviewSchedules.id, reviewId))
       .returning();
+
+    // If the scheduled date changed, emit reschedule notification + email to the OTHER party
+    const dateChanged =
+      scheduledDate !== undefined &&
+      new Date(scheduledDate).getTime() !== new Date(existingReview.scheduledDate).getTime();
+
+    if (dateChanged) {
+      try {
+        const recipientId =
+          existingReview.userId === session.user.id
+            ? existingReview.buddyId
+            : existingReview.userId;
+
+        const [recipient] = await db
+          .select({ name: users.name, preferredName: users.preferredName, email: users.email })
+          .from(users)
+          .where(eq(users.id, recipientId))
+          .limit(1);
+
+        const [actor] = await db
+          .select({ name: users.name, preferredName: users.preferredName })
+          .from(users)
+          .where(eq(users.id, session.user.id))
+          .limit(1);
+
+        if (existingReview && recipient && actor) {
+          const recipientName = recipient.preferredName || recipient.name;
+          const actorName = actor.preferredName || actor.name;
+          const dateStr = format(new Date(scheduledDate!), "EEEE d MMMM yyyy");
+          const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+          await createNotification({
+            userId: recipientId,
+            type: "review_rescheduled",
+            title: `${actorName} rescheduled your review`,
+            body: dateStr,
+            link: `/reviews/${reviewId}`,
+            metadata: { reviewId, actorId: session.user.id },
+          });
+
+          if (await shouldEmail(recipientId, "review_rescheduled")) {
+            await sendEmail({
+              to: recipient.email,
+              subject: `Review rescheduled by ${actorName}`,
+              html: emailTemplates.reviewRescheduled(recipientName, actorName, dateStr, appUrl),
+            });
+          }
+        }
+      } catch (notifyErr) {
+        console.error("Failed to send review_rescheduled notifications:", notifyErr);
+      }
+    }
 
     return validateResponse(
       {
