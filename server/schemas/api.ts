@@ -1043,13 +1043,13 @@ export const NotificationSchema = z.object({
 
 export const ListNotificationsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
-  cursor: z.string().datetime().optional(),
+  cursor: z.iso.datetime().optional(),
   filter: z.enum(["all", "unread"]).default("all"),
 });
 
 export const ListNotificationsResponseSchema = z.object({
   items: z.array(NotificationSchema),
-  nextCursor: z.string().datetime().nullable(),
+  nextCursor: z.iso.datetime().nullable(),
 });
 
 export const NotificationUnreadCountResponseSchema = z.object({
