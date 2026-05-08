@@ -1014,3 +1014,53 @@ export const GetActivitySummaryResponseSchema = z.object({
     })
     .nullable(),
 });
+
+// ===== NOTIFICATIONS RESPONSE SCHEMAS =====
+
+export const NotificationTypeSchema = z.enum([
+  "feedback_received",
+  "buddy_feedback_received",
+  "review_created",
+  "review_rescheduled",
+  "review_cancelled",
+  "review_completed",
+  "review_reminder",
+  "goal_approaching",
+  "goal_overdue",
+]);
+
+export const NotificationSchema = z.object({
+  id: z.uuid(),
+  userId: z.string(),
+  type: NotificationTypeSchema,
+  title: z.string(),
+  body: z.string().nullable(),
+  link: z.string(),
+  metadata: z.record(z.string(), z.unknown()).nullable(),
+  readAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+export const ListNotificationsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().datetime().optional(),
+  filter: z.enum(["all", "unread"]).default("all"),
+});
+
+export const ListNotificationsResponseSchema = z.object({
+  items: z.array(NotificationSchema),
+  nextCursor: z.string().datetime().nullable(),
+});
+
+export const NotificationUnreadCountResponseSchema = z.object({
+  count: z.int().nonnegative(),
+});
+
+export const MarkNotificationReadResponseSchema = z.object({
+  success: z.literal(true),
+});
+
+export const MarkAllNotificationsReadResponseSchema = z.object({
+  success: z.literal(true),
+  updated: z.int().nonnegative(),
+});
