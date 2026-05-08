@@ -120,6 +120,93 @@ export const emailTemplates = {
     </html>
   `,
 
+  reviewCreated: (
+    recipientName: string,
+    otherPartyName: string,
+    reviewDate: string,
+    appUrl: string,
+  ) => `
+    <!DOCTYPE html>
+    <html>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #059669;">New review scheduled</h1>
+          <p>Hi ${recipientName},</p>
+          <p>${otherPartyName} has scheduled a review with you on <strong>${reviewDate}</strong>.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View review</a>
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">Trellis</p>
+        </div>
+      </body>
+    </html>
+  `,
+
+  reviewRescheduled: (
+    recipientName: string,
+    otherPartyName: string,
+    reviewDate: string,
+    appUrl: string,
+  ) => `
+    <!DOCTYPE html>
+    <html>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #059669;">Review rescheduled</h1>
+          <p>Hi ${recipientName},</p>
+          <p>${otherPartyName} has rescheduled your review. The new date is <strong>${reviewDate}</strong>.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View review</a>
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">Trellis</p>
+        </div>
+      </body>
+    </html>
+  `,
+
+  reviewCancelled: (
+    recipientName: string,
+    otherPartyName: string,
+    reviewDate: string,
+    appUrl: string,
+  ) => `
+    <!DOCTYPE html>
+    <html>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #059669;">Review cancelled</h1>
+          <p>Hi ${recipientName},</p>
+          <p>${otherPartyName} has cancelled the review previously scheduled for <strong>${reviewDate}</strong>.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View reviews</a>
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">Trellis</p>
+        </div>
+      </body>
+    </html>
+  `,
+
+  reviewCompleted: (
+    recipientName: string,
+    otherPartyName: string,
+    appUrl: string,
+  ) => `
+    <!DOCTYPE html>
+    <html>
+      <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #059669;">Review marked complete</h1>
+          <p>Hi ${recipientName},</p>
+          <p>${otherPartyName} has marked your review as complete.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View review</a>
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">Trellis</p>
+        </div>
+      </body>
+    </html>
+  `,
+
   buddyFeedbackReceived: (buddyName: string, revieweeName: string, appUrl: string) => `
     <!DOCTYPE html>
     <html>
