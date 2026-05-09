@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.15.0](https://github.com/ajbates93/trellis/compare/v0.14.1...v0.15.0) (2026-05-09)
+
+
+### Features
+
+* **db:** add notifications table and swap email preferences to jsonb ([4ff54ff](https://github.com/ajbates93/trellis/commit/4ff54ff9020a97e6247ee605ae1741036e5e7d4b))
+* **email:** add review lifecycle templates ([2023060](https://github.com/ajbates93/trellis/commit/2023060d920a4e90620d7597946dc09711625d36))
+* notifications and emails ([a52548e](https://github.com/ajbates93/trellis/commit/a52548ea2d9a0713bae0e5b2a9f2d546a4a4f8ca))
+* **notifications:** add /notifications inbox page ([0232af6](https://github.com/ajbates93/trellis/commit/0232af661988479c6eb38752d820f618118e2185))
+* **notifications:** add createNotification helper ([882eafc](https://github.com/ajbates93/trellis/commit/882eafcf4a1758262e1efdf8bc59b09b54c4c7cb))
+* **notifications:** add goal-reminders cron ([92b9ed1](https://github.com/ajbates93/trellis/commit/92b9ed1625f68e5ef490f19396a81e9753063b63))
+* **notifications:** add list endpoint with cursor pagination ([f5e1104](https://github.com/ajbates93/trellis/commit/f5e11043cd2f35af278da557aaa2120b3c1f488f))
+* **notifications:** add mark-all-read endpoint ([dd01c26](https://github.com/ajbates93/trellis/commit/dd01c269cc313a4167d9c92757876e3cc4352929))
+* **notifications:** add mark-read endpoint ([7c3640f](https://github.com/ajbates93/trellis/commit/7c3640fcba5f3a328a81eb2a7c144fb7f858ae4d))
+* **notifications:** add NotificationsPopover component ([659d193](https://github.com/ajbates93/trellis/commit/659d193d6ee273ca70d7b8dd4bd399128fe74990))
+* **notifications:** add shouldEmail helper ([3266d68](https://github.com/ajbates93/trellis/commit/3266d68ba3e4fd944f061f6551a995adf8cd5c52))
+* **notifications:** add unread-count endpoint ([73e58a1](https://github.com/ajbates93/trellis/commit/73e58a1540c54a8800b193f919e27cd81c63416b))
+* **notifications:** add useNotifications composable ([bb668b4](https://github.com/ajbates93/trellis/commit/bb668b4e211127eb947b4ea8596d31215a30d263))
+* **notifications:** use shouldEmail + emit in-app notifications ([e4f8f3a](https://github.com/ajbates93/trellis/commit/e4f8f3a7948164f6ad7927bff7cd0128ec127129))
+* **notifications:** wire bell + popover into sidebar ([0521b3e](https://github.com/ajbates93/trellis/commit/0521b3e23c369d3b53bcc3bb53104c224653a493))
+* **reviews:** emit in-app review_reminder alongside emails ([30e29c6](https://github.com/ajbates93/trellis/commit/30e29c61c7d53cafbb38fead9429a379ee398c52))
+* **reviews:** emit notification + email on review creation ([da911dd](https://github.com/ajbates93/trellis/commit/da911dd1c90896bcb4cb26a416b3574f2cb4a523))
+* **reviews:** emit notifications + emails on reschedule/cancel/complete ([8cf5cce](https://github.com/ajbates93/trellis/commit/8cf5cceda1eb9c5a2c3b43cbf20848c34cc227d6))
+* **schemas:** add notification API schemas ([8c8f13e](https://github.com/ajbates93/trellis/commit/8c8f13ecc54db77d5dc68872597c4e1eceb9c407))
+* **settings:** per-category email preferences UI + API ([9a4dd8d](https://github.com/ajbates93/trellis/commit/9a4dd8d01986ccea673ac532e787a53688921199))
+
+
+### Bug Fixes
+
+* **auth:** drop stale emailNotifications client field ([5d1e21f](https://github.com/ajbates93/trellis/commit/5d1e21fca23919beabec818c90b3d7083d95562a))
+* **notifications:** address Copilot review feedback ([24d2a33](https://github.com/ajbates93/trellis/commit/24d2a33fd5ae6909ae9d5d650a6c2acc9ca2102b))
+* **notifications:** drop stale emailNotifications references and improve metadata ([3081ac2](https://github.com/ajbates93/trellis/commit/3081ac237241c165a4429463d9a876be65920a1f))
+* **reviews:** guard newReview in notification emission ([1dea0cd](https://github.com/ajbates93/trellis/commit/1dea0cd508aeb1cc5242152a4fc1fec0c7abe24a))
+* **schema:** add notifications relation to usersRelations ([b99f5ac](https://github.com/ajbates93/trellis/commit/b99f5acaa3413a2dc753c6729ae2487ff403f07c))
+* **schemas:** use z.iso.datetime() for cursor types ([bef20a8](https://github.com/ajbates93/trellis/commit/bef20a8bae71a874f8d82597dc2bae3b8a6870e4))
+* **test:** satisfy defineTask run signature in goal-reminders tests ([673bfa9](https://github.com/ajbates93/trellis/commit/673bfa9bbc1b861dbeb86d30c18fd95b4d9bad15))
+
+
+### Refactoring
+
+* **notifications:** clean up list endpoint validateQuery typing ([ee28e47](https://github.com/ajbates93/trellis/commit/ee28e47f4ea172acc7630385f336db41e55dca0d))
+
+
+### Documentation
+
+* add notifications implementation plan ([6cbfcfc](https://github.com/ajbates93/trellis/commit/6cbfcfc1be8d0747772620a45638e2a5599cb4d7))
+* add notifications v1 design spec ([e107d08](https://github.com/ajbates93/trellis/commit/e107d08969dd83ac3b0125b8d0211c33b4cebe1d))
+
+
+### Miscellaneous
+
+* drop dashboard prototype files unrelated to notifications work ([cefff0f](https://github.com/ajbates93/trellis/commit/cefff0f86c7f458fce1e674a739f7b48200ee934))
+
+
+### Tests
+
+* **feedback:** assert published feedback notifies reviewees ([e59d3dc](https://github.com/ajbates93/trellis/commit/e59d3dc651f778005d582b9a67a92bd158d2a48d))
+
 ## [0.14.1](https://github.com/ajbates93/trellis/compare/v0.14.0...v0.14.1) (2026-05-05)
 
 
