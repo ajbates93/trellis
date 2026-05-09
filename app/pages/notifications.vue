@@ -13,7 +13,7 @@ interface NotificationItem {
   createdAt: string;
 }
 
-const filter = ref<"all" | "unread">("all");
+const filter = ref<"all" | "unread">("unread");
 const items = ref<NotificationItem[]>([]);
 const nextCursor = ref<string | null>(null);
 const loading = ref(false);
@@ -68,7 +68,7 @@ const handleMarkAll = async () => {
 <template>
   <UDashboardPanel id="notifications-page">
     <template #body>
-      <div class="pt-16 sm:pt-16 lg:pt-8 lg:px-2 max-w-3xl">
+      <div class="w-full pt-16 sm:pt-16 lg:pt-8 lg:px-2 max-w-5xl mx-auto">
         <div class="mb-6 flex items-center justify-between">
           <h1 class="text-3xl font-bold">Notifications</h1>
           <UButton variant="soft" size="sm" @click="handleMarkAll">Mark all read</UButton>
@@ -79,8 +79,10 @@ const handleMarkAll = async () => {
           <UButton size="xs" :variant="filter === 'unread' ? 'solid' : 'soft'" @click="filter = 'unread'">Unread</UButton>
         </div>
 
-        <div v-if="items.length === 0 && !loading" class="text-center py-12 text-gray-500">
-          You're all caught up.
+        <div v-if="items.length === 0 && !loading" class="text-center py-16">
+          <UIcon name="i-heroicons-rocket-launch" class="w-10 h-10 text-primary-500 mb-3 mx-auto" />
+          <p class="text-base font-medium text-gray-700 dark:text-gray-200">You're all caught up</p>
+          <p class="text-sm text-gray-500 mt-1">Nothing new right now.</p>
         </div>
 
         <div class="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">

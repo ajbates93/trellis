@@ -44,7 +44,7 @@ export async function notifyBuddyOfNewFeedback(revieweeId: string) {
       userId: reviewee.buddyId,
       type: "buddy_feedback_received",
       title: `New feedback for ${revieweeName} to review`,
-      link: "/feedback/inbox",
+      link: `/buddies/feedback?buddyId=${revieweeId}`,
       metadata: { revieweeId },
     });
 

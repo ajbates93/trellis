@@ -58,22 +58,18 @@ to="/settings/integrations" class="border-b-2 py-4 px-1 text-sm font-medium" :cl
             </template>
 
             <div class="space-y-2">
-              <div class="grid grid-cols-[1fr_auto_auto] gap-4 px-2 py-1 text-xs uppercase tracking-wide text-gray-500">
+              <div class="grid grid-cols-[1fr_auto] gap-4 px-2 py-1 text-xs uppercase tracking-wide text-gray-500">
                 <span>Category</span>
-                <span class="w-16 text-center">In-app</span>
                 <span class="w-16 text-center">Email</span>
               </div>
               <div
                 v-for="cat in categories"
                 :key="cat.key"
-                class="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-2 py-2 border-t border-gray-100 dark:border-gray-800"
+                class="grid grid-cols-[1fr_auto] gap-4 items-center px-2 py-2 border-t border-gray-100 dark:border-gray-800"
               >
                 <div>
                   <div class="text-sm font-medium">{{ cat.label }}</div>
                   <div class="text-xs text-gray-500">{{ cat.description }}</div>
-                </div>
-                <div class="w-16 flex justify-center">
-                  <UIcon name="i-heroicons-lock-closed" class="w-4 h-4 text-gray-400" />
                 </div>
                 <div class="w-16 flex justify-center">
                   <USwitch
@@ -116,8 +112,6 @@ const categories: CategoryDef[] = [
   { key: "review_cancelled", label: "Review cancelled", description: "When your buddy cancels a scheduled review", email: true },
   { key: "review_completed", label: "Review completed", description: "When your buddy marks a review complete", email: true },
   { key: "review_reminder", label: "Review reminders", description: "7-day and 1-day reminders before scheduled reviews", email: true },
-  { key: "goal_approaching", label: "Goal approaching target", description: "7 days before a goal's target date (in-app only)", email: null },
-  { key: "goal_overdue", label: "Goal overdue", description: "When a goal passes its target date (in-app only)", email: null },
 ];
 
 const toast = useToast();

@@ -34,6 +34,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
       body: input.body ?? null,
       link: input.link,
       metadata: input.metadata ?? {},
+      createdAt: new Date(),
     });
   } catch (error) {
     console.error("[createNotification] failed:", error);

@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 const { items, unreadCount, fetchPopover, markRead, markAllRead } = useNotifications();
 const router = useRouter();
 
-const filter = ref<"all" | "unread">("all");
+const filter = ref<"all" | "unread">("unread");
 
 const visible = computed(() =>
   filter.value === "all"
@@ -29,7 +29,7 @@ const handleClick = async (id: string, link: string) => {
 
 <template>
   <div class="w-96 max-w-full">
-    <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+    <div class="flex items-center justify-between p-4 border-b border-gray-300 dark:border-gray-700">
       <h3 class="text-lg font-semibold">Notifications</h3>
       <button
         v-if="unreadCount > 0"
@@ -39,7 +39,7 @@ const handleClick = async (id: string, link: string) => {
         Mark all read
       </button>
     </div>
-    <div class="flex gap-2 px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+    <div class="flex gap-2 px-4 py-2 border-b border-gray-300 dark:border-gray-700">
       <UButton
         size="xs"
         :variant="filter === 'all' ? 'solid' : 'soft'"
@@ -51,17 +51,19 @@ const handleClick = async (id: string, link: string) => {
         @click="filter = 'unread'"
       >Unread</UButton>
     </div>
-    <div class="max-h-96 overflow-y-auto">
+    <div class="max-h-96 overflow-y-auto bg-white dark:bg-gray-900">
       <div
         v-if="visible.length === 0"
-        class="p-6 text-center text-sm text-gray-500"
+        class="px-6 py-10 text-center"
       >
-        No notifications
+        <UIcon name="i-heroicons-rocket-launch" class="w-8 h-8 text-primary-500 mb-2 mx-auto" />
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-200">You're all caught up</p>
+        <p class="text-xs text-gray-500 mt-1">Nothing new right now.</p>
       </div>
       <button
         v-for="n in visible"
         :key="n.id"
-        class="w-full text-left flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-900"
+        class="w-full text-left flex items-start gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-800 last:border-b-0"
         @click="handleClick(n.id, n.link)"
       >
         <UIcon :name="iconFor(n.type)" class="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-500" />
@@ -75,7 +77,7 @@ const handleClick = async (id: string, link: string) => {
         <span v-if="!n.readAt" class="w-2 h-2 rounded-full bg-primary-500 flex-shrink-0 mt-2" />
       </button>
     </div>
-    <div class="p-2 border-t border-gray-200 dark:border-gray-800 text-center">
+    <div class="p-2 border-t border-gray-300 dark:border-gray-700 text-center">
       <NuxtLink to="/notifications" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
         See all
       </NuxtLink>
