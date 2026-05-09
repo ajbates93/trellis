@@ -122,8 +122,10 @@ export default defineEventHandler(async (event) => {
       .where(eq(reviewSchedules.id, reviewId))
       .returning();
 
-    // If the scheduled date changed, emit reschedule notification + email to the OTHER party
+    // If the scheduled date actually changed AND the caller is permitted to change it,
+    // emit reschedule notification + email to the OTHER party.
     const dateChanged =
+      (isBuddy || isAdmin) &&
       scheduledDate !== undefined &&
       new Date(scheduledDate).getTime() !== new Date(existingReview.scheduledDate).getTime();
 

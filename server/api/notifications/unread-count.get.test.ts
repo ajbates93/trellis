@@ -25,7 +25,7 @@ describe("GET /api/notifications/unread-count", () => {
   });
 
   it("returns the count of unread notifications", async () => {
-    mockSelect([{ id: "1" }, { id: "2" }]);
+    mockSelect([{ count: 2 }]);
     const event = createAuthenticatedEvent();
     const result = await handler(event);
     expect(result).toEqual({ count: 2 });

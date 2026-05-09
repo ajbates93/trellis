@@ -73,11 +73,9 @@ to="/settings/integrations" class="border-b-2 py-4 px-1 text-sm font-medium" :cl
                 </div>
                 <div class="w-16 flex justify-center">
                   <USwitch
-                    v-if="cat.email !== null"
                     :model-value="emailEnabled(cat.key)"
                     @update:model-value="(v: boolean) => setEmail(cat.key, v)"
                   />
-                  <span v-else class="text-gray-400 text-sm">—</span>
                 </div>
               </div>
             </div>
@@ -101,17 +99,16 @@ interface CategoryDef {
   key: string;
   label: string;
   description: string;
-  email: boolean | null;
 }
 
 const categories: CategoryDef[] = [
-  { key: "feedback_received", label: "Feedback received", description: "When someone publishes feedback for you", email: true },
-  { key: "buddy_feedback_received", label: "Feedback for someone you buddy", description: "When feedback is published for someone you support", email: true },
-  { key: "review_created", label: "Review scheduled by buddy", description: "When your buddy schedules a new review with you", email: true },
-  { key: "review_rescheduled", label: "Review rescheduled", description: "When your buddy moves a scheduled review", email: true },
-  { key: "review_cancelled", label: "Review cancelled", description: "When your buddy cancels a scheduled review", email: true },
-  { key: "review_completed", label: "Review completed", description: "When your buddy marks a review complete", email: true },
-  { key: "review_reminder", label: "Review reminders", description: "7-day and 1-day reminders before scheduled reviews", email: true },
+  { key: "feedback_received", label: "Feedback received", description: "When someone publishes feedback for you" },
+  { key: "buddy_feedback_received", label: "Feedback for someone you buddy", description: "When feedback is published for someone you support" },
+  { key: "review_created", label: "Review scheduled by buddy", description: "When your buddy schedules a new review with you" },
+  { key: "review_rescheduled", label: "Review rescheduled", description: "When your buddy moves a scheduled review" },
+  { key: "review_cancelled", label: "Review cancelled", description: "When your buddy cancels a scheduled review" },
+  { key: "review_completed", label: "Review completed", description: "When your buddy marks a review complete" },
+  { key: "review_reminder", label: "Review reminders", description: "7-day and 1-day reminders before scheduled reviews" },
 ];
 
 const toast = useToast();

@@ -71,8 +71,17 @@ const { unreadCount } = useUnreadCount();
 const { incomingCount } = useIncomingFeedbackCount();
 
 // Fetch notifications unread count
-const { unreadCount: notificationsUnread, refreshCount: refreshNotifications } = useNotifications();
+const { unreadCount: notificationsUnread, refreshCount: refreshNotifications, fetchPopover } = useNotifications();
 const notificationsOpen = ref(false);
+
+if (import.meta.client) {
+  watch(notificationsOpen, (open) => {
+    if (open) {
+      refreshNotifications();
+      fetchPopover();
+    }
+  });
+}
 
 if (import.meta.client) {
   refreshNotifications();

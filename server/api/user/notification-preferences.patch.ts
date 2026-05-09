@@ -4,8 +4,18 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { validateBody, validateResponse } from "#server/utils/validation";
 
+const EmailCategoryKey = z.enum([
+  "feedback_received",
+  "buddy_feedback_received",
+  "review_created",
+  "review_rescheduled",
+  "review_cancelled",
+  "review_completed",
+  "review_reminder",
+]);
+
 const BodySchema = z.object({
-  preferences: z.record(z.string(), z.boolean()),
+  preferences: z.record(EmailCategoryKey, z.boolean()),
 });
 
 const ResponseSchema = z.object({ success: z.literal(true) });

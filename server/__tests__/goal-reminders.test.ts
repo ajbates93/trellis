@@ -25,8 +25,7 @@ describe("goal-reminders task", () => {
     sevenOut.setDate(sevenOut.getDate() + 7);
 
     mockSelect([{ id: "g1", userId: "u1", goalText: "Ship feature", targetDate: fmt(sevenOut) }]);
-    mockSelect([]); // overdue list
-    mockSelect([]); // existing overdue notifs
+    mockSelect([]); // overdue list (empty → existing-overdue lookup is skipped)
     await task.run({} as never);
 
     expect(createNotification).toHaveBeenCalledWith(

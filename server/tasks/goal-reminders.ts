@@ -50,11 +50,20 @@ export default defineTask({
         .from(goals)
         .where(and(eq(goals.status, "active"), lt(goals.targetDate, todayStr)));
 
-      // Look up which already have an overdue notification
-      const existingOverdue = await db
-        .select({ goalId: sql<string>`metadata->>'goalId'` })
-        .from(notifications)
-        .where(eq(notifications.type, "goal_overdue"));
+      // Look up which of the currently-overdue goals already have an overdue
+      // notification (scoped to the goalIds we're about to process).
+      const overdueGoalIds = overdueGoals.map((g) => g.id);
+      const existingOverdue = overdueGoalIds.length
+        ? await db
+            .select({ goalId: sql<string>`metadata->>'goalId'` })
+            .from(notifications)
+            .where(
+              and(
+                eq(notifications.type, "goal_overdue"),
+                sql`metadata->>'goalId' = ANY(${overdueGoalIds})`,
+              ),
+            )
+        : [];
 
       const seen = new Set(existingOverdue.map((r) => r.goalId));
 

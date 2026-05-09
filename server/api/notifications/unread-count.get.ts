@@ -1,6 +1,6 @@
 import { db } from "#server/database/connection";
 import { notifications } from "#server/database/schema";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 
@@ -13,8 +13,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const rows = await db
-    .select({ id: notifications.id })
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
     .from(notifications)
     .where(
       and(
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     );
 
   return validateResponse(
-    { count: rows.length },
+    { count: row?.count ?? 0 },
     apiSchemas.NotificationUnreadCountResponseSchema,
   );
 });
