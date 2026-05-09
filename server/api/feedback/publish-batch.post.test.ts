@@ -5,6 +5,7 @@ import {
   createUnauthenticatedEvent,
 } from '#server/__tests__/helpers/mock-event'
 import { buildFeedback } from '#server/__tests__/helpers/factories'
+import { notifyRevieweeOfPublishedFeedback } from '../../utils/notifications'
 
 const { mockDb, mockSelect, mockUpdate } = createMockDb()
 
@@ -106,5 +107,8 @@ describe('POST /api/feedback/publish-batch', () => {
       feedback: [updatedItem1, updatedItem2],
     })
     expect(mockDb.update).toHaveBeenCalled()
+    expect(notifyRevieweeOfPublishedFeedback).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.any(String)]),
+    )
   })
 })

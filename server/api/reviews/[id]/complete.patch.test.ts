@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createNotification } from "#server/utils/inAppNotifications"
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import {
   createAuthenticatedEvent,
@@ -13,6 +14,21 @@ vi.mock('../../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../../utils/validation', () => ({
   validateBody: vi.fn().mockImplementation(async (event: any) => event._mockBody ?? {}),
   validateResponse: vi.fn().mockImplementation((data: any) => data),
+}))
+vi.mock("#server/utils/inAppNotifications", () => ({
+  createNotification: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock("#server/utils/emailPreferences", () => ({
+  shouldEmail: vi.fn().mockResolvedValue(true),
+}))
+vi.mock("#server/utils/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue(undefined),
+  emailTemplates: {
+    reviewCreated: vi.fn(() => "<html></html>"),
+    reviewRescheduled: vi.fn(() => "<html></html>"),
+    reviewCancelled: vi.fn(() => "<html></html>"),
+    reviewCompleted: vi.fn(() => "<html></html>"),
+  },
 }))
 
 const { default: handler } = await import('./complete.patch')
@@ -74,16 +90,14 @@ describe('PATCH /api/reviews/:id/complete', () => {
       buddyId: 'user-1',
       status: 'scheduled',
     })
-    const completedReview = {
-      ...review,
-      status: 'completed',
-      completedDate: expect.any(String),
-      completionNotes: 'Great session',
-    }
 
     // review lookup — 'user-1' is the buddy
     mockSelect([review])
     mockUpdate([{ ...review, status: 'completed', completedDate: new Date().toISOString(), completionNotes: 'Great session' }])
+    // recipient lookup (user-2, the reviewee)
+    mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
+    // actor lookup (user-1, the buddy)
+    mockSelect([{ name: 'User One', preferredName: null }])
 
     const event = createAuthenticatedEvent({
       params: { id: 'review-1' },
@@ -108,6 +122,10 @@ describe('PATCH /api/reviews/:id/complete', () => {
 
     mockSelect([review])
     mockUpdate([{ ...review, status: 'completed', completedDate: new Date().toISOString(), completionNotes: null }])
+    // recipient lookup (user-2)
+    mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
+    // actor lookup (user-1)
+    mockSelect([{ name: 'User One', preferredName: null }])
 
     const event = createAuthenticatedEvent({
       params: { id: 'review-1' },
@@ -132,6 +150,10 @@ describe('PATCH /api/reviews/:id/complete', () => {
     // review lookup — admin is neither reviewee nor buddy
     mockSelect([review])
     mockUpdate([{ ...review, status: 'completed', completedDate: new Date().toISOString(), completionNotes: null }])
+    // recipient lookup (user-5, the reviewee)
+    mockSelect([{ name: 'User Five', preferredName: null, email: 'user5@example.com' }])
+    // actor lookup (admin user)
+    mockSelect([{ name: 'Admin User', preferredName: null }])
 
     const event = createAdminEvent({
       params: { id: 'review-1' },
@@ -143,5 +165,32 @@ describe('PATCH /api/reviews/:id/complete', () => {
     expect(result.success).toBe(true)
     expect(result.review.status).toBe('completed')
     expect(mockDb.update).toHaveBeenCalled()
+  })
+
+  it('emits review_completed notification when a review is completed', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-2',
+      buddyId: 'user-1',
+      status: 'scheduled',
+    })
+
+    mockSelect([review])
+    mockUpdate([{ ...review, status: 'completed', completedDate: new Date().toISOString(), completionNotes: null }])
+    // recipient lookup (user-2)
+    mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
+    // actor lookup (user-1)
+    mockSelect([{ name: 'User One', preferredName: null }])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: {},
+    })
+
+    await handler(event)
+
+    expect(createNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'review_completed' }),
+    )
   })
 })

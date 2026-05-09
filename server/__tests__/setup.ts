@@ -35,4 +35,6 @@ Object.assign(globalThis, {
   getHeaders,
   toWebRequest,
   assertMethod,
+  // Nitro auto-import: defineTask is just an identity function in tests
+  defineTask: (def: { meta?: unknown; run: (...args: unknown[]) => unknown }) => def,
 })

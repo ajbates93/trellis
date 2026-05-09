@@ -2,6 +2,8 @@ import { db } from "#server/database/connection";
 import { reviewSchedules, users } from "#server/database/schema";
 import { eq, and, between } from "drizzle-orm";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+import { createNotification } from "#server/utils/inAppNotifications";
+import { shouldEmail } from "#server/utils/emailPreferences";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -131,8 +133,17 @@ async function sendReminders(
     return 0;
   }
 
-  // Send to reviewee if they have email notifications enabled
-  if (reviewee.emailNotifications !== false) {
+  // Always emit in-app notification for the reviewee
+  await createNotification({
+    userId: reviewee.id,
+    type: "review_reminder",
+    title: `Review with ${buddy.name} in ${daysUntil} day${daysUntil === 1 ? "" : "s"}`,
+    body: reviewDate,
+    link: `/reviews/${review.id}`,
+    metadata: { reviewId: review.id, daysUntil },
+  });
+
+  if (await shouldEmail(reviewee.id, "review_reminder")) {
     try {
       await sendEmail({
         to: reviewee.email,
@@ -157,8 +168,16 @@ async function sendReminders(
   // Delay to respect Resend rate limit (2 req/s)
   await sleep(600);
 
-  // Send to buddy if they have email notifications enabled
-  if (buddy.emailNotifications !== false) {
+  await createNotification({
+    userId: buddy.id,
+    type: "review_reminder",
+    title: `Review with ${reviewee.name} in ${daysUntil} day${daysUntil === 1 ? "" : "s"}`,
+    body: reviewDate,
+    link: `/reviews/${review.id}`,
+    metadata: { reviewId: review.id, daysUntil },
+  });
+
+  if (await shouldEmail(buddy.id, "review_reminder")) {
     try {
       await sendEmail({
         to: buddy.email,

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createNotification } from "#server/utils/inAppNotifications"
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import {
   createAuthenticatedEvent,
@@ -13,6 +14,21 @@ vi.mock('../../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../../utils/validation', () => ({
   validateBody: vi.fn().mockImplementation(async (event: any) => event._mockBody ?? {}),
   validateResponse: vi.fn().mockImplementation((data: any) => data),
+}))
+vi.mock("#server/utils/inAppNotifications", () => ({
+  createNotification: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock("#server/utils/emailPreferences", () => ({
+  shouldEmail: vi.fn().mockResolvedValue(true),
+}))
+vi.mock("#server/utils/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue(undefined),
+  emailTemplates: {
+    reviewCreated: vi.fn(() => "<html></html>"),
+    reviewRescheduled: vi.fn(() => "<html></html>"),
+    reviewCancelled: vi.fn(() => "<html></html>"),
+    reviewCompleted: vi.fn(() => "<html></html>"),
+  },
 }))
 
 const { default: handler } = await import('./index.patch')
@@ -222,5 +238,59 @@ describe('PATCH /api/reviews/:id', () => {
     const result = await handler(event)
 
     expect(result).toEqual({ success: true, review: updatedReview })
+  })
+
+  it('emits review_rescheduled notification when scheduledDate changes', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-2',
+      buddyId: 'user-1',
+      scheduledDate: '2099-03-01T10:00:00.000Z',
+    })
+    const updatedReview = { ...review, scheduledDate: '2099-04-01T10:00:00.000Z' }
+
+    // existing review lookup — 'user-1' is the buddy
+    mockSelect([review])
+    mockUpdate([updatedReview])
+    // recipient lookup (user-2)
+    mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
+    // actor lookup (user-1)
+    mockSelect([{ name: 'User One', preferredName: null }])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: { scheduledDate: '2099-04-01T10:00:00.000Z' },
+    })
+
+    await handler(event)
+
+    expect(createNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'review_rescheduled' }),
+    )
+  })
+
+  it('does NOT emit review_rescheduled when scheduledDate is unchanged', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-2',
+      buddyId: 'user-1',
+      scheduledDate: '2099-03-01T10:00:00.000Z',
+    })
+    const updatedReview = { ...review, notes: 'New notes' }
+
+    // existing review lookup
+    mockSelect([review])
+    mockUpdate([updatedReview])
+
+    const event = createAuthenticatedEvent({
+      params: { id: 'review-1' },
+      body: { notes: 'New notes' },
+    })
+
+    await handler(event)
+
+    expect(createNotification).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'review_rescheduled' }),
+    )
   })
 })

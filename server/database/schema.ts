@@ -7,6 +7,7 @@ import {
   date,
   boolean,
   integer,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -72,7 +73,9 @@ export const users = pgTable("users", {
   reviewPreference: varchar("review_preference", { length: 20 }), // in-person, remote, hybrid, no-preference
   communicationPreferences: text("communication_preferences"),
   timezone: varchar("timezone", { length: 100 }), // IANA timezone (e.g., Europe/London)
-  emailNotifications: boolean("email_notifications").default(true),
+  emailNotificationPreferences: jsonb("email_notification_preferences")
+    .$type<Record<string, boolean>>()
+    .default({}),
   // Onboarding wizard progress
   onboardingTasks: text("onboarding_tasks").array().default([]),
   // Admin plugin fields
@@ -124,6 +127,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   onboardingImports: many(onboardingImports),
   feedbackInsights: many(feedbackInsights),
   achievements: many(achievements),
+  notifications: many(notifications),
 }));
 
 // Feedback table
@@ -406,6 +410,28 @@ export const achievements = pgTable("achievements", {
 export const achievementsRelations = relations(achievements, ({ one }) => ({
   user: one(users, {
     fields: [achievements.userId],
+    references: [users.id],
+  }),
+}));
+
+// Notifications table (in-app event log per recipient)
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 50 }).notNull(),
+  title: text("title").notNull(),
+  body: text("body"),
+  link: text("link").notNull(),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
     references: [users.id],
   }),
 }));

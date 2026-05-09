@@ -72,6 +72,11 @@ const isItemOrChildActive = (item: NavItem): boolean => {
       </NuxtLink>
     </div>
 
+    <!-- Notifications slot (rendered between Dashboard and Personal) -->
+    <div class="space-y-1 mb-2">
+      <slot name="notifications" />
+    </div>
+
     <!-- Personal Section -->
     <div class="space-y-1">
       <!-- Section Header (only show if user has buddies) -->

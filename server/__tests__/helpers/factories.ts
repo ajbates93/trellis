@@ -28,7 +28,7 @@ export function buildUser(overrides: Record<string, unknown> = {}) {
     reviewPreference: null,
     communicationPreferences: null,
     timezone: null,
-    emailNotifications: true,
+    emailNotificationPreferences: {},
     onboardingTasks: [],
     role: 'user',
     banned: false,

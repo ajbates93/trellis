@@ -151,7 +151,7 @@ export default defineNuxtConfig({
       tasks: true,
     },
     scheduledTasks: {
-      "0 9 * * *": ["review-reminders"], // Daily at 9 AM UTC
+      "0 9 * * *": ["review-reminders", "goal-reminders"], // Daily at 9 AM UTC
     },
   },
 

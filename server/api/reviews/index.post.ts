@@ -4,6 +4,9 @@ import { eq } from "drizzle-orm";
 import { format } from "date-fns";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { createNotification } from "#server/utils/inAppNotifications";
+import { shouldEmail } from "#server/utils/emailPreferences";
+import { sendEmail, emailTemplates } from "#server/utils/email";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -67,6 +70,47 @@ export default defineEventHandler(async (event) => {
         status: "scheduled",
       })
       .returning();
+
+    // Notify the reviewee (in-app always; email if opted in)
+    try {
+      const [reviewee] = await db
+        .select({ name: users.name, preferredName: users.preferredName, email: users.email })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      const [buddy] = await db
+        .select({ name: users.name, preferredName: users.preferredName })
+        .from(users)
+        .where(eq(users.id, session.user.id))
+        .limit(1);
+
+      if (reviewee && buddy && newReview) {
+        const revieweeName = reviewee.preferredName || reviewee.name;
+        const buddyName = buddy.preferredName || buddy.name;
+        const dateStr = format(selectedDate, "EEEE d MMMM yyyy");
+        const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+        await createNotification({
+          userId,
+          type: "review_created",
+          title: `${buddyName} scheduled a review with you`,
+          body: dateStr,
+          link: `/reviews/${newReview.id}`,
+          metadata: { reviewId: newReview.id, actorId: session.user.id },
+        });
+
+        if (await shouldEmail(userId, "review_created")) {
+          await sendEmail({
+            to: reviewee.email,
+            subject: `New review scheduled with ${buddyName}`,
+            html: emailTemplates.reviewCreated(revieweeName, buddyName, dateStr, appUrl),
+          });
+        }
+      }
+    } catch (notifyErr) {
+      console.error("Failed to send review_created notifications:", notifyErr);
+    }
 
     return validateResponse(
       { success: true, review: newReview },

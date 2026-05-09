@@ -70,6 +70,24 @@ const { unreadCount } = useUnreadCount();
 // Fetch incoming feedback count for buddies
 const { incomingCount } = useIncomingFeedbackCount();
 
+// Fetch notifications unread count
+const { unreadCount: notificationsUnread, refreshCount: refreshNotifications, fetchPopover } = useNotifications();
+const notificationsOpen = ref(false);
+
+if (import.meta.client) {
+  watch(notificationsOpen, (open) => {
+    if (open) {
+      refreshNotifications();
+      fetchPopover();
+    }
+  });
+}
+
+if (import.meta.client) {
+  refreshNotifications();
+  watch(() => route.path, () => refreshNotifications());
+}
+
 // Dashboard link (top level)
 const dashboardLink = computed(() => ({
   label: "Dashboard",
@@ -226,8 +244,20 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
         >
       </NuxtLink>
 
-      <!-- Spacer to balance the layout -->
-      <div class="w-10" />
+      <!-- Notifications bell -->
+      <NuxtLink
+        to="/notifications"
+        aria-label="Notifications"
+        class="relative p-2 -mr-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center"
+      >
+        <UIcon name="i-heroicons-bell" class="w-6 h-6 text-gray-300" />
+        <span
+          v-if="notificationsUnread > 0"
+          class="absolute top-1 right-1 min-w-[1rem] h-4 px-1 rounded-full bg-primary-500 text-[10px] font-semibold text-gray-900 flex items-center justify-center"
+        >
+          {{ notificationsUnread > 9 ? "9+" : notificationsUnread }}
+        </span>
+      </NuxtLink>
     </header>
 
     <!-- Global loading indicator for page navigation -->
@@ -314,7 +344,33 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
             "
             :has-buddies="hasBuddies"
             :collapsed="collapsed"
-          />
+          >
+            <template #notifications>
+              <UPopover
+                v-model:open="notificationsOpen"
+                :content="{ side: 'bottom', align: 'start', sideOffset: 4 }"
+                :ui="{ content: 'p-0 bg-gray-100 dark:bg-gray-800 border border-default rounded-lg ring-1 ring-black/10 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5),0_8px_20px_-6px_rgba(0,0,0,0.4)]' }"
+              >
+                <button
+                  class="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg text-gray-700 dark:text-gray-300 transition-colors duration-200"
+                  :class="notificationsOpen ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'"
+                  :title="collapsed ? 'Notifications' : undefined"
+                >
+                  <UIcon name="i-heroicons-bell" class="w-5 h-5 flex-shrink-0" />
+                  <span v-if="!collapsed" class="flex-1 text-left text-sm font-medium">Notifications</span>
+                  <UBadge
+                    v-if="!collapsed && notificationsUnread > 0"
+                    :label="notificationsUnread > 9 ? '9+' : String(notificationsUnread)"
+                    size="xs"
+                    color="primary"
+                  />
+                </button>
+                <template #content>
+                  <NotificationsPopover />
+                </template>
+              </UPopover>
+            </template>
+          </SidebarNavigation>
         </template>
 
         <!-- Bottom section with user profile -->

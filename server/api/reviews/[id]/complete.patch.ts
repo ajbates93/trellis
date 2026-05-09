@@ -1,8 +1,11 @@
 import { db } from "#server/database/connection";
-import { reviewSchedules } from "#server/database/schema";
+import { reviewSchedules, users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { createNotification } from "#server/utils/inAppNotifications";
+import { shouldEmail } from "#server/utils/emailPreferences";
+import { sendEmail, emailTemplates } from "#server/utils/email";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -66,6 +69,45 @@ export default defineEventHandler(async (event) => {
       })
       .where(eq(reviewSchedules.id, reviewId))
       .returning();
+
+    // Emit completion notification + email to the reviewee
+    try {
+      const [recipient] = await db
+        .select({ name: users.name, preferredName: users.preferredName, email: users.email })
+        .from(users)
+        .where(eq(users.id, review.userId))
+        .limit(1);
+
+      const [actor] = await db
+        .select({ name: users.name, preferredName: users.preferredName })
+        .from(users)
+        .where(eq(users.id, session.user.id))
+        .limit(1);
+
+      if (recipient && actor) {
+        const recipientName = recipient.preferredName || recipient.name;
+        const actorName = actor.preferredName || actor.name;
+        const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+        await createNotification({
+          userId: review.userId,
+          type: "review_completed",
+          title: `${actorName} marked your review complete`,
+          link: `/reviews/${reviewId}`,
+          metadata: { reviewId, actorId: session.user.id },
+        });
+
+        if (await shouldEmail(review.userId, "review_completed")) {
+          await sendEmail({
+            to: recipient.email,
+            subject: `Review completed by ${actorName}`,
+            html: emailTemplates.reviewCompleted(recipientName, actorName, appUrl),
+          });
+        }
+      }
+    } catch (notifyErr) {
+      console.error("Failed to send review_completed notifications:", notifyErr);
+    }
 
     return validateResponse(
       { success: true, review: updated },

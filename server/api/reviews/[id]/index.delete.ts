@@ -1,6 +1,10 @@
 import { db } from "#server/database/connection";
-import { reviewSchedules } from "#server/database/schema";
+import { reviewSchedules, users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
+import { format } from "date-fns";
+import { createNotification } from "#server/utils/inAppNotifications";
+import { shouldEmail } from "#server/utils/emailPreferences";
+import { sendEmail, emailTemplates } from "#server/utils/email";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -45,6 +49,52 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "You do not have permission to delete this review",
       });
+    }
+
+    // Emit cancellation notification + email to the OTHER party
+    try {
+      const recipientId =
+        existingReview.userId === session.user.id
+          ? existingReview.buddyId
+          : existingReview.userId;
+
+      const [recipient] = await db
+        .select({ name: users.name, preferredName: users.preferredName, email: users.email })
+        .from(users)
+        .where(eq(users.id, recipientId))
+        .limit(1);
+
+      const [actor] = await db
+        .select({ name: users.name, preferredName: users.preferredName })
+        .from(users)
+        .where(eq(users.id, session.user.id))
+        .limit(1);
+
+      if (recipient && actor) {
+        const recipientName = recipient.preferredName || recipient.name;
+        const actorName = actor.preferredName || actor.name;
+        const dateStr = format(new Date(existingReview.scheduledDate), "EEEE d MMMM yyyy");
+        const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+        await createNotification({
+          userId: recipientId,
+          type: "review_cancelled",
+          title: `${actorName} cancelled your review`,
+          body: dateStr,
+          link: "/reviews",
+          metadata: { reviewId, actorId: session.user.id },
+        });
+
+        if (await shouldEmail(recipientId, "review_cancelled")) {
+          await sendEmail({
+            to: recipient.email,
+            subject: `Review cancelled by ${actorName}`,
+            html: emailTemplates.reviewCancelled(recipientName, actorName, dateStr, appUrl),
+          });
+        }
+      }
+    } catch (notifyErr) {
+      console.error("Failed to send review_cancelled notifications:", notifyErr);
     }
 
     // Delete the review

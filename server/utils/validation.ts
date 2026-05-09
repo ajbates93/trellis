@@ -107,3 +107,32 @@ export function safeValidate<T extends z.ZodType>(
 export function isZodError(error: unknown): error is z.ZodError {
   return error instanceof z.ZodError;
 }
+
+/**
+ * Validates request query parameters against a Zod schema
+ * Throws a 400 error with detailed validation error messages if validation fails
+ *
+ * @param event - H3 event
+ * @param schema - Zod schema to validate against
+ */
+export function validateQuery<T extends z.ZodType>(
+  event: H3Event,
+  schema: T,
+): z.infer<T> {
+  const query = getQuery(event);
+  try {
+    return schema.parse(query);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw createError({
+        statusCode: 400,
+        message: 'Validation failed',
+        data: error.issues.map((e) => ({
+          path: e.path.join('.'),
+          message: e.message,
+        })),
+      });
+    }
+    throw error;
+  }
+}
