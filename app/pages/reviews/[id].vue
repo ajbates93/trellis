@@ -50,9 +50,6 @@ const { data: achievementsData } = await useApi(
 );
 const achievements = computed(() => achievementsData.value?.achievements || []);
 
-// Tab state
-const selectedTab = ref("feedback");
-
 // Complete review modal state
 const isCompleteModalOpen = ref(false);
 const completionNotes = ref("");
@@ -282,7 +279,8 @@ watch(
 // Auto-save logic
 const isSavingReflections = ref(false);
 const isSavingBuddyComments = ref(false);
-const saveTimeout = ref<NodeJS.Timeout | null>(null);
+// Per-field debounce timers so edits on different fields don't clobber each other.
+const saveTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 // Per-field AbortController so rapid edits cancel the prior in-flight save
 // and only the latest PATCH can land. Prevents stale-save races.
 const saveControllers = new Map<string, AbortController>();
@@ -334,9 +332,8 @@ const saveReflection = async (field: string, value: string) => {
 };
 
 const debouncedSave = (field: string, value: string) => {
-  if (saveTimeout.value) {
-    clearTimeout(saveTimeout.value);
-  }
+  const existing = saveTimeouts.get(field);
+  if (existing) clearTimeout(existing);
 
   const isBuddyComment = field === "buddyComments";
   if (isBuddyComment) {
@@ -345,9 +342,13 @@ const debouncedSave = (field: string, value: string) => {
     isSavingReflections.value = true;
   }
 
-  saveTimeout.value = setTimeout(() => {
-    saveReflection(field, value);
-  }, 1000); // 1 second debounce
+  saveTimeouts.set(
+    field,
+    setTimeout(() => {
+      saveTimeouts.delete(field);
+      saveReflection(field, value);
+    }, 1000),
+  );
 };
 
 // Watch for changes to trigger auto-save
@@ -407,40 +408,6 @@ watch(revieweeComments, (newValue, oldValue) => {
   }
 });
 
-// Tabs with dynamic counts
-const tabs = computed(() => [
-  {
-    label: `Feedback (${feedback.value.length})`,
-    value: "feedback",
-    icon: "i-heroicons-chat-bubble-left-right",
-  },
-  {
-    label: `Goals (${goals.value.length})`,
-    value: "goals",
-    icon: "i-heroicons-flag",
-  },
-  {
-    label: `Achievements (${achievements.value.length})`,
-    value: "achievements",
-    icon: "i-heroicons-star",
-  },
-]);
-
-// Feedback table columns
-const feedbackColumns = [
-  { id: "from", accessorKey: "reviewer", header: "From" },
-  {
-    id: "content",
-    accessorKey: "content",
-    header: "Feedback",
-    meta: {
-      class: {
-        td: "max-w-md",
-      },
-    },
-  },
-  { id: "date", accessorKey: "createdAt", header: "Date" },
-];
 </script>
 
 <template>
@@ -616,6 +583,10 @@ const feedbackColumns = [
             </div>
           </div>
 
+          <!-- Two-column layout: editors on the left, supporting data sticky on the right.
+               We only split at xl: (1280px) so narrow desktops / iPad-landscape don't get crushed. -->
+          <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_400px] xl:gap-6">
+            <div class="min-w-0">
           <!-- Reflections Section -->
           <UCard class="mb-6">
             <template #header>
@@ -739,187 +710,26 @@ const feedbackColumns = [
             />
           </UCard>
 
-          <!-- Supporting Data Header -->
-          <div class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Supporting Data
-            </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              Review feedback, goals, and achievements from this cycle to help
-              write your reflections.
-            </p>
+            </div>
+            <!-- end left column -->
+
+            <!-- Sidebar column -->
+            <aside class="mt-6 xl:mt-0">
+              <div
+                class="xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto xl:rounded-xl"
+              >
+                <ReviewsSupportingDataSidebar
+                  :feedback="feedback"
+                  :goals="goals"
+                  :achievements="achievements"
+                  :is-reviewee="isReviewee"
+                  :format-date="formatDate"
+                  @open-feedback="openFeedbackModal"
+                />
+              </div>
+            </aside>
           </div>
-
-          <!-- Tabs -->
-          <UTabs v-model="selectedTab" :items="tabs" class="mb-6" />
-
-          <!-- Tab Content -->
-          <div class="mt-6">
-            <!-- Feedback Tab -->
-            <div v-if="selectedTab === 'feedback'">
-              <UCard>
-                <div v-if="feedback.length === 0" class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-chat-bubble-left"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
-                    No feedback for this review
-                  </p>
-                </div>
-
-                <div v-else class="max-h-[500px] overflow-y-auto">
-                  <UTable
-                    :columns="feedbackColumns"
-                    :data="feedback"
-                    :ui="{
-                      th: {
-                        base: 'sticky top-0 z-10 bg-white dark:bg-gray-900',
-                      },
-                      tr: 'cursor-pointer',
-                    }"
-                    @select="
-                      (row: any) => openFeedbackModal(row.original ?? row)
-                    "
-                  >
-                    <template #from-cell="{ row }">
-                      <div class="flex items-center gap-2">
-                        <UAvatar
-                          :src="row.original.reviewer.avatarUrl || undefined"
-                          :alt="row.original.reviewer.name"
-                          size="xs"
-                        />
-                        <span>{{ row.original.reviewer.name }}</span>
-                      </div>
-                    </template>
-
-                    <template #content-cell="{ row }">
-                      <span class="truncate block">{{
-                        row.original.content
-                      }}</span>
-                    </template>
-
-                    <template #date-cell="{ row }">
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ formatDate(row.original.createdAt) }}
-                      </span>
-                    </template>
-                  </UTable>
-                </div>
-              </UCard>
-            </div>
-
-            <!-- Goals Tab -->
-            <div v-else-if="selectedTab === 'goals'">
-              <UCard>
-                <div v-if="goals.length === 0" class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-flag"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
-                    No goals
-                  </p>
-                </div>
-
-                <div
-                  v-else
-                  class="divide-y divide-gray-200 dark:divide-gray-700"
-                >
-                  <NuxtLink
-                    v-for="goal in goals"
-                    :key="goal.id"
-                    :to="isReviewee ? '/goals' : '/buddies/goals'"
-                    class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors -mx-4 first:-mt-4 last:-mb-4"
-                  >
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <p class="font-medium text-gray-900 dark:text-white">
-                          {{ goal.goalText }}
-                        </p>
-                        <div class="flex items-center gap-2 mt-2">
-                          <UBadge :label="goal.status" size="xs" />
-                          <span
-                            v-if="goal.targetDate"
-                            class="text-sm text-gray-500 dark:text-gray-400"
-                          >
-                            Target: {{ formatDate(goal.targetDate) }}
-                          </span>
-                        </div>
-                      </div>
-                      <UIcon
-                        name="i-heroicons-chevron-right"
-                        class="w-5 h-5 text-gray-400"
-                      />
-                    </div>
-                  </NuxtLink>
-                </div>
-              </UCard>
-            </div>
-
-            <!-- Achievements Tab -->
-            <div v-else-if="selectedTab === 'achievements'">
-              <UCard>
-                <div v-if="achievements.length === 0" class="text-center py-12">
-                  <UIcon
-                    name="i-heroicons-star"
-                    class="text-gray-400 text-4xl mb-2"
-                  />
-                  <p
-                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                  >
-                    No achievements recorded
-                  </p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    Achievements added to the Brag Bucket will appear here
-                  </p>
-                </div>
-
-                <div v-else class="space-y-4">
-                  <div
-                    v-for="achievement in achievements"
-                    :key="achievement.id"
-                    class="p-4 border-l-4 border-l-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-lg"
-                  >
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <p class="font-medium text-gray-900 dark:text-white">
-                          {{ achievement.title }}
-                        </p>
-                        <p
-                          class="text-sm text-gray-600 dark:text-gray-400 mt-1"
-                        >
-                          {{
-                            formatDateInUserTZ(
-                              achievement.achievedDate,
-                              undefined,
-                              false,
-                            )
-                          }}
-                        </p>
-                        <p
-                          v-if="achievement.description"
-                          class="mt-3 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
-                        >
-                          {{ achievement.description }}
-                        </p>
-                      </div>
-                      <div class="flex-shrink-0 text-2xl ml-4">
-                        <UIcon
-                          name="i-heroicons-star"
-                          class="text-gray-400 text-4xl mb-2"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </UCard>
-            </div>
-          </div>
+          <!-- end two-column grid -->
 
           <!-- Bottom CTA: Mark as Complete -->
           <div
