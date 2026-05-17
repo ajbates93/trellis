@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.1](https://github.com/ajbates93/trellis/compare/v0.15.0...v0.15.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* save fix and move supporting data to column ([506e682](https://github.com/ajbates93/trellis/commit/506e682fcc86bb30be949e2747fadff46a225e46))
+* theme ([4bc0c69](https://github.com/ajbates93/trellis/commit/4bc0c69af64571fec80cc17b6e4e8dc76561cecb))
+
 ## [0.15.0](https://github.com/ajbates93/trellis/compare/v0.14.1...v0.15.0) (2026-05-09)
 
 
