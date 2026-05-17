@@ -152,7 +152,7 @@ const truncate = (text: string | null | undefined, max = 120) => {
             v-for="item in feedback"
             :key="item.id"
             type="button"
-            class="w-full text-left p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+            class="w-full text-left p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors cursor-pointer"
             @click="emit('open-feedback', item)"
           >
             <div class="flex items-start gap-2.5">
@@ -210,7 +210,7 @@ const truncate = (text: string | null | undefined, max = 120) => {
           <div
             v-for="goal in goals"
             :key="goal.id"
-            class="p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+            class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
           >
             <div class="flex items-start justify-between gap-2">
               <p
