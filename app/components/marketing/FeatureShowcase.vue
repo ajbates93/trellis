@@ -16,7 +16,7 @@ const tabs: Tab[] = [
     label: "Submit feedback",
     icon: "i-heroicons-paper-airplane",
     copy: "Give feedback in 90 seconds. Inspiration prompts, character minimums, and a clear 'who you're reviewing' header keep submissions specific and actionable.",
-    image: "/marketing/feature-submit.png",
+    image: "/marketing/feature-submit.webp",
     alt: "Submit feedback form with prompts and tips sidebar",
   },
   {
@@ -24,7 +24,7 @@ const tabs: Tab[] = [
     label: "Feedback inbox",
     icon: "i-heroicons-inbox",
     copy: "Three views: feedback received, given, and feedback for the people you buddy. Mark as read, star favourites, and publish in bulk when you're ready.",
-    image: "/marketing/feature-inbox.png",
+    image: "/marketing/feature-inbox.webp",
     alt: "Feedback inbox with favourites row and recent feedback table",
   },
   {
@@ -32,7 +32,7 @@ const tabs: Tab[] = [
     label: "Goals",
     icon: "i-heroicons-flag",
     copy: "Personal development goals with milestones, deadlines, and progress rings. Connected to the feedback you receive so growth is visible.",
-    image: "/marketing/feature-goals.png",
+    image: "/marketing/feature-goals.webp",
     alt: "Goals page showing active goals with progress rings and milestones",
   },
   {
@@ -40,7 +40,7 @@ const tabs: Tab[] = [
     label: "Community insights",
     icon: "i-heroicons-chart-bar",
     copy: "A living team garden, leaderboards, and participation streaks. Admins see engagement at a glance without anyone feeling surveilled.",
-    image: "/marketing/feature-insights.png",
+    image: "/marketing/feature-insights.webp",
     alt: "Community insights with team activity stats and the Pocketworks garden",
   },
 ];

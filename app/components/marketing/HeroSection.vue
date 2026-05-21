@@ -49,7 +49,7 @@ function scrollToFeatures() {
         <div class="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full" aria-hidden="true" />
         <div class="relative rounded-xl overflow-hidden border border-white/10 shadow-2xl lg:rotate-[-1deg]">
           <img
-            src="/marketing/hero-dashboard.png"
+            src="/marketing/hero-dashboard.webp"
             alt="Trellis dashboard showing the next review, recent activity, and feedback pulse chart"
             class="w-full h-auto"
           >
