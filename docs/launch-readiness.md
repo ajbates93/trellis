@@ -25,6 +25,11 @@ Do these before pointing anyone at the marketing site.
 4. **Replace the Tobin testimonial quote**
    - Currently a placeholder marked in `app/components/marketing/TestimonialSection.vue`. Either swap with Tobin's actual words or remove the section entirely. Don't ship with a faked quote attributed to a real person.
 
+5. **Set Plausible analytics token on Railway production**
+   - Env var: `NUXT_PUBLIC_PLAUSIBLE_TOKEN` (the alphanumeric token from your Plausible site's tracking snippet, e.g. `PP63S8SuHEtqDK6vMAYSW`).
+   - The Plausible script only loads in the marketing layout, so it never runs on the authenticated app at `my.jointrellis.app`.
+   - Leave the var unset on staging if you don't want staging traffic polluting the marketing analytics.
+
 That's the bar for "go live". A weekend's work at most.
 
 ## Tier 2 - Within the first 1-3 customers

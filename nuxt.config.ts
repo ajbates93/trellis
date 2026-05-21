@@ -46,6 +46,7 @@ export default defineNuxtConfig({
     public: {
       baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
       appVersion: process.env.npm_package_version || "0.0.0",
+      plausibleToken: process.env.NUXT_PUBLIC_PLAUSIBLE_TOKEN || "",
       sentry: {
         dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
         environment: process.env.NODE_ENV || "development",
