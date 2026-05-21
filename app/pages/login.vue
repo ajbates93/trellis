@@ -164,7 +164,7 @@ const signInWithEmailPassword = async () => {
     }
 
     // Success - redirect to dashboard
-    await navigateTo("/");
+    await navigateTo("/dashboard");
   } catch (error: any) {
     console.error("Email sign in failed:", error);
 

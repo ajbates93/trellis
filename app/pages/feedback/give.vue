@@ -307,7 +307,7 @@ const tipsAccordionItems: AccordionItem[] = [
             <UButton color="primary" size="lg" @click="reviewAnother">
               Review Another Colleague
             </UButton>
-            <UButton to="/" variant="ghost" color="neutral" size="lg">
+            <UButton to="/dashboard" variant="ghost" color="neutral" size="lg">
               Back to Dashboard
             </UButton>
           </div>

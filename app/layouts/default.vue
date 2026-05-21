@@ -16,7 +16,7 @@ const route = useRoute();
 
 // Show onboarding trigger on non-dashboard pages when wizard is incomplete
 const showOnboardingTrigger = computed(() => {
-  return shouldShowOnboarding.value && route.path !== "/";
+  return shouldShowOnboarding.value && route.path !== "/dashboard";
 });
 
 // Check if currently impersonating
@@ -40,8 +40,8 @@ const stopImpersonating = async () => {
       color: "success",
     });
 
-    // Redirect to admin dashboard to force a fresh page load
-    window.location.href = "/";
+    // Redirect to dashboard to force a fresh page load
+    window.location.href = "/dashboard";
   } catch (error) {
     console.error("Failed to stop impersonating:", error);
     const toast = useToast();
@@ -92,8 +92,8 @@ if (import.meta.client) {
 const dashboardLink = computed(() => ({
   label: "Dashboard",
   icon: "i-heroicons-squares-2x2",
-  to: "/",
-  active: route.path === "/",
+  to: "/dashboard",
+  active: route.path === "/dashboard",
 }));
 
 // Personal section links (without Dashboard)
@@ -235,7 +235,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       </button>
 
       <!-- App logo/name -->
-      <NuxtLink to="/" class="flex items-center gap-2 no-underline text-lg">
+      <NuxtLink to="/dashboard" class="flex items-center gap-2 no-underline text-lg">
         <TrellisLogo :size="28" />
         <span
           class="font-semibold text-white"
@@ -314,7 +314,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
             class="-ml-1 flex w-full items-center justify-between gap-2 px-4 py-4"
           >
             <NuxtLink
-              to="/"
+              to="/dashboard"
               class="flex items-center gap-2 no-underline"
             >
               <TrellisLogo :size="32" />

@@ -37,7 +37,7 @@
         <UButton
           size="lg"
           icon="i-heroicons-home"
-          to="/"
+          to="/dashboard"
         >
           Go Home
         </UButton>

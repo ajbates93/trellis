@@ -21,6 +21,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (user.role !== "admin") {
     // Redirect with a query flag so the landing page can surface a toast.
     // (A client-side toast here would be lost on SSR redirect.)
-    return navigateTo({ path: "/", query: { denied: "admin" } });
+    return navigateTo({ path: "/dashboard", query: { denied: "admin" } });
   }
 });

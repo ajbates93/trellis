@@ -24,6 +24,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // If user has no buddies, redirect to dashboard
   if (!hasBuddies.value) {
-    return navigateTo("/");
+    return navigateTo("/dashboard");
   }
 });
