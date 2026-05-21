@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type TabKey = "submit" | "inbox" | "goals" | "insights";
+type TabKey = "submit" | "inbox" | "goals" | "reviews" | "insights";
 
 interface Tab {
   key: TabKey;
@@ -23,7 +23,7 @@ const tabs: Tab[] = [
     key: "inbox",
     label: "Feedback inbox",
     icon: "i-heroicons-inbox",
-    copy: "Three views: feedback received, given, and feedback for the people you buddy. Mark as read, star favourites, and publish in bulk when you're ready.",
+    copy: "Three views: received, unread, and given. And if you're a buddy for someone else, you also see their feedback first so you can curate it, decide what's useful, and choose when to publish it to them.",
     image: "/marketing/feature-inbox.webp",
     alt: "Feedback inbox with favourites row and recent feedback table",
   },
@@ -31,15 +31,23 @@ const tabs: Tab[] = [
     key: "goals",
     label: "Goals",
     icon: "i-heroicons-flag",
-    copy: "Personal development goals with milestones, deadlines, and progress rings. Connected to the feedback you receive so growth is visible.",
+    copy: "Personal development goals with milestones, deadlines, and progress rings. Goals carry through to reviews, so progress is part of the conversation when it matters.",
     image: "/marketing/feature-goals.webp",
     alt: "Goals page showing active goals with progress rings and milestones",
+  },
+  {
+    key: "reviews",
+    label: "Reviews",
+    icon: "i-heroicons-clipboard-document-check",
+    copy: "Formal reviews backed by everything that's already happened. Goals, recent feedback, and milestones are pulled in automatically so reviews are grounded in real evidence, not a scramble the night before.",
+    image: "/marketing/feature-reviews.webp",
+    alt: "Reviews page showing scheduled reviews with linked goals and feedback",
   },
   {
     key: "insights",
     label: "Community insights",
     icon: "i-heroicons-chart-bar",
-    copy: "A living team garden, leaderboards, and participation streaks. Admins see engagement at a glance without anyone feeling surveilled.",
+    copy: "A living team garden that grows the more your team uses Trellis. Plants flourish with regular feedback and wilt when activity drops, giving admins an at-a-glance read on engagement without anyone feeling surveilled. Leaderboards and participation streaks round out the picture.",
     image: "/marketing/feature-insights.webp",
     alt: "Community insights with team activity stats and the Pocketworks garden",
   },

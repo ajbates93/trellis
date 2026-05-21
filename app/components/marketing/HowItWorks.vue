@@ -2,15 +2,15 @@
 const steps = [
   {
     title: "Set up your workspace.",
-    body: "Drop in a CSV of your team and buddy pairs - roles configured, accounts created, dashboard ready in minutes.",
+    body: "Add your team by CSV import or create users manually. Configure roles and buddy pairs, and your dashboard is ready in minutes.",
   },
   {
-    title: "Your team signs in with Google.",
-    body: "One click - no passwords, no invites to chase. Everyone lands on their personalised dashboard.",
+    title: "Your team signs in.",
+    body: "OAuth (Google and more) or simple email and password - whatever suits your team. Everyone lands on their personalised dashboard.",
   },
   {
     title: "Feedback becomes a habit.",
-    body: "Weekly reminders, a /submit Slack command, and gentle nudges turn feedback into a 90-second ritual.",
+    body: "Weekly reminders and gentle nudges turn feedback into a 90-second ritual. Prefer Slack? A /submit command lets people give feedback without leaving the chat.",
   },
 ];
 </script>

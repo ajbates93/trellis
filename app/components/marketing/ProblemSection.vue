@@ -10,7 +10,7 @@
       <p class="mt-6 text-lg text-white/70 leading-relaxed">
         It's annual, awkward, and forgotten by the next quarter. People don't know
         how they're doing until review season, and by then the moment is gone. Trellis
-        makes feedback a weekly habit instead of a yearly event, so growth is continuous
+        makes feedback a regular habit instead of a yearly event, so growth is continuous
         and reviews stop being a surprise.
       </p>
 
@@ -21,7 +21,8 @@
             <div v-for="i in 11" :key="i" class="flex-1 bg-white/10 rounded-sm" style="height: 10%" />
             <div class="flex-1 bg-white/30 rounded-sm" style="height: 100%" />
           </div>
-          <p class="mt-3 text-sm text-white/60">1 conversation/year</p>
+          <p class="mt-3 text-sm text-white/60">Once a year</p>
+          <p class="mt-1 text-xs text-white/30">if you're lucky</p>
         </div>
         <div class="bg-emerald-500/5 rounded-lg p-6 border border-emerald-500/20">
           <p class="text-xs uppercase text-emerald-300 font-semibold mb-3">With Trellis</p>
@@ -33,9 +34,14 @@
               :style="{ height: (60 + (i * 3)) + '%' }"
             />
           </div>
-          <p class="mt-3 text-sm text-emerald-300">52 conversations/year</p>
+          <p class="mt-3 text-sm text-emerald-300">An ongoing conversation</p>
+          <p class="mt-1 text-xs text-emerald-300/60">up to 52/year</p>
         </div>
       </div>
+
+      <p class="mt-8 text-sm text-white/50 max-w-md mx-auto">
+        A rhythm of small, regular check-ins beats one big review.
+      </p>
     </div>
   </section>
 </template>
