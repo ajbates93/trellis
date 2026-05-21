@@ -1064,3 +1064,19 @@ export const MarkAllNotificationsReadResponseSchema = z.object({
   success: z.literal(true),
   updated: z.int().nonnegative(),
 });
+
+// ===== MARKETING DEMO REQUEST SCHEMAS =====
+
+export const DemoRequestSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Please enter a valid email").max(200),
+  company: z.string().min(1, "Company is required").max(100),
+  teamSize: z.enum(["just-me", "2-10", "11-50", "51-200", "200+"]),
+  message: z.string().max(2000).optional().nullable(),
+  // Honeypot - bots fill it, humans don't
+  website: z.string().max(0).optional(),
+});
+
+export const DemoRequestResponseSchema = z.object({
+  ok: z.literal(true),
+});
