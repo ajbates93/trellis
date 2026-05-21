@@ -43,6 +43,13 @@ export default defineEventHandler((event) => {
       errorMessage: (remainingTime: number) =>
         `Too many feedback submissions. Please try again in ${remainingTime} minutes.`,
     },
+    {
+      endpoints: ["/api/marketing/demo-request"],
+      maxAttempts: 5,
+      windowMinutes: 60,
+      errorMessage: (remainingTime: number) =>
+        `Too many demo requests. Please try again in ${remainingTime} minutes.`,
+    },
   ];
 
   // Find matching rate limit config
