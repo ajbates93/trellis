@@ -77,7 +77,7 @@ async function submit() {
           </li>
           <li class="flex items-start gap-3">
             <UIcon name="i-heroicons-check-circle" class="size-5 text-emerald-400 shrink-0 mt-0.5" />
-            <span>No card required, no auto-billing</span>
+            <span>The demo is free, no obligation to subscribe</span>
           </li>
         </ul>
       </div>
