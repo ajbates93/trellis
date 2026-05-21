@@ -69,15 +69,15 @@ async function submit() {
         <ul class="mt-8 space-y-3 text-sm text-white/70">
           <li class="flex items-start gap-3">
             <UIcon name="i-heroicons-check-circle" class="size-5 text-emerald-400 shrink-0 mt-0.5" />
-            <span>Demo runs on your real org's data if you want</span>
+            <span>A live walkthrough of a working Trellis workspace</span>
           </li>
           <li class="flex items-start gap-3">
             <UIcon name="i-heroicons-check-circle" class="size-5 text-emerald-400 shrink-0 mt-0.5" />
-            <span>Set up your workspace the same week</span>
+            <span>Honest answers to your questions, straight from the team building it</span>
           </li>
           <li class="flex items-start gap-3">
             <UIcon name="i-heroicons-check-circle" class="size-5 text-emerald-400 shrink-0 mt-0.5" />
-            <span>The demo is free, no obligation to subscribe</span>
+            <span>If it's a fit, we'll get your team set up the same week</span>
           </li>
         </ul>
       </div>
