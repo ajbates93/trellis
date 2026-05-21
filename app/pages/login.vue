@@ -164,7 +164,7 @@ const signInWithEmailPassword = async () => {
     }
 
     // Success - redirect to dashboard
-    await navigateTo("/");
+    await navigateTo("/dashboard");
   } catch (error: any) {
     console.error("Email sign in failed:", error);
 
@@ -203,6 +203,7 @@ const signInWithGoogle = async () => {
   try {
     await authClient.signIn.social({
       provider: "google",
+      callbackURL: "/dashboard",
     });
   } catch (error: any) {
     console.error("Failed to sign in:", error);

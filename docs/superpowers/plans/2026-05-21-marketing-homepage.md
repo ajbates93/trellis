@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a dark-themed marketing homepage at `jointrellis.app` with hostname-based routing to the product app at `dash.jointrellis.app`, including an 8-section page and a working "Book a demo" form.
+**Goal:** Build a dark-themed marketing homepage at `jointrellis.app` with hostname-based routing to the product app at `my.jointrellis.app`, including an 8-section page and a working "Book a demo" form.
 
-**Architecture:** Single Nuxt app serves both hostnames. A Nitro server middleware inspects the request host and either renders the marketing pages (apex) or routes through to the existing product (`dash.` subdomain). The marketing pages are composed of dedicated components under `app/components/marketing/`. The demo form posts to a new `/api/marketing/demo-request` endpoint that persists a row to a new `demo_requests` table and fires two transactional emails via the existing Resend integration.
+**Architecture:** Single Nuxt app serves both hostnames. A Nitro server middleware inspects the request host and either renders the marketing pages (apex) or routes through to the existing product (`my.` subdomain). The marketing pages are composed of dedicated components under `app/components/marketing/`. The demo form posts to a new `/api/marketing/demo-request` endpoint that persists a row to a new `demo_requests` table and fires two transactional emails via the existing Resend integration.
 
 **Tech Stack:** Nuxt 4, Vue 3, Nuxt UI, Drizzle ORM + Postgres, Resend, Zod, Vitest.
 
@@ -456,12 +456,12 @@ describe('hostname middleware', () => {
     expect(mockSendRedirect).not.toHaveBeenCalled()
   })
 
-  it('redirects app routes from apex to dash subdomain', async () => {
+  it('redirects app routes from apex to app subdomain', async () => {
     const event = eventWithHost('jointrellis.app', '/dashboard')
     await handler(event)
     expect(mockSendRedirect).toHaveBeenCalledWith(
       event,
-      'https://dash.jointrellis.app/dashboard',
+      'https://my.jointrellis.app/dashboard',
       302,
     )
   })
@@ -478,8 +478,8 @@ describe('hostname middleware', () => {
     expect(mockSendRedirect).not.toHaveBeenCalled()
   })
 
-  it('redirects /landing on the dash subdomain to apex', async () => {
-    const event = eventWithHost('dash.jointrellis.app', '/landing')
+  it('redirects /landing on the app subdomain to apex', async () => {
+    const event = eventWithHost('my.jointrellis.app', '/landing')
     await handler(event)
     expect(mockSendRedirect).toHaveBeenCalledWith(
       event,
@@ -488,8 +488,8 @@ describe('hostname middleware', () => {
     )
   })
 
-  it('allows app routes on dash subdomain', async () => {
-    const event = eventWithHost('dash.jointrellis.app', '/dashboard')
+  it('allows app routes on app subdomain', async () => {
+    const event = eventWithHost('my.jointrellis.app', '/dashboard')
     await handler(event)
     expect(mockSendRedirect).not.toHaveBeenCalled()
   })
@@ -525,7 +525,7 @@ Expected: FAIL - module not found.
 import { defineEventHandler, sendRedirect } from "h3";
 
 const APEX_HOST = "jointrellis.app";
-const APP_HOST = "dash.jointrellis.app";
+const APP_HOST = "my.jointrellis.app";
 
 // Paths that only make sense on the apex (marketing)
 const MARKETING_PATHS = ["/landing"];
@@ -663,7 +663,7 @@ const dashUrl = computed(() => {
   if (import.meta.dev) {
     return "/dashboard";
   }
-  return "https://dash.jointrellis.app";
+  return "https://my.jointrellis.app";
 });
 
 const mobileOpen = ref(false);
@@ -1489,7 +1489,7 @@ const year = new Date().getFullYear();
           <li><a href="#features" class="hover:text-white">Features</a></li>
           <li><a href="#how-it-works" class="hover:text-white">How it works</a></li>
           <li><a href="#demo-form" class="hover:text-white">Book a demo</a></li>
-          <li><a href="https://dash.jointrellis.app" class="hover:text-white">Log in</a></li>
+          <li><a href="https://my.jointrellis.app" class="hover:text-white">Log in</a></li>
         </ul>
       </div>
 
@@ -1535,7 +1535,7 @@ ls app/pages/
 cat app/pages/index.vue 2>/dev/null || echo "no index"
 ```
 
-If `index.vue` already exists and renders the dashboard, that behaviour needs to stay for the `dash.` subdomain. On the apex, the hostname middleware redirects app paths, but `/` itself is what visitors land on. So `index.vue` becomes the marketing page; the existing dashboard at `/` should be moved to `/dashboard` (it's likely already there based on the app screenshots; verify by reading the file).
+If `index.vue` already exists and renders the dashboard, that behaviour needs to stay for the `my.` subdomain. On the apex, the hostname middleware redirects app paths, but `/` itself is what visitors land on. So `index.vue` becomes the marketing page; the existing dashboard at `/` should be moved to `/dashboard` (it's likely already there based on the app screenshots; verify by reading the file).
 
 If the existing `/` is the dashboard, the cleanest path:
 - Move its contents to `/dashboard` (already exists per the existing routing in the app) or confirm it's already there.
@@ -1677,7 +1677,7 @@ Host: jointrellis.app
 Sitemap: https://jointrellis.app/sitemap.xml
 ```
 
-Note: the `dash.jointrellis.app` subdomain shares this codebase. If you want crawlers to ignore the dash subdomain, the cleanest option is a small change in `nuxt.config.ts` or a `nitro` route rule that serves different robots content per host. For now, the apex `robots.txt` is enough - the product pages are all auth-gated so crawlers will hit a redirect anyway.
+Note: the `my.jointrellis.app` subdomain shares this codebase. If you want crawlers to ignore the app subdomain, the cleanest option is a small change in `nuxt.config.ts` or a `nitro` route rule that serves different robots content per host. For now, the apex `robots.txt` is enough - the product pages are all auth-gated so crawlers will hit a redirect anyway.
 
 - [ ] **Step 2: Commit**
 
@@ -1715,9 +1715,9 @@ Submit 6 times in a row. The 6th should return 429.
 - [ ] **Step 4: Verify hostname routing in staging**
 
 After merging to staging and the staging deploy completes:
-- Set up `dash-staging.jointrellis.app` CNAME (or whatever the staging convention is) pointing at the Railway staging service.
+- Set up `my-staging.jointrellis.app` CNAME (or whatever the staging convention is) pointing at the Railway staging service.
 - Visit the apex `jointrellis-staging.up.railway.app/` - expect marketing.
-- Visit `jointrellis-staging.up.railway.app/dashboard` - expect redirect to dash subdomain.
+- Visit `jointrellis-staging.up.railway.app/dashboard` - expect redirect to app subdomain.
 
 (Skip if you'd prefer to verify only in production - low risk if local tests pass.)
 
@@ -1741,14 +1741,14 @@ In the Cloudflare dashboard for `jointrellis.app`:
 - [ ] **Step 2: Railway - add custom domain**
 
 In the Railway service settings:
-- Add domain: `dash.jointrellis.app`
+- Add domain: `my.jointrellis.app`
 - Wait for cert provisioning (~1-2 minutes).
 
 - [ ] **Step 3: Update environment variables**
 
 Set on both staging and production Railway services:
-- `BETTER_AUTH_URL` should remain pointing at the dash subdomain (where the app lives).
-- Verify Google OAuth redirect URIs in Google Cloud Console include the dash subdomain callback.
+- `BETTER_AUTH_URL` should remain pointing at the app subdomain (where the app lives).
+- Verify Google OAuth redirect URIs in Google Cloud Console include the app subdomain callback.
 
 - [ ] **Step 4: Update `DEMO_REQUEST_NOTIFY_EMAIL` env var**
 

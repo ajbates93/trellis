@@ -9,7 +9,7 @@
 Build a marketing homepage for Trellis that:
 
 1. Converts prospects (a mix of HR/people-ops leads and founder/eng-manager operators) into demo requests via a single primary CTA.
-2. Routes existing users straight to the product at `dash.jointrellis.app`.
+2. Routes existing users straight to the product at `my.jointrellis.app`.
 3. Replaces the current `/landing` page, which is light-mode and feels disconnected from the dark product UI.
 
 Out of scope for this design: pricing page, blog, customer stories page, self-serve signup flow, multi-tenant workspace UI. Those come later.
@@ -29,26 +29,26 @@ A single page serves both by letting operators stop scrolling after the feature 
 |----------|-------|
 | Visual direction | Full dark theme. No light/dark toggle. |
 | Primary CTA | "Book a demo" (form-based, not Calendly). |
-| App subdomain | `dash.jointrellis.app` |
+| App subdomain | `my.jointrellis.app` |
 | Page structure | 8 sections, standard depth. |
-| Theme on logged-in apex visit | Marketing page renders, header shows "Open Trellis" pointing at dash subdomain. |
+| Theme on logged-in apex visit | Marketing page renders, header shows "Open Trellis" pointing at app subdomain. |
 
 ## Routing & hosts
 
 Two hostnames, one Nuxt app:
 
 - `jointrellis.app` (apex) - marketing site
-- `dash.jointrellis.app` - product app
+- `my.jointrellis.app` - product app
 
 **Implementation:** Nitro server middleware detects `event.node.req.headers.host` and decides behaviour:
 
-- On apex, route `/` renders the marketing page. App routes (`/dashboard`, `/inbox`, `/goals`, `/reviews`, `/feedback`, `/buddies`, `/settings`, `/admin/*`) redirect to the equivalent on `dash.jointrellis.app`.
-- On dash subdomain, `/` renders the existing dashboard (auth-gated). Marketing-only routes (`/landing`) redirect to apex.
-- Local dev: middleware is a no-op when `NODE_ENV !== 'production'`. The marketing page is reachable at `/landing` locally so devs don't need to fake two hostnames.
+- On apex, route `/` renders the marketing page. App routes (`/dashboard`, `/inbox`, `/goals`, `/reviews`, `/feedback`, `/buddies`, `/settings`, `/admin/*`) redirect to the equivalent on `my.jointrellis.app`.
+- On app subdomain, `/` renders the existing dashboard (auth-gated). Marketing-only routes (`/landing`) redirect to apex.
+- Local dev: middleware is a no-op when `NODE_ENV !== 'production'`. The marketing page is reachable at `/` locally so devs don't need to fake two hostnames; `/landing` is a 301 redirect to `/` to catch old bookmarks.
 
 **Cost:** negligible. A string compare per request, dominated by SSR cost.
 
-**Cloudflare DNS:** add a `CNAME` `dash` pointing at the same Railway service. Railway will issue certs for both `jointrellis.app` and `dash.jointrellis.app` on the one service.
+**Cloudflare DNS:** add a `CNAME` `my` pointing at the Railway service hostname (Railway assigns a unique target per custom domain, plus a one-time `_railway-verify` TXT record). Railway will issue certs for both `jointrellis.app` and `my.jointrellis.app`.
 
 ## Page sections
 
@@ -58,8 +58,8 @@ All sections are dark theme, near-black background (`#0a0f1a`), teal/green accen
 
 - Left: Trellis wordmark + leaf icon (reuse `~/components/ui/Logo.vue` or equivalent).
 - Centre nav (desktop only): `Features` · `How it works` · `Buddy system` (anchor links).
-- Right (logged-out): `Log in` ghost link to `dash.jointrellis.app` + `Book a demo` filled teal button (anchors to demo form).
-- Right (logged-in on apex): single `Open Trellis →` pill to `dash.jointrellis.app`.
+- Right (logged-out): `Log in` ghost link to `my.jointrellis.app` + `Book a demo` filled teal button (anchors to demo form).
+- Right (logged-in on apex): single `Open Trellis →` pill to `my.jointrellis.app`.
 - Mobile: nav collapses to a hamburger drawer.
 
 ### 2. Hero
@@ -268,7 +268,7 @@ app/
     landing/                           # EXISTING - keep or refactor into marketing/
 server/
   middleware/
-    hostname.ts                        # NEW - apex vs dash subdomain routing
+    hostname.ts                        # NEW - apex vs app subdomain routing
   api/
     marketing/
       demo-request.post.ts             # NEW
@@ -289,7 +289,7 @@ server/
 - Open Graph image: ~1200x630px, dark background, Trellis logo + headline. Save as `public/og-image.png`.
 - `<link rel="canonical">` to `https://jointrellis.app/`.
 - Structured data (`application/ld+json`): basic Organization + SoftwareApplication entries.
-- Robots: allow indexing on apex, disallow on `dash.` subdomain (already authenticated, no SEO value).
+- Robots: allow indexing on apex, disallow on `my.` subdomain (already authenticated, no SEO value).
 
 ## Accessibility
 

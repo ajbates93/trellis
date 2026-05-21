@@ -464,7 +464,7 @@ watch(revieweeComments, (newValue, oldValue) => {
             >
               Review Goals
             </UButton>
-            <UButton to="/" variant="ghost" color="neutral" size="lg">
+            <UButton to="/dashboard" variant="ghost" color="neutral" size="lg">
               Back to Dashboard
             </UButton>
           </div>

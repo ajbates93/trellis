@@ -1,2 +1,5 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+
+Host: jointrellis.app
+Sitemap: https://jointrellis.app/sitemap.xml

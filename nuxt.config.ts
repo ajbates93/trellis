@@ -46,6 +46,7 @@ export default defineNuxtConfig({
     public: {
       baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
       appVersion: process.env.npm_package_version || "0.0.0",
+      plausibleToken: process.env.NUXT_PUBLIC_PLAUSIBLE_TOKEN || "",
       sentry: {
         dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
         environment: process.env.NODE_ENV || "development",
@@ -143,7 +144,7 @@ export default defineNuxtConfig({
           "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
           "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
           "Content-Security-Policy":
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io; frame-ancestors 'none'",
+            "default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io https://plausible.io; frame-ancestors 'none'",
         },
       },
     },
