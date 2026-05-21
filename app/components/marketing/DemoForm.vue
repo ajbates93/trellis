@@ -45,7 +45,7 @@ async function submit() {
   } catch (err: any) {
     error.value =
       err?.data?.message ||
-      "Something went wrong. Please try again or email alex.bates@pocketworks.co.uk.";
+      "Something went wrong. Please try again or email hello@jointrellis.app.";
   } finally {
     submitting.value = false;
   }

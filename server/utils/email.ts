@@ -34,6 +34,15 @@ export const sendEmail = async (options: SendEmailOptions) => {
   }
 };
 
+// Escape HTML-significant characters in user-supplied strings before interpolating into email HTML.
+const escapeHtml = (input: string): string =>
+  input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 // Email Templates
 export const emailTemplates = {
   invitation: (name: string, setPasswordUrl: string) => `
@@ -396,13 +405,13 @@ export const emailTemplates = {
     <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <h1 style="color: #059669;">New demo request</h1>
-        <p><strong>Name:</strong> ${data.name}</p>
-        <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
-        <p><strong>Company:</strong> ${data.company}</p>
-        <p><strong>Team size:</strong> ${data.teamSize}</p>
+        <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
+        <p><strong>Email:</strong> <a href="mailto:${encodeURIComponent(data.email)}">${escapeHtml(data.email)}</a></p>
+        <p><strong>Company:</strong> ${escapeHtml(data.company)}</p>
+        <p><strong>Team size:</strong> ${escapeHtml(data.teamSize)}</p>
         <p><strong>Message:</strong></p>
         <p style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
-          ${data.message ? data.message.replace(/</g, "&lt;").replace(/\n/g, "<br>") : "<em>No message provided</em>"}
+          ${data.message ? escapeHtml(data.message).replace(/\n/g, "<br>") : "<em>No message provided</em>"}
         </p>
       </div>
     </body>
@@ -415,7 +424,7 @@ export const emailTemplates = {
     <head><meta charset="utf-8"><title>Thanks for requesting a Trellis demo</title></head>
     <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #059669;">Thanks, ${name}.</h1>
+        <h1 style="color: #059669;">Thanks, ${escapeHtml(name)}.</h1>
         <p>We've received your demo request and will be in touch within one working day to set up a 20-minute walkthrough.</p>
         <p>In the meantime, if you have any questions, just reply to this email.</p>
         <p>- The Trellis team</p>

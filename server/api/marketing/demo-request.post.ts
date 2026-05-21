@@ -8,12 +8,9 @@ const INTERNAL_NOTIFICATION_TO =
   process.env.DEMO_REQUEST_NOTIFY_EMAIL || "alex.bates@pocketworks.co.uk";
 
 export default defineEventHandler(async (event) => {
+  // The zod schema rejects any non-empty `website` field (honeypot) via .max(0),
+  // so bots get a 400 from validateBody before reaching the insert.
   const body = await validateBody(event, apiSchemas.DemoRequestSchema);
-
-  // Honeypot - any non-empty value is a bot
-  if (body.website && body.website.length > 0) {
-    throw createError({ statusCode: 400, message: "Invalid submission" });
-  }
 
   await db
     .insert(demoRequests)

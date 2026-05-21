@@ -44,11 +44,11 @@ Two hostnames, one Nuxt app:
 
 - On apex, route `/` renders the marketing page. App routes (`/dashboard`, `/inbox`, `/goals`, `/reviews`, `/feedback`, `/buddies`, `/settings`, `/admin/*`) redirect to the equivalent on `my.jointrellis.app`.
 - On app subdomain, `/` renders the existing dashboard (auth-gated). Marketing-only routes (`/landing`) redirect to apex.
-- Local dev: middleware is a no-op when `NODE_ENV !== 'production'`. The marketing page is reachable at `/landing` locally so devs don't need to fake two hostnames.
+- Local dev: middleware is a no-op when `NODE_ENV !== 'production'`. The marketing page is reachable at `/` locally so devs don't need to fake two hostnames; `/landing` is a 301 redirect to `/` to catch old bookmarks.
 
 **Cost:** negligible. A string compare per request, dominated by SSR cost.
 
-**Cloudflare DNS:** add a `CNAME` `dash` pointing at the same Railway service. Railway will issue certs for both `jointrellis.app` and `my.jointrellis.app` on the one service.
+**Cloudflare DNS:** add a `CNAME` `my` pointing at the Railway service hostname (Railway assigns a unique target per custom domain, plus a one-time `_railway-verify` TXT record). Railway will issue certs for both `jointrellis.app` and `my.jointrellis.app`.
 
 ## Page sections
 
