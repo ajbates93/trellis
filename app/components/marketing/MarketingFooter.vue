@@ -9,7 +9,7 @@ const year = new Date().getFullYear();
     <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
       <div>
         <NuxtLink to="/" class="flex items-center gap-2 font-bold text-lg">
-          <span class="text-emerald-400">🌿</span>
+          <TrellisLogo :size="24" />
           <span>Trellis</span>
         </NuxtLink>
         <p class="mt-3 text-sm text-white/50">Peer feedback that grows your team.</p>

@@ -31,7 +31,7 @@ function scrollToDemo() {
   <header class="sticky top-0 z-50 bg-[#0a0f1a]/80 backdrop-blur border-b border-white/5">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <NuxtLink to="/" class="flex items-center gap-2 font-bold text-lg">
-        <span class="text-emerald-400">🌿</span>
+        <TrellisLogo :size="28" />
         <span>Trellis</span>
       </NuxtLink>
 

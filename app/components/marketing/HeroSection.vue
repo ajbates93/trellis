@@ -12,7 +12,8 @@ function scrollToFeatures() {
     <div class="max-w-7xl mx-auto px-6 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
       <div>
         <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-          🌿 Peer feedback, every week
+          <TrellisLogo :size="14" />
+          Peer feedback, every week
         </span>
 
         <h1 class="mt-6 text-5xl md:text-6xl font-bold tracking-tight leading-[1.05]">
