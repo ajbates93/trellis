@@ -30,12 +30,12 @@ describe('hostname middleware', () => {
     expect(mockSendRedirect).not.toHaveBeenCalled()
   })
 
-  it('redirects app routes from apex to dash subdomain', async () => {
+  it('redirects app routes from apex to app subdomain', async () => {
     const event = eventWithHost('jointrellis.app', '/dashboard')
     await handler(event)
     expect(mockSendRedirect).toHaveBeenCalledWith(
       event,
-      'https://dash.jointrellis.app/dashboard',
+      'https://my.jointrellis.app/dashboard',
       302,
     )
   })
@@ -52,8 +52,8 @@ describe('hostname middleware', () => {
     expect(mockSendRedirect).not.toHaveBeenCalled()
   })
 
-  it('redirects /landing on the dash subdomain to apex', async () => {
-    const event = eventWithHost('dash.jointrellis.app', '/landing')
+  it('redirects /landing on the app subdomain to apex', async () => {
+    const event = eventWithHost('my.jointrellis.app', '/landing')
     await handler(event)
     expect(mockSendRedirect).toHaveBeenCalledWith(
       event,
@@ -62,8 +62,8 @@ describe('hostname middleware', () => {
     )
   })
 
-  it('allows app routes on dash subdomain', async () => {
-    const event = eventWithHost('dash.jointrellis.app', '/dashboard')
+  it('allows app routes on app subdomain', async () => {
+    const event = eventWithHost('my.jointrellis.app', '/dashboard')
     await handler(event)
     expect(mockSendRedirect).not.toHaveBeenCalled()
   })

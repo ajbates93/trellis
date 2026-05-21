@@ -6,11 +6,11 @@ const { user } = useAuth();
 
 const isLoggedIn = computed(() => !!user.value);
 
-const dashUrl = computed(() => {
+const appUrl = computed(() => {
   if (import.meta.dev) {
     return "/dashboard";
   }
-  return "https://dash.jointrellis.app";
+  return "https://my.jointrellis.app";
 });
 
 const mobileOpen = ref(false);
@@ -43,12 +43,12 @@ function scrollToDemo() {
 
       <div class="hidden md:flex items-center gap-3">
         <template v-if="isLoggedIn">
-          <a :href="dashUrl" class="bg-emerald-500 text-emerald-950 font-semibold px-4 py-2 rounded-md hover:bg-emerald-400 transition">
+          <a :href="appUrl" class="bg-emerald-500 text-emerald-950 font-semibold px-4 py-2 rounded-md hover:bg-emerald-400 transition">
             Open Trellis
           </a>
         </template>
         <template v-else>
-          <a :href="dashUrl" class="text-sm text-white/70 hover:text-white transition">Log in</a>
+          <a :href="appUrl" class="text-sm text-white/70 hover:text-white transition">Log in</a>
           <button
             class="bg-emerald-500 text-emerald-950 font-semibold px-4 py-2 rounded-md hover:bg-emerald-400 transition text-sm"
             @click="scrollToDemo"
@@ -69,10 +69,10 @@ function scrollToDemo() {
       </a>
       <hr class="border-white/10">
       <template v-if="isLoggedIn">
-        <a :href="dashUrl" class="block bg-emerald-500 text-emerald-950 font-semibold px-4 py-2 rounded-md text-center">Open Trellis</a>
+        <a :href="appUrl" class="block bg-emerald-500 text-emerald-950 font-semibold px-4 py-2 rounded-md text-center">Open Trellis</a>
       </template>
       <template v-else>
-        <a :href="dashUrl" class="block text-white/70">Log in</a>
+        <a :href="appUrl" class="block text-white/70">Log in</a>
         <button class="block w-full bg-emerald-500 text-emerald-950 font-semibold px-4 py-2 rounded-md" @click="scrollToDemo">
           Book a demo
         </button>

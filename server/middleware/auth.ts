@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   const path = event.path;
 
   // Marketing homepage at apex root is public.
-  // On the dash subdomain the hostname middleware redirects / to /dashboard before this runs.
+  // On the app subdomain the hostname middleware redirects / to /dashboard before this runs.
   if (path === "/") {
     return;
   }

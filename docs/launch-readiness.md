@@ -7,8 +7,8 @@ What's needed before Trellis can be publicly launched at `jointrellis.app`, brok
 Do these before pointing anyone at the marketing site.
 
 1. **DNS**
-   - Cloudflare: add `CNAME dash` pointing at `jz925815.up.railway.app` (proxied, TTL auto).
-   - Railway: add `dash.jointrellis.app` as a custom domain on the production service. Wait ~2 min for cert provisioning.
+   - Cloudflare: add `CNAME my` pointing at `jz925815.up.railway.app` (proxied, TTL auto).
+   - Railway: add `my.jointrellis.app` as a custom domain on the production service. Wait ~2 min for cert provisioning.
 
 2. **Production deploy**
    - Merge `feat/marketing-homepage` into `staging` via PR.
@@ -19,8 +19,8 @@ Do these before pointing anyone at the marketing site.
 3. **End-to-end test in production**
    - Visit `jointrellis.app/` - marketing page renders.
    - Submit the demo form with a real address - confirm an email arrives at `alex.bates@pocketworks.co.uk` and a row lands in the production `demo_requests` table.
-   - Visit `jointrellis.app/dashboard` - confirm 302 redirect to `dash.jointrellis.app/dashboard`.
-   - Visit `dash.jointrellis.app/` - confirm 302 redirect to `/dashboard` (then to `/login` if logged out).
+   - Visit `jointrellis.app/dashboard` - confirm 302 redirect to `my.jointrellis.app/dashboard`.
+   - Visit `my.jointrellis.app/` - confirm 302 redirect to `/dashboard` (then to `/login` if logged out).
 
 4. **Replace the Tobin testimonial quote**
    - Currently a placeholder marked in `app/components/marketing/TestimonialSection.vue`. Either swap with Tobin's actual words or remove the section entirely. Don't ship with a faked quote attributed to a real person.

@@ -27,7 +27,7 @@ const year = new Date().getFullYear();
           <li><a href="#features" class="hover:text-white">Features</a></li>
           <li><a href="#how-it-works" class="hover:text-white">How it works</a></li>
           <li><a href="#demo-form" class="hover:text-white">Book a demo</a></li>
-          <li><a href="https://dash.jointrellis.app" class="hover:text-white">Log in</a></li>
+          <li><a href="https://my.jointrellis.app" class="hover:text-white">Log in</a></li>
         </ul>
       </div>
 

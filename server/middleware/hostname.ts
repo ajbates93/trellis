@@ -1,7 +1,7 @@
 import { defineEventHandler } from "h3";
 
 const APEX_HOST = "jointrellis.app";
-const APP_HOST = "dash.jointrellis.app";
+const APP_HOST = "my.jointrellis.app";
 
 // Paths that only make sense on the apex (marketing)
 const MARKETING_PATHS = ["/landing"];
