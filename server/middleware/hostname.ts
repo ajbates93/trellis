@@ -55,6 +55,11 @@ export default defineEventHandler(async (event) => {
   }
 
   if (host === APP_HOST) {
+    // Root on the app host always means the dashboard (auth middleware bounces to /login if no session)
+    if (path === "/") {
+      return sendRedirect(event, `https://${APP_HOST}/dashboard`, 302);
+    }
+    // Legacy marketing-only paths belong on the apex
     if (isMarketingPath(path)) {
       return sendRedirect(event, `https://${APEX_HOST}${path}`, 302);
     }

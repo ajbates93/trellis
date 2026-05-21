@@ -11,9 +11,17 @@ export default defineEventHandler(async (event) => {
     "/api/integrations/slack/commands", // Slack slash commands (signature verified)
     "/api/integrations/slack/interactions", // Slack modal interactions (signature verified)
     "/api/integrations/slack/callback", // OAuth callback
+    "/api/marketing/", // Demo request form
     "/login",
+    "/landing", // legacy marketing path, redirects to /
   ];
   const path = event.path;
+
+  // Marketing homepage at apex root is public.
+  // On the dash subdomain the hostname middleware redirects / to /dashboard before this runs.
+  if (path === "/") {
+    return;
+  }
 
   if (publicRoutes.some((route) => path.startsWith(route))) {
     return;
