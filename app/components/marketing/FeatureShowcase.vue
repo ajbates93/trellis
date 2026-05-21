@@ -1,0 +1,108 @@
+<script setup lang="ts">
+type TabKey = "submit" | "inbox" | "goals" | "insights";
+
+interface Tab {
+  key: TabKey;
+  label: string;
+  icon: string;
+  copy: string;
+  image: string;
+  alt: string;
+}
+
+const tabs: Tab[] = [
+  {
+    key: "submit",
+    label: "Submit feedback",
+    icon: "i-heroicons-paper-airplane",
+    copy: "Give feedback in 90 seconds. Inspiration prompts, character minimums, and a clear 'who you're reviewing' header keep submissions specific and actionable.",
+    image: "/marketing/feature-submit.png",
+    alt: "Submit feedback form with prompts and tips sidebar",
+  },
+  {
+    key: "inbox",
+    label: "Feedback inbox",
+    icon: "i-heroicons-inbox",
+    copy: "Three views: feedback received, given, and feedback for the people you buddy. Mark as read, star favourites, and publish in bulk when you're ready.",
+    image: "/marketing/feature-inbox.png",
+    alt: "Feedback inbox with favourites row and recent feedback table",
+  },
+  {
+    key: "goals",
+    label: "Goals",
+    icon: "i-heroicons-flag",
+    copy: "Personal development goals with milestones, deadlines, and progress rings. Connected to the feedback you receive so growth is visible.",
+    image: "/marketing/feature-goals.png",
+    alt: "Goals page showing active goals with progress rings and milestones",
+  },
+  {
+    key: "insights",
+    label: "Community insights",
+    icon: "i-heroicons-chart-bar",
+    copy: "A living team garden, leaderboards, and participation streaks. Admins see engagement at a glance without anyone feeling surveilled.",
+    image: "/marketing/feature-insights.png",
+    alt: "Community insights with team activity stats and the Pocketworks garden",
+  },
+];
+
+const active = ref<TabKey>("submit");
+const activeTab = computed(() => tabs.find((t) => t.key === active.value)!);
+</script>
+
+<template>
+  <section id="features" class="border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center max-w-2xl mx-auto">
+        <span class="inline-block text-xs uppercase tracking-widest text-white/40 font-semibold">
+          What's inside
+        </span>
+        <h2 class="mt-4 text-3xl md:text-4xl font-bold tracking-tight">
+          Everything your team needs to grow together
+        </h2>
+      </div>
+
+      <div class="mt-12 flex flex-wrap justify-center gap-2" role="tablist">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          role="tab"
+          :aria-selected="active === tab.key"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition border"
+          :class="active === tab.key
+            ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+            : 'text-white/60 border-white/10 hover:text-white hover:border-white/20'"
+          @click="active = tab.key"
+        >
+          <UIcon :name="tab.icon" class="size-4" />
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <div class="mt-10 rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02]">
+        <div class="grid lg:grid-cols-[260px_1fr]">
+          <aside class="hidden lg:block border-r border-white/5 p-6 bg-black/30">
+            <div class="text-xs uppercase tracking-wider text-white/40 mb-3">Personal</div>
+            <ul class="space-y-1.5 text-sm">
+              <li v-for="tab in tabs" :key="tab.key">
+                <div
+                  class="flex items-center gap-2 px-3 py-2 rounded-md"
+                  :class="active === tab.key ? 'bg-emerald-500/10 text-emerald-300' : 'text-white/60'"
+                >
+                  <UIcon :name="tab.icon" class="size-4" />
+                  {{ tab.label }}
+                </div>
+              </li>
+            </ul>
+          </aside>
+
+          <div class="p-6 md:p-10">
+            <p class="text-white/80 text-lg max-w-2xl">{{ activeTab.copy }}</p>
+            <div class="mt-8 rounded-lg overflow-hidden border border-white/10">
+              <img :src="activeTab.image" :alt="activeTab.alt" class="w-full h-auto">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
