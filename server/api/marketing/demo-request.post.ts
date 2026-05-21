@@ -5,7 +5,7 @@ import { apiSchemas } from "#server/schemas";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 
 const INTERNAL_NOTIFICATION_TO =
-  process.env.DEMO_REQUEST_NOTIFY_EMAIL || "ajbates93@gmail.com";
+  process.env.DEMO_REQUEST_NOTIFY_EMAIL || "alex.bates@pocketworks.co.uk";
 
 export default defineEventHandler(async (event) => {
   const body = await validateBody(event, apiSchemas.DemoRequestSchema);
