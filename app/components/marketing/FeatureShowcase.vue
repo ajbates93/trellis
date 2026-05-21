@@ -78,13 +78,10 @@ const activeTab = computed(() => tabs.find((t) => t.key === active.value)!);
         </button>
       </div>
 
-      <div class="mt-10 rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02]">
-        <div class="p-6 md:p-10">
-          <p class="text-white/80 text-lg max-w-3xl mx-auto text-center">{{ activeTab.copy }}</p>
-          <div class="mt-8 rounded-lg overflow-hidden border border-white/10 shadow-2xl">
-            <img :src="activeTab.image" :alt="activeTab.alt" class="w-full h-auto">
-          </div>
-        </div>
+      <p class="mt-10 text-white/80 text-lg max-w-3xl mx-auto text-center">{{ activeTab.copy }}</p>
+
+      <div class="mt-8">
+        <img :src="activeTab.image" :alt="activeTab.alt" class="w-full h-auto">
       </div>
     </div>
   </section>
