@@ -382,4 +382,49 @@ export const emailTemplates = {
       </body>
     </html>
   `,
+
+  demoRequestInternal: (data: {
+    name: string;
+    email: string;
+    company: string;
+    teamSize: string;
+    message: string | null;
+  }) => `
+  <!DOCTYPE html>
+  <html>
+    <head><meta charset="utf-8"><title>New demo request</title></head>
+    <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #059669;">New demo request</h1>
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+        <p><strong>Company:</strong> ${data.company}</p>
+        <p><strong>Team size:</strong> ${data.teamSize}</p>
+        <p><strong>Message:</strong></p>
+        <p style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          ${data.message ? data.message.replace(/</g, "&lt;").replace(/\n/g, "<br>") : "<em>No message provided</em>"}
+        </p>
+      </div>
+    </body>
+  </html>
+`,
+
+  demoRequestConfirmation: (name: string) => `
+  <!DOCTYPE html>
+  <html>
+    <head><meta charset="utf-8"><title>Thanks for requesting a Trellis demo</title></head>
+    <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #059669;">Thanks, ${name}.</h1>
+        <p>We've received your demo request and will be in touch within one working day to set up a 20-minute walkthrough.</p>
+        <p>In the meantime, if you have any questions, just reply to this email.</p>
+        <p>- The Trellis team</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          Trellis - Peer feedback that grows your team
+        </p>
+      </div>
+    </body>
+  </html>
+`,
 };
