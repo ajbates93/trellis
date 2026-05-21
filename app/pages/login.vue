@@ -203,6 +203,7 @@ const signInWithGoogle = async () => {
   try {
     await authClient.signIn.social({
       provider: "google",
+      callbackURL: "/dashboard",
     });
   } catch (error: any) {
     console.error("Failed to sign in:", error);
