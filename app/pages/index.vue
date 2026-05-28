@@ -5,7 +5,7 @@ useHead({
     {
       name: "description",
       content:
-        "Trellis is the peer feedback platform that makes weekly feedback a habit. Track goals, run lightweight reviews, and grow your team together.",
+        "Trellis is the peer feedback platform that makes feedback a habit. Track goals, run lightweight reviews, and grow your team together.",
     },
     {
       property: "og:title",
@@ -13,7 +13,7 @@ useHead({
     },
     {
       property: "og:description",
-      content: "Weekly peer feedback, buddy reviews, and goal tracking - in one calm tool.",
+      content: "Regular peer feedback, buddy reviews, and goal tracking - in one calm tool.",
     },
     {
       property: "og:image",

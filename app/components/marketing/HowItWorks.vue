@@ -10,7 +10,7 @@ const steps = [
   },
   {
     title: "Feedback becomes a habit.",
-    body: "Weekly reminders and gentle nudges turn feedback into a 90-second ritual. Prefer Slack? A /submit command lets people give feedback without leaving the chat.",
+    body: "Gentle reminders turn feedback into a 90-second ritual at whatever cadence suits your team. Prefer Slack? A /submit command lets people give feedback without leaving the chat.",
   },
 ];
 </script>

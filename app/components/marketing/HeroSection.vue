@@ -27,7 +27,7 @@ function scrollToFeatures() {
         </h1>
 
         <p class="mt-6 text-lg text-white/70 max-w-xl">
-          A structured, lightweight way for your team to share weekly peer
+          A structured, lightweight way for your team to share regular peer
           feedback, track goals, celebrate achievements, and grow together,
           without anyone having to chase it.
         </p>

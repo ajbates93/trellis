@@ -20,7 +20,7 @@
             Most feedback tools collect feedback into a black hole.
             <strong>Trellis</strong>
             pairs every person with a buddy who reads, curates, and discusses
-            their feedback with them every few months.
+            their feedback with them regularly.
           </p>
           <p>
             Buddies aren't managers. They're peers who care about your growth.
@@ -64,7 +64,7 @@
             <div
               class="bg-white/5 rounded-lg p-3 text-center text-white/70 border border-white/10"
             >
-              Weekly feedback flows in
+              Feedback flows in
             </div>
             <div
               class="bg-white/5 rounded-lg p-3 text-center text-white/70 border border-white/10"
@@ -74,7 +74,7 @@
             <div
               class="bg-white/5 rounded-lg p-3 text-center text-white/70 border border-white/10"
             >
-              Quarterly review together
+              Regular reviews together
             </div>
           </div>
         </div>
