@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { isDemoMode } from "./demo";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -10,6 +11,13 @@ export interface SendEmailOptions {
 }
 
 export const sendEmail = async (options: SendEmailOptions) => {
+  if (isDemoMode()) {
+    console.log(
+      `📭 [DEMO_MODE] Email suppressed → to:${options.to} subject:"${options.subject}"`,
+    );
+    return { suppressed: true } as const;
+  }
+
   const fromEmail =
     options.from || process.env.EMAIL_FROM || "noreply@trellis.dev";
 
