@@ -25,4 +25,15 @@ describe("sendEmail demo-mode suppression", () => {
     expect(sendMock).not.toHaveBeenCalled();
     expect(result).toMatchObject({ suppressed: true });
   });
+
+  it("calls Resend and does not return suppressed when DEMO_MODE is not set", async () => {
+    sendMock.mockResolvedValueOnce({ data: { id: "x" }, error: null });
+    const result = await sendEmail({
+      to: "a@b.com",
+      subject: "hi",
+      html: "<p>hi</p>",
+    });
+    expect(sendMock).toHaveBeenCalledOnce();
+    expect(result).not.toMatchObject({ suppressed: true });
+  });
 });

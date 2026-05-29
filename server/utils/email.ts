@@ -13,7 +13,7 @@ export interface SendEmailOptions {
 export const sendEmail = async (options: SendEmailOptions) => {
   if (isDemoMode()) {
     console.log(
-      `📭 [DEMO_MODE] Email suppressed → to:${options.to} subject:"${options.subject}"`,
+      `📭 [DEMO_MODE] Email suppressed - to:${options.to} subject:"${options.subject}"`,
     );
     return { suppressed: true } as const;
   }
