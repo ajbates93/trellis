@@ -153,6 +153,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       "0 9 * * *": ["review-reminders", "goal-reminders"], // Daily at 9 AM UTC
+      "0 3 * * *": ["demo-reset"], // Daily at 3 AM UTC (no-op outside demo mode)
     },
   },
 
