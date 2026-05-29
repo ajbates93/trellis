@@ -83,7 +83,7 @@
 
         <div class="space-y-6">
           <!-- Slack Integration Section -->
-          <UCard>
+          <UCard v-if="!demoMode">
             <template #header>
               <div class="flex items-center gap-3">
                 <div class="flex-shrink-0">
@@ -198,6 +198,14 @@
               </div>
             </div>
           </UCard>
+
+          <!-- Demo Mode Notice -->
+          <div
+            v-if="demoMode"
+            class="rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-sm text-gray-600 dark:text-gray-400"
+          >
+            Integrations are disabled in the demo environment.
+          </div>
         </div>
       </div>
     </template>
@@ -215,6 +223,9 @@ useHead({
 
 const route = useRoute();
 const router = useRouter();
+
+const config = useRuntimeConfig();
+const demoMode = computed(() => Boolean(config.public.demoMode));
 
 // State
 const slackWorkspace = ref<any>(null);
