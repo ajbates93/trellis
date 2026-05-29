@@ -24,6 +24,13 @@ describe("POST /api/demo/reset", () => {
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 });
   });
 
+  it("403s when DEMO_RESET_SECRET is not configured", async () => {
+    process.env.DEMO_MODE = "true";
+    // DEMO_RESET_SECRET deliberately absent
+    const event = createMockEvent({ headers: { "x-demo-secret": "anything" } });
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 });
+  });
+
   it("resets when the secret matches", async () => {
     process.env.DEMO_MODE = "true";
     process.env.DEMO_RESET_SECRET = "right";
