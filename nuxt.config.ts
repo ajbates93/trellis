@@ -38,7 +38,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-side only (private)
     betterAuthUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    demoMode: process.env.DEMO_MODE === "true",
     slackClientId: process.env.SLACK_CLIENT_ID || "",
     slackClientSecret: process.env.SLACK_CLIENT_SECRET || "",
     slackSigningSecret: process.env.SLACK_SIGNING_SECRET || "",

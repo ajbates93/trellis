@@ -14,6 +14,7 @@ import {
   buddyCheckins,
   workspaces,
   accounts,
+  slackWorkspaces,
 } from "./schema";
 import { isDemoMode } from "../utils/demo";
 import { hashPassword } from "../utils/password";
@@ -56,6 +57,10 @@ async function truncateAppData(): Promise<void> {
   await db.delete(notifications);
   await db.delete(onboardingImports);
   await db.delete(accounts);
+  // slack_workspaces.installedBy -> users.id has no ON DELETE rule, so delete it
+  // before users to avoid an FK violation (the demo never seeds Slack, but this
+  // keeps the truncate robust if a row ever exists).
+  await db.delete(slackWorkspaces);
   await db.delete(users);
   await db.delete(workspaces);
 }
