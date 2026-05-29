@@ -56,15 +56,24 @@ service against a separate database, with behaviour driven by a single
 
 - New Railway service (e.g. `trellis-demo`) with its **own PostgreSQL database**.
   The demo database must never be the staging or production database.
-- Deploys from `main`, so the demo always reflects the released product.
-- New GitHub Actions workflow `deploy-demo.yml`, triggered on push to `main`
-  (alongside the production deploy):
-  1. Run database migrations against the demo DB.
-  2. Seed the demo DB **only if it is empty** (first-time provisioning).
-  - Ongoing data freshness is handled by the nightly reset, not by redeploys, so
-    a deploy does not clobber an in-progress demo unless the DB was empty.
+- **Deploys in lockstep with production.** Production deploys via `release.yml`,
+  which uses release-please and only deploys when a release is cut
+  (`release_created == 'true'`) - not on every push to `main`. To genuinely
+  mirror production, the demo deploys through the **same release gate**: a
+  `deploy-demo` job in `release.yml` (gated on `release_created`, running in
+  parallel with the production deploy job) runs the demo migrations and
+  `railway up` for the demo service. The demo Railway service must therefore
+  **not** auto-watch `main` - it deploys via the Railway CLI in that job, exactly
+  when production does. (An earlier draft used a standalone `deploy-demo.yml` on
+  every push to `main`; that was removed because it would let the demo run ahead
+  of production.)
+- First-time data: seed the demo DB once after the first deploy (manual
+  bootstrap, see §5). Ongoing freshness is handled by the nightly reset.
 - Demo URL: the Railway-generated domain for now (a custom `demo.` subdomain can
   be added later without code changes).
+- New GitHub config required: secret `DEMO_DATABASE_URL`; variables
+  `RAILWAY_DEMO_SERVICE_ID` and `DEMO_URL`; a GitHub environment named `demo`.
+  The existing `RAILWAY_TOKEN` secret is reused.
 
 #### Demo environment variables
 
