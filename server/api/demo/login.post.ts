@@ -13,15 +13,21 @@ export default defineEventHandler(async (event) => {
 
   // Sign in server-side and forward the Set-Cookie header(s) to the client,
   // so prospects enter the demo with one click (no Google OAuth).
-  const response = await auth.api.signInEmail({
-    body: { email, password },
-    asResponse: true,
-  });
+  let response: Awaited<ReturnType<typeof auth.api.signInEmail<true>>>;
+  try {
+    response = await auth.api.signInEmail({
+      body: { email, password },
+      asResponse: true,
+    });
+  } catch {
+    throw createError({
+      statusCode: 503,
+      statusMessage: "Demo not ready - run the demo seed/reset first.",
+    });
+  }
 
-  for (const [key, value] of response.headers.entries()) {
-    if (key.toLowerCase() === "set-cookie") {
-      appendResponseHeader(event, "set-cookie", value);
-    }
+  for (const cookie of response.headers.getSetCookie()) {
+    appendResponseHeader(event, "set-cookie", cookie);
   }
 
   return { ok: true, redirect: "/dashboard" };
