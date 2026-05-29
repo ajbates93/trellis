@@ -84,11 +84,11 @@ export async function seedDemo(): Promise<void> {
     id: `demo-user-${i}`,
     email: i === 0 ? adminEmail : `${first.toLowerCase()}@northwind.demo`,
     name: i === 0 ? `${first} (Admin)` : `${first} Carter`,
-    roleType: ROLE_TYPES[i % ROLE_TYPES.length],
+    roleType: ROLE_TYPES[i % ROLE_TYPES.length]!,
   }));
 
   for (let i = 0; i < seedUsers.length; i++) {
-    const u = seedUsers[i];
+    const u = seedUsers[i]!;
     const buddy = seedUsers[i % 2 === 0 ? i + 1 : i - 1];
     await db.insert(users).values({
       id: u.id,
@@ -122,8 +122,8 @@ export async function seedDemo(): Promise<void> {
     const weekDate = new Date(now);
     weekDate.setDate(weekDate.getDate() - w * 7);
     for (let i = 0; i < seedUsers.length; i++) {
-      const reviewer = seedUsers[i];
-      const reviewee = seedUsers[(i + 3 + w) % seedUsers.length];
+      const reviewer = seedUsers[i]!;
+      const reviewee = seedUsers[(i + 3 + w) % seedUsers.length]!;
       if (reviewer.id === reviewee.id) continue;
       await db.insert(feedback).values({
         reviewerId: reviewer.id,
@@ -140,7 +140,7 @@ export async function seedDemo(): Promise<void> {
 
   // Goals + milestone + note for first 12 users
   for (let i = 0; i < 12; i++) {
-    const u = seedUsers[i];
+    const u = seedUsers[i]!;
     const [goal] = await db
       .insert(goals)
       .values({
@@ -154,23 +154,23 @@ export async function seedDemo(): Promise<void> {
       })
       .returning();
     await db.insert(goalMilestones).values({
-      goalId: goal.id,
+      goalId: goal!.id,
       title: "First checkpoint reached",
       isCompleted: true,
       completedAt: now,
       displayOrder: 0,
     });
     await db.insert(goalNotes).values({
-      goalId: goal.id,
-      authorId: seedUsers[(i + 1) % seedUsers.length].id,
+      goalId: goal!.id,
+      authorId: seedUsers[(i + 1) % seedUsers.length]!.id,
       noteText: "Nice progress so far - keep it up!",
     });
   }
 
   // Reviews: one completed (past) + one upcoming for first 10 users
   for (let i = 0; i < 10; i++) {
-    const u = seedUsers[i];
-    const buddy = seedUsers[i % 2 === 0 ? i + 1 : i - 1] || seedUsers[0];
+    const u = seedUsers[i]!;
+    const buddy = seedUsers[i % 2 === 0 ? i + 1 : i - 1] || seedUsers[0]!;
     const past = new Date(now); past.setMonth(past.getMonth() - 2);
     const upcoming = new Date(now); upcoming.setDate(upcoming.getDate() + 14 + i);
     await db.insert(reviewSchedules).values({
@@ -187,7 +187,7 @@ export async function seedDemo(): Promise<void> {
   // Achievements for first 8 users
   for (let i = 0; i < 8; i++) {
     await db.insert(achievements).values({
-      userId: seedUsers[i].id,
+      userId: seedUsers[i]!.id,
       title: "Shipped a major feature",
       achievedDate: now.toISOString().slice(0, 10),
     });
