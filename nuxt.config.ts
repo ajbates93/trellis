@@ -45,6 +45,7 @@ export default defineNuxtConfig({
 
     public: {
       baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+      demoMode: process.env.DEMO_MODE === "true",
       appVersion: process.env.npm_package_version || "0.0.0",
       plausibleToken: process.env.NUXT_PUBLIC_PLAUSIBLE_TOKEN || "",
       sentry: {
@@ -153,6 +154,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       "0 9 * * *": ["review-reminders", "goal-reminders"], // Daily at 9 AM UTC
+      "0 3 * * *": ["demo-reset"], // Daily at 3 AM UTC (no-op outside demo mode)
     },
   },
 

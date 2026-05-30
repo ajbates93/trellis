@@ -6,6 +6,7 @@ onMounted(() => {
 
 <template>
   <UApp>
+    <DemoBanner />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
