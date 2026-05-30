@@ -2,6 +2,7 @@ import { auth } from "#server/utils/auth";
 import { db } from "#server/database/connection";
 import { workspaces } from "#server/database/schema";
 import { eq } from "drizzle-orm";
+import { isDemoMode } from "#server/utils/demo";
 
 export default defineEventHandler(async (event) => {
   // Skip auth check for public routes
@@ -20,6 +21,14 @@ export default defineEventHandler(async (event) => {
   // Marketing homepage at apex root is public.
   // On the app subdomain the hostname middleware redirects / to /dashboard before this runs.
   if (path === "/") {
+    return;
+  }
+
+  // Demo environment only: the entry page and demo-only API endpoints are
+  // public. They self-guard (DEMO_MODE for both, plus a shared secret for
+  // reset), and /api/demo/login must be reachable before any session exists.
+  // Gated on demo mode so production keeps these locked down.
+  if (isDemoMode() && (path === "/demo" || path.startsWith("/api/demo/"))) {
     return;
   }
 
