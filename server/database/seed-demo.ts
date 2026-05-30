@@ -112,7 +112,10 @@ export async function seedDemo(): Promise<void> {
       await db.insert(accounts).values({
         id: "demo-account-admin",
         userId: u.id,
-        accountId: u.id,
+        // better-auth's credential provider keys the account on the email, not
+        // the userId (matches server/api/auth/set-password.post.ts). Using the
+        // userId here makes signInEmail fail to find the account.
+        accountId: u.email,
         providerId: "credential",
         password: hashed,
         createdAt: now,
