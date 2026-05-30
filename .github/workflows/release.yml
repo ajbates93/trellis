@@ -94,6 +94,10 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway
+        # The demo service shares its ID with production (one Railway service
+        # spans environments). The DEMO-scoped token is what routes this deploy
+        # to the demo environment instead of production - do NOT reuse the
+        # production RAILWAY_TOKEN here.
         run: railway up --service ${{ vars.RAILWAY_DEMO_SERVICE_ID }}
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DEMO_TOKEN }}
