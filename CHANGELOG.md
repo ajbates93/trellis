@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.1](https://github.com/ajbates93/trellis/compare/v0.16.0...v0.16.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* **demo:** allow demo entry page and demo endpoints through server auth middleware ([89b33a8](https://github.com/ajbates93/trellis/commit/89b33a87e923d408b5592b91640b00005d84bcb8))
+* **demo:** allow demo routes through server auth middleware ([99e80d3](https://github.com/ajbates93/trellis/commit/99e80d3184e0337118c707f4b83412554d77e95f))
+
 ## [0.16.0](https://github.com/ajbates93/trellis/compare/v0.15.1...v0.16.0) (2026-05-30)
 
 
