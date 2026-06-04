@@ -295,6 +295,10 @@ export const reviewSchedulesRelations = relations(
     }),
     feedback: many(feedback),
     checkins: many(buddyCheckins),
+    template: one(reviewTemplates, {
+      fields: [reviewSchedules.templateId],
+      references: [reviewTemplates.id],
+    }),
   }),
 );
 
@@ -308,11 +312,26 @@ export const reviewTemplates = pgTable("review_templates", {
   description: text("description"),
   isDefault: boolean("is_default").notNull().default(false),
   fields: jsonb("fields").$type<ReviewTemplateField[]>().notNull().default([]),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   archivedAt: timestamp("archived_at"),
 });
+
+export const reviewTemplatesRelations = relations(
+  reviewTemplates,
+  ({ one, many }) => ({
+    workspace: one(workspaces, {
+      fields: [reviewTemplates.workspaceId],
+      references: [workspaces.id],
+    }),
+    creator: one(users, {
+      fields: [reviewTemplates.createdBy],
+      references: [users.id],
+    }),
+    reviews: many(reviewSchedules),
+  }),
+);
 
 // Onboarding imports table
 export const onboardingImports = pgTable("onboarding_imports", {
