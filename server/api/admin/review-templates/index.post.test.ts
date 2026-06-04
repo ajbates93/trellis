@@ -3,13 +3,9 @@ import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 
 const insertReturning = vi.fn()
 const insertValues = vi.fn(() => ({ returning: insertReturning }))
-const selectLimit = vi.fn()
 
 vi.mock('#server/database/connection', () => ({
   db: {
-    select: () => ({
-      from: () => ({ where: () => ({ limit: selectLimit }) }),
-    }),
     insert: () => ({ values: insertValues }),
   },
 }))
@@ -41,8 +37,6 @@ describe('POST /api/admin/review-templates', () => {
   beforeEach(() => {
     insertReturning.mockReset()
     insertValues.mockClear()
-    selectLimit.mockReset()
-    selectLimit.mockResolvedValue([{ workspaceId: 'ws-1' }])
   })
 
   it('rejects unauthenticated requests with 401', async () => {
@@ -54,15 +48,6 @@ describe('POST /api/admin/review-templates', () => {
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 401 })
   })
 
-  it('rejects non-admins with 403', async () => {
-    const event = createMockEvent({
-      method: 'POST',
-      path: '/api/admin/review-templates',
-    })
-    event.context.session = { user: { id: 'u1', role: 'member' } }
-    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 })
-  })
-
   it('creates a template scoped to the admin\'s workspace', async () => {
     insertReturning.mockResolvedValue([{ id: 'tpl-1', name: 'Developer' }])
 
@@ -70,13 +55,17 @@ describe('POST /api/admin/review-templates', () => {
       method: 'POST',
       path: '/api/admin/review-templates',
     })
+    // Admin role enforcement now lives in the z-admin middleware. The handler
+    // reads the workspace from event.context.user (via getWorkspaceId) and the
+    // session for createdBy / the no-session guard.
     event.context.session = { user: { id: 'admin-1', role: 'admin' } }
+    event.context.user = { workspaceId: 'ws-1' }
 
     const res = await handler(event)
 
     expect(res).toMatchObject({ success: true, template: { id: 'tpl-1' } })
 
-    // Verify the insert was scoped to the admin's resolved workspace and that
+    // Verify the insert was scoped to the admin's workspace and that
     // server-controlled fields are set correctly.
     expect(insertValues).toHaveBeenCalledTimes(1)
     expect(insertValues).toHaveBeenCalledWith(

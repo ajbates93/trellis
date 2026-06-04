@@ -1,7 +1,7 @@
 import { db } from "#server/database/connection";
-import { reviewTemplates, users } from "#server/database/schema";
-import { eq } from "drizzle-orm";
+import { reviewTemplates } from "#server/database/schema";
 import { validateBody } from "#server/utils/validation";
+import { getWorkspaceId } from "#server/utils/workspace";
 import { CreateReviewTemplateRequestSchema } from "#server/schemas/reviewTemplates";
 import { buildSnapshot } from "#server/utils/reviewTemplates";
 
@@ -10,9 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!session?.user) {
     throw createError({ statusCode: 401, message: "Unauthorized - Please log in" });
   }
-  if (session.user.role !== "admin") {
-    throw createError({ statusCode: 403, message: "Admin access required" });
-  }
+  const workspaceId = getWorkspaceId(event);
 
   const body = await validateBody(event, CreateReviewTemplateRequestSchema);
 
@@ -23,16 +21,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Invalid template fields" });
   }
 
-  const [actor] = await db
-    .select({ workspaceId: users.workspaceId })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-
   const [template] = await db
     .insert(reviewTemplates)
     .values({
-      workspaceId: actor?.workspaceId ?? null,
+      workspaceId,
       name: body.name,
       description: body.description ?? null,
       isDefault: false,
