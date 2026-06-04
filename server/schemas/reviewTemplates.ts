@@ -22,7 +22,7 @@ export const ReviewTemplateFieldSchema = z
     if (field.type === "multiple_choice") {
       if (!field.options || field.options.length === 0) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Multiple choice fields need at least one option",
           path: ["options"],
         });
