@@ -1,12 +1,15 @@
 import { db } from "#server/database/connection";
 import { reviewTemplates } from "#server/database/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { validateBody } from "#server/utils/validation";
 import { UpdateReviewTemplateRequestSchema } from "#server/schemas/reviewTemplates";
 import { buildSnapshot } from "#server/utils/reviewTemplates";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
+  if (!id) throw createError({ statusCode: 400, message: "Template id is required" });
+  const workspaceId = getWorkspaceId(event);
   const body = await validateBody(event, UpdateReviewTemplateRequestSchema);
 
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
@@ -23,7 +26,7 @@ export default defineEventHandler(async (event) => {
   const [template] = await db
     .update(reviewTemplates)
     .set(updateData)
-    .where(eq(reviewTemplates.id, id!))
+    .where(and(eq(reviewTemplates.id, id), eq(reviewTemplates.workspaceId, workspaceId)))
     .returning();
 
   if (!template) throw createError({ statusCode: 404, message: "Template not found" });

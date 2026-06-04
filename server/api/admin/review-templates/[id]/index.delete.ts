@@ -1,13 +1,17 @@
 import { db } from "#server/database/connection";
 import { reviewTemplates } from "#server/database/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
+  if (!id) throw createError({ statusCode: 400, message: "Template id is required" });
+  const workspaceId = getWorkspaceId(event);
+
   const [existing] = await db
     .select({ isDefault: reviewTemplates.isDefault })
     .from(reviewTemplates)
-    .where(eq(reviewTemplates.id, id!))
+    .where(and(eq(reviewTemplates.id, id), eq(reviewTemplates.workspaceId, workspaceId)))
     .limit(1);
 
   if (!existing) throw createError({ statusCode: 404, message: "Template not found" });
@@ -18,7 +22,7 @@ export default defineEventHandler(async (event) => {
   await db
     .update(reviewTemplates)
     .set({ archivedAt: new Date() })
-    .where(eq(reviewTemplates.id, id!));
+    .where(and(eq(reviewTemplates.id, id), eq(reviewTemplates.workspaceId, workspaceId)));
 
   return { success: true };
 });

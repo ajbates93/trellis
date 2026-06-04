@@ -35,6 +35,7 @@ describe('DELETE /api/admin/review-templates/[id]', () => {
       params: { id: 'tpl-1' },
     })
     event.context.session = { user: { id: 'admin-1', role: 'admin' } }
+    event.context.user = { workspaceId: 'ws-1' }
 
     const res = await handler(event)
 
@@ -54,6 +55,7 @@ describe('DELETE /api/admin/review-templates/[id]', () => {
       params: { id: 'tpl-default' },
     })
     event.context.session = { user: { id: 'admin-1', role: 'admin' } }
+    event.context.user = { workspaceId: 'ws-1' }
 
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 400 })
     expect(updateSet).not.toHaveBeenCalled()
@@ -68,6 +70,7 @@ describe('DELETE /api/admin/review-templates/[id]', () => {
       params: { id: 'missing' },
     })
     event.context.session = { user: { id: 'admin-1', role: 'admin' } }
+    event.context.user = { workspaceId: 'ws-1' }
 
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 404 })
     expect(updateSet).not.toHaveBeenCalled()
