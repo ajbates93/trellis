@@ -26,7 +26,7 @@ describe("buildSnapshot", () => {
   });
 
   it("throws on an invalid field", () => {
-    expect(() => buildSnapshot([{ id: "x", type: "long_text", label: "" } as never])).toThrow();
+    expect(() => buildSnapshot([{ id: "x", type: "long_text", label: "" } as never])).toThrow(/label/i);
   });
 });
 

@@ -42,6 +42,10 @@ export function buildSnapshot(fields: ReviewTemplateField[]): ReviewTemplateFiel
 /**
  * Validate a reviewee answers map against a review's field snapshot.
  * Returns an error message string, or null if valid.
+ *
+ * NOTE: `required` fields are intentionally NOT enforced here - the flag is a
+ * UI-only hint in v1 that drives client-side validation. This function only
+ * checks that provided answers are structurally valid against the snapshot.
  */
 export function validateAnswers(
   snapshot: ReviewTemplateField[],
@@ -53,6 +57,7 @@ export function validateAnswers(
     if (!field) return `Answer for unknown field "${fieldId}"`;
     if (field.type === "section") return `Cannot answer a section field "${fieldId}"`;
     if (typeof value !== "string") return `Answer for "${fieldId}" must be a string`;
+    // Empty string is the "no answer yet" sentinel for multiple_choice and is always allowed.
     if (field.type === "multiple_choice" && value !== "" && !field.options?.includes(value)) {
       return `"${value}" is not a valid option for "${field.label}"`;
     }
