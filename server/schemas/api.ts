@@ -326,6 +326,7 @@ export const CreateReviewScheduleRequestSchema = z.object({
         "Invalid date format. Use ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm)",
     }),
   name: z.string().optional(),
+  templateId: z.string().uuid().nullable().optional(),
   notes: z.string().nullable().optional(),
 });
 

@@ -103,6 +103,8 @@ describe('POST /api/reviews', () => {
 
     // select: target user lookup
     mockSelect([{ buddyId: 'user-1' }])
+    // select: workspace default template lookup (none configured → use defaults)
+    mockSelect([])
     // insert: new review
     mockInsert([newReview])
     // select: reviewee lookup (for notification)
@@ -135,6 +137,8 @@ describe('POST /api/reviews', () => {
 
     // select: target user lookup (buddy validation)
     mockSelect([{ buddyId: 'user-1' }])
+    // select: workspace default template lookup (none configured → use defaults)
+    mockSelect([])
     // insert: new review
     mockInsert([newReview])
     // select: reviewee lookup (for notification)
@@ -167,6 +171,8 @@ describe('POST /api/reviews', () => {
     })
 
     mockSelect([{ buddyId: 'user-1' }])
+    // select: workspace default template lookup (none configured → use defaults)
+    mockSelect([])
     mockInsert([newReview])
     // select: reviewee lookup (for notification)
     mockSelect([{ name: 'User Two', preferredName: null, email: 'user2@example.com' }])
