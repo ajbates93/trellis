@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { buildSnapshot, DEFAULT_TEMPLATE_FIELDS } from "#server/utils/reviewTemplates";
-import { getWorkspaceId } from "#server/utils/workspace";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
@@ -60,29 +59,41 @@ export default defineEventHandler(async (event) => {
     const reviewName = name || format(selectedDate, "MMMM yyyy");
 
     // Resolve the reflection field snapshot for this review.
-    let templateSnapshot = DEFAULT_TEMPLATE_FIELDS;
+    // Default to the built-in fields (validated/copied via buildSnapshot for consistency).
+    let templateSnapshot = buildSnapshot(DEFAULT_TEMPLATE_FIELDS);
     let resolvedTemplateId: string | null = null;
 
+    // Non-throwing workspace read: review creation must not start 403-ing
+    // callers that lack workspace context (it had no workspace dependency before).
+    const callerWorkspaceId = event.context.user?.workspaceId ?? null;
+
     if (templateId) {
+      const conditions = [
+        eq(reviewTemplates.id, templateId),
+        isNull(reviewTemplates.archivedAt),
+      ];
+      // Scope to the caller's workspace when we know it (tenant isolation).
+      if (callerWorkspaceId) {
+        conditions.push(eq(reviewTemplates.workspaceId, callerWorkspaceId));
+      }
       const [tpl] = await db
         .select()
         .from(reviewTemplates)
-        .where(and(eq(reviewTemplates.id, templateId), isNull(reviewTemplates.archivedAt)))
+        .where(and(...conditions))
         .limit(1);
       if (!tpl) {
         throw createError({ statusCode: 404, message: "Review template not found" });
       }
       templateSnapshot = buildSnapshot(tpl.fields);
       resolvedTemplateId = tpl.id;
-    } else {
+    } else if (callerWorkspaceId) {
       // Fall back to the caller's workspace default template if one exists.
-      const workspaceId = getWorkspaceId(event);
       const [def] = await db
         .select()
         .from(reviewTemplates)
         .where(
           and(
-            eq(reviewTemplates.workspaceId, workspaceId),
+            eq(reviewTemplates.workspaceId, callerWorkspaceId),
             eq(reviewTemplates.isDefault, true),
             isNull(reviewTemplates.archivedAt),
           ),
