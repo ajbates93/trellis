@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { db, client } from "./connection";
 import { users, feedbackPrompts, workspaces, reviewTemplates } from "./schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { DEFAULT_TEMPLATE_FIELDS } from "#server/utils/reviewTemplates";
 
 // Team members data
@@ -994,7 +994,7 @@ async function seed() {
     const existingDefaultTemplate = await db
       .select()
       .from(reviewTemplates)
-      .where(eq(reviewTemplates.workspaceId, workspaceId))
+      .where(and(eq(reviewTemplates.workspaceId, workspaceId), eq(reviewTemplates.isDefault, true)))
       .limit(1);
 
     if (existingDefaultTemplate.length > 0) {

@@ -108,10 +108,13 @@ async function seedReviewTemplates() {
   } catch (error) {
     console.error("❌ Seed + backfill failed:", error);
     throw error;
-  } finally {
-    process.exit(0);
   }
 }
 
 // Run the seed + backfill
-seedReviewTemplates();
+seedReviewTemplates()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
