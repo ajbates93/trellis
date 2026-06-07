@@ -205,6 +205,11 @@ const settingsAndAdminLinks = computed(() => [
         active: route.path === "/admin/users",
       },
       {
+        label: "Review Templates",
+        to: "/admin/review-templates",
+        active: route.path.startsWith("/admin/review-templates"),
+      },
+      {
         label: "Onboarding",
         to: "/admin/onboard",
         active: route.path === "/admin/onboard",
