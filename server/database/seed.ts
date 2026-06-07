@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { db, client } from "./connection";
-import { users, feedbackPrompts, workspaces } from "./schema";
+import { users, feedbackPrompts, workspaces, reviewTemplates } from "./schema";
 import { eq } from "drizzle-orm";
+import { DEFAULT_TEMPLATE_FIELDS } from "#server/utils/reviewTemplates";
 
 // Team members data
 const TEAM_MEMBERS = [
@@ -985,6 +986,29 @@ async function seed() {
       } catch (error) {
         console.log(`   ⚠️  Review schedule may already exist, skipping...`);
       }
+    }
+
+    // Step 5b: Create default review template
+    console.log("\n📋 Creating default review template...");
+
+    const existingDefaultTemplate = await db
+      .select()
+      .from(reviewTemplates)
+      .where(eq(reviewTemplates.workspaceId, workspaceId))
+      .limit(1);
+
+    if (existingDefaultTemplate.length > 0) {
+      console.log("   ✓ Default review template already exists");
+    } else {
+      await db.insert(reviewTemplates).values({
+        workspaceId,
+        name: "Default",
+        description: "The standard three-question reflection.",
+        isDefault: true,
+        fields: DEFAULT_TEMPLATE_FIELDS,
+        createdBy: alexBatesId,
+      });
+      console.log("   ✓ Created default review template");
     }
 
     // Step 6: Create sample goals for testing
