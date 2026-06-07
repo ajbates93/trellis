@@ -352,6 +352,9 @@ export const UpdateReviewScheduleRequestSchema = z.object({
   buddyComments: z.string().nullable().optional(),
   // Reviewee additional comments
   revieweeComments: z.string().nullable().optional(),
+  // Template answers (map of fieldId -> value) and self-assessment score
+  answers: z.record(z.string(), z.string()).optional(),
+  selfScore: z.number().int().min(1).max(10).nullable().optional(),
 });
 
 export const GetReviewSchedulesResponseSchema = z.object({

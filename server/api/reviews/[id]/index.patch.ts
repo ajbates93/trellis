@@ -7,6 +7,7 @@ import { apiSchemas } from "#server/schemas";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+import { validateAnswers } from "#server/utils/reviewTemplates";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -41,6 +42,8 @@ export default defineEventHandler(async (event) => {
     reflectionConcerns,
     buddyComments,
     revieweeComments,
+    answers,
+    selfScore,
   } = body;
 
   try {
@@ -112,6 +115,17 @@ export default defineEventHandler(async (event) => {
       }
       if (buddyComments !== undefined) {
         updateData.buddyComments = buddyComments;
+      }
+      if (answers !== undefined) {
+        const snapshot = existingReview.templateSnapshot ?? [];
+        const answersError = validateAnswers(snapshot, answers);
+        if (answersError) {
+          throw createError({ statusCode: 400, message: answersError });
+        }
+        updateData.answers = answers;
+      }
+      if (selfScore !== undefined) {
+        updateData.selfScore = selfScore;
       }
     }
 
