@@ -194,9 +194,10 @@ const templateSelectItems = computed(() =>
 const fetchReviewTemplates = async () => {
   try {
     const data = await $api("/admin/review-templates");
-    reviewTemplates.value = data.templates;
-    const def = data.templates.find((t: { isDefault: boolean }) => t.isDefault);
-    selectedTemplateId.value = def?.id ?? data.templates[0]?.id ?? null;
+    const templates = data.templates ?? [];
+    reviewTemplates.value = templates;
+    const def = templates.find((t: { isDefault: boolean }) => t.isDefault);
+    selectedTemplateId.value = def?.id ?? templates[0]?.id ?? null;
   } catch {
     // Non-admin buddies cannot list templates; the server will snapshot the
     // workspace default automatically, so leave the dropdown hidden.
