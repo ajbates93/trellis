@@ -181,6 +181,32 @@ const reviewName = ref<string>("");
 const isCreating = ref(false);
 const isStartingNow = ref(false);
 
+// Review template picker state
+const reviewTemplates = ref<
+  Array<{ id: string; name: string; isDefault: boolean }>
+>([]);
+const selectedTemplateId = ref<string | null>(null);
+
+const templateSelectItems = computed(() =>
+  reviewTemplates.value.map((t) => ({ label: t.name, value: t.id })),
+);
+
+const fetchReviewTemplates = async () => {
+  try {
+    const data = await $api("/admin/review-templates");
+    reviewTemplates.value = data.templates;
+    const def = data.templates.find((t: { isDefault: boolean }) => t.isDefault);
+    selectedTemplateId.value = def?.id ?? data.templates[0]?.id ?? null;
+  } catch {
+    // Non-admin buddies cannot list templates; the server will snapshot the
+    // workspace default automatically, so leave the dropdown hidden.
+    reviewTemplates.value = [];
+    selectedTemplateId.value = null;
+  }
+};
+
+onMounted(fetchReviewTemplates);
+
 // Helper to get the next hour as "HH:mm"
 const getNextHourTime = () => {
   const now = new Date();
@@ -232,6 +258,10 @@ const resetForm = () => {
   scheduledTime.value = "09:00";
   includeTime.value = false;
   reviewName.value = "";
+  selectedTemplateId.value =
+    reviewTemplates.value.find((t) => t.isDefault)?.id ??
+    reviewTemplates.value[0]?.id ??
+    null;
 };
 
 // Create review for selected buddy
@@ -268,6 +298,7 @@ const createReview = async () => {
         userId: selectedBuddyId.value,
         scheduledDate: utcDateString,
         name: reviewName.value,
+        templateId: selectedTemplateId.value,
       },
     });
 
@@ -793,6 +824,19 @@ const getReviewActions = (review: any) => {
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Auto-generated from date if left empty
           </p>
+        </div>
+
+        <!-- Review Template -->
+        <div v-if="reviewTemplates.length">
+          <label class="block text-sm font-medium mb-2">
+            Review template
+          </label>
+          <USelect
+            v-model="selectedTemplateId"
+            :items="templateSelectItems"
+            placeholder="Choose a template"
+            class="w-full"
+          />
         </div>
       </div>
     </template>
