@@ -255,26 +255,82 @@ const openFeedbackModal = (feedbackItem: any) => {
 };
 
 // Reflection state
-const reflectionLearnings = ref("");
-const reflectionHighlights = ref("");
-const reflectionConcerns = ref("");
 const buddyComments = ref("");
 const revieweeComments = ref("");
+
+// Dynamic reflection state driven by the review's template snapshot
+const answers = ref<Record<string, string>>({});
+const selfScore = ref<number | null>(null);
+
+const snapshotFields = computed(
+  () =>
+    (review.value?.templateSnapshot ?? []) as Array<{
+      id: string;
+      type: "long_text" | "multiple_choice" | "section";
+      label: string;
+      helpText?: string;
+      required: boolean;
+      options?: string[];
+    }>,
+);
 
 // Initialize reflection state from review data
 watch(
   () => review.value,
   (newReview) => {
     if (newReview) {
-      reflectionLearnings.value = newReview.reflectionLearnings || "";
-      reflectionHighlights.value = newReview.reflectionHighlights || "";
-      reflectionConcerns.value = newReview.reflectionConcerns || "";
       buddyComments.value = newReview.buddyComments || "";
       revieweeComments.value = newReview.revieweeComments || "";
+      answers.value = { ...(newReview.answers ?? {}) };
+      selfScore.value = newReview.selfScore ?? null;
     }
   },
   { immediate: true },
 );
+
+// Per-field debounce timers for dynamic answer auto-save
+const answerTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+const saveAnswers = async () => {
+  if (!review.value) return;
+  try {
+    await $api(`/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: { answers: answers.value },
+    });
+  } catch (error) {
+    console.error("Failed to save answers:", error);
+    toast.add({
+      title: "Failed to save changes",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
+const onAnswerChange = (fieldId: string, value: string) => {
+  answers.value = { ...answers.value, [fieldId]: value };
+  clearTimeout(answerTimers.get(fieldId));
+  answerTimers.set(fieldId, setTimeout(saveAnswers, 800));
+};
+
+const saveSelfScore = async (value: number | null) => {
+  selfScore.value = value;
+  if (!review.value) return;
+  try {
+    await $api(`/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: { selfScore: value },
+    });
+  } catch (error) {
+    console.error("Failed to save self-score:", error);
+    toast.add({
+      title: "Failed to save changes",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
 
 // Auto-save logic
 const isSavingReflections = ref(false);
@@ -353,39 +409,6 @@ const debouncedSave = (field: string, value: string) => {
 
 // Watch for changes to trigger auto-save
 // Only watch if the user has permission to edit that field to avoid unnecessary saves on load
-watch(reflectionLearnings, (newValue, oldValue) => {
-  if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
-    newValue !== (review.value?.reflectionLearnings || "") &&
-    oldValue !== ""
-  ) {
-    debouncedSave("reflectionLearnings", newValue);
-  }
-});
-
-watch(reflectionHighlights, (newValue, oldValue) => {
-  if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
-    newValue !== (review.value?.reflectionHighlights || "") &&
-    oldValue !== ""
-  ) {
-    debouncedSave("reflectionHighlights", newValue);
-  }
-});
-
-watch(reflectionConcerns, (newValue, oldValue) => {
-  if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
-    newValue !== (review.value?.reflectionConcerns || "") &&
-    oldValue !== ""
-  ) {
-    debouncedSave("reflectionConcerns", newValue);
-  }
-});
-
 watch(buddyComments, (newValue, oldValue) => {
   if (
     (isReviewee.value || isBuddy.value) &&
@@ -614,28 +637,19 @@ watch(revieweeComments, (newValue, oldValue) => {
             </template>
 
             <div class="space-y-6">
-              <ReviewsReflectionEditor
-                v-model="reflectionLearnings"
-                label="What have I learnt in the past three months?"
-                icon="i-heroicons-academic-cap"
-                placeholder="Think about technical skills, soft skills, or domain knowledge..."
+              <DynamicReflectionField
+                v-for="field in snapshotFields"
+                :key="field.id"
+                :field="field"
+                :model-value="answers[field.id] || ''"
                 :readonly="(!isReviewee && !isBuddy) || isCompleted"
+                @update:model-value="(v) => onAnswerChange(field.id, v)"
               />
 
-              <ReviewsReflectionEditor
-                v-model="reflectionHighlights"
-                label="Any highlights?"
-                icon="i-heroicons-star"
-                placeholder="Projects delivered, problems solved, or team contributions..."
-                :readonly="(!isReviewee && !isBuddy) || isCompleted"
-              />
-
-              <ReviewsReflectionEditor
-                v-model="reflectionConcerns"
-                label="Are you worried about anything right now?"
-                icon="i-heroicons-exclamation-triangle"
-                placeholder="Blockers, uncertainties, or support you might need..."
-                :readonly="(!isReviewee && !isBuddy) || isCompleted"
+              <SelfScoreField
+                :model-value="selfScore"
+                :readonly="!isReviewee || isCompleted"
+                @update:model-value="saveSelfScore"
               />
             </div>
           </UCard>
