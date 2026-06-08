@@ -27,7 +27,9 @@ const toast = useToast();
 const templateId = computed(() => route.params.id as string);
 const isNew = computed(() => templateId.value === "new");
 
-useHead({ title: isNew.value ? "New Review Template" : "Edit Review Template" });
+useHead({
+  title: computed(() => (isNew.value ? "New Review Template" : "Edit Review Template")),
+});
 
 const name = ref("");
 const description = ref("");
@@ -97,6 +99,11 @@ const load = async () => {
     fields.value = t.fields;
   } catch (e) {
     console.error("Failed to load template:", e);
+    toast.add({
+      title: "Failed to load template",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     loading.value = false;
   }
@@ -160,8 +167,14 @@ const save = async () => {
       icon: "i-heroicons-check-circle",
     });
     router.push("/admin/review-templates");
-  } catch (e) {
+  } catch (e: any) {
     console.error("Failed to save template:", e);
+    toast.add({
+      title: "Failed to save template",
+      description: e?.data?.message,
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     saving.value = false;
   }

@@ -214,6 +214,11 @@ const duplicate = async (id: string) => {
     });
   } catch (e) {
     console.error("Failed to duplicate template:", e);
+    toast.add({
+      title: "Failed to duplicate template",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     duplicatingId.value = null;
   }
@@ -238,8 +243,14 @@ const confirmArchive = async () => {
     });
     showArchiveModal.value = false;
     templateToArchive.value = null;
-  } catch (e) {
+  } catch (e: any) {
     console.error("Failed to archive template:", e);
+    toast.add({
+      title: "Failed to archive template",
+      description: e?.data?.message,
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     archivingId.value = null;
   }
