@@ -274,6 +274,33 @@ const snapshotFields = computed(
     }>,
 );
 
+const hasSnapshotFields = computed(() => snapshotFields.value.length > 0);
+
+const legacyReflections = computed(() => {
+  const r = review.value;
+  if (!r) return [] as Array<{ label: string; icon: string; content: string }>;
+  const items: Array<{ label: string; icon: string; content: string }> = [];
+  if (r.reflectionLearnings)
+    items.push({
+      label: "What have I learnt in the past three months?",
+      icon: "i-heroicons-academic-cap",
+      content: r.reflectionLearnings,
+    });
+  if (r.reflectionHighlights)
+    items.push({
+      label: "Any highlights?",
+      icon: "i-heroicons-star",
+      content: r.reflectionHighlights,
+    });
+  if (r.reflectionConcerns)
+    items.push({
+      label: "Are you worried about anything right now?",
+      icon: "i-heroicons-exclamation-triangle",
+      content: r.reflectionConcerns,
+    });
+  return items;
+});
+
 // Initialize reflection state from review data
 watch(
   () => review.value,
@@ -643,14 +670,34 @@ watch(revieweeComments, (newValue, oldValue) => {
             </template>
 
             <div class="space-y-6">
-              <DynamicReflectionField
-                v-for="field in snapshotFields"
-                :key="field.id"
-                :field="field"
-                :model-value="answers[field.id] || ''"
-                :readonly="(!isReviewee && !isBuddy) || isCompleted"
-                @update:model-value="(v) => onAnswerChange(field.id, v)"
-              />
+              <template v-if="hasSnapshotFields">
+                <DynamicReflectionField
+                  v-for="field in snapshotFields"
+                  :key="field.id"
+                  :field="field"
+                  :model-value="answers[field.id] || ''"
+                  :readonly="(!isReviewee && !isBuddy) || isCompleted"
+                  @update:model-value="(v) => onAnswerChange(field.id, v)"
+                />
+              </template>
+
+              <!-- Legacy fallback: reviews with no template snapshot (pre-backfill / seed data) -->
+              <template v-else>
+                <ReviewsReflectionEditor
+                  v-for="item in legacyReflections"
+                  :key="item.label"
+                  :model-value="item.content"
+                  :label="item.label"
+                  :icon="item.icon"
+                  readonly
+                />
+                <p
+                  v-if="!legacyReflections.length"
+                  class="text-sm text-gray-500"
+                >
+                  No reflections recorded.
+                </p>
+              </template>
 
               <SelfScoreField
                 :model-value="selfScore"
