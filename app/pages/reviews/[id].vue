@@ -314,6 +314,12 @@ const onAnswerChange = (fieldId: string, value: string) => {
   answerTimers.set(fieldId, setTimeout(saveAnswers, 800));
 };
 
+// Cancel any pending debounced answer saves when leaving the page so the
+// timer can't fire against a stale reviewId after unmount.
+onUnmounted(() => {
+  answerTimers.forEach((timer) => clearTimeout(timer));
+});
+
 const saveSelfScore = async (value: number | null) => {
   selfScore.value = value;
   if (!review.value) return;
