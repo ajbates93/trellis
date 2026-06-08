@@ -9,6 +9,7 @@ import {
   ReviewScheduleWithUsersSchema,
   BuddyCheckinWithUsersSchema,
 } from "./computed";
+import { ReviewTemplateFieldsSchema } from "./reviewTemplates";
 
 // ===== FEEDBACK API SCHEMAS =====
 
@@ -463,6 +464,9 @@ export const GetReviewsWithDetailsResponseSchema = z.object({
       reflectionLearnings: z.string().nullable().optional(),
       reflectionHighlights: z.string().nullable().optional(),
       reflectionConcerns: z.string().nullable().optional(),
+      templateSnapshot: ReviewTemplateFieldsSchema.nullable().optional(),
+      answers: z.record(z.string(), z.string()).nullable().optional(),
+      selfScore: z.number().int().nullable().optional(),
       createdAt: z.coerce.date(),
       user: z.object({
         id: z.string(),

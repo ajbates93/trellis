@@ -99,38 +99,25 @@ v-else name="i-heroicons-chevron-down-20-solid"
             <UAccordion v-else :items="reflectionAccordionItems" type="multiple">
               <template #body="{ item }">
                 <div class="pb-4">
-                  <template v-if="selectedFilterValue === 'all'">
-                    <div class="space-y-3">
-                      <div v-if="item.review.reflectionLearnings" class="rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                          <UIcon name="i-heroicons-academic-cap" class="text-blue-500" />
-                          <span class="font-semibold text-sm text-blue-700 dark:text-blue-300">Learnings</span>
-                        </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionLearnings)" />
+                  <div v-if="item.entries.length" class="space-y-3">
+                    <div
+                      v-for="entry in item.entries"
+                      :key="entry.id"
+                      class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-4"
+                    >
+                      <div class="flex items-center gap-2 mb-3">
+                        <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="text-primary-500" />
+                        <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">{{ entry.label }}</span>
                       </div>
-                      <div v-if="item.review.reflectionHighlights" class="rounded-lg border border-yellow-200 dark:border-yellow-900/40 bg-yellow-50/50 dark:bg-yellow-950/20 p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                          <UIcon name="i-heroicons-sparkles" class="text-yellow-500" />
-                          <span class="font-semibold text-sm text-yellow-700 dark:text-yellow-300">Highlights</span>
-                        </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionHighlights)" />
-                      </div>
-                      <div v-if="item.review.reflectionConcerns" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/20 p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                          <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500" />
-                          <span class="font-semibold text-sm text-red-700 dark:text-red-300">Concerns</span>
-                        </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionConcerns)" />
-                      </div>
+                      <div
+                        v-if="entry.type === 'long_text'"
+                        class="prose prose-sm dark:prose-invert max-w-none"
+                        v-html="sanitize(entry.content)"
+                      />
+                      <p v-else class="text-sm text-gray-900 dark:text-gray-100">{{ entry.content }}</p>
                     </div>
-                    <p v-if="!item.review.reflectionLearnings && !item.review.reflectionHighlights && !item.review.reflectionConcerns" class="text-gray-500 text-sm">
-                      No reflections recorded
-                    </p>
-                  </template>
-                  <template v-else>
-                    <div v-if="item.reflectionContent" class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.reflectionContent)" />
-                    <p v-else class="text-gray-500 text-sm">No reflections recorded</p>
-                  </template>
+                  </div>
+                  <p v-else class="text-gray-500 text-sm">No reflections recorded</p>
                 </div>
               </template>
             </UAccordion>
@@ -477,35 +464,68 @@ const selectedReflectionType = ref<string>('all');
 
 const selectedFilterValue = computed((): string => selectedReflectionType.value || 'all');
 
-const reflectionFieldMap: Record<string, string> = {
-  learnings: 'reflectionLearnings',
-  highlights: 'reflectionHighlights',
-  concerns: 'reflectionConcerns',
+// Stable ids of the default template's three fields (mirrors server DEFAULT_FIELD_IDS).
+// Kept local because reports.vue is client code and must not import server utils.
+const DEFAULT_FIELD_IDS: Record<string, string> = {
+  learnings: "00000000-0000-0000-0000-000000000001",
+  highlights: "00000000-0000-0000-0000-000000000002",
+  concerns: "00000000-0000-0000-0000-000000000003",
 };
 
-const getReflectionField = (review: any, filterValue: string): string | null => {
-  const field = reflectionFieldMap[filterValue];
-  return field ? review[field] : null;
+interface ReflectionEntry {
+  id: string;
+  label: string;
+  type: "long_text" | "multiple_choice" | "section";
+  content: string;
+}
+
+// All non-empty reflection entries for a review, derived from snapshot+answers,
+// falling back to the legacy columns for reviews without a snapshot.
+const reviewReflectionEntries = (review: any): ReflectionEntry[] => {
+  const snapshot = review.templateSnapshot;
+  const answers = review.answers || {};
+  if (Array.isArray(snapshot) && snapshot.length) {
+    return snapshot
+      .filter((f: any) => f.type !== "section")
+      .map((f: any) => ({
+        id: f.id,
+        label: f.label,
+        type: f.type,
+        content: answers[f.id] || "",
+      }))
+      .filter((e: ReflectionEntry) => e.content);
+  }
+  // Legacy fallback (reviews predating the backfill / with no snapshot)
+  const legacy: ReflectionEntry[] = [];
+  if (review.reflectionLearnings)
+    legacy.push({ id: "learnings", label: "Learnings", type: "long_text", content: review.reflectionLearnings });
+  if (review.reflectionHighlights)
+    legacy.push({ id: "highlights", label: "Highlights", type: "long_text", content: review.reflectionHighlights });
+  if (review.reflectionConcerns)
+    legacy.push({ id: "concerns", label: "Concerns", type: "long_text", content: review.reflectionConcerns });
+  return legacy;
 };
 
-const reviewsWithReflections = computed(() => {
-  return reviews.value.filter((r: any) => {
-    if (selectedFilterValue.value === 'all') {
-      return r.reflectionLearnings || r.reflectionHighlights || r.reflectionConcerns;
-    }
-    return getReflectionField(r, selectedFilterValue.value);
-  });
-});
+// Entries after applying the type filter. A specific filter (learnings/highlights/
+// concerns) matches the default field id (new reviews) or the legacy pseudo-id (old).
+const entriesFor = (review: any, filterValue: string): ReflectionEntry[] => {
+  const all = reviewReflectionEntries(review);
+  if (filterValue === "all") return all;
+  const targetId = DEFAULT_FIELD_IDS[filterValue];
+  return all.filter((e) => e.id === targetId || e.id === filterValue);
+};
 
-const reflectionAccordionItems = computed(() => {
-  return reviewsWithReflections.value.map((review: any) => ({
-    label: `Review: ${review.name || 'Untitled'}`,
+const reviewsWithReflections = computed(() =>
+  reviews.value.filter((r: any) => entriesFor(r, selectedFilterValue.value).length > 0),
+);
+
+const reflectionAccordionItems = computed(() =>
+  reviewsWithReflections.value.map((review: any) => ({
+    label: `Review: ${review.name || "Untitled"}`,
     review,
-    reflectionContent: selectedFilterValue.value !== 'all'
-      ? getReflectionField(review, selectedFilterValue.value)
-      : null,
-  }));
-});
+    entries: entriesFor(review, selectedFilterValue.value),
+  })),
+);
 
 const sortedGoals = computed(() => {
   return [...goals.value]
