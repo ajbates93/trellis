@@ -3,6 +3,9 @@
   "version": "0.16.1",
   "type": "module",
   "private": true,
+  "imports": {
+    "#server/*": "./server/*"
+  },
   "engines": {
     "node": ">=20.19.0",
     "npm": ">=10.0.0"
