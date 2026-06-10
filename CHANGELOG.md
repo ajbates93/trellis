@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.16.2](https://github.com/ajbates93/trellis/compare/v0.16.1...v0.16.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* **lint:** resolve pre-existing eslint errors blocking CI ([1250513](https://github.com/ajbates93/trellis/commit/1250513181e7c312dc9b1300d1cb5b984356b969))
+* stop nightly prod crash from seed-demo CLI guard and fix goal-reminders query ([9df3303](https://github.com/ajbates93/trellis/commit/9df330345aa0f9795431796bd0d41e78246e05b9))
+* stop nightly prod crash from seed-demo CLI guard and fix goal-reminders query ([255bc8c](https://github.com/ajbates93/trellis/commit/255bc8ccb8918bf354793c6e3dc52d5162656eec))
+
 ## [0.16.1](https://github.com/ajbates93/trellis/compare/v0.16.0...v0.16.1) (2026-05-30)
 
 
