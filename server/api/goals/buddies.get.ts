@@ -94,8 +94,9 @@ export default defineEventHandler(async (event) => {
     // Group milestones by goalId
     const milestonesByGoal = milestones.reduce(
       (acc, m) => {
-        if (!acc[m.goalId]) acc[m.goalId] = [];
-        acc[m.goalId].push(m);
+        const goalId = m.goalId;
+        if (!acc[goalId]) acc[goalId] = [];
+        acc[goalId].push(m);
         return acc;
       },
       {} as Record<string, typeof milestones>

@@ -63,7 +63,7 @@
         <!-- Success/Error Messages -->
         <div v-if="successMessage" class="mb-6">
           <UAlert
-            color="green"
+            color="success"
             variant="soft"
             :title="successMessage"
             :close-button="{ icon: 'i-heroicons-x-mark-20-solid', color: 'gray', variant: 'link', padded: false }"
@@ -73,7 +73,7 @@
 
         <div v-if="errorMessage" class="mb-6">
           <UAlert
-            color="red"
+            color="error"
             variant="soft"
             :title="errorMessage"
             :close-button="{ icon: 'i-heroicons-x-mark-20-solid', color: 'gray', variant: 'link', padded: false }"
@@ -137,7 +137,7 @@
                 </div>
                 <div v-else>
                   <UButton
-                    color="gray"
+                    color="neutral"
                     size="lg"
                     disabled
                   >
@@ -179,7 +179,7 @@
 
                 <div v-if="isAdmin" class="pt-4 border-t border-gray-200 dark:border-gray-800">
                   <UButton
-                    color="red"
+                    color="error"
                     variant="soft"
                     :loading="isDisconnecting"
                     @click="handleDisconnectSlack"

@@ -68,6 +68,13 @@ const chartData = ref<Array<{ index: number; count: number; week: string }>>([])
 const x = (_: { index: number; count: number; week: string }, i: number) => i;
 const y = (d: { index: number; count: number; week: string }) => d.count;
 
+// Shape of the response from GET /api/admin/engagement
+// (the route validates with a passthrough schema, so the field isn't inferred)
+interface EngagementResponse {
+  success: boolean;
+  timeline: Array<{ week: string; count: number }>;
+}
+
 const template = (d: { week: string; count: number }) => {
   return `
     <div style="padding: 8px;">
@@ -79,9 +86,9 @@ const template = (d: { week: string; count: number }) => {
 
 onMounted(async () => {
   try {
-    const data = await $api("/admin/engagement");
+    const data = await $api<EngagementResponse>("/admin/engagement");
 
-    if (data) {
+    if (data?.timeline) {
       weeks.value = data.timeline.map((item: { week: string }) => item.week);
       chartData.value = data.timeline.map((item: { week: string; count: number }, index: number) => ({
         index,

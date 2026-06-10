@@ -67,6 +67,6 @@ describe('GET /api/admin/insights/:userId', () => {
 
     expect(result.hasAnalysis).toBe(true)
     expect(result.feedbackCount).toBe(5)
-    expect(result.data.sentimentData.positive).toBe(60)
+    expect(result.data?.sentimentData.positive).toBe(60)
   })
 })

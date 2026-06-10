@@ -25,7 +25,7 @@
         <template #name-cell="{ row }">
           <div class="flex items-center gap-3">
             <UAvatar
-              :src="row.original.avatarUrl || row.original.image"
+              :src="row.original.avatarUrl || row.original.image || undefined"
               :alt="row.original.name"
               size="sm"
             />
@@ -109,8 +109,14 @@
 <script setup lang="ts">
 import type { User } from '~/types';
 
+// GET /api/admin/users decorates each user with computed fields
+type UserRow = User & {
+  buddyName?: string | null;
+  status?: string;
+};
+
 const props = defineProps<{
-  users: User[];
+  users: UserRow[];
   loading: boolean;
   error: boolean;
 }>();

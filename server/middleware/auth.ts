@@ -57,12 +57,15 @@ export default defineEventHandler(async (event) => {
   event.context.user = session?.user;
   event.context.session = session;
 
-  // Attach workspace to event context if user has one
-  if (session?.user?.workspaceId) {
+  // Attach workspace to event context if user has one.
+  // better-auth's static session type omits additionalFields like workspaceId.
+  const workspaceId = (session?.user as { workspaceId?: string | null } | undefined)
+    ?.workspaceId;
+  if (workspaceId) {
     const [workspace] = await db
       .select()
       .from(workspaces)
-      .where(eq(workspaces.id, session.user.workspaceId))
+      .where(eq(workspaces.id, workspaceId))
       .limit(1);
 
     event.context.workspace = workspace || null;

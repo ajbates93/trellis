@@ -13,7 +13,7 @@
     </div>
 
     <UAlert
-v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft" title="Email Sent!"
+v-if="success" icon="i-heroicons-check-circle" color="success" variant="soft" title="Email Sent!"
       description="Check your inbox for password reset instructions." />
 
     <form v-if="!success" class="space-y-6" @submit.prevent="handleForgotPassword">
@@ -66,7 +66,7 @@ const handleForgotPassword = async () => {
     toast.add({
       title: "Email Sent",
       description: "Check your inbox for password reset instructions.",
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
   } catch (error: any) {
@@ -74,7 +74,7 @@ const handleForgotPassword = async () => {
     toast.add({
       title: "Error",
       description: error.message || "Failed to send reset email. Please try again.",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-exclamation-triangle",
     });
   } finally {

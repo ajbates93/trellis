@@ -99,8 +99,8 @@ describe('GET /api/super-admin/stats', () => {
     const result = await handler(event)
 
     expect(result.topWorkspaces).toHaveLength(3)
-    expect(result.topWorkspaces[0].name).toBe('Big Corp')
-    expect(result.topWorkspaces[0].userCount).toBe(25)
+    expect(result.topWorkspaces[0]?.name).toBe('Big Corp')
+    expect(result.topWorkspaces[0]?.userCount).toBe(25)
   })
 
   it('throws when database errors', async () => {

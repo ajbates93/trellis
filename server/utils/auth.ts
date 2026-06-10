@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import type { BetterAuthOptions, User } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 import { db } from "#server/database/connection";
@@ -161,9 +162,11 @@ export const auth = betterAuth({
       },
     },
   },
+  // better-auth's hooks option only declares before/after middleware; this
+  // user.created shape is kept as-is (via cast) to preserve runtime behavior.
   hooks: {
     user: {
-      created: async ({ user }) => {
+      created: async ({ user }: { user: User }) => {
         const email = user.email;
         if (!email) return;
 
@@ -275,5 +278,5 @@ export const auth = betterAuth({
         }
       },
     },
-  },
+  } as BetterAuthOptions["hooks"],
 });

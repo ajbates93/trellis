@@ -88,7 +88,7 @@ const formatRelativeTime = (dateString: string) => {
       >
         <!-- Avatar -->
         <UAvatar
-          :src="note.author.avatarUrl || note.author.image"
+          :src="note.author.avatarUrl || note.author.image || undefined"
           :alt="note.author.name"
           size="sm"
         />

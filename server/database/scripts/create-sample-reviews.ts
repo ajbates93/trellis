@@ -48,7 +48,7 @@ async function createSampleReviews() {
         await db.insert(reviewSchedules).values({
           userId: user.id,
           buddyId: user.buddyId!,
-          scheduledDate: review.scheduledDate.toISOString().split('T')[0],
+          scheduledDate: review.scheduledDate.toISOString().slice(0, 10),
           status: review.status,
           // Name will be set by backfill script
         });

@@ -174,21 +174,21 @@ const signInWithEmailPassword = async () => {
       toast.add({
         title: "Access Denied",
         description: "You haven't been invited to this workspace. Please contact your admin.",
-        color: "red",
+        color: "error",
         icon: "i-heroicons-exclamation-triangle",
       });
     } else if (errorMsg.includes("credentials") || errorMsg.includes("password") || errorMsg.includes("Invalid")) {
       toast.add({
         title: "Sign In Failed",
         description: "Invalid email or password. Please try again.",
-        color: "red",
+        color: "error",
         icon: "i-heroicons-exclamation-triangle",
       });
     } else {
       toast.add({
         title: "Authentication Failed",
         description: errorMsg,
-        color: "red",
+        color: "error",
         icon: "i-heroicons-exclamation-triangle",
       });
     }

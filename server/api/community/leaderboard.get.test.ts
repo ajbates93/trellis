@@ -41,8 +41,8 @@ describe('GET /api/community/leaderboard', () => {
     const result = await handler(event)
 
     expect(result.leaderboard).toHaveLength(1)
-    expect(result.leaderboard[0].userId).toBe('user-1')
-    expect(result.leaderboard[0].totalScore).toBe(0)
+    expect(result.leaderboard[0]?.userId).toBe('user-1')
+    expect(result.leaderboard[0]?.totalScore).toBe(0)
     expect(result.period).toBe('12weeks')
   })
 
@@ -65,9 +65,9 @@ describe('GET /api/community/leaderboard', () => {
 
     expect(result.leaderboard.length).toBeGreaterThan(0)
     // Alice should rank higher due to longer streak and more variety
-    expect(result.leaderboard[0].userId).toBe('user-1')
-    expect(result.leaderboard[0].streakWeeks).toBe(3)
-    expect(result.leaderboard[0].varietyCount).toBe(2)
+    expect(result.leaderboard[0]?.userId).toBe('user-1')
+    expect(result.leaderboard[0]?.streakWeeks).toBe(3)
+    expect(result.leaderboard[0]?.varietyCount).toBe(2)
   })
 
   it('accepts period query parameter', async () => {
@@ -104,9 +104,9 @@ describe('GET /api/community/leaderboard', () => {
 
     // Both users appear, but user-1 ranks higher
     expect(result.leaderboard).toHaveLength(2)
-    expect(result.leaderboard[0].userId).toBe('user-1')
-    expect(result.leaderboard[1].userId).toBe('user-2')
-    expect(result.leaderboard[1].totalScore).toBe(0)
+    expect(result.leaderboard[0]?.userId).toBe('user-1')
+    expect(result.leaderboard[1]?.userId).toBe('user-2')
+    expect(result.leaderboard[1]?.totalScore).toBe(0)
   })
 
   it('throws 500 on database error', async () => {

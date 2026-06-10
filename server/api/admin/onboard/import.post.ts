@@ -5,6 +5,13 @@ import { auth } from "#server/utils/auth";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
+import type { CSVRow } from "#server/types";
+
+interface ValidationError {
+  row: number;
+  field: string;
+  message: string;
+}
 
 export default defineEventHandler(async (event) => {
   try {
@@ -39,7 +46,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Validate header
-    const header = lines[0].toLowerCase().split(",").map((h) => h.trim());
+    const header = lines[0]!.toLowerCase().split(",").map((h) => h.trim());
     const requiredFields = ["email", "name"];
 
     for (const field of requiredFields) {
@@ -56,7 +63,7 @@ export default defineEventHandler(async (event) => {
     const errors: ValidationError[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
+      const line = lines[i]?.trim();
       if (!line) continue; // Skip empty lines
 
       const values = line.split(",").map((v) => v.trim());
@@ -122,7 +129,7 @@ export default defineEventHandler(async (event) => {
 
     // Check for existing users in database
     for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+      const row = rows[i]!;
       const existingUser = await db
         .select()
         .from(users)
@@ -180,6 +187,10 @@ export default defineEventHandler(async (event) => {
           })
           .returning();
 
+        if (!newUser) {
+          throw new Error("User insert returned no row");
+        }
+
         importedUsers.push(newUser.id);
       } catch (error) {
         console.error(`Failed to import user ${row.email}:`, error);
@@ -201,10 +212,11 @@ export default defineEventHandler(async (event) => {
             .where(and(eq(users.email, row.buddyEmail), eq(users.workspaceId, workspaceId)))
             .limit(1);
 
-          if (buddy.length > 0) {
+          const buddyUser = buddy[0];
+          if (buddyUser) {
             await db
               .update(users)
-              .set({ buddyId: buddy[0].id })
+              .set({ buddyId: buddyUser.id })
               .where(eq(users.email, row.email));
           } else {
             errors.push({

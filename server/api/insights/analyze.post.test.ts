@@ -5,6 +5,7 @@ import {
   createUnauthenticatedEvent,
 } from '#server/__tests__/helpers/mock-event'
 import { buildFeedback, buildUser } from '#server/__tests__/helpers/factories'
+import type { AnalysisResult } from '../../services/anthropicClient'
 
 const { mockDb, mockSelect, mockInsert, mockUpdate } = createMockDb()
 
@@ -55,7 +56,7 @@ describe('POST /api/insights/analyze', () => {
       message: 'Analysis from last 24 hours returned',
     })
     expect(result.data).toBeDefined()
-    expect(result.data.feedbackCount).toBe(5)
+    expect(result.data?.feedbackCount).toBe(5)
     expect(analyzeFeedback).not.toHaveBeenCalled()
   })
 
@@ -118,7 +119,7 @@ describe('POST /api/insights/analyze', () => {
       status: 'completed',
     }
 
-    vi.mocked(analyzeFeedback).mockResolvedValueOnce(mockAnalysisResult)
+    vi.mocked(analyzeFeedback).mockResolvedValueOnce(mockAnalysisResult as unknown as AnalysisResult)
 
     // 1. No recent analysis
     mockSelect([])
@@ -138,8 +139,8 @@ describe('POST /api/insights/analyze', () => {
       status: 'completed',
       message: 'Feedback analyzed successfully',
     })
-    expect(result.data.feedbackCount).toBe(3)
-    expect(result.data.sentimentData).toEqual(mockAnalysisResult.sentimentData)
+    expect(result.data?.feedbackCount).toBe(3)
+    expect(result.data?.sentimentData).toEqual(mockAnalysisResult.sentimentData)
     expect(analyzeFeedback).toHaveBeenCalledTimes(1)
     expect(mockDb.insert).toHaveBeenCalledTimes(1)
     expect(mockDb.update).toHaveBeenCalledTimes(1)
@@ -157,7 +158,7 @@ describe('POST /api/insights/analyze', () => {
       sentimentData: { positive: 0.9, neutral: 0.1, negative: 0 },
       themes: ['teamwork'],
       suggestedGoals: [],
-    })
+    } as unknown as AnalysisResult)
 
     mockSelect([])
     mockSelect(feedbackItems)

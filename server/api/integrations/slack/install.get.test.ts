@@ -53,7 +53,7 @@ describe('GET /api/integrations/slack/install', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     const parsed = new URL(redirectUrl)
 
     expect(parsed.hostname).toBe('slack.com')
@@ -71,7 +71,7 @@ describe('GET /api/integrations/slack/install', () => {
 
     await handler(event)
 
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     const parsed = new URL(redirectUrl)
     const stateEncoded = parsed.searchParams.get('state')!
     const stateDecoded = JSON.parse(Buffer.from(stateEncoded, 'base64').toString())
@@ -98,7 +98,7 @@ describe('GET /api/integrations/slack/install', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('slack.com')
   })
 })

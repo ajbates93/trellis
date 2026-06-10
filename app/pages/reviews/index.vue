@@ -15,8 +15,31 @@ const { data: upcomingData, refresh: refreshUpcoming } = await useApi(
 );
 const { data: pastData } = await useApi("/reviews/past");
 
-const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
-const pastReviews = computed(() => pastData.value?.reviews || []);
+// Map API reviews (nullable fields) onto the shapes the review card
+// components expect (non-null with optional buddy details).
+const upcomingReviews = computed(() =>
+  (upcomingData.value?.reviews || []).map((review) => ({
+    id: review.id,
+    name: review.name ?? "",
+    scheduledDate: review.scheduledDate,
+    status: review.status ?? "scheduled",
+    buddy: {
+      id: review.buddy.id,
+      name: review.buddy.name,
+      avatarUrl: review.buddy.avatarUrl ?? undefined,
+    },
+  })),
+);
+const pastReviews = computed(() =>
+  (pastData.value?.reviews || []).map((review) => ({
+    id: review.id,
+    name: review.name ?? "",
+    scheduledDate: review.scheduledDate,
+    completedDate: review.completedDate ?? undefined,
+    completionNotes: review.completionNotes ?? undefined,
+    buddy: { name: review.buddy.name },
+  })),
+);
 
 // Only need formatDate for display in slots
 const { formatDate } = useReviewHelpers();

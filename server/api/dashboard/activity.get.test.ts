@@ -144,8 +144,8 @@ describe('GET /api/dashboard/activity', () => {
     const result = await handler(event)
 
     expect(result.activities).toHaveLength(2)
-    expect(result.activities[0].id).toContain('fb-new')
-    expect(result.activities[1].id).toContain('fb-old')
+    expect(result.activities[0]?.id).toContain('fb-new')
+    expect(result.activities[1]?.id).toContain('fb-old')
   })
 
   it('limits result to 10 items by default', async () => {

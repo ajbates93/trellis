@@ -86,15 +86,8 @@ v-for="goal in archivedGoals" :key="goal.id" :goal="goal" mode="owner"
 
   <!-- Create Goal Modal -->
   <GoalsGoalModal
-:is-open="showCreateModal" mode="create" :goal="initialGoalText
-      ? {
-        goalText: initialGoalText,
-        description: null,
-        targetDate: null,
-        id: '',
-      }
-      : null
-    " @update:is-open="showCreateModal = $event" @success="handleGoalCreated" />
+:is-open="showCreateModal" mode="create" :goal="initialGoal"
+    @update:is-open="showCreateModal = $event" @success="handleGoalCreated" />
 </template>
 
 <script setup lang="ts">
@@ -159,6 +152,25 @@ const tabItems = computed<TabsItem[]>(() => [
 // Create goal modal state
 const showCreateModal = ref(false);
 const initialGoalText = ref<string | null>(null);
+
+// Pre-filled goal for the create modal (GoalModal expects a full
+// GoalWithMilestones, so unset fields are stubbed out).
+const initialGoal = computed<GoalWithMilestones | null>(() =>
+  initialGoalText.value
+    ? {
+        id: "",
+        userId: "",
+        goalText: initialGoalText.value,
+        description: null,
+        status: null,
+        targetDate: null,
+        createdAt: null,
+        updatedAt: null,
+        completedAt: null,
+        milestones: [],
+      }
+    : null,
+);
 
 // Check for suggested goal from query params
 const route = useRoute();

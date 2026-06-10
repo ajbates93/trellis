@@ -129,7 +129,7 @@ export default defineEventHandler(async (event) => {
               lt(feedback.createdAt, endDate)
             )
           )
-          .then((result) => Number(result[0].count));
+          .then((result) => Number(result[0]?.count ?? 0));
 
         // Get check-ins for this review
         const checkinsForReview = await db

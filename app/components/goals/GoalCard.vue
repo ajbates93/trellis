@@ -389,7 +389,7 @@ const actionMenuItems = computed(() => {
               "
               size="md"
             >
-            {{ goal.status.charAt(0).toUpperCase() + goal.status.slice(1) }}
+            {{ goal.status ? goal.status.charAt(0).toUpperCase() + goal.status.slice(1) : '' }}
             </UBadge>
 
             <!-- Progress ring in modal -->

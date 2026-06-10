@@ -1,6 +1,6 @@
 import { db } from "#server/database/connection";
 import { workspaces, users } from "#server/database/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   // Super admin middleware already verified access
@@ -38,8 +38,7 @@ export default defineEventHandler(async (event) => {
   const [adminCountResult] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
-    .where(eq(users.workspaceId, id))
-    .where(eq(users.role, "admin"));
+    .where(and(eq(users.workspaceId, id), eq(users.role, "admin")));
 
   return {
     workspace: {

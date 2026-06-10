@@ -17,7 +17,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if user is admin (workspace admin or super admin)
-    const isAdmin = session.user.role === "admin" || session.user.isSuperAdmin === true;
+    const sessionUser = session.user as typeof session.user & {
+      role?: string | null;
+      isSuperAdmin?: boolean | null;
+    };
+    const isAdmin = sessionUser.role === "admin" || sessionUser.isSuperAdmin === true;
     if (!isAdmin) {
       throw createError({
         statusCode: 403,

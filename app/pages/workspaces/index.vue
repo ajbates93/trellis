@@ -141,7 +141,9 @@ v-if="workspace.logoUrl" :src="workspace.logoUrl" :alt="workspace.name"
                   {{ workspace.userCount }} {{ workspace.userCount === 1 ? 'user' : 'users' }}
                 </p>
                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  Created {{ new Date(workspace.createdAt).toLocaleDateString() }}
+                  Created {{ workspace.createdAt
+                    ? new Date(workspace.createdAt).toLocaleDateString()
+                    : "—" }}
                 </p>
               </div>
             </div>

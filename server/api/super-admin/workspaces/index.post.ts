@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   if (!parsed.success) {
     throw createError({
       statusCode: 400,
-      message: parsed.error.errors.map(e => e.message).join(", "),
+      message: parsed.error.issues.map(e => e.message).join(", "),
     });
   }
 
@@ -52,6 +52,13 @@ export default defineEventHandler(async (event) => {
         updatedAt: new Date(),
       })
       .returning();
+
+    if (!createdUser) {
+      throw createError({
+        statusCode: 500,
+        message: "Failed to create admin user",
+      });
+    }
 
     adminUser = {
       id: createdUser.id,
