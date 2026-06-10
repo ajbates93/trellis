@@ -83,7 +83,7 @@ const initials = computed(() => {
   const name = props.buddee.name
   const parts = name.split(' ')
   return parts.length >= 2
-    ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+    ? `${parts[0]?.[0] ?? ''}${parts[parts.length - 1]?.[0] ?? ''}`
     : name.slice(0, 2)
 })
 

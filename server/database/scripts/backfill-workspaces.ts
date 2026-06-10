@@ -16,7 +16,7 @@ async function backfillWorkspaces() {
 
   try {
     // Step 1: Check if Pocketworks workspace already exists
-    const existingWorkspace = await db
+    const [existingWorkspace] = await db
       .select()
       .from(workspaces)
       .where(eq(workspaces.name, "Pocketworks"))
@@ -24,9 +24,9 @@ async function backfillWorkspaces() {
 
     let pocketworksWorkspace;
 
-    if (existingWorkspace.length > 0) {
+    if (existingWorkspace) {
       console.log("✓ Pocketworks workspace already exists");
-      pocketworksWorkspace = existingWorkspace[0];
+      pocketworksWorkspace = existingWorkspace;
     } else {
       // Create Pocketworks workspace
       console.log("📝 Creating Pocketworks workspace...");
@@ -40,6 +40,9 @@ async function backfillWorkspaces() {
         })
         .returning();
 
+      if (!newWorkspace) {
+        throw new Error("Failed to create Pocketworks workspace");
+      }
       pocketworksWorkspace = newWorkspace;
       console.log(`   ✓ Created workspace: ${pocketworksWorkspace.name} (${pocketworksWorkspace.id})`);
     }

@@ -1,44 +1,37 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from "vue";
+import { ref } from "vue";
+
+interface CheckinPerson {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string | null;
+}
+
+// Shape of the response from POST /api/checkins
+interface CreatedCheckin {
+  id: string;
+  buddy: CheckinPerson;
+  user: CheckinPerson;
+  notes: string;
+  reviewSchedule: {
+    id: string;
+    scheduledDate: string;
+    name: string;
+    status: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const props = defineProps<{
   open?: boolean;
-  buddy: {
-    id: string;
-    name: string;
-    email: string;
-    avatarUrl?: string | null;
-  };
+  buddy: CheckinPerson;
 }>();
 
 const emit = defineEmits<{
   "update:open": [value: boolean];
-  created: [
-    checkin: {
-      id: string;
-      buddy: {
-        id: string;
-        name: string;
-        email: string;
-        avatarUrl?: string | null;
-      };
-      user: {
-        id: string;
-        name: string;
-        email: string;
-        avatarUrl?: string | null;
-      };
-      notes: string;
-      reviewSchedule: {
-        id: string;
-        scheduledDate: string;
-        name: string;
-        status: string;
-      } | null;
-      createdAt: Date;
-      updatedAt: Date;
-    },
-  ];
+  created: [checkin: CreatedCheckin];
 }>();
 
 const toast = useToast();
@@ -72,7 +65,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    const createdCheckin = await $api("/checkins", {
+    const createdCheckin = await $api<CreatedCheckin>("/checkins", {
       method: "POST",
       body: {
         userId: props.buddy.id,
@@ -113,7 +106,7 @@ const handleSubmit = async () => {
     <template #body>
       <div class="space-y-4">
         <div class="flex items-center gap-3 mb-4">
-          <UAvatar :src="buddy.avatarUrl" :alt="buddy.name" size="sm" />
+          <UAvatar :src="buddy.avatarUrl ?? undefined" :alt="buddy.name" size="sm" />
           <div>
             <p class="text-sm text-gray-500">{{ buddy.email }}</p>
           </div>
@@ -124,7 +117,7 @@ const handleSubmit = async () => {
           <UTextarea
             v-model="notes"
             placeholder="Record how the check-in went. Mention any blockers, progress updates, or assistance needed..."
-            rows="6"
+            :rows="6"
             :disabled="isSubmitting"
           />
           <p class="text-xs text-gray-500 mt-1">

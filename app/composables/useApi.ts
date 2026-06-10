@@ -15,6 +15,27 @@
  */
 
 import type { FetchError } from "ofetch";
+import type {
+  ExtractedRouteMethod,
+  NitroFetchOptions,
+  NitroFetchRequest,
+  TypedInternalResponse,
+} from "nitropack/types";
+import type { AsyncData, UseFetchOptions } from "#app";
+
+// Mirrors nuxt's internal KeysOf/PickFrom (not exported from "#app").
+type KeysOf<T> = Array<
+  T extends T ? (keyof T extends string ? keyof T : never) : never
+>;
+type PickFrom<T, K extends Array<string>> = T extends Array<unknown>
+  ? T
+  : T extends Record<string, unknown>
+    ? keyof T extends K[number]
+      ? T
+      : K[number] extends never
+        ? T
+        : Pick<T, K[number]>
+    : T;
 
 const BASE_URL = "/api";
 
@@ -54,13 +75,73 @@ function handleFetchError(error: FetchError) {
   }
 }
 
+/**
+ * Because useApi/$api apply `baseURL: "/api"` at runtime, callers pass paths
+ * WITHOUT the prefix ("/users/my-buddies") while Nitro's generated route types
+ * (InternalApi) are keyed by the full path ("/api/users/my-buddies"). The
+ * factories can't see through baseURL, so left alone every response degrades
+ * to `{}`. These signatures re-attach the prefix at the type level only.
+ */
+type ApiResponse<
+  P extends string,
+  M extends string = "get",
+> = TypedInternalResponse<
+  `/api${P}`,
+  unknown,
+  M extends import("h3").RouterMethod ? M : "get"
+>;
+
+interface UseApiFn {
+  <
+    ResT = never,
+    P extends string = string,
+    Method extends string = "get",
+    _ResT = [ResT] extends [never] ? ApiResponse<P, Lowercase<Method>> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  >(
+    url: P | Ref<P> | (() => P),
+    options?: Omit<
+      UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, NitroFetchRequest>,
+      "method"
+    > & { method?: Method },
+  ): AsyncData<
+    PickFrom<DataT, PickKeys> | DefaultT,
+    FetchError | undefined
+  >;
+}
+
+interface ApiFetchFn {
+  <
+    T = never,
+    P extends string = string,
+    O extends NitroFetchOptions<NitroFetchRequest> = NitroFetchOptions<NitroFetchRequest>,
+  >(
+    request: P,
+    opts?: O,
+  ): Promise<
+    [T] extends [never]
+      ? TypedInternalResponse<
+          `/api${P}`,
+          unknown,
+          // No options given -> assume GET (mirrors nitropack's Base$Fetch),
+          // otherwise multi-method routes produce a union of all responses.
+          NitroFetchOptions<NitroFetchRequest> extends O
+            ? "get"
+            : ExtractedRouteMethod<NitroFetchRequest, O>
+        >
+      : T
+  >;
+}
+
 export const useApi = createUseFetch({
   baseURL: BASE_URL,
   credentials: "same-origin",
   onResponseError({ error }) {
     if (error) handleFetchError(error as FetchError);
   },
-});
+}) as unknown as UseApiFn;
 
 export const useAsyncApi = createUseAsyncData({});
 
@@ -73,4 +154,4 @@ export const $api = $fetch.create({
   onResponseError({ error }) {
     if (error) handleFetchError(error as FetchError);
   },
-});
+}) as unknown as ApiFetchFn;

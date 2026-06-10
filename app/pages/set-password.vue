@@ -12,11 +12,11 @@
     </div>
 
     <!-- Error Alert -->
-    <UAlert v-if="error" icon="i-heroicons-exclamation-triangle" color="red" variant="soft" :title="error" />
+    <UAlert v-if="error" icon="i-heroicons-exclamation-triangle" color="error" variant="soft" :title="error" />
 
     <!-- Success Message -->
     <UAlert
-v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft"
+v-if="success" icon="i-heroicons-check-circle" color="success" variant="soft"
       title="Password set successfully!" description="Redirecting you to login..." />
 
     <!-- Set Password Form -->
@@ -120,7 +120,7 @@ const handleSetPassword = async () => {
     toast.add({
       title: "Success!",
       description: "Your password has been set. Redirecting to login...",
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
 
@@ -136,7 +136,7 @@ const handleSetPassword = async () => {
       toast.add({
         title: "Link Expired",
         description: "Your invitation link has expired. Please contact your admin for a new invitation.",
-        color: "red",
+        color: "error",
         icon: "i-heroicons-exclamation-triangle",
       });
     }

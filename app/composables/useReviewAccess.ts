@@ -1,5 +1,5 @@
-export function useReviewAccess(review: any) {
-  const { user } = useUserSession();
+export function useReviewAccess(review: { userId?: string | null; buddyId?: string | null } | null | undefined) {
+  const { user } = useAuth();
 
   const canView = computed(() => {
     if (!user.value || !review) return false;

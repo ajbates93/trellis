@@ -32,7 +32,9 @@
         </div>
       </div>
       <!-- Edit User Modal -->
-      <AdminEditUserModal v-model="showEditModal" :user="selectedUser" :all-users="allUsers" @success="handleSuccess" />
+      <AdminEditUserModal
+v-if="selectedUser" v-model="showEditModal" :user="selectedUser" :all-users="allUsers"
+        @success="handleSuccess" />
 
       <!-- Add User Modal -->
       <AdminAddUserModal v-model="showAddModal" :all-users="allUsers" @success="handleSuccess" />
@@ -62,7 +64,7 @@ v-model:open="showRemoveModal" title="Remove User"
             </div>
 
             <div v-if="userToRemove" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <UAvatar :src="userToRemove.avatarUrl || userToRemove.image" :alt="userToRemove.name" size="sm" />
+              <UAvatar :src="userToRemove.avatarUrl || userToRemove.image || undefined" :alt="userToRemove.name" size="sm" />
               <div>
                 <div class="font-medium text-gray-900 dark:text-white">
                   {{ userToRemove.name }}
@@ -100,11 +102,26 @@ useHead({
   title: "Users",
 });
 
+/**
+ * Row shape returned by GET /api/admin/users. The route returns a subset of
+ * the base `User` fields plus computed `status`/`buddyName`; the admin
+ * components are typed against `User`, so we intersect locally.
+ */
+interface AdminUserListItem extends User {
+  status: "active" | "invited";
+  buddyName: string | null;
+}
+
+interface AdminUsersResponse {
+  users: AdminUserListItem[];
+  counts: { all: number; active: number; invited: number };
+}
+
 const selectedTab = ref("all");
 const loading = ref(true);
 const error = ref(false);
 
-const allUsers = ref<User[]>([]);
+const allUsers = ref<AdminUserListItem[]>([]);
 const counts = ref({
   all: 0,
   active: 0,
@@ -155,7 +172,7 @@ const fetchUsers = async (filter?: string) => {
   loading.value = true;
   error.value = false;
   try {
-    const data = await $api("/admin/users", {
+    const data = await $api<AdminUsersResponse>("/admin/users", {
       query: { filter },
     });
 
@@ -272,7 +289,7 @@ const handleSendInvitation = async (user: User) => {
     toast.add({
       title: "Invitation Sent",
       description: `Password setup email sent to ${user.email}`,
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
   } catch (error: any) {
@@ -281,7 +298,7 @@ const handleSendInvitation = async (user: User) => {
       title: "Failed to Send Invitation",
       description:
         error.data?.message || "An error occurred while sending the invitation",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-exclamation-triangle",
     });
   }
@@ -302,7 +319,7 @@ const handleSendPasswordReset = async (user: User) => {
     toast.add({
       title: "Password Reset Sent",
       description: `Password reset email sent to ${user.email}`,
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
   } catch (error: any) {
@@ -312,7 +329,7 @@ const handleSendPasswordReset = async (user: User) => {
       description:
         error.message ||
         "An error occurred while sending the password reset email",
-      color: "red",
+      color: "error",
       icon: "i-heroicons-exclamation-triangle",
     });
   }

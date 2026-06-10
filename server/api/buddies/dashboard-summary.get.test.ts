@@ -102,9 +102,9 @@ describe('GET /api/buddies/dashboard-summary', () => {
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
-    expect(result.buddees[0].status).toBe('review_soon')
-    expect(result.buddees[0].nextReviewDays).toBeLessThanOrEqual(14)
-    expect(result.buddees[0].nextReviewDays).toBeGreaterThan(0)
+    expect(result.buddees[0]?.status).toBe('review_soon')
+    expect(result.buddees[0]?.nextReviewDays).toBeLessThanOrEqual(14)
+    expect(result.buddees[0]?.nextReviewDays).toBeGreaterThan(0)
   })
 
   it('picks the earliest upcoming review per buddee when multiple are scheduled', async () => {
@@ -128,7 +128,7 @@ describe('GET /api/buddies/dashboard-summary', () => {
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
-    expect(result.buddees[0].nextReviewDate).toBe(earlier.toISOString().split('T')[0])
+    expect(result.buddees[0]?.nextReviewDate).toBe(earlier.toISOString().split('T')[0])
   })
 
   it('returns 500 on database error', async () => {

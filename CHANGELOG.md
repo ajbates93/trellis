@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.16.3](https://github.com/ajbates93/trellis/compare/v0.16.2...v0.16.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* **types:** clear all 417 typecheck errors and make CI typecheck blocking again ([d6d5d2b](https://github.com/ajbates93/trellis/commit/d6d5d2b7f3ade8c5b76cfe3cf626a9205125bc0b))
+* **types:** resolve all 417 typecheck errors and make CI typecheck blocking again ([baa34a5](https://github.com/ajbates93/trellis/commit/baa34a5141067d4161be49840b83565f799c6add))
+
+## [0.16.2](https://github.com/ajbates93/trellis/compare/v0.16.1...v0.16.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* **lint:** resolve pre-existing eslint errors blocking CI ([1250513](https://github.com/ajbates93/trellis/commit/1250513181e7c312dc9b1300d1cb5b984356b969))
+* stop nightly prod crash from seed-demo CLI guard and fix goal-reminders query ([9df3303](https://github.com/ajbates93/trellis/commit/9df330345aa0f9795431796bd0d41e78246e05b9))
+* stop nightly prod crash from seed-demo CLI guard and fix goal-reminders query ([255bc8c](https://github.com/ajbates93/trellis/commit/255bc8ccb8918bf354793c6e3dc52d5162656eec))
+
 ## [0.16.1](https://github.com/ajbates93/trellis/compare/v0.16.0...v0.16.1) (2026-05-30)
 
 

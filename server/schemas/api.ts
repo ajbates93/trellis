@@ -178,9 +178,7 @@ export const UpdateGoalRequestSchema = z.object({
 
 export const UpdateGoalStatusRequestSchema = z.object({
   status: z.enum(["active", "completed", "archived"], {
-    errorMap: () => ({
-      message: "Status must be one of: active, completed, archived",
-    }),
+    error: "Status must be one of: active, completed, archived",
   }),
 });
 

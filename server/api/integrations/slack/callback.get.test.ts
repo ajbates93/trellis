@@ -2,6 +2,7 @@ import { createHmac } from 'crypto'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
+import { auth } from '#server/utils/auth'
 
 const { mockDb, mockSelect, mockInsert, mockUpdate } = createMockDb()
 
@@ -35,7 +36,6 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 const { default: handler } = await import('./callback.get')
-import { auth } from '#server/utils/auth'
 
 // Helper: build a valid HMAC-signed state with workspace-1 and recent timestamp
 function buildState(overrides: Partial<{ workspaceId: string; nonce: string; timestamp: number }> = {}) {
@@ -64,7 +64,7 @@ function mockSlackTokenSuccess() {
 
 // Helper: mock an admin session
 function mockAdminSession() {
-  ;(auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+  ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
     user: {
       id: 'admin-1',
       email: 'admin@example.com',
@@ -105,7 +105,7 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 
@@ -117,7 +117,7 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 
@@ -133,7 +133,7 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 
@@ -148,7 +148,7 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 
@@ -170,13 +170,13 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 
   it('redirects to error page when session is not found (user not logged in)', async () => {
     mockSlackTokenSuccess()
-    ;(auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null)
+    ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null)
 
     const event = createMockEvent({
       query: {
@@ -188,13 +188,13 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 
   it('redirects to error page when session user is not admin', async () => {
     mockSlackTokenSuccess()
-    ;(auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+    ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       user: {
         id: 'user-1',
         email: 'user@example.com',
@@ -215,7 +215,7 @@ describe('GET /api/integrations/slack/callback', () => {
     await handler(event)
 
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
-    const redirectUrl: string = mockSendRedirect.mock.calls[0][1]
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
   })
 

@@ -61,7 +61,7 @@
               :review-date="nextReviewDate"
               :buddy-name="nextReviewBuddyName"
               :unread-count="unreadCount"
-              :goals="allGoals"
+              :goals="countdownGoals"
               :achievements-count="achievementsCount"
             />
             <UCard v-else class="bg-default/50 border-default flex items-center justify-center">
@@ -165,12 +165,39 @@ const { data: achievementsData } = useApi('/achievements', { lazy: true, default
 const { data: activityData, pending: activityPending } = useApi('/dashboard/activity', { lazy: true, default: () => null })
 const { data: pulseData, pending: pulsePending } = useApi('/dashboard/feedback-pulse', { lazy: true, default: () => null })
 const { data: buddySummaryData, pending: buddySummaryPending } = useApi('/buddies/dashboard-summary', { lazy: true, default: () => null })
-const { data: insightsData, pending: insightsPending } = useApi('/insights/user-summary', { lazy: true, default: () => null })
+/**
+ * Local response shape for /insights/user-summary — the server schema types
+ * `sentimentData`/`themes` as `any` (stored JSON), so we narrow them here to
+ * what DashboardFeedbackThemes expects.
+ */
+interface InsightsSummaryResponse {
+  hasAnalysis: boolean
+  message?: string
+  lastAnalyzed?: string | null
+  feedbackCount?: number
+  newFeedbackSinceAnalysis?: number
+  data: {
+    sentimentData: { positive: number, constructive: number, neutral: number } | null
+    themes: unknown
+    suggestedGoals: unknown[]
+  } | null
+}
+
+const { data: insightsData, pending: insightsPending } = useApi<InsightsSummaryResponse>('/insights/user-summary', { lazy: true })
 
 // Computed values
 const daysUntilReview = computed(() => statsData.value?.daysUntilReview ?? null)
 
 const allGoals = computed(() => goalsData.value?.goals || [])
+
+// ReviewCountdown's `Goal.updatedAt` is `Date | string`; the serialized API
+// response can be null, so fall back to the epoch (matches `new Date(null)`).
+const countdownGoals = computed(() =>
+  allGoals.value.map((g) => ({
+    ...g,
+    updatedAt: g.updatedAt ?? new Date(0),
+  })),
+)
 
 const activeGoalsCount = computed(
   () => allGoals.value.filter((g: { status: string | null }) => g.status === 'active').length,

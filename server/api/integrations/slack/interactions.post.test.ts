@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 import { buildUser, buildFeedback } from '#server/__tests__/helpers/factories'
+import { verifySlackSignature, getSlackUserInfo } from '#server/utils/slack'
+import { notifyBuddyOfNewFeedback } from '#server/utils/notifications'
 
 const { mockDb, mockSelect, mockInsert } = createMockDb()
 
@@ -24,8 +26,6 @@ const mockReadRawBody = vi.fn()
 vi.stubGlobal('readRawBody', mockReadRawBody)
 
 const { default: handler } = await import('./interactions.post')
-import { verifySlackSignature, getSlackUserInfo } from '#server/utils/slack'
-import { notifyBuddyOfNewFeedback } from '#server/utils/notifications'
 
 const mockSlackWorkspace = {
   id: 'slack-ws-1',

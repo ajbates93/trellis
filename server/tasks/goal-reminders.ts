@@ -1,6 +1,6 @@
 import { db } from "#server/database/connection";
 import { goals, notifications } from "#server/database/schema";
-import { and, eq, lt, sql } from "drizzle-orm";
+import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { createNotification } from "#server/utils/inAppNotifications";
 
 export default defineTask({
@@ -60,7 +60,7 @@ export default defineTask({
             .where(
               and(
                 eq(notifications.type, "goal_overdue"),
-                sql`metadata->>'goalId' = ANY(${overdueGoalIds})`,
+                inArray(sql`metadata->>'goalId'`, overdueGoalIds),
               ),
             )
         : [];

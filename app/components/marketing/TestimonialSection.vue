@@ -18,7 +18,7 @@ const testimonials: Testimonial[] = [
   },
 ];
 
-const featured = testimonials[0];
+const featured = testimonials[0]!;
 </script>
 
 <template>

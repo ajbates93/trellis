@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { format } from "date-fns";
 import type { TabsItem } from '@nuxt/ui'
+import type { TypedInternalResponse } from "nitropack/types";
 import type { FeedbackWithReviewer, FeedbackWithReviewee } from "~/types";
+
+// Serialized item shape as returned over the wire (dates are strings).
+type ReceivedFeedbackItem = TypedInternalResponse<
+  "/api/feedback/received",
+  unknown,
+  "get"
+>["feedback"][number];
 
 definePageMeta({
   layout: "default",
@@ -55,9 +63,16 @@ const receivedFeedback = computed(() => receivedData.value?.feedback || []);
 // Table feedback is all received feedback
 const tableFeedback = computed(() => receivedFeedback.value);
 
-// Favourites
-const favouritesFeedback = computed(() =>
-  receivedFeedback.value.filter((f: FeedbackWithReviewer) => f.isFavourite)
+// Favourites — mapped to FeedbackWithReviewer (FavouritesStrip expects Date
+// fields, the API serialises them as strings).
+const favouritesFeedback = computed<FeedbackWithReviewer[]>(() =>
+  receivedFeedback.value
+    .filter((f) => f.isFavourite)
+    .map((f) => ({
+      ...f,
+      createdAt: f.createdAt ? new Date(f.createdAt) : null,
+      publishedAt: f.publishedAt ? new Date(f.publishedAt) : null,
+    }))
 );
 
 const setFavouriteLocally = (feedbackId: string, value: boolean) => {
@@ -65,7 +80,7 @@ const setFavouriteLocally = (feedbackId: string, value: boolean) => {
   // useApi returns a shallowRef, so we must replace .value to trigger reactivity.
   receivedData.value = {
     ...receivedData.value,
-    feedback: receivedData.value.feedback.map((f: FeedbackWithReviewer) =>
+    feedback: receivedData.value.feedback.map((f) =>
       f.id === feedbackId ? { ...f, isFavourite: value } : f
     ),
   };
@@ -77,7 +92,7 @@ const setFavouriteLocally = (feedbackId: string, value: boolean) => {
 
 // Unread feedback for Unread tab
 const unreadFeedback = computed(() => {
-  return receivedFeedback.value.filter((fb: FeedbackWithReviewer) => !fb.isRead);
+  return receivedFeedback.value.filter((fb) => !fb.isRead);
 });
 
 // Fetch given feedback (all)
@@ -245,7 +260,7 @@ v-if="receivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="text-b
                 <UTable
 :columns="receivedColumns" :data="tableFeedback" :ui="{
                   tr: 'group cursor-pointer data-[unread=true]:border-l-2 data-[unread=true]:border-l-primary-500',
-                }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': !row.isRead })"
+                }" :get-row-attrs="(row: ReceivedFeedbackItem) => ({ 'data-unread': !row.isRead })"
                   @select="(row: any) => openFeedbackModal(row.original ?? row)">
                   <template #from-cell="{ row }">
                     <div class="flex items-center gap-2">
@@ -307,7 +322,7 @@ v-if="unreadFeedback.length === 0" icon="i-heroicons-check-circle" icon-color="t
               <UTable
 :columns="receivedColumns" :data="unreadFeedback" :ui="{
                 tr: 'group cursor-pointer border-l-2 border-l-primary-500',
-              }" :get-row-attrs="(row: FeedbackWithReviewer) => ({ 'data-unread': true })"
+              }" :get-row-attrs="(row: ReceivedFeedbackItem) => ({ 'data-unread': true })"
                 @select="(row: any) => openFeedbackModal(row.original ?? row)">
                 <template #from-cell="{ row }">
                   <div class="flex items-center gap-2">

@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 import { buildUser } from '#server/__tests__/helpers/factories'
+import {
+  verifySlackSignature,
+  getSlackUserInfo,
+  openSlackModal,
+} from '#server/utils/slack'
 
 const { mockDb, mockSelect } = createMockDb()
 
@@ -25,11 +30,6 @@ const mockReadRawBody = vi.fn()
 vi.stubGlobal('readRawBody', mockReadRawBody)
 
 const { default: handler } = await import('./commands.post')
-import {
-  verifySlackSignature,
-  getSlackUserInfo,
-  openSlackModal,
-} from '#server/utils/slack'
 
 // Build URL-encoded form body for /submit command
 function buildCommandBody(overrides: Record<string, string> = {}) {

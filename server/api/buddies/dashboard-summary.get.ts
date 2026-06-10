@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
 
     const buddeeIds = buddees.map((b) => b.id);
     const now = new Date();
-    const todayIso = now.toISOString().split("T")[0];
+    const todayIso = now.toISOString().split("T")[0]!;
 
     // Aggregate all per-buddee metrics in 4 queries total (not 4 × N).
     const [

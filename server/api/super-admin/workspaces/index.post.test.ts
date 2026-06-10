@@ -79,7 +79,7 @@ describe('POST /api/super-admin/workspaces', () => {
     const result = await handler(event)
 
     expect(result.success).toBe(true)
-    expect(result.workspace.logoUrl).toBe('https://example.com/logo.png')
+    expect(result.workspace?.logoUrl).toBe('https://example.com/logo.png')
     expect(result.adminUser).toBeNull()
   })
 

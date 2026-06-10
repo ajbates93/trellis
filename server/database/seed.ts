@@ -189,15 +189,15 @@ async function seed() {
     console.log("\n🏢 Creating workspace...");
 
     let pocketworksWorkspace;
-    const existingWorkspace = await db
+    const [existingWorkspace] = await db
       .select()
       .from(workspaces)
       .where(eq(workspaces.name, "Pocketworks"))
       .limit(1);
 
-    if (existingWorkspace.length > 0) {
+    if (existingWorkspace) {
       console.log("   ✓ Pocketworks workspace already exists");
-      pocketworksWorkspace = existingWorkspace[0];
+      pocketworksWorkspace = existingWorkspace;
     } else {
       const [newWorkspace] = await db
         .insert(workspaces)
@@ -206,6 +206,9 @@ async function seed() {
           name: "Pocketworks",
         })
         .returning();
+      if (!newWorkspace) {
+        throw new Error("Failed to create Pocketworks workspace");
+      }
       pocketworksWorkspace = newWorkspace;
       console.log(`   ✓ Created workspace: ${pocketworksWorkspace.name}`);
     }
@@ -219,15 +222,15 @@ async function seed() {
 
     for (const member of TEAM_MEMBERS) {
       // Check if user already exists
-      const existingUser = await db
+      const [existingUser] = await db
         .select()
         .from(users)
         .where(eq(users.email, member.email))
         .limit(1);
 
-      if (existingUser.length > 0) {
+      if (existingUser) {
         console.log(`   ✓ User ${member.name} already exists`);
-        userIdMap[member.name] = existingUser[0].id;
+        userIdMap[member.name] = existingUser.id;
       } else {
         const isAlexBates = member.email === "alex.bates@pocketworks.co.uk";
         const [newUser] = await db
@@ -247,6 +250,9 @@ async function seed() {
           })
           .returning();
 
+        if (!newUser) {
+          throw new Error(`Failed to create user ${member.name}`);
+        }
         userIdMap[member.name] = newUser.id;
         console.log(`   ✓ Created user: ${member.name}`);
       }
@@ -470,7 +476,7 @@ async function seed() {
       ];
 
       for (let weekOffset = 11; weekOffset >= 0; weekOffset--) {
-        const targetCount = weeklyDistribution[11 - weekOffset];
+        const targetCount = weeklyDistribution[11 - weekOffset]!;
         const weekStart = now - weekOffset * oneWeek;
 
         for (let i = 0; i < targetCount; i++) {
@@ -500,7 +506,7 @@ async function seed() {
           const themes = Object.keys(feedbackTemplates) as Array<
             keyof typeof feedbackTemplates
           >;
-          const theme = themes[Math.floor(Math.random() * themes.length)];
+          const theme = themes[Math.floor(Math.random() * themes.length)]!;
           const templates = feedbackTemplates[theme];
           const content =
             templates[Math.floor(Math.random() * templates.length)];
@@ -971,8 +977,13 @@ async function seed() {
     ];
 
     for (const review of reviewScheduleData) {
+      const { userId, buddyId } = review;
+      if (!userId || !buddyId) {
+        console.log(`   ⚠️  Skipping review schedule "${review.name}" (user not found)`);
+        continue;
+      }
       try {
-        await db.insert(reviewSchedulesTable).values(review);
+        await db.insert(reviewSchedulesTable).values({ ...review, userId, buddyId });
         const userName = Object.keys(userIdMap).find(
           (k) => userIdMap[k] === review.userId,
         );
@@ -1027,7 +1038,7 @@ async function seed() {
           goalText:
             "Improve my public speaking skills by presenting at the next team all-hands meeting",
           status: "active",
-          targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // 30 days from now
           createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         },
@@ -1036,7 +1047,7 @@ async function seed() {
           goalText:
             "Learn advanced TypeScript patterns and apply them to our codebase",
           status: "active",
-          targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
+          targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // 60 days from now
           createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         },
@@ -1045,7 +1056,7 @@ async function seed() {
           goalText:
             "Mentor two junior developers and help them complete their onboarding projects",
           status: "active",
-          targetDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         },
@@ -1054,7 +1065,7 @@ async function seed() {
           userId: alexBatesId,
           goalText: "Complete the AWS certification course",
           status: "completed",
-          targetDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
           completedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -1063,7 +1074,7 @@ async function seed() {
           userId: alexBatesId,
           goalText: "Reduce code review turnaround time to under 24 hours",
           status: "completed",
-          targetDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
           completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
@@ -1084,7 +1095,7 @@ async function seed() {
           goalText:
             "Improve backend API performance by implementing caching strategies",
           status: "active",
-          targetDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         },
@@ -1092,7 +1103,7 @@ async function seed() {
           userId: marcinId,
           goalText: "Write comprehensive API documentation for all endpoints",
           status: "active",
-          targetDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
         },
@@ -1101,7 +1112,7 @@ async function seed() {
           userId: marcinId,
           goalText: "Refactor database queries to use proper ORM patterns",
           status: "completed",
-          targetDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          targetDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
           completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),

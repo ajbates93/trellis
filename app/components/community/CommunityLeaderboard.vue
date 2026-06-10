@@ -199,7 +199,7 @@ const periodOptions = [
   { label: "All time", value: "alltime" },
 ];
 
-const selectedPeriod = ref(periodOptions[1]);
+const selectedPeriod = ref(periodOptions[1]!);
 const loading = ref(true);
 const error = ref(false);
 const leaderboard = ref<LeaderboardEntry[]>([]);

@@ -126,7 +126,7 @@ export default defineEventHandler(async (event) => {
               // But practically, it's just "everything since the last review"
             )
           )
-          .then((result) => Number(result[0].count));
+          .then((result) => Number(result[0]?.count ?? 0));
 
         // Get check-ins for this review
         const checkinsForReview = await db

@@ -46,6 +46,7 @@
             v-model="formData.roleType"
             :items="roleTypeOptions"
             placeholder="Select job role"
+            value-key="value"
             :disabled="saving"
             class="w-full"
           />
@@ -60,8 +61,7 @@
             v-model="formData.buddyId"
             :items="buddyOptions"
             placeholder="Select buddy"
-            value-attribute="value"
-            option-attribute="label"
+            value-key="value"
             :disabled="saving"
             class="w-full"
           >

@@ -25,21 +25,88 @@ const selectedBuddy = computed(() => {
   return getBuddyById(selectedBuddyId.value);
 });
 
-// Fetch upcoming reviews for buddy (reactive based on selectedBuddyId)
-const { data: upcomingData, refresh: refreshUpcoming } = useApi(() =>
-  selectedBuddyId.value
-    ? `/reviews/upcoming?userId=${selectedBuddyId.value}`
-    : null,
+/**
+ * Local response shape for /reviews/upcoming and /reviews/past — the
+ * query-string paths can't be matched against Nitro's typed routes. Mirrors
+ * GetReviewsWithDetailsResponseSchema (serialized).
+ */
+interface ReviewParticipant {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  roleType: string | null;
+}
+
+interface ReviewWithDetails {
+  id: string;
+  userId: string;
+  buddyId: string;
+  scheduledDate: string;
+  completedDate: string | null;
+  status: string | null;
+  name: string | null;
+  notes: string | null;
+  completionNotes?: string | null;
+  reflectionLearnings?: string | null;
+  reflectionHighlights?: string | null;
+  reflectionConcerns?: string | null;
+  createdAt: string;
+  user: ReviewParticipant;
+  buddy: ReviewParticipant;
+  feedbackCount: number;
+  checkins: {
+    id: string;
+    buddy: Omit<ReviewParticipant, "roleType">;
+    notes: string;
+    createdAt: string;
+  }[];
+}
+
+interface ReviewsResponse {
+  reviews: ReviewWithDetails[];
+}
+
+// Fetch upcoming reviews for buddy (reactive based on selectedBuddyId).
+// Returning null skips the request until a buddy is selected; the route
+// types only accept string, hence the assertions below.
+const { data: upcomingData, refresh: refreshUpcoming } =
+  useApi<ReviewsResponse>(
+    (() =>
+      selectedBuddyId.value
+        ? `/reviews/upcoming?userId=${selectedBuddyId.value}`
+        : null) as () => string,
+  );
+// Mapped onto the shape UpcomingReviewCard expects (non-null name/status,
+// optional avatarUrl) while keeping the remaining API fields.
+const upcomingReviews = computed(() =>
+  (upcomingData.value?.reviews || []).map((review) => ({
+    ...review,
+    name: review.name ?? "",
+    status: review.status ?? "scheduled",
+    buddy: {
+      ...review.buddy,
+      avatarUrl: review.buddy.avatarUrl ?? undefined,
+    },
+  })),
 );
-const upcomingReviews = computed(() => upcomingData.value?.reviews || []);
 
 // Fetch past reviews for buddy (reactive based on selectedBuddyId)
-const { data: pastData, refresh: refreshPast } = useApi(() =>
-  selectedBuddyId.value
-    ? `/reviews/past?userId=${selectedBuddyId.value}`
-    : null,
+const { data: pastData, refresh: refreshPast } = useApi<ReviewsResponse>(
+  (() =>
+    selectedBuddyId.value
+      ? `/reviews/past?userId=${selectedBuddyId.value}`
+      : null) as () => string,
 );
-const pastReviews = computed(() => pastData.value?.reviews || []);
+// Mapped onto the shape PastReviewCard expects (nullable fields → undefined).
+const pastReviews = computed(() =>
+  (pastData.value?.reviews || []).map((review) => ({
+    ...review,
+    name: review.name ?? "",
+    completedDate: review.completedDate ?? undefined,
+    completionNotes: review.completionNotes ?? undefined,
+  })),
+);
 
 // Refresh when buddy changes
 const { set: announce } = useAnnouncer();
