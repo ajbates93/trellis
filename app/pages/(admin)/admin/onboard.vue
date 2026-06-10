@@ -164,8 +164,8 @@ icon="i-heroicons-arrow-up-tray" color="primary" :loading="importing" :disabled=
             <!-- Success Message -->
             <UAlert
 v-if="importResult.success" icon="i-heroicons-check-circle" color="success" variant="soft"
-              :title="`Successfully imported ${importResult.imported} users`" :description="importResult.errors?.length > 0
-                ? `${importResult.errors.length} warnings during import`
+              :title="`Successfully imported ${importResult.imported} users`" :description="(importResult.errors?.length ?? 0) > 0
+                ? `${importResult.errors?.length} warnings during import`
                 : 'All users imported without issues'
                 " />
 
@@ -383,11 +383,11 @@ const parseCSV = (text: string) => {
     return;
   }
 
-  const headers = lines[0].split(",").map((h) => h.trim());
+  const headers = (lines[0] ?? "").split(",").map((h) => h.trim());
   const rows: Record<string, string>[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const line = lines[i]?.trim();
     if (!line) continue;
 
     const values = line.split(",").map((v) => v.trim());
@@ -431,7 +431,11 @@ const importCSV = async () => {
           },
         });
 
-        importResult.value = result as ImportResult;
+        importResult.value = {
+          success: result.success,
+          imported: result.rowsImported,
+          errors: result.errors,
+        };
       } catch (error) {
         importResult.value = {
           success: false,

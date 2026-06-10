@@ -94,6 +94,13 @@ export default defineEventHandler(async (event) => {
     .where(eq(buddyCheckins.id, checkinId))
     .returning();
 
+  if (!updatedCheckin) {
+    throw createError({
+      statusCode: 404,
+      message: "Check-in not found",
+    });
+  }
+
   // Fetch full check-in with related data
   const checkinWithData = await db.query.buddyCheckins.findFirst({
     where: eq(buddyCheckins.id, updatedCheckin.id),
@@ -124,6 +131,13 @@ export default defineEventHandler(async (event) => {
       },
     },
   });
+
+  if (!checkinWithData) {
+    throw createError({
+      statusCode: 404,
+      message: "Check-in not found",
+    });
+  }
 
   return validateResponse(
     {

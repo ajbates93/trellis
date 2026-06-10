@@ -321,9 +321,6 @@ v-for="item in recentFeedback" :key="item.id"
                         <span class="font-semibold text-gray-900 dark:text-white truncate block">
                           {{ item.reviewer.name }}
                         </span>
-                        <span v-if="item.reviewer.roleType" class="text-xs text-gray-500 dark:text-gray-400">
-                          {{ getRoleLabel(item.reviewer.roleType) }}
-                        </span>
                       </div>
                       <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                         {{ formatRelativeTime(item.publishedAt) }}
@@ -359,7 +356,14 @@ v-else
 
 <script setup lang="ts">
 import { format, formatDistanceToNow } from "date-fns";
-import type { User, FeedbackWithReviewer } from "~/types";
+import type { TypedInternalResponse } from "nitropack/types";
+import type { User } from "~/types";
+
+type ReceivedFeedbackItem = TypedInternalResponse<
+  "/api/feedback/received",
+  unknown,
+  "get"
+>["feedback"][number];
 
 const { sanitize } = useSanitizeHtml();
 
@@ -378,7 +382,7 @@ const loadingUsers = ref(false);
 const reviews = ref<any[]>([]);
 const achievements = ref<any[]>([]);
 const goals = ref<any[]>([]);
-const feedback = ref<FeedbackWithReviewer[]>([]);
+const feedback = ref<ReceivedFeedbackItem[]>([]);
 
 const loadingReviews = ref(false);
 const loadingAchievements = ref(false);
@@ -389,7 +393,7 @@ const loadingFeedback = ref(false);
 const fetchUsers = async () => {
   loadingUsers.value = true;
   try {
-    const data = await $api("/admin/users");
+    const data = await $api("/admin/users", { method: "GET" });
     if (data) {
       users.value = data.users;
     }
@@ -532,16 +536,6 @@ const formatDate = (date: string) => {
 const formatRelativeTime = (date: string | Date | null) => {
   if (!date) return "";
   return formatDistanceToNow(new Date(date), { addSuffix: true });
-};
-
-const getRoleLabel = (roleType: string | null) => {
-  if (!roleType) return null;
-  const labels: Record<string, string> = {
-    dev: "Developer",
-    design: "Designer",
-    qa: "QA",
-  };
-  return labels[roleType] || roleType;
 };
 
 const getGoalStatusColor = (status: string) => {

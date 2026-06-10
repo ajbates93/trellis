@@ -36,7 +36,7 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Restore default sendEmail behaviour after clearAllMocks resets it
-    vi.mocked(sendEmail).mockResolvedValue(undefined)
+    vi.mocked(sendEmail).mockResolvedValue({ suppressed: true } as const)
   })
 
   it('returns 401 when unauthenticated', async () => {
@@ -177,7 +177,7 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
     mockInsert([])
     mockInsert([])
     vi.mocked(sendEmail)
-      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ suppressed: true } as const)
       .mockRejectedValueOnce(new Error('SMTP failure'))
 
     const event = createAdminEvent()

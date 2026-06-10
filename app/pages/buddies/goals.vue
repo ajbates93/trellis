@@ -24,10 +24,25 @@ useHead({
 const { selectedBuddyId } = useSelectedBuddy();
 const { getBuddyById } = useBuddies();
 
-// Get selected buddy info from composable (independent of goals data)
+// Get selected buddy info from composable (independent of goals data).
+// Mapped to the `UserPublic` shape expected by CheckinModal (the buddies
+// API doesn't return `image` and serialises `createdAt` as a string).
 const selectedBuddy = computed(() => {
   if (!selectedBuddyId.value) return null;
-  return getBuddyById(selectedBuddyId.value);
+  const buddy = getBuddyById(selectedBuddyId.value);
+  if (!buddy) return null;
+  return {
+    id: buddy.id,
+    name: buddy.name,
+    email: buddy.email,
+    image: null,
+    avatarUrl: buddy.avatarUrl,
+    preferredName: buddy.preferredName,
+    pronouns: buddy.pronouns,
+    bio: buddy.bio,
+    roleType: buddy.roleType,
+    createdAt: new Date(buddy.createdAt),
+  };
 });
 
 // Fetch buddy goals (filtered by buddyId) - reactive based on selectedBuddyId

@@ -6,8 +6,44 @@ definePageMeta({
 const route = useRoute();
 const id = route.params.id as string;
 
-const { data: workspaceData, status, refresh } = useApi(`/super-admin/workspaces/${id}`);
-const { data: usersData } = useApi(`/super-admin/workspaces/${id}/users`);
+/**
+ * Local response shapes for the dynamic super-admin workspace routes — the
+ * interpolated paths can't be matched against Nitro's typed routes. They
+ * mirror the server handlers' return values (serialized).
+ */
+interface WorkspaceDetailResponse {
+  workspace: {
+    id: string;
+    name: string;
+    logoUrl: string | null;
+    createdAt: string | null;
+    userCount: number;
+    adminCount: number;
+  };
+}
+
+interface WorkspaceUsersResponse {
+  workspace: { id: string; name: string };
+  users: {
+    id: string;
+    name: string;
+    email: string;
+    role: string | null;
+    roleType: string | null;
+    emailVerified: boolean;
+    createdAt: string;
+    avatarUrl: string | null;
+    image: string | null;
+    status: string;
+  }[];
+}
+
+const { data: workspaceData, status, refresh } = useApi<WorkspaceDetailResponse>(
+  `/super-admin/workspaces/${id}`,
+);
+const { data: usersData } = useApi<WorkspaceUsersResponse>(
+  `/super-admin/workspaces/${id}/users`,
+);
 
 useHead({
   title: computed(() => workspaceData.value?.workspace?.name || "Workspace Details"),
@@ -189,7 +225,9 @@ v-if="workspaceData.workspace.logoUrl" :src="workspaceData.workspace.logoUrl"
                 ({{ workspaceData.workspace.adminCount }} admins)
               </p>
               <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                Created {{ new Date(workspaceData.workspace.createdAt).toLocaleDateString() }}
+                Created {{ workspaceData.workspace.createdAt
+                  ? new Date(workspaceData.workspace.createdAt).toLocaleDateString()
+                  : "—" }}
               </p>
             </div>
           </div>
@@ -210,7 +248,7 @@ v-if="workspaceData.workspace.logoUrl" :src="workspaceData.workspace.logoUrl"
             <div v-for="user in usersData?.users" :key="user.id" class="py-3 flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <UAvatar
-:src="user.avatarUrl || user.image" :alt="user.name"
+:src="user.avatarUrl || user.image || undefined" :alt="user.name"
                   :ui="{ fallback: 'bg-primary text-white' }" />
                 <div>
                   <p class="font-medium">{{ user.name }}</p>
@@ -277,8 +315,8 @@ variant="outline" icon="i-heroicons-arrow-up-tray" class="w-full"
           Are you sure you want to delete <strong>{{ workspaceData?.workspace?.name }}</strong>?
           This action cannot be undone.
         </p>
-        <p v-if="workspaceData?.workspace?.userCount > 0" class="mt-3 text-amber-600 dark:text-amber-400">
-          This workspace has {{ workspaceData.workspace.userCount }} users. You must remove all users before deleting.
+        <p v-if="(workspaceData?.workspace?.userCount ?? 0) > 0" class="mt-3 text-amber-600 dark:text-amber-400">
+          This workspace has {{ workspaceData?.workspace?.userCount }} users. You must remove all users before deleting.
         </p>
       </template>
 
@@ -286,7 +324,7 @@ variant="outline" icon="i-heroicons-arrow-up-tray" class="w-full"
         <UButton label="Cancel" color="neutral" variant="ghost" @click="isDeleteModalOpen = false" />
         <UButton
 label="Delete Workspace" color="error" :loading="isDeleting"
-          :disabled="workspaceData?.workspace?.userCount > 0" @click="deleteWorkspace" />
+          :disabled="(workspaceData?.workspace?.userCount ?? 0) > 0" @click="deleteWorkspace" />
       </template>
     </UModal>
   </UDashboardPanel>

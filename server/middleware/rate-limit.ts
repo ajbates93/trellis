@@ -13,7 +13,8 @@ const store: RateLimitStore = {};
 setInterval(() => {
   const now = Date.now();
   Object.keys(store).forEach((key) => {
-    if (store[key].resetAt < now) {
+    const entry = store[key];
+    if (entry && entry.resetAt < now) {
       Reflect.deleteProperty(store, key);
     }
   });

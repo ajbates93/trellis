@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { User } from "~/types";
-
 interface Props {
   buddyId?: string;
   counts?: Record<string, number>;
@@ -16,10 +14,12 @@ const emit = defineEmits<Emits>();
 // Fetch buddies
 const { data: buddyData } = await useApi("/users/my-buddies");
 
+type Buddy = NonNullable<typeof buddyData.value>["buddies"][number];
+
 const buddies = computed(() => buddyData.value?.buddies || []);
 
 const selectedBuddy = computed(() => {
-  return buddies.value.find((b: User) => b.id === props.buddyId);
+  return buddies.value.find((b) => b.id === props.buddyId);
 });
 
 // Handle buddy selection from dropdown
@@ -28,8 +28,8 @@ const handleBuddySelect = (buddyId: string) => {
 };
 
 // Get avatar for buddy
-const getBuddyAvatar = (buddy: User) => {
-  return buddy.avatarUrl || buddy.image;
+const getBuddyAvatar = (buddy: Buddy) => {
+  return buddy.avatarUrl ?? undefined;
 };
 </script>
 
@@ -66,7 +66,7 @@ const getBuddyAvatar = (buddy: User) => {
             </div>
             <UBadge
               v-if="props.counts?.[buddy.id]"
-              :label="props.counts[buddy.id].toString()"
+              :label="props.counts[buddy.id]?.toString()"
               size="sm"
               color="success"
             />

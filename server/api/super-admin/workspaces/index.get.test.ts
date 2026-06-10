@@ -57,7 +57,7 @@ describe('GET /api/super-admin/workspaces', () => {
     const event = createMockEvent()
     const result = await handler(event)
 
-    expect(result.workspaces[0].userCount).toBe(0)
+    expect(result.workspaces[0]?.userCount).toBe(0)
   })
 
   it('handles missing count row gracefully', async () => {
@@ -70,7 +70,7 @@ describe('GET /api/super-admin/workspaces', () => {
     const event = createMockEvent()
     const result = await handler(event)
 
-    expect(result.workspaces[0].userCount).toBe(0)
+    expect(result.workspaces[0]?.userCount).toBe(0)
   })
 
   it('throws when database errors', async () => {

@@ -172,9 +172,12 @@ export default defineEventHandler(async (event) => {
         // Adjust the value with the largest remainder
         const difference = 100 - total;
 
-        if (remainders[0].category === 'positive') {
+        // remainders always has 3 entries, so the first element is defined
+        const largestRemainder = remainders[0]!;
+
+        if (largestRemainder.category === 'positive') {
           positive += difference;
-        } else if (remainders[0].category === 'constructive') {
+        } else if (largestRemainder.category === 'constructive') {
           constructive += difference;
         } else {
           neutral += difference;

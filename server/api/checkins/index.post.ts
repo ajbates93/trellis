@@ -55,6 +55,13 @@ export default defineEventHandler(async (event) => {
     })
     .returning();
 
+  if (!createdCheckin) {
+    throw createError({
+      statusCode: 500,
+      message: "Failed to create check-in",
+    });
+  }
+
   // Fetch full check-in with buddy and review data
   const checkinWithData = await db.query.buddyCheckins.findFirst({
     where: eq(buddyCheckins.id, createdCheckin.id),
@@ -85,6 +92,13 @@ export default defineEventHandler(async (event) => {
       },
     },
   });
+
+  if (!checkinWithData) {
+    throw createError({
+      statusCode: 500,
+      message: "Failed to load created check-in",
+    });
+  }
 
   return validateResponse(
     {

@@ -97,6 +97,11 @@ export default defineEventHandler(async (event) => {
       pick = sorted[0];
     }
 
+    // The pool is never empty here (allUsers is non-empty), but guard anyway
+    if (!pick) {
+      return { suggestion: null, exhausted: true };
+    }
+
     // Build reason text
     let reason: string;
     if (pick.neverReviewed) {

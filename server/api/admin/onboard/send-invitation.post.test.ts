@@ -36,7 +36,7 @@ describe('POST /api/admin/onboard/send-invitation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Restore default sendEmail behaviour after clearAllMocks resets it
-    vi.mocked(sendEmail).mockResolvedValue(undefined)
+    vi.mocked(sendEmail).mockResolvedValue({ suppressed: true } as const)
   })
 
   it('returns 401 when unauthenticated', async () => {

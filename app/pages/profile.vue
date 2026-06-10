@@ -69,7 +69,7 @@
                       variant="outline"
                       size="sm"
                       :loading="uploadingAvatar"
-                      @click="$refs.fileInput.click()"
+                      @click="fileInput?.click()"
                     >
                       {{ user?.avatarUrl ? "Change Avatar" : "Upload Avatar" }}
                     </UButton>
@@ -77,7 +77,7 @@
                       v-if="user?.avatarUrl"
                       variant="outline"
                       size="sm"
-                      color="red"
+                      color="error"
                       icon="i-heroicons-trash"
                       @click="removeAvatar"
                     />
@@ -295,15 +295,9 @@
                       :disabled="isSaving"
                       class="w-full"
                     >
-                      <template #label>
+                      <template #default>
                         <span v-if="form.timezone">
-                          {{
-                            typeof form.timezone === 'string'
-                              ? (commonTimezones.find(
-                                  (tz) => tz.value === form.timezone,
-                                )?.label || form.timezone)
-                              : (form.timezone?.label || form.timezone?.value || '')
-                          }}
+                          {{ form.timezone.label || form.timezone.value }}
                         </span>
                         <span v-else class="text-gray-500">
                           {{ getBrowserTimezone() }} (Browser default)
@@ -381,14 +375,28 @@ const buddy = ref<User | null>(null);
 const { data: workspaceData } = useApi("/workspace/current");
 const workspace = computed(() => workspaceData.value?.workspace);
 
-const form = reactive({
+interface TimezoneOption {
+  value: string;
+  label: string;
+}
+
+const form = reactive<{
+  name: string;
+  preferredName: string;
+  pronouns: string;
+  bio: string;
+  reviewPreference: string;
+  communicationPreferences: string;
+  timezone: TimezoneOption | undefined;
+  avatarUrl: string;
+}>({
   name: "",
   preferredName: "",
   pronouns: "",
   bio: "",
   reviewPreference: "no-preference",
   communicationPreferences: "",
-  timezone: "",
+  timezone: undefined,
   avatarUrl: "",
 });
 
@@ -412,10 +420,13 @@ watch(
       form.bio = newUser.bio || "";
       form.reviewPreference = newUser.reviewPreference || "no-preference";
       form.communicationPreferences = newUser.communicationPreferences || "";
-      // Initialize timezone with the full object so the label displays correctly
+      // Initialize timezone with the full option so the label displays correctly
       form.timezone = newUser.timezone
-        ? (commonTimezones.find(tz => tz.value === newUser.timezone) || newUser.timezone)
-        : "";
+        ? commonTimezones.find((tz) => tz.value === newUser.timezone) || {
+            value: newUser.timezone,
+            label: newUser.timezone,
+          }
+        : undefined;
     }
   },
   { immediate: true },
@@ -509,7 +520,7 @@ const onAvatarSelected = async (event: Event) => {
     useToast().add({
       title: "File too large",
       description: "Avatar must be less than 500 KB",
-      color: "red",
+      color: "error",
     });
     return;
   }
@@ -531,7 +542,7 @@ const onAvatarSelected = async (event: Event) => {
     useToast().add({
       title: "Error",
       description: "Failed to process avatar",
-      color: "red",
+      color: "error",
     });
   } finally {
     uploadingAvatar.value = false;
@@ -586,10 +597,7 @@ const saveProfile = async () => {
       bio: form.bio || undefined,
       reviewPreference: form.reviewPreference,
       communicationPreferences: form.communicationPreferences || undefined,
-      // Handle timezone - could be string or object from USelectMenu
-      timezone: typeof form.timezone === 'string'
-        ? (form.timezone.trim() || undefined)
-        : (form.timezone?.value || undefined),
+      timezone: form.timezone?.value || undefined,
     };
 
     // Include avatar if it was changed
@@ -631,10 +639,14 @@ const resetForm = () => {
     form.bio = user.value.bio || "";
     form.reviewPreference = user.value.reviewPreference || "no-preference";
     form.communicationPreferences = user.value.communicationPreferences || "";
-    // Reset timezone with the full object so the label displays correctly
-    form.timezone = user.value.timezone
-      ? (commonTimezones.find(tz => tz.value === user.value.timezone) || user.value.timezone)
-      : "";
+    // Reset timezone with the full option so the label displays correctly
+    const userTimezone = user.value.timezone;
+    form.timezone = userTimezone
+      ? commonTimezones.find((tz) => tz.value === userTimezone) || {
+          value: userTimezone,
+          label: userTimezone,
+        }
+      : undefined;
     form.avatarUrl = "";
   }
   previewAvatar.value = null;

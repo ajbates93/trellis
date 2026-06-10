@@ -88,7 +88,7 @@ describe('PATCH /api/super-admin/workspaces/:id', () => {
     const result = await handler(event)
 
     expect(result.success).toBe(true)
-    expect(result.workspace.logoUrl).toBe('https://example.com/new-logo.png')
+    expect(result.workspace?.logoUrl).toBe('https://example.com/new-logo.png')
   })
 
   it('allows setting logoUrl to null', async () => {
@@ -102,7 +102,7 @@ describe('PATCH /api/super-admin/workspaces/:id', () => {
     const result = await handler(event)
 
     expect(result.success).toBe(true)
-    expect(result.workspace.logoUrl).toBeNull()
+    expect(result.workspace?.logoUrl).toBeNull()
   })
 
   it('updates both name and logoUrl at once', async () => {
@@ -123,7 +123,7 @@ describe('PATCH /api/super-admin/workspaces/:id', () => {
     const result = await handler(event)
 
     expect(result.success).toBe(true)
-    expect(result.workspace.name).toBe('New Name')
-    expect(result.workspace.logoUrl).toBe('https://example.com/logo.png')
+    expect(result.workspace?.name).toBe('New Name')
+    expect(result.workspace?.logoUrl).toBe('https://example.com/logo.png')
   })
 })

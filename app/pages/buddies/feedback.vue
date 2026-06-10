@@ -16,12 +16,55 @@ const { buddies, hasBuddies, getBuddyById } = useBuddies();
 const { selectedBuddyId } = useSelectedBuddy();
 const { set: announce } = useAnnouncer();
 
+/**
+ * Local response shapes for query-string paths that can't be matched against
+ * Nitro's typed routes. They mirror GetBuddyReceivedFeedbackResponseSchema and
+ * GetForBuddyResponseSchema (serialized).
+ */
+interface FeedbackReviewer {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  avatarUrl: string | null;
+}
+
+interface BuddyReceivedFeedbackItem {
+  id: string;
+  content: string;
+  createdAt: string | null;
+  publishedAt: string | null;
+  isRead: boolean | null;
+  isFavourite: boolean;
+  reviewer: FeedbackReviewer;
+}
+
+interface IncomingFeedbackItem {
+  id: string;
+  content: string;
+  createdAt: string | null;
+  revieweeId: string;
+  reviewer: FeedbackReviewer;
+}
+
+interface ForBuddyResponse {
+  buddyAssignments: {
+    user: FeedbackReviewer;
+    pendingCount: number;
+    feedback: IncomingFeedbackItem[];
+  }[];
+}
+
 // Fetch buddy received feedback (reactive based on selectedBuddyId)
-const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useApi(
-  () =>
+const { data: buddyReceivedData, refresh: refreshBuddyReceived } = useApi<{
+  feedback: BuddyReceivedFeedbackItem[];
+}>(
+  // Returning null skips the request until a buddy is selected; the route
+  // types only accept string, hence the assertion.
+  (() =>
     selectedBuddyId.value
       ? `/feedback/buddy-received?buddyId=${selectedBuddyId.value}`
-      : null,
+      : null) as () => string,
   { key: () => `buddy-received-${selectedBuddyId.value}` },
 );
 const buddyReceivedFeedback = computed(
@@ -29,18 +72,16 @@ const buddyReceivedFeedback = computed(
 );
 
 // Fetch incoming (unpublished) feedback for selected buddy
-const { data: incomingData, refresh: refreshIncoming } = useApi(
-  () =>
+const { data: incomingData, refresh: refreshIncoming } = useApi<ForBuddyResponse>(
+  (() =>
     selectedBuddyId.value
       ? `/feedback/for-buddy?buddyId=${selectedBuddyId.value}`
-      : null,
+      : null) as () => string,
   { key: () => `buddy-incoming-${selectedBuddyId.value}` },
 );
 const incomingFeedback = computed(() => {
   const assignments = incomingData.value?.buddyAssignments || [];
-  return assignments.flatMap(
-    (assignment: { feedback?: unknown[] }) => assignment.feedback || [],
-  );
+  return assignments.flatMap((assignment) => assignment.feedback || []);
 });
 
 // Refresh both tabs when buddy changes
@@ -279,18 +320,6 @@ v-if="buddyReceivedFeedback.length === 0" icon="i-heroicons-inbox" icon-color="t
                     {{ formatDate(row.original.publishedAt) }}
                   </span>
                 </template>
-
-                <template #review-cell="{ row }">
-                  <NuxtLink
-v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                    class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                    @click.stop>
-                    {{ row.original.review.name }}
-                  </NuxtLink>
-                  <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                    Not assigned
-                  </span>
-                </template>
               </UTable>
             </UCard>
           </div>
@@ -332,18 +361,6 @@ v-if="incomingFeedback.length === 0" icon="i-heroicons-check-circle" icon-color=
                   <template #date-cell="{ row }">
                     <span class="text-sm text-gray-600 dark:text-gray-400">
                       {{ formatDate(row.original.createdAt) }}
-                    </span>
-                  </template>
-
-                  <template #review-cell="{ row }">
-                    <NuxtLink
-v-if="row.original.review?.id" :to="`/reviews/${row.original.review.id}`"
-                      class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                      @click.stop>
-                      {{ row.original.review.name }}
-                    </NuxtLink>
-                    <span v-else class="text-sm text-gray-400 dark:text-gray-600">
-                      Not assigned
                     </span>
                   </template>
 
