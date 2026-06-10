@@ -2,6 +2,7 @@ import { createHmac } from 'crypto'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
+import { auth } from '#server/utils/auth'
 
 const { mockDb, mockSelect, mockInsert, mockUpdate } = createMockDb()
 
@@ -35,7 +36,6 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 const { default: handler } = await import('./callback.get')
-import { auth } from '#server/utils/auth'
 
 // Helper: build a valid HMAC-signed state with workspace-1 and recent timestamp
 function buildState(overrides: Partial<{ workspaceId: string; nonce: string; timestamp: number }> = {}) {
