@@ -35,6 +35,10 @@ jobs:
 
       - name: Run tests
         run: npm run test -- --run
+        env:
+          # seed-demo.test.ts imports the real connection module, which
+          # reads DATABASE_URL at import time. No DB is contacted.
+          DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
 
       - name: Build application
         run: npm run build
