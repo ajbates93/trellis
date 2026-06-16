@@ -89,7 +89,16 @@ v-else name="i-heroicons-chevron-down-20-solid"
               <p class="text-gray-500">No reflections recorded for this user.</p>
             </div>
 
-            <UAccordion v-else :items="reflectionAccordionItems" type="multiple">
+            <UAccordion
+              v-else
+              :items="reflectionAccordionItems"
+              type="multiple"
+              :ui="{
+                item: 'border border-gray-200 dark:border-gray-700 rounded-lg mb-3 last:mb-0 bg-gray-50/50 dark:bg-gray-800/30 px-4',
+                trigger: 'py-3 cursor-pointer',
+                label: 'font-semibold text-gray-900 dark:text-white',
+              }"
+            >
               <template #body="{ item }">
                 <div class="pb-4">
                   <div v-if="item.selfScore != null" class="mb-3 flex items-center gap-2">
