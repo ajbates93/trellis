@@ -19,25 +19,6 @@ const { data: reviewData, refresh } = await useApi(
 
 const review = computed(() => (reviewData.value as any)?.review);
 
-watchEffect(() => {
-  if (review.value) {
-    console.log(
-      "[ReviewDetail] review object keys:",
-      Object.keys(review.value),
-    );
-    console.log(
-      "[ReviewDetail] review.name:",
-      review.value.name,
-      "| type:",
-      typeof review.value.name,
-    );
-    console.log(
-      "[ReviewDetail] full review:",
-      JSON.stringify(review.value, null, 2),
-    );
-  }
-});
-
 useHead({
   title: computed(() => review.value?.name || "Review Details"),
 });
@@ -248,13 +229,6 @@ const selectedFeedback = ref<any>(null);
 
 // Open feedback modal
 const openFeedbackModal = (feedbackItem: any) => {
-  console.log(
-    "[ReviewDetail] openFeedbackModal called with:",
-    JSON.stringify(feedbackItem, null, 2),
-  );
-  console.log("[ReviewDetail] has reviewer?", !!feedbackItem?.reviewer);
-  console.log("[ReviewDetail] has reviewee?", !!feedbackItem?.reviewee);
-  console.log("[ReviewDetail] has content?", !!feedbackItem?.content);
   selectedFeedback.value = feedbackItem;
   isFeedbackModalOpen.value = true;
 };
