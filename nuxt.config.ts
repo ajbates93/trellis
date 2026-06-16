@@ -3,6 +3,35 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
 
+  // Dev-only anti-FOUC: Vite serves CSS via JS in dev, so SSR HTML briefly
+  // renders unstyled. Hide the app (not <body> — its background propagates to
+  // the canvas and should stay visible) until app.vue flags hydration, and
+  // show a lightweight boot message meanwhile. Production extracts CSS into
+  // render-blocking <link> tags, so it has no FOUC and must NOT hide SSR
+  // content behind hydration.
+  $development: {
+    app: {
+      head: {
+        style: [
+          {
+            // Mimics the UProgress carousel bar the layouts show during page
+            // navigation (size md, emerald indicator on a slate track), with
+            // hardcoded colours: the app's CSS custom properties aren't
+            // loaded yet during this window. The indicator is a background
+            // layer slid via background-position so nothing overflows the
+            // viewport.
+            innerHTML: [
+              "body:not(.hydrated) #__nuxt { opacity: 0; }",
+              'body:not(.hydrated)::after { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 8px; z-index: 50; border-radius: 9999px; background: linear-gradient(90deg, #047857, #047857) no-repeat, #e2e8f0; background-size: 50% 100%; animation: boot-bar 2s ease-in-out infinite; }',
+              ".dark body:not(.hydrated)::after { background: linear-gradient(90deg, #34d399, #34d399) no-repeat, #334155; background-size: 50% 100%; }",
+              "@keyframes boot-bar { from { background-position-x: -100%; } to { background-position-x: 200%; } }",
+            ].join("\n"),
+          },
+        ],
+      },
+    },
+  },
+
   modules: [
     "@nuxt/test-utils",
     "@nuxt/ui",
@@ -59,11 +88,6 @@ export default defineNuxtConfig({
     head: {
       title: "Trellis",
       titleTemplate: "%s | Trellis",
-      style: [
-        {
-          innerHTML: "body:not(.hydrated) { opacity: 0; }",
-        },
-      ],
       link: [
         {
           rel: "preconnect",
