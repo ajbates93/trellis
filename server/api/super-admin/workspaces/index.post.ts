@@ -1,5 +1,6 @@
 import { db } from "#server/database/connection";
 import { workspaces, users } from "#server/database/schema";
+import { ensureDefaultReviewTemplate } from "#server/utils/ensureDefaultReviewTemplate";
 import { z } from "zod";
 
 const CreateWorkspaceSchema = z.object({
@@ -66,6 +67,11 @@ export default defineEventHandler(async (event) => {
       name: createdUser.name,
     };
   }
+
+  // Provision an editable default review template so the new workspace's
+  // template picker is populated from day one and reviews snapshot a real
+  // template rather than only the built-in fallback fields.
+  await ensureDefaultReviewTemplate(workspaceId, adminUser?.id ?? null);
 
   return {
     success: true,

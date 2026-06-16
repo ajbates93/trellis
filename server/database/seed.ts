@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { db, client } from "./connection";
-import { users, feedbackPrompts, workspaces, reviewTemplates } from "./schema";
-import { and, eq } from "drizzle-orm";
-import { DEFAULT_TEMPLATE_FIELDS } from "#server/utils/reviewTemplates";
+import { users, feedbackPrompts, workspaces } from "./schema";
+import { eq } from "drizzle-orm";
+import { ensureDefaultReviewTemplate } from "#server/utils/ensureDefaultReviewTemplate";
 
 // Team members data
 const TEAM_MEMBERS = [
@@ -1001,26 +1001,8 @@ async function seed() {
 
     // Step 5b: Create default review template
     console.log("\n📋 Creating default review template...");
-
-    const existingDefaultTemplate = await db
-      .select()
-      .from(reviewTemplates)
-      .where(and(eq(reviewTemplates.workspaceId, workspaceId), eq(reviewTemplates.isDefault, true)))
-      .limit(1);
-
-    if (existingDefaultTemplate.length > 0) {
-      console.log("   ✓ Default review template already exists");
-    } else {
-      await db.insert(reviewTemplates).values({
-        workspaceId,
-        name: "Default",
-        description: "The standard three-question reflection.",
-        isDefault: true,
-        fields: DEFAULT_TEMPLATE_FIELDS,
-        createdBy: alexBatesId,
-      });
-      console.log("   ✓ Created default review template");
-    }
+    await ensureDefaultReviewTemplate(workspaceId, alexBatesId ?? null);
+    console.log("   ✓ Default review template ready");
 
     // Step 6: Create sample goals for testing
     console.log("\n🎯 Creating sample goals...");

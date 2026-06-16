@@ -1,16 +1,16 @@
 import "dotenv/config";
 import { db } from "#server/database/connection";
 import {
-  reviewTemplates,
   reviewSchedules,
   users,
   workspaces,
 } from "#server/database/schema";
-import { and, eq, isNull } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import {
   DEFAULT_TEMPLATE_FIELDS,
   DEFAULT_FIELD_IDS,
 } from "#server/utils/reviewTemplates";
+import { ensureDefaultReviewTemplate } from "#server/utils/ensureDefaultReviewTemplate";
 
 /**
  * One-time data script to seed default review templates and backfill reviews.
@@ -21,37 +21,6 @@ import {
  * 3. Backfill every review missing a templateSnapshot with the default
  *    snapshot + answers derived from the legacy reflection columns
  */
-async function ensureDefaultTemplate(
-  workspaceId: string | null,
-  createdBy: string | null,
-) {
-  const whereWorkspace = workspaceId
-    ? eq(reviewTemplates.workspaceId, workspaceId)
-    : isNull(reviewTemplates.workspaceId);
-
-  const [existing] = await db
-    .select()
-    .from(reviewTemplates)
-    .where(and(whereWorkspace, eq(reviewTemplates.isDefault, true)))
-    .limit(1);
-
-  if (existing) return existing;
-
-  const [created] = await db
-    .insert(reviewTemplates)
-    .values({
-      workspaceId,
-      name: "Default",
-      description: "The standard three-question reflection.",
-      isDefault: true,
-      fields: DEFAULT_TEMPLATE_FIELDS,
-      createdBy,
-    })
-    .returning();
-
-  return created;
-}
-
 async function seedReviewTemplates() {
   console.log("🔄 Starting review template seed + backfill...\n");
 
@@ -69,12 +38,12 @@ async function seedReviewTemplates() {
       .limit(1);
 
     for (const ws of allWorkspaces) {
-      await ensureDefaultTemplate(ws.id, anyAdmin?.id ?? null);
+      await ensureDefaultReviewTemplate(ws.id, anyAdmin?.id ?? null);
       console.log(`   ✓ Default template ready for workspace ${ws.id}`);
     }
 
     // Step 2: Ensure a null-workspace fallback template
-    await ensureDefaultTemplate(null, anyAdmin?.id ?? null);
+    await ensureDefaultReviewTemplate(null, anyAdmin?.id ?? null);
     console.log("   ✓ Default template ready for null-workspace fallback");
 
     // Step 3: Backfill reviews missing a snapshot

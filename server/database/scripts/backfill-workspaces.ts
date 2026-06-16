@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { db } from "#server/database/connection";
 import { workspaces, users } from "#server/database/schema";
+import { ensureDefaultReviewTemplate } from "#server/utils/ensureDefaultReviewTemplate";
 import { eq } from "drizzle-orm";
 
 /**
@@ -79,6 +80,14 @@ async function backfillWorkspaces() {
     } else {
       console.log(`   ⚠️  User ${superAdminEmail} not found - super admin not set`);
     }
+
+    // Step 4: Ensure the workspace has a default review template
+    console.log("\n📋 Ensuring default review template...");
+    await ensureDefaultReviewTemplate(
+      pocketworksWorkspace.id,
+      superAdminResult[0]?.id ?? null,
+    );
+    console.log("   ✓ Default review template ready");
 
     // Summary
     console.log(`\n📊 Backfill Summary:`);
