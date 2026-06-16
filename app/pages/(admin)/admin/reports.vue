@@ -70,13 +70,6 @@ v-else name="i-heroicons-chevron-down-20-solid"
                 <UIcon name="i-heroicons-clipboard-document-check" class="text-primary-500" />
                 Review Breakdown
               </h2>
-              <USelectMenu
-                v-model="selectedReflectionType"
-                :items="reflectionFilterOptions"
-                value-key="value"
-                :searchable="false"
-                class="w-48"
-              />
             </div>
 
             <div v-if="loadingReviews">
@@ -92,13 +85,17 @@ v-else name="i-heroicons-chevron-down-20-solid"
               <p class="text-gray-500">No completed reviews found for this user.</p>
             </div>
 
-            <div v-else-if="reviewsWithReflections.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+            <div v-else-if="reviewsWithContent.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <p class="text-gray-500">No reflections recorded for this user.</p>
             </div>
 
             <UAccordion v-else :items="reflectionAccordionItems" type="multiple">
               <template #body="{ item }">
                 <div class="pb-4">
+                  <div v-if="item.selfScore != null" class="mb-3 flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Self-score</span>
+                    <UBadge :label="`${item.selfScore} / 10`" color="primary" variant="subtle" size="sm" />
+                  </div>
                   <div v-if="item.entries.length" class="space-y-3">
                     <div
                       v-for="entry in item.entries"
@@ -457,25 +454,6 @@ watch(selectedUser, async (user) => {
   }
 });
 
-// Reflections
-const reflectionFilterOptions = [
-  { label: 'All Reflections', value: 'all' },
-  { label: 'Learnings', value: 'learnings' },
-  { label: 'Highlights', value: 'highlights' },
-  { label: 'Concerns', value: 'concerns' },
-];
-const selectedReflectionType = ref<string>('all');
-
-const selectedFilterValue = computed((): string => selectedReflectionType.value || 'all');
-
-// Stable ids of the default template's three fields (mirrors server DEFAULT_FIELD_IDS).
-// Kept local because reports.vue is client code and must not import server utils.
-const DEFAULT_FIELD_IDS: Record<string, string> = {
-  learnings: "00000000-0000-0000-0000-000000000001",
-  highlights: "00000000-0000-0000-0000-000000000002",
-  concerns: "00000000-0000-0000-0000-000000000003",
-};
-
 interface ReflectionEntry {
   id: string;
   label: string;
@@ -510,24 +488,24 @@ const reviewReflectionEntries = (review: any): ReflectionEntry[] => {
   return legacy;
 };
 
-// Entries after applying the type filter. A specific filter (learnings/highlights/
-// concerns) matches the default field id (new reviews) or the legacy pseudo-id (old).
-const entriesFor = (review: any, filterValue: string): ReflectionEntry[] => {
-  const all = reviewReflectionEntries(review);
-  if (filterValue === "all") return all;
-  const targetId = DEFAULT_FIELD_IDS[filterValue];
-  return all.filter((e) => e.id === targetId || e.id === filterValue);
-};
+// A review surfaces in the breakdown if it has any reflection answers or a
+// recorded self-score. Each review shows all of its own template fields - there
+// is no cross-review filter, since templates are dynamic.
+const hasSelfScore = (review: any): boolean =>
+  review.selfScore !== null && review.selfScore !== undefined;
 
-const reviewsWithReflections = computed(() =>
-  reviews.value.filter((r: any) => entriesFor(r, selectedFilterValue.value).length > 0),
+const reviewsWithContent = computed(() =>
+  reviews.value.filter(
+    (r: any) => reviewReflectionEntries(r).length > 0 || hasSelfScore(r),
+  ),
 );
 
 const reflectionAccordionItems = computed(() =>
-  reviewsWithReflections.value.map((review: any) => ({
+  reviewsWithContent.value.map((review: any) => ({
     label: `Review: ${review.name || "Untitled"}`,
     review,
-    entries: entriesFor(review, selectedFilterValue.value),
+    entries: reviewReflectionEntries(review),
+    selfScore: review.selfScore ?? null,
   })),
 );
 
