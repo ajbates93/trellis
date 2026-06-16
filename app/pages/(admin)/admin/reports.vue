@@ -94,7 +94,7 @@ v-else name="i-heroicons-chevron-down-20-solid"
               :items="reflectionAccordionItems"
               type="multiple"
               :ui="{
-                item: 'border border-gray-200 dark:border-gray-700 rounded-lg mb-3 last:mb-0 bg-gray-50/50 dark:bg-gray-800/30 px-4',
+                item: 'border border-gray-200 dark:border-gray-700 last:border-b rounded-lg mb-3 last:mb-0 bg-gray-50/50 dark:bg-gray-800/30 px-4',
                 trigger: 'py-3 cursor-pointer',
                 label: 'font-semibold text-gray-900 dark:text-white',
               }"
