@@ -260,14 +260,16 @@ const templateSelectItems = computed(() =>
 
 const fetchReviewTemplates = async () => {
   try {
-    const data = await $api("/admin/review-templates");
+    // Workspace-scoped, member-readable list so buddies (not just admins) can
+    // pick a template when scheduling.
+    const data = await $api("/reviews/templates");
     const templates = data.templates ?? [];
     reviewTemplates.value = templates;
     const def = templates.find((t: { isDefault: boolean }) => t.isDefault);
     selectedTemplateId.value = def?.id ?? templates[0]?.id ?? null;
   } catch {
-    // Non-admin buddies cannot list templates; the server will snapshot the
-    // workspace default automatically, so leave the dropdown hidden.
+    // On failure the server still snapshots the workspace default when a review
+    // is created, so leave the dropdown hidden rather than blocking scheduling.
     reviewTemplates.value = [];
     selectedTemplateId.value = null;
   }
