@@ -71,7 +71,7 @@ const handleMarkAsRead = () => {
         <div class="flex items-start gap-4 mb-5">
           <UAvatar
             v-if="displayPerson"
-            :src="displayPerson.image || displayPerson.avatarUrl"
+            :src="displayPerson.image || displayPerson.avatarUrl || undefined"
             :alt="displayPerson.name"
             size="lg"
             class="flex-shrink-0"

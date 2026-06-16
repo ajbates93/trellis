@@ -113,7 +113,7 @@ describe('GET /api/super-admin/workspaces/:id/users', () => {
     const event = createMockEvent({ params: { id: 'ws-1' } })
     const result = await handler(event)
 
-    expect(result.users[0].status).toBe('active')
+    expect(result.users[0]?.status).toBe('active')
   })
 
   it('maps emailVerified false to status invited', async () => {
@@ -126,7 +126,7 @@ describe('GET /api/super-admin/workspaces/:id/users', () => {
     const event = createMockEvent({ params: { id: 'ws-1' } })
     const result = await handler(event)
 
-    expect(result.users[0].status).toBe('invited')
+    expect(result.users[0]?.status).toBe('invited')
   })
 
   it('throws when database errors during workspace check', async () => {

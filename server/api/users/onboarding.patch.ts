@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const currentTasks = currentUser[0].onboardingTasks || [];
+    const currentTasks = currentUser[0]?.onboardingTasks || [];
 
     // Don't add if already completed
     if (currentTasks.includes(taskId)) {

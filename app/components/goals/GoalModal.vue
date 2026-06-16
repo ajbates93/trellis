@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { GoalWithMilestones, GoalMilestone } from "~/types";
+import type {
+  GoalWithMilestones,
+  GoalMilestone,
+  CreateGoalResponse,
+  UpdateGoalResponse,
+} from "~/types";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -36,11 +41,13 @@ const handleMilestonesUpdated = async () => {
   try {
     const { goals } = await $api<{ goals: GoalWithMilestones[] }>("/goals");
     const updatedGoal = goals.find((g) => g.id === props.goal?.id);
-    if (updatedGoal?.milestones) {
-      milestones.value = updatedGoal.milestones;
+    if (updatedGoal) {
+      if (updatedGoal.milestones) {
+        milestones.value = updatedGoal.milestones;
+      }
+      // Also emit success to update the parent
+      emit("success", updatedGoal);
     }
-    // Also emit success to update the parent
-    emit("success", updatedGoal);
   } catch (error) {
     console.error("Failed to refresh milestones:", error);
   }
@@ -61,7 +68,7 @@ const handleSubmit = async () => {
 
   try {
     if (props.mode === "create") {
-      const { goal } = await $api("/goals", {
+      const { goal } = await $api<CreateGoalResponse>("/goals", {
         method: "POST",
         body: {
           goalText: goalText.value.trim(),
@@ -81,7 +88,7 @@ const handleSubmit = async () => {
         icon: "i-heroicons-check-circle",
       });
     } else if (props.mode === "edit" && props.goal) {
-      const { goal } = await $api(`/goals/${props.goal.id}`, {
+      const { goal } = await $api<UpdateGoalResponse>(`/goals/${props.goal.id}`, {
         method: "PATCH",
         body: {
           goalText: goalText.value.trim(),

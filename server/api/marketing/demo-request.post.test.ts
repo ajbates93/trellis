@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
-import { z } from 'zod'
+import type { z } from 'zod'
 import { createError } from 'h3'
 
 const mockReturning = vi.fn()

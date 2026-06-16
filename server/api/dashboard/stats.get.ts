@@ -117,14 +117,15 @@ export default defineEventHandler(async (event) => {
         and(
           eq(reviewSchedules.userId, session.user.id),
           eq(reviewSchedules.status, "scheduled"),
-          gte(reviewSchedules.scheduledDate, now.toISOString().split('T')[0])
+          gte(reviewSchedules.scheduledDate, now.toISOString().split('T')[0]!)
         )
       )
       .orderBy(reviewSchedules.scheduledDate)
       .limit(1);
 
-    if (upcomingReviews.length > 0 && upcomingReviews[0].scheduledDate) {
-      const reviewDate = new Date(upcomingReviews[0].scheduledDate);
+    const nextReview = upcomingReviews[0];
+    if (nextReview?.scheduledDate) {
+      const reviewDate = new Date(nextReview.scheduledDate);
       const diffTime = reviewDate.getTime() - now.getTime();
       daysUntilReview = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }

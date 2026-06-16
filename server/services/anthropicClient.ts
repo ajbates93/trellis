@@ -149,8 +149,9 @@ Return JSON:`
     })
 
     // Extract the response text
-    const responseText = message.content[0].type === 'text'
-      ? message.content[0].text
+    const firstBlock = message.content[0]
+    const responseText = firstBlock?.type === 'text'
+      ? firstBlock.text
       : ''
 
     // Parse JSON response

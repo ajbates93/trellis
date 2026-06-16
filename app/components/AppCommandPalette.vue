@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { CommandPaletteItem } from "@nuxt/ui";
+
 const { user } = useAuth();
 const { hasBuddies } = useBuddies();
 const { unreadCount } = useUnreadCount();
@@ -131,7 +133,7 @@ const groups = computed(() => {
 });
 
 // Handle item selection
-function onSelect(item: { to?: string }) {
+function onSelect(item: CommandPaletteItem) {
   if (item.to) {
     navigateTo(item.to);
   }
@@ -140,7 +142,7 @@ function onSelect(item: { to?: string }) {
 </script>
 
 <template>
-  <UModal v-model:open="open" :ui="{ width: 'sm:max-w-xl' }">
+  <UModal v-model:open="open" :ui="{ content: 'sm:max-w-xl' }">
     <template #content>
       <UCommandPalette
         :groups="groups"

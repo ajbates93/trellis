@@ -8,12 +8,35 @@ definePageMeta({
 const route = useRoute();
 const buddyId = computed(() => route.params.id as string);
 
+/**
+ * Response of GET /api/buddies/:id. The dynamic path can't be matched against
+ * Nitro's typed routes, so the shape is declared locally (mirrors
+ * GetBuddyProfileResponseSchema, serialized).
+ */
+interface BuddyProfileResponse {
+  buddy: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string | null;
+    roleType: string | null;
+    preferredName: string | null;
+    pronouns: string | null;
+    bio: string | null;
+    reviewPreference: string | null;
+    communicationPreferences: string | null;
+    createdAt: string;
+  };
+}
+
 // Fetch buddy profile
 const {
   data: buddyData,
   pending,
   error,
-} = useApi(() => `/buddies/${buddyId.value}`, { watch: [buddyId] });
+} = useApi<BuddyProfileResponse>(() => `/buddies/${buddyId.value}`, {
+  watch: [buddyId],
+});
 
 const buddy = computed(() => buddyData.value?.buddy);
 

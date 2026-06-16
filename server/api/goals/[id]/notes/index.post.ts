@@ -42,14 +42,13 @@ export default defineEventHandler(async (event) => {
       .where(eq(goals.id, goalId))
       .limit(1);
 
-    if (goal.length === 0) {
+    const goalData = goal[0];
+    if (!goalData) {
       throw createError({
         statusCode: 404,
         message: "Goal not found",
       });
     }
-
-    const goalData = goal[0];
     const isOwner = goalData.userId === session.user.id;
     const isBuddy = goalData.owner.buddyId === session.user.id;
 
@@ -70,6 +69,14 @@ export default defineEventHandler(async (event) => {
       })
       .returning();
 
+    const createdNote = newNote[0];
+    if (!createdNote) {
+      throw createError({
+        statusCode: 500,
+        message: "Failed to create note",
+      });
+    }
+
     // Fetch the note with author details
     const noteWithAuthor = await db
       .select({
@@ -87,7 +94,7 @@ export default defineEventHandler(async (event) => {
       })
       .from(goalNotes)
       .innerJoin(users, eq(goalNotes.authorId, users.id))
-      .where(eq(goalNotes.id, newNote[0].id))
+      .where(eq(goalNotes.id, createdNote.id))
       .limit(1);
 
     return validateResponse(

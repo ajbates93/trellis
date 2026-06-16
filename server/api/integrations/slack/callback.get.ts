@@ -115,7 +115,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const user = session.user;
+    const user = session.user as typeof session.user & {
+      role?: string | null;
+      isSuperAdmin?: boolean | null;
+    };
 
     // Verify user is admin (only admins can install Slack integration)
     if (user.role !== "admin" && !user.isSuperAdmin) {

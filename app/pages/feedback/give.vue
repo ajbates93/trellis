@@ -50,18 +50,22 @@ const {
 
 const suggestion = computed(() => suggestionData.value?.suggestion);
 const suggestionsExhausted = computed(() => suggestionData.value?.exhausted);
-const reviewStatus = computed(
-  () =>
-    suggestionData.value?.reviewStatus ||
-    ({} as Record<
-      string,
-      {
-        lastReviewedAt: string | null;
-        reviewCount: number;
-        reviewedThisWeek: boolean;
-      }
-    >),
-);
+const reviewStatus = computed(() => {
+  // The suggestions route returns a union: the "exhausted" shape has no
+  // reviewStatus key, so narrow before accessing it.
+  const data = suggestionData.value;
+  if (data && "reviewStatus" in data && data.reviewStatus) {
+    return data.reviewStatus;
+  }
+  return {} as Record<
+    string,
+    {
+      lastReviewedAt: string | null;
+      reviewCount: number;
+      reviewedThisWeek: boolean;
+    }
+  >;
+});
 
 // Fetch random feedback prompt
 const { data: promptData, refresh: refreshPrompt } = await useApi(

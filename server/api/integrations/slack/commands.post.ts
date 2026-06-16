@@ -195,7 +195,7 @@ export default defineEventHandler(async (event) => {
 
           // Only pre-select if exactly one match found
           if (matchingUsers.length === 1) {
-            preselectedUserId = matchingUsers[0].id;
+            preselectedUserId = matchingUsers[0]!.id;
           }
         }
       }

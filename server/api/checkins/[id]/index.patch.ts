@@ -26,6 +26,13 @@ export default defineEventHandler(async (event) => {
   const body = await validateBody(event, apiSchemas.UpdateBuddyCheckinRequestSchema);
   const { notes } = body;
 
+  if (notes === undefined) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Notes are required",
+    });
+  }
+
   try {
     // Get the check-in to verify ownership
     const [checkin] = await db

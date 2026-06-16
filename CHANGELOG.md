@@ -1,5 +1,120 @@
 # Changelog
 
+## [0.16.3](https://github.com/ajbates93/trellis/compare/v0.16.2...v0.16.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* **types:** clear all 417 typecheck errors and make CI typecheck blocking again ([d6d5d2b](https://github.com/ajbates93/trellis/commit/d6d5d2b7f3ade8c5b76cfe3cf626a9205125bc0b))
+* **types:** resolve all 417 typecheck errors and make CI typecheck blocking again ([baa34a5](https://github.com/ajbates93/trellis/commit/baa34a5141067d4161be49840b83565f799c6add))
+
+## [0.16.2](https://github.com/ajbates93/trellis/compare/v0.16.1...v0.16.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* **lint:** resolve pre-existing eslint errors blocking CI ([1250513](https://github.com/ajbates93/trellis/commit/1250513181e7c312dc9b1300d1cb5b984356b969))
+* stop nightly prod crash from seed-demo CLI guard and fix goal-reminders query ([9df3303](https://github.com/ajbates93/trellis/commit/9df330345aa0f9795431796bd0d41e78246e05b9))
+* stop nightly prod crash from seed-demo CLI guard and fix goal-reminders query ([255bc8c](https://github.com/ajbates93/trellis/commit/255bc8ccb8918bf354793c6e3dc52d5162656eec))
+
+## [0.16.1](https://github.com/ajbates93/trellis/compare/v0.16.0...v0.16.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* **demo:** allow demo entry page and demo endpoints through server auth middleware ([89b33a8](https://github.com/ajbates93/trellis/commit/89b33a87e923d408b5592b91640b00005d84bcb8))
+* **demo:** allow demo routes through server auth middleware ([99e80d3](https://github.com/ajbates93/trellis/commit/99e80d3184e0337118c707f4b83412554d77e95f))
+
+## [0.16.0](https://github.com/ajbates93/trellis/compare/v0.15.1...v0.16.0) (2026-05-30)
+
+
+### Features
+
+* **api:** add demo-request endpoint ([bf3491d](https://github.com/ajbates93/trellis/commit/bf3491dc98d2337ec88c8512bd14bcb439821619))
+* **db:** add demo_requests table ([0a011a6](https://github.com/ajbates93/trellis/commit/0a011a6bb008a5af8d67194b7252a65bbe3eacd5))
+* demo environment (DEMO_MODE) ([625b60f](https://github.com/ajbates93/trellis/commit/625b60f27181871c737fcd0943e0b7bc138b637f))
+* **demo:** add centralised demo-mode helper ([34bf5ab](https://github.com/ajbates93/trellis/commit/34bf5aba4d1ef3236a048dcd851256870c80297d))
+* **demo:** add guarded seedDemo routine and fixture ([0d331f4](https://github.com/ajbates93/trellis/commit/0d331f40315a7fe2ff25a960722722d46e3a8266))
+* **demo:** add nightly demo-reset scheduled task ([f7186ef](https://github.com/ajbates93/trellis/commit/f7186ef3b3d1fa323e59a3177ad8367f50b2a710))
+* **demo:** add one-click admin login endpoint ([bcf2a90](https://github.com/ajbates93/trellis/commit/bcf2a90e6b6de2338270273312c9c9189a3d2a3b))
+* **demo:** add one-click demo entry page ([5e74198](https://github.com/ajbates93/trellis/commit/5e74198e5bbfddf215e541506d545dadd7f61c73))
+* **demo:** add persistent demo banner ([83d4876](https://github.com/ajbates93/trellis/commit/83d4876f1867b75446073d69739f0f3f2d87aa23))
+* **demo:** add secret-guarded manual reset endpoint ([382416e](https://github.com/ajbates93/trellis/commit/382416e9b09ff0dd41dab06b3eadc6f3bfb44f51))
+* **demo:** expose demoMode in runtime config and document env ([70759d5](https://github.com/ajbates93/trellis/commit/70759d5c6ad9396608a4506d1636e69353afd491))
+* **demo:** hide Slack integration in demo mode ([e879414](https://github.com/ajbates93/trellis/commit/e87941435393964c4f4614ef9e4b1e632badb450))
+* **demo:** redirect root to demo login in demo mode ([e5f6b88](https://github.com/ajbates93/trellis/commit/e5f6b88603ce4d2d93a16fefb5bf31b00dbd6f9e))
+* **demo:** suppress outbound email in demo mode ([6c7c3ad](https://github.com/ajbates93/trellis/commit/6c7c3ad638ac9fd922bf8104282ee428058aa5aa))
+* **email:** add demo request templates ([181130a](https://github.com/ajbates93/trellis/commit/181130a83be0eb42db7ccc46c71a35b5fc44bfbb))
+* **marketing:** add bare dark layout ([762c9fd](https://github.com/ajbates93/trellis/commit/762c9fd242abd5571f97ee8d6d9e7c15524ca0a8))
+* **marketing:** add plausible analytics scoped to marketing layout ([24a9c46](https://github.com/ajbates93/trellis/commit/24a9c466e181e8b22540c832b0dad50f72a28d18))
+* **marketing:** buddy system explainer ([e13ec35](https://github.com/ajbates93/trellis/commit/e13ec35bef406467b6846079f34333a48b70b14e))
+* **marketing:** compose homepage at apex root ([039e923](https://github.com/ajbates93/trellis/commit/039e92316ba3c657cd446168c20c434ecc8f347d))
+* **marketing:** demo request form with honeypot ([566b838](https://github.com/ajbates93/trellis/commit/566b8382462b821f373c211d2fa1b8e9a0817d91))
+* **marketing:** drop mock sidebar in feature showcase ([598ef35](https://github.com/ajbates93/trellis/commit/598ef3553ddb098aab53f2294a84119074e578b3))
+* **marketing:** feature showcase with tabbed product screenshots ([3284077](https://github.com/ajbates93/trellis/commit/32840774e8db3336e4dbb97e16a05534784cc8f2))
+* **marketing:** footer with version ([4f3d43c](https://github.com/ajbates93/trellis/commit/4f3d43c6b70cefdbaeb2a734c5f54fd4ea72b7be))
+* **marketing:** header component ([f791793](https://github.com/ajbates93/trellis/commit/f79179379f5d1b8c4dd6793d0afe31c4b173a141))
+* **marketing:** hero section ([261e822](https://github.com/ajbates93/trellis/commit/261e82250c82bd192bab0ae1575e9225308d45a2))
+* **marketing:** how it works section ([05e77f4](https://github.com/ajbates93/trellis/commit/05e77f46c6d7259fac0e7d3f2cd947ddd1c2d70f))
+* **marketing:** problem section ([d684272](https://github.com/ajbates93/trellis/commit/d684272f30b19aaac4dd699e76bce319144aafba))
+* **marketing:** remap feature screenshots and drop double-frame ([599e7f7](https://github.com/ajbates93/trellis/commit/599e7f700951ed558ed645d0954eb5278597a825))
+* **marketing:** testimonial section ([24a1aa8](https://github.com/ajbates93/trellis/commit/24a1aa8ef7b857d6c843ccc3d10b36cd3173ee99))
+* **marketing:** use TrellisLogo SVG instead of plant emoji ([fcf661c](https://github.com/ajbates93/trellis/commit/fcf661c2dee78bcafb31b66469fcf2438a3b2ac2))
+* **rate-limit:** cap demo requests at 5 per hour per ip ([0d3264e](https://github.com/ajbates93/trellis/commit/0d3264ecf31f70df073048370342da2464d39f9e))
+* **routing:** hostname-based marketing/app split ([1ea2bab](https://github.com/ajbates93/trellis/commit/1ea2babd7e968b3fb56495c3b598af912b703e80))
+* **schemas:** add demo request zod schema ([158abc7](https://github.com/ajbates93/trellis/commit/158abc753d238fa56bcb86e44053b3d66f4b5840))
+* wording changes ([20bae3a](https://github.com/ajbates93/trellis/commit/20bae3a8856e8e4eb34a199bea9984492b5fbe89))
+
+
+### Bug Fixes
+
+* **auth:** make marketing routes public and redirect dash root to dashboard ([fc0bbdc](https://github.com/ajbates93/trellis/commit/fc0bbdc67602578451503de5c6eaaf793bed3c1b))
+* **auth:** send google oauth callback to /dashboard ([fc49dd1](https://github.com/ajbates93/trellis/commit/fc49dd167694c33e4b10ad8164ee0453dfded628))
+* **demo:** resolve strict type errors in seedDemo fixture ([afd48f0](https://github.com/ajbates93/trellis/commit/afd48f098103bcffb8fbdfe9e24c9070d1e8e855))
+* **marketing:** address copilot pr review ([cac008b](https://github.com/ajbates93/trellis/commit/cac008b77dbabfe3de6f5dd662acc3898c831da1))
+* **marketing:** align hero columns to top so screenshot sits with headline ([1c4767a](https://github.com/ajbates93/trellis/commit/1c4767a81a14dbd2a56793dd0c6402cbc1656957))
+* **marketing:** only rotate hero screenshot on lg screens ([d6e35bf](https://github.com/ajbates93/trellis/commit/d6e35bf62953f6a05d47adafdae7c5523286f34a))
+* **marketing:** replace misleading 'no auto-billing' reassurance ([b7a0f0e](https://github.com/ajbates93/trellis/commit/b7a0f0eaee5cece84e8f96359c553a286df03db2))
+* **marketing:** rework demo reassurance bullets to match real flow ([04fcf9d](https://github.com/ajbates93/trellis/commit/04fcf9d1f9450f6ba69a18ec5b5cd2055c96ee6b))
+
+
+### Performance
+
+* **marketing:** replace marketing PNGs with WebP (87% smaller) ([9386b0b](https://github.com/ajbates93/trellis/commit/9386b0b36744f76b7f10b74b82669c6528f311fd))
+
+
+### Refactoring
+
+* **demo:** harden truncate FK order and drop unused private demoMode config ([8d1ee2e](https://github.com/ajbates93/trellis/commit/8d1ee2ed9f6a7721330f0a6327764f0f60d0559b))
+* **demo:** use getSetCookie and clearer not-seeded error ([f865e5f](https://github.com/ajbates93/trellis/commit/f865e5f2163658b6551c3807e981c62445cd8a5a))
+* rename app subdomain from dash to my ([7fd70f8](https://github.com/ajbates93/trellis/commit/7fd70f8ba048bd42ab44664ea37405372649c13d))
+
+
+### Documentation
+
+* add demo environment design spec ([c7faa3b](https://github.com/ajbates93/trellis/commit/c7faa3b2698d8e50eac0ce74fd58306e75eb6eea))
+* add demo environment implementation plan ([d4ed019](https://github.com/ajbates93/trellis/commit/d4ed019bf304b1306025330e7e65ed4c6e4b5cda))
+* **demo:** update spec CI section for release-gated demo deploy ([5369964](https://github.com/ajbates93/trellis/commit/536996498792cd597dfbd411b6968d782ee2cfff))
+* implementation plan for marketing homepage ([07e48f4](https://github.com/ajbates93/trellis/commit/07e48f422654327b70b877580df34ef810dd1a45))
+* marketing homepage design spec ([cbacf3b](https://github.com/ajbates93/trellis/commit/cbacf3b04d9cb04b5a595f8c75dda1fa4c3f7923))
+
+
+### Miscellaneous
+
+* **demo-request:** point notification to ajbates93@gmail.com for testing ([2f499bb](https://github.com/ajbates93/trellis/commit/2f499bba2397d5abe50d25fcee866e108d1e9e62))
+* **demo-request:** revert notification email to work address ([3acdb69](https://github.com/ajbates93/trellis/commit/3acdb6935018a243d9bd45e0932ecc58b8d1ba51))
+* **marketing:** add real dashboard hero screenshot ([f9c99cc](https://github.com/ajbates93/trellis/commit/f9c99cc4af0447495f9b47cadb35ded296684832))
+* **marketing:** add real feature screenshots ([7930b36](https://github.com/ajbates93/trellis/commit/7930b360dc214b51f9dbe256966d4289ab581f43))
+* **marketing:** placeholder PNGs for hero and feature screenshots ([2157977](https://github.com/ajbates93/trellis/commit/2157977cf86db70ab067a6fbd154273797a0617b))
+* **marketing:** replace hero screenshot with cleaner capture ([eab1e59](https://github.com/ajbates93/trellis/commit/eab1e590c4e020b8b5cfd4a7a516effaa6cf2293))
+* **marketing:** robots.txt ([7d875f4](https://github.com/ajbates93/trellis/commit/7d875f4049434f1916a62766d1caf1b1bbd6c1d6))
+
+
+### Tests
+
+* **demo:** add negative-path email test and tidy log line ([eec5daa](https://github.com/ajbates93/trellis/commit/eec5daa70bf8618aded0ac8db404590bd4450dfd))
+* **demo:** cover unconfigured reset-secret fail-closed path ([9491e33](https://github.com/ajbates93/trellis/commit/9491e3317062c52e6e04034cf138a08f02c582df))
+
 ## [0.15.1](https://github.com/ajbates93/trellis/compare/v0.15.0...v0.15.1) (2026-05-17)
 
 

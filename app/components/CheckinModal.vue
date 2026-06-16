@@ -60,7 +60,7 @@ const canSubmit = computed(
     <template #body>
       <div v-if="buddy" class="space-y-4">
         <div class="flex items-center gap-3 mb-4">
-          <UAvatar :src="buddy.avatarUrl" :alt="buddy.name" size="sm" />
+          <UAvatar :src="buddy.avatarUrl ?? undefined" :alt="buddy.name" size="sm" />
           <div>
             <p class="text-sm text-gray-500">{{ buddy.email }}</p>
           </div>

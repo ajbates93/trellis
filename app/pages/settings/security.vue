@@ -226,7 +226,7 @@ useHead({
   title: "Security Settings",
 });
 
-const { user, hasPassword, authClient } = useAuth();
+const { user, hasPassword, authClient, refreshSession } = useAuth();
 const toast = useToast();
 
 // Fetch user accounts to check for Google connection
@@ -361,7 +361,7 @@ const handleAddPassword = async () => {
     };
 
     // Refresh user session to update passwordEnabled field
-    await authClient.session.get({ fetchOptions: { cache: "no-store" } });
+    await refreshSession();
 
     // Refresh accounts list to show the new credential account
     await fetchAccounts();

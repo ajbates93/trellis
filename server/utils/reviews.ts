@@ -10,7 +10,7 @@ import { eq, and, gte, sql } from "drizzle-orm";
  * @returns The next review, or null if none found
  */
 export async function findNextReview(userId: string, afterDate: Date) {
-  const dateStr = afterDate.toISOString().split('T')[0];
+  const dateStr = afterDate.toISOString().slice(0, 10);
 
   const [nextReview] = await db
     .select()

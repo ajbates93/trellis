@@ -291,13 +291,13 @@ export function extractUserIdFromMention(text: string): string | null {
   // Match <@U12345> or <@U12345|username>
   const match = text.match(/<@([A-Z0-9]+)(?:\|[^>]+)?>/);
   if (match) {
-    return match[1];
+    return match[1] ?? null;
   }
 
   // Match plain @U12345 (Slack user ID format)
   const plainMatch = text.match(/@(U[A-Z0-9]+)/);
   if (plainMatch) {
-    return plainMatch[1];
+    return plainMatch[1] ?? null;
   }
 
   return null;
@@ -319,19 +319,19 @@ export function extractMentionedName(text: string): string | null {
   // 2. Single lowercase word: @anna
   // 3. Dotted/hyphenated: @anna.smith, @john-doe
   const capitalizedMatch = text.match(/@([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/);
-  if (capitalizedMatch) {
+  if (capitalizedMatch?.[1]) {
     return capitalizedMatch[1].trim();
   }
 
   // Try lowercase with dots/hyphens
   const dottedMatch = text.match(/@([a-z]+(?:[._-][a-z]+)*)/);
-  if (dottedMatch) {
+  if (dottedMatch?.[1]) {
     return dottedMatch[1].trim();
   }
 
   // Try simple lowercase word
   const lowercaseMatch = text.match(/@([a-z]+)/);
-  if (lowercaseMatch) {
+  if (lowercaseMatch?.[1]) {
     return lowercaseMatch[1].trim();
   }
 

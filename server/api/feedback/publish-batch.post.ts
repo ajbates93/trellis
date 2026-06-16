@@ -106,7 +106,7 @@ export default defineEventHandler(async (event) => {
     return validateResponse(response, apiSchemas.SuccessResponseSchema);
   } catch (error) {
     console.error("Error batch publishing feedback:", error);
-    if (error.statusCode) {
+    if (error && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
     throw createError({

@@ -93,9 +93,9 @@ describe('GET /api/insights/user-summary', () => {
       newFeedbackSinceAnalysis: 2,
     })
     expect(result.data).toBeDefined()
-    expect(result.data.themes).toEqual(['leadership', 'communication', 'delivery'])
-    expect(result.data.sentimentData).toEqual({ positive: 0.75, neutral: 0.2, negative: 0.05 })
-    expect(result.data.suggestedGoals).toHaveLength(1)
+    expect(result.data?.themes).toEqual(['leadership', 'communication', 'delivery'])
+    expect(result.data?.sentimentData).toEqual({ positive: 0.75, neutral: 0.2, negative: 0.05 })
+    expect(result.data?.suggestedGoals).toHaveLength(1)
     expect(result.lastAnalyzed).toEqual(analysisDate)
     expect(mockDb.select).toHaveBeenCalledTimes(2)
   })
@@ -119,7 +119,7 @@ describe('GET /api/insights/user-summary', () => {
     const event = createAuthenticatedEvent()
     const result = await handler(event)
 
-    expect(result.data.suggestedGoals).toEqual([])
+    expect(result.data?.suggestedGoals).toEqual([])
   })
 
   it('returns 500 when the database throws an error', async () => {

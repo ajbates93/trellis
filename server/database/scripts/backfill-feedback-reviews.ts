@@ -52,7 +52,9 @@ async function backfillFeedbackReviews() {
       .where(
         and(
           eq(feedback.published, true),
-          isNull(feedback.reviewScheduleId)
+          // review_schedule_id was dropped from the feedback table (migration
+          // 0010); raw SQL keeps this legacy script compiling unchanged.
+          sql`${feedback}."review_schedule_id" IS NULL`
         )
       );
 
@@ -70,7 +72,7 @@ async function backfillFeedbackReviews() {
 
     for (const fb of unassignedFeedback) {
       // Find next review for this reviewee after feedback was created
-      const nextReview = await db
+      const [nextReview] = await db
         .select()
         .from(reviewSchedules)
         .where(
@@ -82,15 +84,16 @@ async function backfillFeedbackReviews() {
         .orderBy(reviewSchedules.scheduledDate)
         .limit(1);
 
-      if (nextReview.length > 0) {
+      if (nextReview) {
         // Assign feedback to this review
-        await db
-          .update(feedback)
-          .set({ reviewScheduleId: nextReview[0].id })
-          .where(eq(feedback.id, fb.id));
+        // review_schedule_id was dropped from the feedback table (migration
+        // 0010); raw SQL keeps this legacy script compiling unchanged.
+        await db.execute(
+          sql`UPDATE ${feedback} SET "review_schedule_id" = ${nextReview.id} WHERE ${feedback.id} = ${fb.id}`
+        );
 
         assignedCount++;
-        console.log(`   ✓ Assigned feedback ${fb.id.substring(0, 8)}... to review "${nextReview[0].name}"`);
+        console.log(`   ✓ Assigned feedback ${fb.id.substring(0, 8)}... to review "${nextReview.name}"`);
       } else {
         skippedCount++;
         console.log(`   ⚠️  No review found for feedback ${fb.id.substring(0, 8)}... (reviewee: ${fb.revieweeId.substring(0, 8)}...)`);

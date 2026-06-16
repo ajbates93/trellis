@@ -60,8 +60,8 @@ describe('GET /api/feedback/suggestions', () => {
     const result = await handler(event)
 
     expect(result.suggestion).toBeDefined()
-    expect(result.suggestion.user.id).toBe('user-2')
-    expect(result.suggestion.reason).toContain('never given feedback')
+    expect(result.suggestion?.user.id).toBe('user-2')
+    expect(result.suggestion?.reason).toContain('never given feedback')
     expect(result.exhausted).toBe(false)
   })
 
@@ -107,8 +107,8 @@ describe('GET /api/feedback/suggestions', () => {
     const result = await handler(event)
 
     expect(result.suggestion).toBeDefined()
-    expect(result.suggestion.user.id).toBe('user-2')
-    expect(result.suggestion.reason).toContain('weeks since')
+    expect(result.suggestion?.user.id).toBe('user-2')
+    expect(result.suggestion?.reason).toContain('weeks since')
     expect(result.exhausted).toBe(false)
     expect(result.reviewStatus).toBeDefined()
   })

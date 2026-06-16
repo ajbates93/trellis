@@ -12,10 +12,10 @@
       </p>
     </div>
 
-    <UAlert v-if="error" icon="i-heroicons-exclamation-triangle" color="red" variant="soft" :title="error" />
+    <UAlert v-if="error" icon="i-heroicons-exclamation-triangle" color="error" variant="soft" :title="error" />
 
     <UAlert
-v-if="success" icon="i-heroicons-check-circle" color="green" variant="soft"
+v-if="success" icon="i-heroicons-check-circle" color="success" variant="soft"
       title="Password Reset Successful!" description="Redirecting you to login..." />
 
     <form v-if="!success" class="space-y-6" @submit.prevent="handleResetPassword">
@@ -101,7 +101,7 @@ const handleResetPassword = async () => {
     toast.add({
       title: "Success!",
       description: "Your password has been reset. Redirecting to login...",
-      color: "green",
+      color: "success",
       icon: "i-heroicons-check-circle",
     });
 

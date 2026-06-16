@@ -10,7 +10,7 @@
         <!-- User Info (Read-only) -->
         <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <UAvatar
-            :src="localUser.avatarUrl || localUser.image"
+            :src="localUser.avatarUrl || localUser.image || undefined"
             :alt="localUser.name"
             size="sm"
           />

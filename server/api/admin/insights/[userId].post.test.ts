@@ -71,6 +71,6 @@ describe('POST /api/admin/insights/:userId', () => {
     const result = await handler(event)
 
     expect(result.status).toBe('completed')
-    expect(result.data.sentimentData.positive).toBe(70)
+    expect(result.data?.sentimentData.positive).toBe(70)
   })
 })

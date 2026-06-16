@@ -144,7 +144,7 @@ async function reseed() {
 
       for (let j = 0; j < count; j++) {
         // Pick a different recipient each time
-        let revieweeId = pick(allUserIds.filter((id) => id !== userId && !usedRecipients.has(id)));
+        const revieweeId = pick(allUserIds.filter((id) => id !== userId && !usedRecipients.has(id)));
         if (!revieweeId) continue;
         usedRecipients.add(revieweeId);
 

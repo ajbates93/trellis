@@ -1,5 +1,4 @@
-import "dotenv/config";
-import { db, client } from "./connection";
+import { db } from "./connection";
 import {
   users,
   feedback,
@@ -201,14 +200,4 @@ export async function seedDemo(): Promise<void> {
   }
 
   console.log(`✅ Demo seeded: ${DEMO_COMPANY} (${seedUsers.length} users)`);
-}
-
-// CLI entry: `npm run db:seed-demo`
-if (import.meta.url === `file://${process.argv[1]}`) {
-  seedDemo()
-    .then(() => client.end())
-    .catch((err) => {
-      console.error("❌ seedDemo failed:", err);
-      return client.end().then(() => process.exit(1));
-    });
 }

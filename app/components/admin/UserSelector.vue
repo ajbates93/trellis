@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import type { User } from "~/types";
+import type { AvatarProps } from "@nuxt/ui";
+
+// Shape of users returned by GET /api/users
+interface UserItem {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  avatarUrl: string | null;
+  roleType: string | null;
+}
 
 interface Props {
   modelValue?: string;
@@ -8,7 +18,7 @@ interface Props {
 
 interface Emits {
   (e: "update:modelValue", userId: string): void;
-  (e: "user-selected", user: User): void;
+  (e: "user-selected", user: UserItem): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,17 +33,17 @@ const { data: userData } = await useApi("/users");
 const users = computed(() => userData.value?.users || []);
 
 const selectedUser = computed(() => {
-  return users.value.find((u: User) => u.id === props.modelValue);
+  return users.value.find((u) => u.id === props.modelValue);
 });
 
 // Handle user selection from dropdown
-const handleUserSelect = (user: User) => {
+const handleUserSelect = (user: UserItem) => {
   emit("update:modelValue", user.id);
   emit("user-selected", user);
 };
 
 // Get avatar for user
-const getUserAvatar = (user: User): string | undefined => {
+const getUserAvatar = (user: UserItem): string | undefined => {
   return user.avatarUrl || user.image || undefined;
 };
 </script>
@@ -55,7 +65,7 @@ const getUserAvatar = (user: User): string | undefined => {
           v-if="selectedValue"
           :src="getUserAvatar(selectedValue)"
           :alt="selectedValue.name"
-          :size="ui.leadingAvatarSize()"
+          :size="ui.leadingAvatarSize() as AvatarProps['size']"
           :class="ui.leadingAvatar()"
         />
       </template>

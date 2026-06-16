@@ -139,10 +139,10 @@ const updateReview = async () => {
     const { getUserTimezone } = useUserTimezone();
     const userTz = getUserTimezone();
 
-    // Parse date/time components
-    const [datePart, timePart] = dateTimeString.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
-    const [hours, minutes] = timePart.split(":").map(Number);
+    // Parse date/time components (defaults guard against malformed input)
+    const [datePart = "", timePart = "00:00"] = dateTimeString.split("T");
+    const [year = 0, month = 1, day = 1] = datePart.split("-").map(Number);
+    const [hours = 0, minutes = 0] = timePart.split(":").map(Number);
 
     // Create UTC timestamp for this date/time
     const utcMs = Date.UTC(year, month - 1, day, hours, minutes);
