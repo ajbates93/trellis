@@ -187,6 +187,11 @@ const updateReview = async () => {
 // Complete review
 const completeReview = async () => {
   try {
+    // Persist any debounced/in-flight edits before the review is locked. A
+    // save debounced within ~1s of clicking "Complete" would otherwise fire
+    // after the status flips to "completed", get rejected by the API ("Cannot
+    // update a completed review"), and silently drop the user's last edit.
+    await flushPendingSaves();
     await $api(`/reviews/${reviewId}/complete`, {
       method: "PATCH",
       body: { completionNotes: completionNotes.value },
@@ -319,7 +324,9 @@ watch(
 const answerTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 const saveAnswers = async () => {
-  if (!review.value) return;
+  // Never attempt to persist answers once the review is locked — the API
+  // rejects it with "Cannot update a completed review".
+  if (!review.value || isCompleted.value) return;
   try {
     await $api(`/reviews/${reviewId}`, {
       method: "PATCH",
@@ -336,6 +343,13 @@ const saveAnswers = async () => {
 };
 
 const onAnswerChange = (fieldId: string, value: string) => {
+  // The rich-text editors emit update:modelValue echoing their unchanged
+  // content on load and after every refresh(), with no user edit. Ignore those
+  // echoes (value matches what's stored) and any change while the review isn't
+  // editable — otherwise we fire auto-saves that the API rejects once the
+  // review is completed. Mirrors the guards on the comment auto-save watchers.
+  if ((!isReviewee.value && !isBuddy.value) || isCompleted.value) return;
+  if (value === (review.value?.answers?.[fieldId] ?? "")) return;
   answers.value = { ...answers.value, [fieldId]: value };
   clearTimeout(answerTimers.get(fieldId));
   answerTimers.set(fieldId, setTimeout(saveAnswers, 800));
@@ -438,6 +452,39 @@ const debouncedSave = (field: string, value: string) => {
       saveReflection(field, value);
     }, 1000),
   );
+};
+
+// Flush any pending debounced or in-flight auto-saves and await them, so the
+// latest edits are persisted before an action that locks the review
+// (completion). Without this, a save still in its debounce window fires after
+// the review is completed and is rejected by the API.
+const flushPendingSaves = async () => {
+  const pending: Array<Promise<unknown>> = [];
+
+  // Reflection comment fields (buddyComments / revieweeComments): flush any
+  // with a pending debounce timer or an in-flight request, re-saving their
+  // latest value now. saveReflection aborts the prior in-flight save for the
+  // field, so a superseded request can't land after completion.
+  const reflectionFields = new Set<string>([
+    ...saveTimeouts.keys(),
+    ...saveControllers.keys(),
+  ]);
+  saveTimeouts.forEach((timer) => clearTimeout(timer));
+  saveTimeouts.clear();
+  for (const field of reflectionFields) {
+    const value =
+      field === "buddyComments" ? buddyComments.value : revieweeComments.value;
+    pending.push(saveReflection(field, value));
+  }
+
+  // Dynamic template answers (debounced separately, 800ms).
+  if (answerTimers.size > 0) {
+    answerTimers.forEach((timer) => clearTimeout(timer));
+    answerTimers.clear();
+    pending.push(saveAnswers());
+  }
+
+  await Promise.all(pending);
 };
 
 // Watch for changes to trigger auto-save
@@ -671,7 +718,7 @@ watch(revieweeComments, (newValue, oldValue) => {
 
             <div class="space-y-6">
               <template v-if="hasSnapshotFields">
-                <DynamicReflectionField
+                <ReviewsDynamicReflectionField
                   v-for="field in snapshotFields"
                   :key="field.id"
                   :field="field"
@@ -699,7 +746,7 @@ watch(revieweeComments, (newValue, oldValue) => {
                 </p>
               </template>
 
-              <SelfScoreField
+              <ReviewsSelfScoreField
                 :model-value="selfScore"
                 :readonly="!isReviewee || isCompleted"
                 @update:model-value="saveSelfScore"
