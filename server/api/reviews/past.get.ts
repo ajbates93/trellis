@@ -66,6 +66,9 @@ export default defineEventHandler(async (event) => {
         reflectionLearnings: reviewSchedules.reflectionLearnings,
         reflectionHighlights: reviewSchedules.reflectionHighlights,
         reflectionConcerns: reviewSchedules.reflectionConcerns,
+        templateSnapshot: reviewSchedules.templateSnapshot,
+        answers: reviewSchedules.answers,
+        selfScore: reviewSchedules.selfScore,
         createdAt: reviewSchedules.createdAt,
         user: {
           id: users.id,

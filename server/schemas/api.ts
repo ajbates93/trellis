@@ -9,6 +9,7 @@ import {
   ReviewScheduleWithUsersSchema,
   BuddyCheckinWithUsersSchema,
 } from "./computed";
+import { ReviewTemplateFieldsSchema } from "./reviewTemplates";
 
 // ===== FEEDBACK API SCHEMAS =====
 
@@ -324,6 +325,7 @@ export const CreateReviewScheduleRequestSchema = z.object({
         "Invalid date format. Use ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm)",
     }),
   name: z.string().optional(),
+  templateId: z.string().uuid().nullable().optional(),
   notes: z.string().nullable().optional(),
 });
 
@@ -349,6 +351,9 @@ export const UpdateReviewScheduleRequestSchema = z.object({
   buddyComments: z.string().nullable().optional(),
   // Reviewee additional comments
   revieweeComments: z.string().nullable().optional(),
+  // Template answers (map of fieldId -> value) and self-assessment score
+  answers: z.record(z.string(), z.string()).optional(),
+  selfScore: z.number().int().min(1).max(10).nullable().optional(),
 });
 
 export const GetReviewSchedulesResponseSchema = z.object({
@@ -396,6 +401,9 @@ export const GetReviewDetailsResponseSchema = z.object({
     reflectionLearnings: z.string().nullable(),
     reflectionHighlights: z.string().nullable(),
     reflectionConcerns: z.string().nullable(),
+    templateSnapshot: ReviewTemplateFieldsSchema.nullable().optional(),
+    answers: z.record(z.string(), z.string()).nullable().optional(),
+    selfScore: z.number().int().nullable().optional(),
     buddyComments: z.string().nullable(),
     revieweeComments: z.string().nullable(),
     createdAt: z.coerce.date(),
@@ -457,6 +465,9 @@ export const GetReviewsWithDetailsResponseSchema = z.object({
       reflectionLearnings: z.string().nullable().optional(),
       reflectionHighlights: z.string().nullable().optional(),
       reflectionConcerns: z.string().nullable().optional(),
+      templateSnapshot: ReviewTemplateFieldsSchema.nullable().optional(),
+      answers: z.record(z.string(), z.string()).nullable().optional(),
+      selfScore: z.number().int().nullable().optional(),
       createdAt: z.coerce.date(),
       user: z.object({
         id: z.string(),

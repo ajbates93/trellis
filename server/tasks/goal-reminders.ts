@@ -34,7 +34,7 @@ export default defineTask({
           type: "goal_approaching",
           title: "Goal target date in 7 days",
           body: g.goalText,
-          link: `/goals/${g.id}`,
+          link: "/goals",
           metadata: { goalId: g.id },
         });
       }
@@ -75,7 +75,7 @@ export default defineTask({
           type: "goal_overdue",
           title: "Goal is overdue",
           body: g.goalText,
-          link: `/goals/${g.id}`,
+          link: "/goals",
           metadata: { goalId: g.id },
         });
         overdueEmitted++;

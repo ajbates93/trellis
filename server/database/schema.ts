@@ -10,6 +10,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { ReviewTemplateField } from "#server/schemas/reviewTemplates";
 
 // Workspaces table (multi-tenancy)
 export const workspaces = pgTable("workspaces", {
@@ -264,6 +265,13 @@ export const reviewSchedules = pgTable("review_schedules", {
   buddyComments: text("buddy_comments"),
   // Reviewee additional comments (filled by reviewee - HTML content from TipTap)
   revieweeComments: text("reviewee_comments"),
+  // Review templates (presets)
+  templateId: uuid("template_id").references(() => reviewTemplates.id, {
+    onDelete: "set null",
+  }),
+  templateSnapshot: jsonb("template_snapshot").$type<ReviewTemplateField[]>(),
+  answers: jsonb("answers").$type<Record<string, string>>().default({}),
+  selfScore: integer("self_score"),
   // Email reminder tracking
   reminderSent7d: boolean("reminder_sent_7d").default(false),
   reminderSent1d: boolean("reminder_sent_1d").default(false),
@@ -287,6 +295,41 @@ export const reviewSchedulesRelations = relations(
     }),
     feedback: many(feedback),
     checkins: many(buddyCheckins),
+    template: one(reviewTemplates, {
+      fields: [reviewSchedules.templateId],
+      references: [reviewTemplates.id],
+    }),
+  }),
+);
+
+// Review templates (presets) — admin-configurable reflection structures
+export const reviewTemplates = pgTable("review_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: text("workspace_id").references(() => workspaces.id, {
+    onDelete: "cascade",
+  }),
+  name: text("name").notNull(),
+  description: text("description"),
+  isDefault: boolean("is_default").notNull().default(false),
+  fields: jsonb("fields").$type<ReviewTemplateField[]>().notNull().default([]),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  archivedAt: timestamp("archived_at"),
+});
+
+export const reviewTemplatesRelations = relations(
+  reviewTemplates,
+  ({ one, many }) => ({
+    workspace: one(workspaces, {
+      fields: [reviewTemplates.workspaceId],
+      references: [workspaces.id],
+    }),
+    creator: one(users, {
+      fields: [reviewTemplates.createdBy],
+      references: [users.id],
+    }),
+    reviews: many(reviewSchedules),
   }),
 );
 

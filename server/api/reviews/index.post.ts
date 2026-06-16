@@ -1,9 +1,10 @@
 import { db } from "#server/database/connection";
-import { reviewSchedules, users } from "#server/database/schema";
-import { eq } from "drizzle-orm";
+import { reviewSchedules, users, reviewTemplates } from "#server/database/schema";
+import { eq, and, isNull } from "drizzle-orm";
 import { format } from "date-fns";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { buildSnapshot, DEFAULT_TEMPLATE_FIELDS } from "#server/utils/reviewTemplates";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const body = await validateBody(event, apiSchemas.CreateReviewScheduleRequestSchema);
-    const { userId, scheduledDate, name, notes } = body;
+    const { userId, scheduledDate, name, notes, templateId } = body;
 
     // Validate cannot create review for yourself
     if (userId === session.user.id) {
@@ -57,6 +58,53 @@ export default defineEventHandler(async (event) => {
     // Auto-generate name if not provided
     const reviewName = name || format(selectedDate, "MMMM yyyy");
 
+    // Resolve the reflection field snapshot for this review.
+    // Default to the built-in fields (validated/copied via buildSnapshot for consistency).
+    let templateSnapshot = buildSnapshot(DEFAULT_TEMPLATE_FIELDS);
+    let resolvedTemplateId: string | null = null;
+
+    // Non-throwing workspace read: review creation must not start 403-ing
+    // callers that lack workspace context (it had no workspace dependency before).
+    const callerWorkspaceId = event.context.user?.workspaceId ?? null;
+
+    if (templateId) {
+      const conditions = [
+        eq(reviewTemplates.id, templateId),
+        isNull(reviewTemplates.archivedAt),
+      ];
+      // Scope to the caller's workspace when we know it (tenant isolation).
+      if (callerWorkspaceId) {
+        conditions.push(eq(reviewTemplates.workspaceId, callerWorkspaceId));
+      }
+      const [tpl] = await db
+        .select()
+        .from(reviewTemplates)
+        .where(and(...conditions))
+        .limit(1);
+      if (!tpl) {
+        throw createError({ statusCode: 404, message: "Review template not found" });
+      }
+      templateSnapshot = buildSnapshot(tpl.fields);
+      resolvedTemplateId = tpl.id;
+    } else if (callerWorkspaceId) {
+      // Fall back to the caller's workspace default template if one exists.
+      const [def] = await db
+        .select()
+        .from(reviewTemplates)
+        .where(
+          and(
+            eq(reviewTemplates.workspaceId, callerWorkspaceId),
+            eq(reviewTemplates.isDefault, true),
+            isNull(reviewTemplates.archivedAt),
+          ),
+        )
+        .limit(1);
+      if (def) {
+        templateSnapshot = buildSnapshot(def.fields);
+        resolvedTemplateId = def.id;
+      }
+    }
+
     // Store as-is (already in UTC format from client)
     // Create the review
     const [newReview] = await db
@@ -68,6 +116,9 @@ export default defineEventHandler(async (event) => {
         name: reviewName,
         notes: notes || null,
         status: "scheduled",
+        templateId: resolvedTemplateId,
+        templateSnapshot,
+        answers: {},
       })
       .returning();
 
