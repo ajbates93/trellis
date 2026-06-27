@@ -2,6 +2,7 @@ import "dotenv/config";
 import { db, client } from "./connection";
 import { users, feedbackPrompts, workspaces } from "./schema";
 import { eq } from "drizzle-orm";
+import { ensureDefaultReviewTemplate } from "#server/utils/ensureDefaultReviewTemplate";
 
 // Team members data
 const TEAM_MEMBERS = [
@@ -997,6 +998,11 @@ async function seed() {
         console.log(`   ⚠️  Review schedule may already exist, skipping...`);
       }
     }
+
+    // Step 5b: Create default review template
+    console.log("\n📋 Creating default review template...");
+    await ensureDefaultReviewTemplate(workspaceId, alexBatesId ?? null);
+    console.log("   ✓ Default review template ready");
 
     // Step 6: Create sample goals for testing
     console.log("\n🎯 Creating sample goals...");

@@ -19,25 +19,6 @@ const { data: reviewData, refresh } = await useApi(
 
 const review = computed(() => (reviewData.value as any)?.review);
 
-watchEffect(() => {
-  if (review.value) {
-    console.log(
-      "[ReviewDetail] review object keys:",
-      Object.keys(review.value),
-    );
-    console.log(
-      "[ReviewDetail] review.name:",
-      review.value.name,
-      "| type:",
-      typeof review.value.name,
-    );
-    console.log(
-      "[ReviewDetail] full review:",
-      JSON.stringify(review.value, null, 2),
-    );
-  }
-});
-
 useHead({
   title: computed(() => review.value?.name || "Review Details"),
 });
@@ -187,6 +168,11 @@ const updateReview = async () => {
 // Complete review
 const completeReview = async () => {
   try {
+    // Persist any debounced/in-flight edits before the review is locked. A
+    // save debounced within ~1s of clicking "Complete" would otherwise fire
+    // after the status flips to "completed", get rejected by the API ("Cannot
+    // update a completed review"), and silently drop the user's last edit.
+    await flushPendingSaves();
     await $api(`/reviews/${reviewId}/complete`, {
       method: "PATCH",
       body: { completionNotes: completionNotes.value },
@@ -243,38 +229,129 @@ const selectedFeedback = ref<any>(null);
 
 // Open feedback modal
 const openFeedbackModal = (feedbackItem: any) => {
-  console.log(
-    "[ReviewDetail] openFeedbackModal called with:",
-    JSON.stringify(feedbackItem, null, 2),
-  );
-  console.log("[ReviewDetail] has reviewer?", !!feedbackItem?.reviewer);
-  console.log("[ReviewDetail] has reviewee?", !!feedbackItem?.reviewee);
-  console.log("[ReviewDetail] has content?", !!feedbackItem?.content);
   selectedFeedback.value = feedbackItem;
   isFeedbackModalOpen.value = true;
 };
 
 // Reflection state
-const reflectionLearnings = ref("");
-const reflectionHighlights = ref("");
-const reflectionConcerns = ref("");
 const buddyComments = ref("");
 const revieweeComments = ref("");
+
+// Dynamic reflection state driven by the review's template snapshot
+const answers = ref<Record<string, string>>({});
+const selfScore = ref<number | null>(null);
+
+const snapshotFields = computed(
+  () =>
+    (review.value?.templateSnapshot ?? []) as Array<{
+      id: string;
+      type: "long_text" | "multiple_choice" | "section";
+      label: string;
+      helpText?: string;
+      required: boolean;
+      options?: string[];
+    }>,
+);
+
+const hasSnapshotFields = computed(() => snapshotFields.value.length > 0);
+
+const legacyReflections = computed(() => {
+  const r = review.value;
+  if (!r) return [] as Array<{ label: string; icon: string; content: string }>;
+  const items: Array<{ label: string; icon: string; content: string }> = [];
+  if (r.reflectionLearnings)
+    items.push({
+      label: "What have I learnt in the past three months?",
+      icon: "i-heroicons-academic-cap",
+      content: r.reflectionLearnings,
+    });
+  if (r.reflectionHighlights)
+    items.push({
+      label: "Any highlights?",
+      icon: "i-heroicons-star",
+      content: r.reflectionHighlights,
+    });
+  if (r.reflectionConcerns)
+    items.push({
+      label: "Are you worried about anything right now?",
+      icon: "i-heroicons-exclamation-triangle",
+      content: r.reflectionConcerns,
+    });
+  return items;
+});
 
 // Initialize reflection state from review data
 watch(
   () => review.value,
   (newReview) => {
     if (newReview) {
-      reflectionLearnings.value = newReview.reflectionLearnings || "";
-      reflectionHighlights.value = newReview.reflectionHighlights || "";
-      reflectionConcerns.value = newReview.reflectionConcerns || "";
       buddyComments.value = newReview.buddyComments || "";
       revieweeComments.value = newReview.revieweeComments || "";
+      answers.value = { ...(newReview.answers ?? {}) };
+      selfScore.value = newReview.selfScore ?? null;
     }
   },
   { immediate: true },
 );
+
+// Per-field debounce timers for dynamic answer auto-save
+const answerTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+const saveAnswers = async () => {
+  // Never attempt to persist answers once the review is locked — the API
+  // rejects it with "Cannot update a completed review".
+  if (!review.value || isCompleted.value) return;
+  try {
+    await $api(`/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: { answers: answers.value },
+    });
+  } catch (error) {
+    console.error("Failed to save answers:", error);
+    toast.add({
+      title: "Failed to save changes",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
+
+const onAnswerChange = (fieldId: string, value: string) => {
+  // The rich-text editors emit update:modelValue echoing their unchanged
+  // content on load and after every refresh(), with no user edit. Ignore those
+  // echoes (value matches what's stored) and any change while the review isn't
+  // editable — otherwise we fire auto-saves that the API rejects once the
+  // review is completed. Mirrors the guards on the comment auto-save watchers.
+  if ((!isReviewee.value && !isBuddy.value) || isCompleted.value) return;
+  if (value === (review.value?.answers?.[fieldId] ?? "")) return;
+  answers.value = { ...answers.value, [fieldId]: value };
+  clearTimeout(answerTimers.get(fieldId));
+  answerTimers.set(fieldId, setTimeout(saveAnswers, 800));
+};
+
+// Cancel any pending debounced answer saves when leaving the page so the
+// timer can't fire against a stale reviewId after unmount.
+onUnmounted(() => {
+  answerTimers.forEach((timer) => clearTimeout(timer));
+});
+
+const saveSelfScore = async (value: number | null) => {
+  selfScore.value = value;
+  if (!review.value) return;
+  try {
+    await $api(`/reviews/${reviewId}`, {
+      method: "PATCH",
+      body: { selfScore: value },
+    });
+  } catch (error) {
+    console.error("Failed to save self-score:", error);
+    toast.add({
+      title: "Failed to save changes",
+      color: "error",
+      icon: "i-heroicons-x-circle",
+    });
+  }
+};
 
 // Auto-save logic
 const isSavingReflections = ref(false);
@@ -351,41 +428,41 @@ const debouncedSave = (field: string, value: string) => {
   );
 };
 
+// Flush any pending debounced or in-flight auto-saves and await them, so the
+// latest edits are persisted before an action that locks the review
+// (completion). Without this, a save still in its debounce window fires after
+// the review is completed and is rejected by the API.
+const flushPendingSaves = async () => {
+  const pending: Array<Promise<unknown>> = [];
+
+  // Reflection comment fields (buddyComments / revieweeComments): flush any
+  // with a pending debounce timer or an in-flight request, re-saving their
+  // latest value now. saveReflection aborts the prior in-flight save for the
+  // field, so a superseded request can't land after completion.
+  const reflectionFields = new Set<string>([
+    ...saveTimeouts.keys(),
+    ...saveControllers.keys(),
+  ]);
+  saveTimeouts.forEach((timer) => clearTimeout(timer));
+  saveTimeouts.clear();
+  for (const field of reflectionFields) {
+    const value =
+      field === "buddyComments" ? buddyComments.value : revieweeComments.value;
+    pending.push(saveReflection(field, value));
+  }
+
+  // Dynamic template answers (debounced separately, 800ms).
+  if (answerTimers.size > 0) {
+    answerTimers.forEach((timer) => clearTimeout(timer));
+    answerTimers.clear();
+    pending.push(saveAnswers());
+  }
+
+  await Promise.all(pending);
+};
+
 // Watch for changes to trigger auto-save
 // Only watch if the user has permission to edit that field to avoid unnecessary saves on load
-watch(reflectionLearnings, (newValue, oldValue) => {
-  if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
-    newValue !== (review.value?.reflectionLearnings || "") &&
-    oldValue !== ""
-  ) {
-    debouncedSave("reflectionLearnings", newValue);
-  }
-});
-
-watch(reflectionHighlights, (newValue, oldValue) => {
-  if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
-    newValue !== (review.value?.reflectionHighlights || "") &&
-    oldValue !== ""
-  ) {
-    debouncedSave("reflectionHighlights", newValue);
-  }
-});
-
-watch(reflectionConcerns, (newValue, oldValue) => {
-  if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
-    newValue !== (review.value?.reflectionConcerns || "") &&
-    oldValue !== ""
-  ) {
-    debouncedSave("reflectionConcerns", newValue);
-  }
-});
-
 watch(buddyComments, (newValue, oldValue) => {
   if (
     (isReviewee.value || isBuddy.value) &&
@@ -614,28 +691,39 @@ watch(revieweeComments, (newValue, oldValue) => {
             </template>
 
             <div class="space-y-6">
-              <ReviewsReflectionEditor
-                v-model="reflectionLearnings"
-                label="What have I learnt in the past three months?"
-                icon="i-heroicons-academic-cap"
-                placeholder="Think about technical skills, soft skills, or domain knowledge..."
-                :readonly="(!isReviewee && !isBuddy) || isCompleted"
-              />
+              <template v-if="hasSnapshotFields">
+                <ReviewsDynamicReflectionField
+                  v-for="field in snapshotFields"
+                  :key="field.id"
+                  :field="field"
+                  :model-value="answers[field.id] || ''"
+                  :readonly="(!isReviewee && !isBuddy) || isCompleted"
+                  @update:model-value="(v) => onAnswerChange(field.id, v)"
+                />
+              </template>
 
-              <ReviewsReflectionEditor
-                v-model="reflectionHighlights"
-                label="Any highlights?"
-                icon="i-heroicons-star"
-                placeholder="Projects delivered, problems solved, or team contributions..."
-                :readonly="(!isReviewee && !isBuddy) || isCompleted"
-              />
+              <!-- Legacy fallback: reviews with no template snapshot (pre-backfill / seed data) -->
+              <template v-else>
+                <ReviewsReflectionEditor
+                  v-for="item in legacyReflections"
+                  :key="item.label"
+                  :model-value="item.content"
+                  :label="item.label"
+                  :icon="item.icon"
+                  readonly
+                />
+                <p
+                  v-if="!legacyReflections.length"
+                  class="text-sm text-gray-500"
+                >
+                  No reflections recorded.
+                </p>
+              </template>
 
-              <ReviewsReflectionEditor
-                v-model="reflectionConcerns"
-                label="Are you worried about anything right now?"
-                icon="i-heroicons-exclamation-triangle"
-                placeholder="Blockers, uncertainties, or support you might need..."
-                :readonly="(!isReviewee && !isBuddy) || isCompleted"
+              <ReviewsSelfScoreField
+                :model-value="selfScore"
+                :readonly="!isReviewee || isCompleted"
+                @update:model-value="saveSelfScore"
               />
             </div>
           </UCard>

@@ -248,6 +248,35 @@ const reviewName = ref<string>("");
 const isCreating = ref(false);
 const isStartingNow = ref(false);
 
+// Review template picker state
+const reviewTemplates = ref<
+  Array<{ id: string; name: string; isDefault: boolean }>
+>([]);
+const selectedTemplateId = ref<string | undefined>(undefined);
+
+const templateSelectItems = computed(() =>
+  reviewTemplates.value.map((t) => ({ label: t.name, value: t.id })),
+);
+
+const fetchReviewTemplates = async () => {
+  try {
+    // Workspace-scoped, member-readable list so buddies (not just admins) can
+    // pick a template when scheduling.
+    const data = await $api("/reviews/templates");
+    const templates = data.templates ?? [];
+    reviewTemplates.value = templates;
+    const def = templates.find((t: { isDefault: boolean }) => t.isDefault);
+    selectedTemplateId.value = def?.id ?? templates[0]?.id ?? undefined;
+  } catch {
+    // On failure the server still snapshots the workspace default when a review
+    // is created, so leave the dropdown hidden rather than blocking scheduling.
+    reviewTemplates.value = [];
+    selectedTemplateId.value = undefined;
+  }
+};
+
+onMounted(fetchReviewTemplates);
+
 // Helper to get the next hour as "HH:mm"
 const getNextHourTime = () => {
   const now = new Date();
@@ -299,6 +328,10 @@ const resetForm = () => {
   scheduledTime.value = "09:00";
   includeTime.value = false;
   reviewName.value = "";
+  selectedTemplateId.value =
+    reviewTemplates.value.find((t) => t.isDefault)?.id ??
+    reviewTemplates.value[0]?.id ??
+    undefined;
 };
 
 // Create review for selected buddy
@@ -335,6 +368,7 @@ const createReview = async () => {
         userId: selectedBuddyId.value,
         scheduledDate: utcDateString,
         name: reviewName.value,
+        templateId: selectedTemplateId.value,
       },
     });
 
@@ -860,6 +894,19 @@ const getReviewActions = (review: any) => {
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Auto-generated from date if left empty
           </p>
+        </div>
+
+        <!-- Review Template -->
+        <div v-if="reviewTemplates.length">
+          <label class="block text-sm font-medium mb-2">
+            Review template
+          </label>
+          <USelect
+            v-model="selectedTemplateId"
+            :items="templateSelectItems"
+            placeholder="Choose a template"
+            class="w-full"
+          />
         </div>
       </div>
     </template>

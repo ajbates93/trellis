@@ -3,7 +3,16 @@ import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 import { buildWorkspace, buildUser } from '#server/__tests__/helpers/factories'
 
-const { mockDb, mockInsert } = createMockDb()
+const { mockDb, mockInsert, mockSelect } = createMockDb()
+
+// Every workspace-creation success path now also provisions a default review
+// template: ensureDefaultReviewTemplate() does a select (no existing default)
+// followed by an insert. Queue those after the workspace/admin inserts.
+const defaultTemplate = { id: 'tpl-uuid', name: 'Default', isDefault: true }
+const mockTemplateProvisioning = () => {
+  mockSelect([]) // no existing default template
+  mockInsert([defaultTemplate]) // created default template
+}
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
 
@@ -50,6 +59,7 @@ describe('POST /api/super-admin/workspaces', () => {
 
     mockReadBody.mockResolvedValueOnce({ name: 'New Workspace' })
     mockInsert([newWorkspace])
+    mockTemplateProvisioning()
 
     const event = createMockEvent({ method: 'POST' })
     const result = await handler(event)
@@ -59,7 +69,28 @@ describe('POST /api/super-admin/workspaces', () => {
       workspace: newWorkspace,
       adminUser: null,
     })
-    expect(mockDb.insert).toHaveBeenCalledTimes(1)
+    // 1 workspace insert + 1 default-template insert.
+    expect(mockDb.insert).toHaveBeenCalledTimes(2)
+  })
+
+  it('provisions a default review template scoped to the new workspace', async () => {
+    const newWorkspace = buildWorkspace({ id: 'test-uuid', name: 'Fresh Workspace' })
+
+    mockReadBody.mockResolvedValueOnce({ name: 'Fresh Workspace' })
+    mockInsert([newWorkspace]) // workspace
+    mockSelect([]) // helper: no existing default
+    const templateChain = mockInsert([defaultTemplate]) // helper: created template
+
+    const event = createMockEvent({ method: 'POST' })
+    await handler(event)
+
+    expect(templateChain.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: 'test-uuid',
+        name: 'Default',
+        isDefault: true,
+      }),
+    )
   })
 
   it('creates a workspace with logoUrl', async () => {
@@ -74,6 +105,7 @@ describe('POST /api/super-admin/workspaces', () => {
       logoUrl: 'https://example.com/logo.png',
     })
     mockInsert([newWorkspace])
+    mockTemplateProvisioning()
 
     const event = createMockEvent({ method: 'POST' })
     const result = await handler(event)
@@ -103,6 +135,8 @@ describe('POST /api/super-admin/workspaces', () => {
     mockInsert([newWorkspace])
     // Second insert: admin user
     mockInsert([adminUser])
+    // Third insert (+ select): default review template
+    mockTemplateProvisioning()
 
     const event = createMockEvent({ method: 'POST' })
     const result = await handler(event)
@@ -114,7 +148,7 @@ describe('POST /api/super-admin/workspaces', () => {
       email: adminUser.email,
       name: adminUser.name,
     })
-    expect(mockDb.insert).toHaveBeenCalledTimes(2)
+    expect(mockDb.insert).toHaveBeenCalledTimes(3)
   })
 
   it('creates admin user using email as name when adminName is not provided', async () => {
@@ -132,6 +166,7 @@ describe('POST /api/super-admin/workspaces', () => {
     })
     mockInsert([newWorkspace])
     mockInsert([adminUser])
+    mockTemplateProvisioning()
 
     const event = createMockEvent({ method: 'POST' })
     const result = await handler(event)

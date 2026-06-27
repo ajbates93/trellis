@@ -70,13 +70,6 @@ v-else name="i-heroicons-chevron-down-20-solid"
                 <UIcon name="i-heroicons-clipboard-document-check" class="text-primary-500" />
                 Review Breakdown
               </h2>
-              <USelectMenu
-                v-model="selectedReflectionType"
-                :items="reflectionFilterOptions"
-                value-key="value"
-                :searchable="false"
-                class="w-48"
-              />
             </div>
 
             <div v-if="loadingReviews">
@@ -92,45 +85,45 @@ v-else name="i-heroicons-chevron-down-20-solid"
               <p class="text-gray-500">No completed reviews found for this user.</p>
             </div>
 
-            <div v-else-if="reviewsWithReflections.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+            <div v-else-if="reviewsWithContent.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <p class="text-gray-500">No reflections recorded for this user.</p>
             </div>
 
-            <UAccordion v-else :items="reflectionAccordionItems" type="multiple">
+            <UAccordion
+              v-else
+              :items="reflectionAccordionItems"
+              type="multiple"
+              :ui="{
+                item: 'border border-gray-200 dark:border-gray-700 last:border-b rounded-lg mb-3 last:mb-0 bg-gray-50/50 dark:bg-gray-800/30 px-4',
+                trigger: 'py-3 cursor-pointer',
+                label: 'font-semibold text-gray-900 dark:text-white',
+              }"
+            >
               <template #body="{ item }">
                 <div class="pb-4">
-                  <template v-if="selectedFilterValue === 'all'">
-                    <div class="space-y-3">
-                      <div v-if="item.review.reflectionLearnings" class="rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                          <UIcon name="i-heroicons-academic-cap" class="text-blue-500" />
-                          <span class="font-semibold text-sm text-blue-700 dark:text-blue-300">Learnings</span>
-                        </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionLearnings)" />
+                  <div v-if="item.selfScore != null" class="mb-3 flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Self-score</span>
+                    <UBadge :label="`${item.selfScore} / 10`" color="primary" variant="subtle" size="sm" />
+                  </div>
+                  <div v-if="item.entries.length" class="space-y-3">
+                    <div
+                      v-for="entry in item.entries"
+                      :key="entry.id"
+                      class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-4"
+                    >
+                      <div class="flex items-center gap-2 mb-3">
+                        <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="text-primary-500" />
+                        <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">{{ entry.label }}</span>
                       </div>
-                      <div v-if="item.review.reflectionHighlights" class="rounded-lg border border-yellow-200 dark:border-yellow-900/40 bg-yellow-50/50 dark:bg-yellow-950/20 p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                          <UIcon name="i-heroicons-sparkles" class="text-yellow-500" />
-                          <span class="font-semibold text-sm text-yellow-700 dark:text-yellow-300">Highlights</span>
-                        </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionHighlights)" />
-                      </div>
-                      <div v-if="item.review.reflectionConcerns" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/20 p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                          <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500" />
-                          <span class="font-semibold text-sm text-red-700 dark:text-red-300">Concerns</span>
-                        </div>
-                        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.review.reflectionConcerns)" />
-                      </div>
+                      <div
+                        v-if="entry.type === 'long_text'"
+                        class="prose prose-sm dark:prose-invert max-w-none"
+                        v-html="sanitize(entry.content)"
+                      />
+                      <p v-else class="text-sm text-gray-900 dark:text-gray-100">{{ entry.content }}</p>
                     </div>
-                    <p v-if="!item.review.reflectionLearnings && !item.review.reflectionHighlights && !item.review.reflectionConcerns" class="text-gray-500 text-sm">
-                      No reflections recorded
-                    </p>
-                  </template>
-                  <template v-else>
-                    <div v-if="item.reflectionContent" class="prose prose-sm dark:prose-invert max-w-none" v-html="sanitize(item.reflectionContent)" />
-                    <p v-else class="text-gray-500 text-sm">No reflections recorded</p>
-                  </template>
+                  </div>
+                  <p v-else class="text-gray-500 text-sm">No reflections recorded</p>
                 </div>
               </template>
             </UAccordion>
@@ -470,46 +463,60 @@ watch(selectedUser, async (user) => {
   }
 });
 
-// Reflections
-const reflectionFilterOptions = [
-  { label: 'All Reflections', value: 'all' },
-  { label: 'Learnings', value: 'learnings' },
-  { label: 'Highlights', value: 'highlights' },
-  { label: 'Concerns', value: 'concerns' },
-];
-const selectedReflectionType = ref<string>('all');
+interface ReflectionEntry {
+  id: string;
+  label: string;
+  type: "long_text" | "multiple_choice" | "section";
+  content: string;
+}
 
-const selectedFilterValue = computed((): string => selectedReflectionType.value || 'all');
-
-const reflectionFieldMap: Record<string, string> = {
-  learnings: 'reflectionLearnings',
-  highlights: 'reflectionHighlights',
-  concerns: 'reflectionConcerns',
+// All non-empty reflection entries for a review, derived from snapshot+answers,
+// falling back to the legacy columns for reviews without a snapshot.
+const reviewReflectionEntries = (review: any): ReflectionEntry[] => {
+  const snapshot = review.templateSnapshot;
+  const answers = review.answers || {};
+  if (Array.isArray(snapshot) && snapshot.length) {
+    return snapshot
+      .filter((f: any) => f.type !== "section")
+      .map((f: any) => ({
+        id: f.id,
+        label: f.label,
+        type: f.type,
+        content: answers[f.id] || "",
+      }))
+      .filter((e: ReflectionEntry) => e.content);
+  }
+  // Legacy fallback (reviews predating the backfill / with no snapshot)
+  const legacy: ReflectionEntry[] = [];
+  if (review.reflectionLearnings)
+    legacy.push({ id: "learnings", label: "Learnings", type: "long_text", content: review.reflectionLearnings });
+  if (review.reflectionHighlights)
+    legacy.push({ id: "highlights", label: "Highlights", type: "long_text", content: review.reflectionHighlights });
+  if (review.reflectionConcerns)
+    legacy.push({ id: "concerns", label: "Concerns", type: "long_text", content: review.reflectionConcerns });
+  return legacy;
 };
 
-const getReflectionField = (review: any, filterValue: string): string | null => {
-  const field = reflectionFieldMap[filterValue];
-  return field ? review[field] : null;
-};
+// A review surfaces in the breakdown if it has any reflection answers or a
+// recorded self-score. Each review shows all of its own template fields - there
+// is no cross-review filter, since templates are dynamic.
+const hasSelfScore = (review: any): boolean =>
+  review.selfScore !== null && review.selfScore !== undefined;
 
-const reviewsWithReflections = computed(() => {
-  return reviews.value.filter((r: any) => {
-    if (selectedFilterValue.value === 'all') {
-      return r.reflectionLearnings || r.reflectionHighlights || r.reflectionConcerns;
-    }
-    return getReflectionField(r, selectedFilterValue.value);
-  });
-});
+const reviewsWithContent = computed(() =>
+  reviews.value.filter(
+    (r: any) => reviewReflectionEntries(r).length > 0 || hasSelfScore(r),
+  ),
+);
 
-const reflectionAccordionItems = computed(() => {
-  return reviewsWithReflections.value.map((review: any) => ({
-    label: `Review: ${review.name || 'Untitled'}`,
+const reflectionAccordionItems = computed(() =>
+  reviewsWithContent.value.map((review: any) => ({
+    label: `Review: ${review.name || "Untitled"}`,
     review,
-    reflectionContent: selectedFilterValue.value !== 'all'
-      ? getReflectionField(review, selectedFilterValue.value)
-      : null,
-  }));
-});
+    entries: reviewReflectionEntries(review),
+    selfScore: review.selfScore ?? null,
+  })),
+);
 
 const sortedGoals = computed(() => {
   return [...goals.value]

@@ -13,7 +13,6 @@ import {
   buddyCheckins,
   workspaces,
   accounts,
-  slackWorkspaces,
 } from "./schema";
 import { isDemoMode } from "../utils/demo";
 import { hashPassword } from "../utils/password";
@@ -56,10 +55,10 @@ async function truncateAppData(): Promise<void> {
   await db.delete(notifications);
   await db.delete(onboardingImports);
   await db.delete(accounts);
-  // slack_workspaces.installedBy -> users.id has no ON DELETE rule, so delete it
-  // before users to avoid an FK violation (the demo never seeds Slack, but this
-  // keeps the truncate robust if a row ever exists).
-  await db.delete(slackWorkspaces);
+  // Note: we intentionally do NOT truncate slack_workspaces. The demo never
+  // creates Slack rows (the integration is hidden in demo mode), so there is no
+  // FK row to clear before deleting users - and the demo database may not even
+  // have the table provisioned, so touching it would error.
   await db.delete(users);
   await db.delete(workspaces);
 }
@@ -112,7 +111,10 @@ export async function seedDemo(): Promise<void> {
       await db.insert(accounts).values({
         id: "demo-account-admin",
         userId: u.id,
-        accountId: u.id,
+        // better-auth's credential provider keys the account on the email, not
+        // the userId (matches server/api/auth/set-password.post.ts). Using the
+        // userId here makes signInEmail fail to find the account.
+        accountId: u.email,
         providerId: "credential",
         password: hashed,
         createdAt: now,
