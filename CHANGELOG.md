@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.17.0](https://github.com/ajbates93/trellis/compare/v0.16.3...v0.17.0) (2026-06-27)
+
+
+### Features
+
+* adapt admin reports review breakdown to dynamic templates ([1a97c67](https://github.com/ajbates93/trellis/commit/1a97c678cff9fab7623cdb98be56a96608541790))
+* provision a default review template when a workspace is created ([35d91cd](https://github.com/ajbates93/trellis/commit/35d91cdf01c14631a8fb1757ea9268c39c084a98))
+
+
+### Bug Fixes
+
+* let buddies choose a review template when scheduling ([746978b](https://github.com/ajbates93/trellis/commit/746978b0242249b504eece56589e3d127d569596))
+* link goal reminder notifications to /goals, not /goals/:id ([99a9200](https://github.com/ajbates93/trellis/commit/99a92000604d211c8772eb6668e4f3042fd39047))
+* render review template fields and guard answer auto-save on completed reviews ([fffd11e](https://github.com/ajbates93/trellis/commit/fffd11ee889210e3b60e60b369c137159e1aae74))
+* stop hiding SSR content in production and add a dev boot indicator ([7389db5](https://github.com/ajbates93/trellis/commit/7389db5902e7bb26adb5b3500d53f180b1fef64b))
+* type selectedTemplateId as string | undefined to satisfy USelect ([67bed15](https://github.com/ajbates93/trellis/commit/67bed15ed8ed404b8b73eb3b30b728bb4fa133f2))
+
+
+### Documentation
+
+* spec for admin reports under dynamic review templates ([8fcef6f](https://github.com/ajbates93/trellis/commit/8fcef6fe2fe4e5bc26a8cf62388c01ff77ca60e2))
+
+
+### Miscellaneous
+
+* remove debug logging and dev-only scripts before merge ([24c611a](https://github.com/ajbates93/trellis/commit/24c611a072a889b8a8dd3c8bc8b927820bb9d616))
+
 ## [0.16.3](https://github.com/ajbates93/trellis/compare/v0.16.2...v0.16.3) (2026-06-10)
 
 
