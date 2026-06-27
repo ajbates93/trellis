@@ -252,7 +252,7 @@ const isStartingNow = ref(false);
 const reviewTemplates = ref<
   Array<{ id: string; name: string; isDefault: boolean }>
 >([]);
-const selectedTemplateId = ref<string | null>(null);
+const selectedTemplateId = ref<string | undefined>(undefined);
 
 const templateSelectItems = computed(() =>
   reviewTemplates.value.map((t) => ({ label: t.name, value: t.id })),
@@ -266,12 +266,12 @@ const fetchReviewTemplates = async () => {
     const templates = data.templates ?? [];
     reviewTemplates.value = templates;
     const def = templates.find((t: { isDefault: boolean }) => t.isDefault);
-    selectedTemplateId.value = def?.id ?? templates[0]?.id ?? null;
+    selectedTemplateId.value = def?.id ?? templates[0]?.id ?? undefined;
   } catch {
     // On failure the server still snapshots the workspace default when a review
     // is created, so leave the dropdown hidden rather than blocking scheduling.
     reviewTemplates.value = [];
-    selectedTemplateId.value = null;
+    selectedTemplateId.value = undefined;
   }
 };
 
@@ -331,7 +331,7 @@ const resetForm = () => {
   selectedTemplateId.value =
     reviewTemplates.value.find((t) => t.isDefault)?.id ??
     reviewTemplates.value[0]?.id ??
-    null;
+    undefined;
 };
 
 // Create review for selected buddy
