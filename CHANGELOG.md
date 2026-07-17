@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.18.0](https://github.com/ajbates93/trellis/compare/v0.17.0...v0.18.0) (2026-07-17)
+
+
+### Features
+
+* support multiple emails in demo requests ([501c4cd](https://github.com/ajbates93/trellis/commit/501c4cdd393158263095ee73b0f3f8d87f9df534))
+
+
+### Bug Fixes
+
+* ci build issues ([8a2c1ec](https://github.com/ajbates93/trellis/commit/8a2c1ecabb33dcc6eb4edc371d60989961b677b2))
+* CI missing vue-tsc ([1c6c790](https://github.com/ajbates93/trellis/commit/1c6c7906690461afbc8af5ea981e16c58c97e04d))
+
 ## [0.17.0](https://github.com/ajbates93/trellis/compare/v0.16.3...v0.17.0) (2026-06-27)
 
 
