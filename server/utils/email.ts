@@ -4,7 +4,7 @@ import { isDemoMode } from "./demo";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface SendEmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   from?: string;
