@@ -87,14 +87,14 @@ onBeforeUnmount(() => {
     <div 
       class="border rounded-lg overflow-hidden transition-colors"
       :class="[
-        readonly 
+        props.readonly 
           ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50' 
           : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus-within:border-primary-500 dark:focus-within:border-primary-400'
       ]"
     >
       <!-- Toolbar (only show when editable) -->
       <div
-        v-if="editor && !readonly"
+        v-if="editor && !props.readonly"
         class="flex flex-wrap gap-1 p-2 border-b border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
       >
         <!-- Bold -->
@@ -164,7 +164,7 @@ onBeforeUnmount(() => {
       
       <!-- Empty state placeholder -->
       <div 
-        v-if="readonly && !modelValue" 
+        v-if="props.readonly && !modelValue" 
         class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 italic"
       >
         No content yet

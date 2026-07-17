@@ -130,7 +130,7 @@ const completedCount = computed(
       >
         <!-- Checkbox -->
         <button
-          v-if="!readonly"
+          v-if="!props.readonly"
           type="button"
           class="flex-shrink-0 focus:outline-none"
           :disabled="updatingIds.has(milestone.id)"
@@ -178,7 +178,7 @@ const completedCount = computed(
 
         <!-- Delete button -->
         <button
-          v-if="!readonly"
+          v-if="!props.readonly"
           type="button"
           class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity focus:outline-none"
           :disabled="updatingIds.has(milestone.id)"
@@ -194,14 +194,14 @@ const completedCount = computed(
 
     <!-- Empty state -->
     <div
-      v-else-if="readonly"
+      v-else-if="props.readonly"
       class="text-sm text-gray-500 italic py-2"
     >
       No milestones
     </div>
 
     <!-- Add milestone input -->
-    <div v-if="!readonly" class="flex items-center gap-2">
+    <div v-if="!props.readonly" class="flex items-center gap-2">
       <UInput
         v-model="newMilestoneTitle"
         placeholder="Add a milestone..."
@@ -224,7 +224,7 @@ const completedCount = computed(
     </div>
 
     <!-- Help text -->
-    <p v-if="!readonly && milestones.length === 0" class="text-xs text-gray-500">
+    <p v-if="!props.readonly && milestones.length === 0" class="text-xs text-gray-500">
       Break down your goal into smaller steps to track progress
     </p>
   </div>
