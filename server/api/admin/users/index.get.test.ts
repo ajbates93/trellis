@@ -45,15 +45,16 @@ describe('GET /api/admin/users', () => {
     const userWithBuddy = buildUser({ id: 'user-a', buddyId: 'user-b', emailVerified: true })
     const userWithoutBuddy = buildUser({ id: 'user-b', buddyId: null, emailVerified: false })
 
-    // 1. Main user list select
-    mockSelect([userWithBuddy, userWithoutBuddy])
-    // 2. Buddy name lookup for userWithBuddy (buddyId = 'user-b')
-    mockSelect([{ name: userWithoutBuddy.name }])
-    // 3. Total count
+    // 1. Main user list select (joined with buddy alias, buddyName already resolved)
+    mockSelect([
+      { ...userWithBuddy, buddyName: userWithoutBuddy.name },
+      { ...userWithoutBuddy, buddyName: null },
+    ])
+    // 2. Total count
     mockSelect([{ count: 2 }])
-    // 4. Active count
+    // 3. Active count
     mockSelect([{ count: 1 }])
-    // 5. Invited count
+    // 4. Invited count
     mockSelect([{ count: 1 }])
 
     const event = createAdminEvent()
@@ -78,15 +79,19 @@ describe('GET /api/admin/users', () => {
         invited: 1,
       },
     })
-    expect(mockDb.select).toHaveBeenCalledTimes(5)
+    // Single join query for the list, plus 3 count queries - no per-user lookups
+    expect(mockDb.select).toHaveBeenCalledTimes(4)
   })
 
-  it('returns users list with no buddy lookups when no buddyIds are set', async () => {
+  it('returns users list with buddyName null when no buddyIds are set', async () => {
     const user1 = buildUser({ buddyId: null, emailVerified: true })
     const user2 = buildUser({ buddyId: null, emailVerified: true })
 
-    // 1. Main user list
-    mockSelect([user1, user2])
+    // 1. Main user list (joined)
+    mockSelect([
+      { ...user1, buddyName: null },
+      { ...user2, buddyName: null },
+    ])
     // 2. Total count
     mockSelect([{ count: 2 }])
     // 3. Active count
@@ -103,7 +108,7 @@ describe('GET /api/admin/users', () => {
       ]),
       counts: { all: 2, active: 2, invited: 0 },
     })
-    // No buddy lookups — only 4 selects total
+    // Single join query for the list, plus 3 count queries - no per-user lookups
     expect(mockDb.select).toHaveBeenCalledTimes(4)
   })
 
