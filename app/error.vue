@@ -1,6 +1,11 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
     <div class="text-center max-w-md">
+      <!-- Logo -->
+      <div class="flex justify-center mb-6">
+        <TrellisLogo :size="56" />
+      </div>
+
       <!-- Error Icon -->
       <div class="mb-6">
         <UIcon
@@ -22,24 +27,26 @@
 
       <!-- Error Message -->
       <p class="text-gray-600 dark:text-gray-400 mb-8">
-        {{ error.message || 'An unexpected error occurred.' }}
+        {{ errorMessage }}
       </p>
 
       <!-- Actions -->
       <div class="flex flex-col sm:flex-row gap-3 justify-center">
         <UButton
           size="lg"
-          icon="i-heroicons-arrow-left"
-          @click="handleError"
+          icon="i-heroicons-home"
+          color="primary"
+          @click="handleBackToDashboard"
         >
-          Go Back
+          Back to dashboard
         </UButton>
         <UButton
           size="lg"
-          icon="i-heroicons-home"
-          to="/dashboard"
+          icon="i-heroicons-arrow-right-on-rectangle"
+          variant="outline"
+          to="/login"
         >
-          Go Home
+          Log in
         </UButton>
       </div>
     </div>
@@ -47,51 +54,62 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-  error: {
-    type: Object,
-    required: true,
-  },
-});
+import type { NuxtError } from "#app";
+import * as Sentry from "@sentry/nuxt";
+
+const props = defineProps<{
+  error: NuxtError;
+}>();
 
 const errorTitle = computed(() => {
   switch (props.error.statusCode) {
-    case 403:
-      return 'Access Denied';
     case 404:
-      return 'Page Not Found';
-    case 500:
-      return 'Server Error';
+      return "Page not found";
+    case 403:
+      return "You do not have access";
     default:
-      return 'Something Went Wrong';
+      return "Something went wrong";
+  }
+});
+
+const errorMessage = computed(() => {
+  switch (props.error.statusCode) {
+    case 404:
+      return "The page you're looking for doesn't exist or may have been moved.";
+    case 403:
+      return "You don't have permission to view this page. Contact your admin if you think this is a mistake.";
+    default:
+      return props.error.message || "An unexpected error occurred. Our team has been notified.";
   }
 });
 
 const errorIcon = computed(() => {
   switch (props.error.statusCode) {
-    case 403:
-      return 'i-heroicons-shield-exclamation';
     case 404:
-      return 'i-heroicons-question-mark-circle';
-    case 500:
-      return 'i-heroicons-exclamation-triangle';
+      return "i-heroicons-question-mark-circle";
+    case 403:
+      return "i-heroicons-shield-exclamation";
     default:
-      return 'i-heroicons-x-circle';
+      return "i-heroicons-exclamation-triangle";
   }
 });
 
 const errorIconClass = computed(() => {
   switch (props.error.statusCode) {
-    case 403:
-      return 'text-red-500';
     case 404:
-      return 'text-yellow-500';
-    case 500:
-      return 'text-orange-500';
+      return "text-yellow-500";
+    case 403:
+      return "text-red-500";
     default:
-      return 'text-gray-500';
+      return "text-orange-500";
   }
 });
 
-const handleError = () => clearError({ redirect: '/' });
+const handleBackToDashboard = () => clearError({ redirect: "/dashboard" });
+
+onMounted(() => {
+  if (import.meta.client) {
+    Sentry.captureException(props.error);
+  }
+});
 </script>
