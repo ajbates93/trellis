@@ -92,9 +92,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error("Send invitation error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to send invitation",
+      statusCode: 500,
+      message: "Failed to send invitation",
     });
   }
 });

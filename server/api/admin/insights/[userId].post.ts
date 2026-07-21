@@ -156,7 +156,7 @@ export default defineEventHandler(async (event) => {
     // Otherwise create a generic 500 error
     throw createError({
       statusCode: 500,
-      message: error.message || "Failed to analyze feedback",
+      message: "Failed to analyze feedback",
     });
   }
 });

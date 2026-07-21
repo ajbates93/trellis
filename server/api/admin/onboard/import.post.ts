@@ -246,11 +246,12 @@ export default defineEventHandler(async (event) => {
       errors: errors.length > 0 ? errors : [],
     };
     return validateResponse(response, apiSchemas.OnboardingImportResponseSchema);
-  } catch (error) {
+  } catch (error: any) {
     console.error("CSV import error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Failed to import CSV",
+      message: "Failed to import CSV",
     });
   }
 });

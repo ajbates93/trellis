@@ -90,9 +90,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error("Add password error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to set password",
+      statusCode: 500,
+      message: "Failed to set password",
     });
   }
 });

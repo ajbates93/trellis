@@ -43,10 +43,10 @@ describe('POST /api/admin/onboard/import', () => {
 
     const event = createUnauthenticatedEvent()
 
-    // The outer try/catch in import.post.ts re-wraps all errors including 401 as 500
-    // with the original error message preserved
+    // The outer catch in import.post.ts re-throws errors that already carry a
+    // statusCode (like this 401) instead of masking them as a 500.
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 401,
       message: 'Unauthorized',
     })
   })
@@ -63,9 +63,10 @@ describe('POST /api/admin/onboard/import', () => {
       },
     })
 
-    // The outer catch in import.post.ts re-throws internal errors as 500 with the original message
+    // This validation error carries its own statusCode (400) and message,
+    // so it passes through unchanged rather than being masked as a 500.
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 400,
       message: 'CSV must have at least a header row and one data row',
     })
   })
@@ -83,7 +84,7 @@ describe('POST /api/admin/onboard/import', () => {
     })
 
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 400,
       message: 'CSV missing required field: email',
     })
   })
@@ -101,7 +102,7 @@ describe('POST /api/admin/onboard/import', () => {
     })
 
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 400,
       message: 'CSV missing required field: name',
     })
   })
