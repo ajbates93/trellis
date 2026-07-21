@@ -559,7 +559,7 @@ Configure in: **Repository Settings → Secrets and variables → Actions**
 **Variables:**
 - `STAGING_URL`: Staging app URL
 - `PRODUCTION_URL`: Production app URL
-- `RAILWAY_STAGING_SERVICE_ID`: Railway staging service name
+- `RAILWAY_STAGING_SERVICE_ID`: Railway staging service ID
 - `RAILWAY_PRODUCTION_SERVICE_NAME`: Railway production service name
 
 ### Railway Configuration

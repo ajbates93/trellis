@@ -250,7 +250,7 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Two existence checks — neither user exists
+    // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
     // Insert first user
@@ -284,11 +284,11 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Existence check for jane — not found
+    // Existence check for jane - not found
     mockSelect([])
     // Insert jane
     mockInsert([{ id: 'user-jane', email: 'jane@example.com', name: 'Jane Smith' }])
-    // Buddy lookup — bob found
+    // Buddy lookup - bob found
     mockSelect([{ id: 'user-bob', email: 'bob@example.com' }])
     // Update jane's buddyId
     mockUpdate([])
@@ -316,11 +316,11 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Existence check — user not found
+    // Existence check - user not found
     mockSelect([])
     // Insert user
     mockInsert([{ id: 'user-jane', email: 'jane@example.com', name: 'Jane Smith' }])
-    // Buddy lookup — not found
+    // Buddy lookup - not found
     mockSelect([])
     // Log successful import (with partial errors)
     mockInsert([])
@@ -381,7 +381,7 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Two existence checks — neither user exists
+    // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
     // Insert first user
@@ -411,7 +411,7 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Two existence checks — neither user exists
+    // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
     // Log failed import
