@@ -80,6 +80,7 @@ export default defineNuxtConfig({
       sentry: {
         dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
         environment: process.env.NODE_ENV || "development",
+        tracesSampleRate: Number(process.env.NUXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE ?? "0.1"),
       },
     },
   },
