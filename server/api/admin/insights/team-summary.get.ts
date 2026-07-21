@@ -3,6 +3,7 @@ import { feedbackInsights, users } from "#server/database/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 interface SentimentData {
   positive: number;
@@ -41,7 +42,9 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Get all users
+    const workspaceId = getWorkspaceId(event);
+
+    // Get all users in the caller's workspace
     const allUsers = await db
       .select({
         id: users.id,
@@ -50,7 +53,8 @@ export default defineEventHandler(async (event) => {
         image: users.image,
         roleType: users.roleType,
       })
-      .from(users);
+      .from(users)
+      .where(eq(users.workspaceId, workspaceId));
 
     // Get the two most recent analyses for each user (for trend comparison)
     const userSummaries: UserSentimentSummary[] = [];

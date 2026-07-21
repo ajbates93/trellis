@@ -45,6 +45,7 @@ describe('POST /api/admin/insights/:userId', () => {
 
   it('returns 400 when not enough feedback', async () => {
     mockSelect([{ id: 'user-2', name: 'Test User' }]) // user exists
+    mockSelect([{ workspaceId: 'workspace-1' }]) // assertSameWorkspace: target user is in the admin's workspace
     mockSelect([{ id: 'f1', content: 'Good', createdAt: new Date(), reviewer: { name: 'R1' } }]) // only 1 feedback
 
     const event = createAdminEvent({ params: { userId: 'user-2' } })
@@ -53,6 +54,7 @@ describe('POST /api/admin/insights/:userId', () => {
 
   it('analyzes feedback successfully', async () => {
     mockSelect([{ id: 'user-2', name: 'Test User' }]) // user exists
+    mockSelect([{ workspaceId: 'workspace-1' }]) // assertSameWorkspace: target user is in the admin's workspace
     // 3 feedback items
     mockSelect([
       { id: 'f1', content: 'Great work', createdAt: new Date(), reviewer: { name: 'R1' } },
@@ -72,5 +74,13 @@ describe('POST /api/admin/insights/:userId', () => {
 
     expect(result.status).toBe('completed')
     expect(result.data?.sentimentData.positive).toBe(70)
+  })
+
+  it('returns 403 when target user belongs to a different workspace', async () => {
+    mockSelect([{ id: 'user-2', name: 'Test User' }]) // user exists
+    mockSelect([{ workspaceId: 'workspace-2' }]) // assertSameWorkspace: different workspace than admin (workspace-1)
+
+    const event = createAdminEvent({ params: { userId: 'user-2' } })
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 })
   })
 })

@@ -4,6 +4,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { analyzeFeedback } from "#server/services/anthropicClient";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -46,6 +47,9 @@ export default defineEventHandler(async (event) => {
         message: "User not found",
       });
     }
+
+    // Admins may only analyze users within their own workspace.
+    await assertSameWorkspace(event, userId);
 
     const userName = targetUser[0]?.name || "the employee";
 

@@ -107,6 +107,8 @@ describe('DELETE /api/reviews/:id', () => {
 
     // existing review lookup — admin is neither reviewee nor buddy
     mockSelect([review])
+    // assertSameWorkspace: review owner is in admin's workspace
+    mockSelect([{ workspaceId: 'workspace-1' }])
     // recipient lookup (user-5, the reviewee since admin is neither)
     mockSelect([{ name: 'User Five', preferredName: null, email: 'user5@example.com' }])
     // actor lookup (admin user)
@@ -118,6 +120,24 @@ describe('DELETE /api/reviews/:id', () => {
 
     expect(result).toEqual({ success: true, message: 'Review deleted successfully' })
     expect(mockDb.delete).toHaveBeenCalled()
+  })
+
+  it('returns 403 when admin deletes a review owned by a user in another workspace', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-5',
+      buddyId: 'user-6',
+    })
+
+    // existing review lookup — admin is neither reviewee nor buddy
+    mockSelect([review])
+    // assertSameWorkspace: review owner belongs to a DIFFERENT workspace
+    mockSelect([{ workspaceId: 'workspace-2' }])
+
+    const event = createAdminEvent({ params: { id: 'review-1' } })
+
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 })
+    expect(mockDb.delete).not.toHaveBeenCalled()
   })
 
   it('emits review_cancelled notification when a review is deleted', async () => {

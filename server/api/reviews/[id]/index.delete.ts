@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -49,6 +50,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "You do not have permission to delete this review",
       });
+    }
+
+    // An admin deleting someone else's review may only do so within their own
+    // workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, existingReview.userId);
     }
 
     // Emit cancellation notification + email to the OTHER party

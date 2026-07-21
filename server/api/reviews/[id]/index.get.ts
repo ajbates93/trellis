@@ -3,6 +3,7 @@ import { reviewSchedules, users, feedback, goals } from "#server/database/schema
 import { eq, and, sql, lte, gte, desc, inArray, ne } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -48,6 +49,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "You do not have permission to view this review",
       });
+    }
+
+    // An admin acting on a review that isn't their own/their buddy's may only
+    // do so within their own workspace.
+    if (isAdmin && !isReviewee && !isBuddy) {
+      await assertSameWorkspace(event, review.userId);
     }
 
     // Get user info

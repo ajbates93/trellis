@@ -3,10 +3,14 @@ import { feedback, users } from "#server/database/schema";
 import { eq, sql, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   try {
-    // Get top 10 users by feedback given (as reviewer)
+    const workspaceId = getWorkspaceId(event);
+
+    // Get top 10 users by feedback given (as reviewer), scoped to the
+    // caller's workspace.
     const topContributors = await db
       .select({
         userId: users.id,
@@ -19,6 +23,7 @@ export default defineEventHandler(async (event) => {
       })
       .from(users)
       .leftJoin(feedback, eq(users.id, feedback.reviewerId))
+      .where(eq(users.workspaceId, workspaceId))
       .groupBy(users.id, users.name, users.email, users.avatarUrl, users.image, users.roleType)
       .orderBy(desc(sql`count(${feedback.id})`))
       .limit(10);

@@ -8,6 +8,7 @@ import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 import { validateAnswers } from "#server/utils/reviewTemplates";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -80,6 +81,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "You do not have permission to edit this review",
       });
+    }
+
+    // An admin editing a review that isn't their own/their buddy's may only do
+    // so within their own workspace.
+    if (isAdmin && !isReviewee && !isBuddy) {
+      await assertSameWorkspace(event, existingReview.userId);
     }
 
     // Build update object with role-based field access

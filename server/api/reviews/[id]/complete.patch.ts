@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { createNotification } from "#server/utils/inAppNotifications";
+import { assertSameWorkspace } from "#server/utils/workspace";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 
@@ -53,6 +54,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "Only the buddy or admin can complete this review",
       });
+    }
+
+    // An admin completing someone else's review may only do so within their
+    // own workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, review.userId);
     }
 
     // Update review to completed
