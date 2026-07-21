@@ -166,6 +166,7 @@ export default defineEventHandler(async (event) => {
 
     // Create users using Better Auth (or direct DB insert with emailVerified=false)
     const importedUsers: string[] = [];
+    const createdUsers: Array<{ id: string; name: string; email: string }> = [];
 
     for (const row of rows) {
       try {
@@ -192,6 +193,7 @@ export default defineEventHandler(async (event) => {
         }
 
         importedUsers.push(newUser.id);
+        createdUsers.push({ id: newUser.id, name: newUser.name, email: newUser.email });
       } catch (error) {
         console.error(`Failed to import user ${row.email}:`, error);
         errors.push({
@@ -244,6 +246,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       rowsImported: importedUsers.length,
       errors: errors.length > 0 ? errors : [],
+      createdUsers,
     };
     return validateResponse(response, apiSchemas.OnboardingImportResponseSchema);
   } catch (error: any) {

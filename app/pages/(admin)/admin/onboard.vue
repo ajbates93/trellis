@@ -37,7 +37,7 @@ icon="i-heroicons-arrow-down-tray" variant="solid" :loading="downloadingTemplate
               <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
                 <li>
                   <code class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">email</code>
-                  - Must be @pocketworks.co.uk domain
+                  - Any email address is accepted
                 </li>
                 <li>
                   <code class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">name</code>
@@ -185,9 +185,39 @@ v-for="(error, index) in importResult.errors" :key="index"
               </div>
             </div>
 
+            <!-- Review Created Users -->
+            <div v-if="importResult.success && importResult.createdUsers && importResult.createdUsers.length > 0" class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-semibold">Review Created Users</h4>
+                <UButton size="xs" color="neutral" variant="ghost" @click="toggleSelectAll">
+                  {{ allSelected ? "Deselect All" : "Select All" }}
+                </UButton>
+              </div>
+              <div
+                class="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+                <label
+v-for="user in importResult.createdUsers" :key="user.id"
+                  class="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <UCheckbox v-model="selectedUserIds[user.id]" />
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {{ user.name }}
+                    </div>
+                    <div class="text-xs text-gray-500">{{ user.email }}</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="flex gap-3">
-              <UButton v-if="importResult.success" icon="i-heroicons-check" color="primary" @click="finishImport">
+              <UButton
+v-if="importResult.success && importResult.createdUsers && importResult.createdUsers.length > 0"
+                icon="i-heroicons-paper-airplane" color="primary" :loading="sendingInvitations"
+                :disabled="selectedUserIdList.length === 0" @click="sendInvitations">
+                Send Invitations
+              </UButton>
+              <UButton v-if="importResult.success" icon="i-heroicons-check" color="neutral" variant="soft" @click="finishImport">
                 Done
               </UButton>
               <UButton v-else icon="i-heroicons-arrow-path" color="primary" @click="clearResults">
@@ -313,10 +343,17 @@ interface ImportError {
   message: string;
 }
 
+interface CreatedUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface ImportResult {
   success: boolean;
   imported: number;
   errors?: ImportError[];
+  createdUsers?: CreatedUser[];
 }
 
 interface ImportHistoryItem {
@@ -337,6 +374,30 @@ const isDragging = ref(false);
 const importing = ref(false);
 const importResult = ref<ImportResult | null>(null);
 const downloadingTemplate = ref(false);
+const selectedUserIds = ref<Record<string, boolean>>({});
+const sendingInvitations = ref(false);
+
+const selectedUserIdList = computed(() =>
+  Object.entries(selectedUserIds.value)
+    .filter(([, checked]) => checked)
+    .map(([id]) => id),
+);
+
+const allSelected = computed(() => {
+  const createdUsers = importResult.value?.createdUsers ?? [];
+  return (
+    createdUsers.length > 0 &&
+    createdUsers.every((user) => selectedUserIds.value[user.id])
+  );
+});
+
+const toggleSelectAll = () => {
+  const createdUsers = importResult.value?.createdUsers ?? [];
+  const nextValue = !allSelected.value;
+  createdUsers.forEach((user) => {
+    selectedUserIds.value[user.id] = nextValue;
+  });
+};
 
 const importHistory = ref<ImportHistoryItem[]>([]);
 const loadingHistory = ref(false);
@@ -435,7 +496,14 @@ const importCSV = async () => {
           success: result.success,
           imported: result.rowsImported,
           errors: result.errors,
+          createdUsers: result.createdUsers,
         };
+
+        // Default all newly created users to selected for invitations
+        selectedUserIds.value = {};
+        (result.createdUsers ?? []).forEach((user: CreatedUser) => {
+          selectedUserIds.value[user.id] = true;
+        });
       } catch (error) {
         importResult.value = {
           success: false,
@@ -460,12 +528,51 @@ const importCSV = async () => {
 
 const clearResults = () => {
   importResult.value = null;
+  selectedUserIds.value = {};
 };
 
 const finishImport = () => {
   clearFile();
   clearResults();
   fetchHistory();
+};
+
+const sendInvitations = async () => {
+  if (selectedUserIdList.value.length === 0) return;
+
+  const toast = useToast();
+  sendingInvitations.value = true;
+
+  try {
+    const result = await $api<{ success: boolean; sent: number; failed: number }>(
+      "/admin/onboard/send-bulk-invitations",
+      {
+        method: "POST",
+        body: { userIds: selectedUserIdList.value },
+      },
+    );
+
+    toast.add({
+      title: "Invitations Sent",
+      description:
+        result.failed > 0
+          ? `${result.sent} invitation(s) sent, ${result.failed} failed`
+          : `${result.sent} invitation(s) sent successfully`,
+      color: result.failed > 0 ? "warning" : "success",
+      icon: "i-heroicons-check-circle",
+    });
+  } catch (error: any) {
+    console.error("Failed to send invitations:", error);
+    toast.add({
+      title: "Failed to Send Invitations",
+      description:
+        error.data?.message || "An error occurred while sending invitations",
+      color: "error",
+      icon: "i-heroicons-exclamation-triangle",
+    });
+  } finally {
+    sendingInvitations.value = false;
+  }
 };
 
 const downloadTemplate = async () => {

@@ -239,6 +239,9 @@ describe('POST /api/admin/onboard/import', () => {
       success: true,
       rowsImported: 1,
       errors: [],
+      createdUsers: [
+        { id: 'new-user-1', name: 'Jane Smith', email: 'jane@example.com' },
+      ],
     })
   })
 
@@ -269,6 +272,10 @@ describe('POST /api/admin/onboard/import', () => {
     expect(result).toMatchObject({
       success: true,
       rowsImported: 2,
+      createdUsers: [
+        { id: 'new-user-1', name: 'Alice Brown', email: 'alice@example.com' },
+        { id: 'new-user-2', name: 'Bob Jones', email: 'bob@example.com' },
+      ],
     })
   })
 
