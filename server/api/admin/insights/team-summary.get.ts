@@ -1,6 +1,6 @@
 import { db } from "#server/database/connection";
 import { feedbackInsights, users } from "#server/database/schema";
-import { eq, desc, sql, inArray } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";

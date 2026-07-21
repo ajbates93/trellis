@@ -170,7 +170,7 @@ export default defineEventHandler(async (event) => {
     console.error("Slack OAuth callback error:", error);
     return sendRedirect(
       event,
-      `/settings/integrations?error=${encodeURIComponent(error.message || "slack_install_failed")}`
+      "/settings/integrations?error=slack_install_failed"
     );
   }
 });
