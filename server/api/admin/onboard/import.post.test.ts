@@ -337,6 +337,68 @@ describe('POST /api/admin/onboard/import', () => {
     })
   })
 
+  it('imports a row whose quoted name field contains a comma', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
+      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
+    } as any)
+
+    // No existing user
+    mockSelect([])
+    // Insert new user
+    const insertChain = mockInsert([{ id: 'new-user-1', email: 'jane@example.com', name: 'Doe, Jane' }])
+    // Log successful import
+    mockInsert([])
+
+    const event = createAdminEvent({
+      body: {
+        csv: 'email,name\njane@example.com,"Doe, Jane"',
+        filename: 'import.csv',
+      },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toMatchObject({
+      success: true,
+      rowsImported: 1,
+      errors: [],
+    })
+
+    expect(insertChain.values).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'jane@example.com', name: 'Doe, Jane' }),
+    )
+  })
+
+  it('imports rows from a CSV with CRLF line endings', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
+      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
+    } as any)
+
+    // Two existence checks — neither user exists
+    mockSelect([])
+    mockSelect([])
+    // Insert first user
+    mockInsert([{ id: 'new-user-1', email: 'alice@example.com', name: 'Alice Brown' }])
+    // Insert second user
+    mockInsert([{ id: 'new-user-2', email: 'bob@example.com', name: 'Bob Jones' }])
+    // Log successful import
+    mockInsert([])
+
+    const event = createAdminEvent({
+      body: {
+        csv: 'email,name\r\nalice@example.com,Alice Brown\r\nbob@example.com,Bob Jones',
+        filename: 'import.csv',
+      },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toMatchObject({
+      success: true,
+      rowsImported: 2,
+    })
+  })
+
   it('returns validation errors for duplicate emails within the CSV', async () => {
     vi.mocked(auth.api.getSession).mockResolvedValueOnce({
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
