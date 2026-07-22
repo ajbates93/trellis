@@ -125,11 +125,15 @@ const route = useRoute();
 const router = useRouter();
 
 // Where to send the user after login. Only allow internal paths (a single
-// leading slash) to avoid open-redirect; default to the dashboard.
+// leading slash) to avoid open-redirect; default to the dashboard. Backslashes
+// are rejected too: browsers normalize "/\evil.com" to protocol-relative
+// "//evil.com".
 const returnTo = computed(() => {
   const raw = route.query.returnTo;
   const target = typeof raw === "string" ? raw : "";
-  return target.startsWith("/") && !target.startsWith("//") ? target : "/dashboard";
+  return target.startsWith("/") && !target.startsWith("//") && !target.includes("\\")
+    ? target
+    : "/dashboard";
 });
 
 // Check for error in URL query params (from OAuth callback)

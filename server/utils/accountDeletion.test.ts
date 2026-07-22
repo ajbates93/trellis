@@ -47,6 +47,7 @@ describe('anonymizeUser', () => {
         name: 'Deleted user',
         email: 'deleted-user-1@deleted.invalid',
         emailVerified: false,
+        role: 'user',
         avatarUrl: null,
         image: null,
         bio: null,

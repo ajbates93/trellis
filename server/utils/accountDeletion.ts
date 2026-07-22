@@ -100,6 +100,10 @@ export async function anonymizeUser(userId: string): Promise<void> {
         name: "Deleted user",
         email: `deleted-${userId}@deleted.invalid`,
         emailVerified: false,
+        // Demote so a tombstoned admin no longer counts towards the
+        // assertNotSoleAdmin guard - otherwise the last real admin could
+        // self-delete and leave the workspace with zero working admins.
+        role: "user",
         avatarUrl: null,
         image: null,
         bio: null,
