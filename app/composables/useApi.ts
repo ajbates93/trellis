@@ -40,7 +40,7 @@ type PickFrom<T, K extends Array<string>> = T extends Array<unknown>
 const BASE_URL = "/api";
 
 // Paths where we deliberately don't want a toast on error (caller handles it).
-const SILENT_ERROR_PATHS = ["/auth/"];
+const SILENT_ERROR_PATHS = ["/auth/", "/admin/onboard/import"];
 
 function shouldSurfaceError(path: string, status: number | undefined): boolean {
   if (status === 401) return false; // handled by redirect

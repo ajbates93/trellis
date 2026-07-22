@@ -116,20 +116,22 @@ icon="i-heroicons-light-bulb" color="primary" variant="soft" title="User Linking
                       </th>
                       <th
 v-for="header in csvPreview.headers" :key="header"
-                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        {{ header }}
+                        class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                        {{ formatHeader(header) }}
                       </th>
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr v-for="(row, index) in csvPreview.rows.slice(0, 5)" :key="index">
+                    <tr
+v-for="(row, index) in csvPreview.rows.slice(0, 5)" :key="index"
+                      :class="row.error ? 'bg-red-50 dark:bg-red-950/40' : ''">
                       <td class="px-4 py-2 text-sm text-gray-500">
                         {{ index + 1 }}
                       </td>
                       <td
 v-for="header in csvPreview.headers" :key="header"
                         class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
-                        {{ row[header] || "-" }}
+                        {{ row.cells[header] || "-" }}
                       </td>
                     </tr>
                   </tbody>
@@ -138,12 +140,35 @@ v-for="header in csvPreview.headers" :key="header"
               <p v-if="csvPreview.rows.length > 5" class="text-sm text-gray-500 text-center">
                 Showing first 5 of {{ csvPreview.rows.length }} rows
               </p>
+
+              <!-- Validation summary -->
+              <UAlert
+v-if="csvPreview.headerError" icon="i-heroicons-x-circle" color="error" variant="soft"
+                title="This file cannot be imported" :description="csvPreview.headerError" />
+              <template v-else-if="csvPreview.invalidRowCount > 0">
+                <UAlert
+                  icon="i-heroicons-exclamation-triangle" color="error" variant="soft"
+                  :title="`${csvPreview.invalidRowCount} of ${csvPreview.rows.length} rows need fixing`"
+                  description="Fix these in your CSV and re-upload. Nothing is imported until every row is valid." />
+                <div class="max-h-48 overflow-y-auto space-y-1">
+                  <p
+v-for="(issue, i) in csvPreview.issues" :key="i"
+                    class="text-sm text-red-600 dark:text-red-400">
+                    Row {{ issue.row }}: {{ issue.message }}
+                  </p>
+                </div>
+              </template>
+              <UAlert
+v-else icon="i-heroicons-check-circle" color="success" variant="soft"
+                :title="`All ${csvPreview.rows.length} rows look valid`"
+                description="Emails are re-checked against existing users when you import." />
             </div>
 
             <!-- Action Buttons -->
             <div v-if="selectedFile" class="flex gap-3">
               <UButton
-icon="i-heroicons-arrow-up-tray" color="primary" :loading="importing" :disabled="!csvPreview"
+icon="i-heroicons-arrow-up-tray" color="primary" :loading="importing"
+                :disabled="!csvPreview || !!csvPreview.headerError || csvPreview.invalidRowCount > 0"
                 @click="importCSV">
                 Import Users
               </UButton>
@@ -153,6 +178,11 @@ icon="i-heroicons-arrow-up-tray" color="primary" :loading="importing" :disabled=
             </div>
           </div>
         </UCard>
+
+        <!-- Unexpected import error (transport / server failure) -->
+        <UAlert
+v-if="importError" class="mb-8" icon="i-heroicons-x-circle" color="error" variant="soft"
+          title="Import failed" :description="importError" />
 
         <!-- Results Section -->
         <UCard v-if="importResult" class="mb-8">
@@ -324,6 +354,8 @@ v-for="(error, index) in selectedErrorLog" :key="index" icon="i-heroicons-exclam
 </template>
 
 <script setup lang="ts">
+import Papa from "papaparse";
+
 definePageMeta({
   layout: "default",
 });
@@ -332,9 +364,22 @@ useHead({
   title: "Onboarding",
 });
 
+interface PreviewRow {
+  cells: Record<string, string>;
+  error: string | null;
+}
+
+interface PreviewIssue {
+  row: number;
+  message: string;
+}
+
 interface CSVPreview {
   headers: string[];
-  rows: Record<string, string>[];
+  rows: PreviewRow[];
+  headerError: string | null;
+  issues: PreviewIssue[];
+  invalidRowCount: number;
 }
 
 interface ImportError {
@@ -373,6 +418,7 @@ const csvPreview = ref<CSVPreview | null>(null);
 const isDragging = ref(false);
 const importing = ref(false);
 const importResult = ref<ImportResult | null>(null);
+const importError = ref<string | null>(null);
 const downloadingTemplate = ref(false);
 const selectedUserIds = ref<Record<string, boolean>>({});
 const sendingInvitations = ref(false);
@@ -437,36 +483,99 @@ const processFile = (file: File) => {
   reader.readAsText(file);
 };
 
+const VALID_ROLE_TYPES = ["dev", "design", "qa", "growth", "management"];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Turn a raw CSV header into a readable column label, e.g. "roleType" -> "Role Type".
+const formatHeader = (header: string) =>
+  header
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
 const parseCSV = (text: string) => {
-  const lines = text.trim().split("\n");
-  if (lines.length < 2) {
+  // Parse with papaparse so the preview matches the server import exactly
+  // (handles quoted fields, commas-in-values, CRLF). Original header casing is
+  // preserved for display; the server lowercases headers on its side.
+  const parsed = Papa.parse<Record<string, string>>(text.trim(), {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const headers = parsed.meta.fields ?? [];
+  if (headers.length === 0 || parsed.data.length === 0) {
     csvPreview.value = null;
     return;
   }
 
-  const headers = (lines[0] ?? "").split(",").map((h) => h.trim());
-  const rows: Record<string, string>[] = [];
+  // Validate up front so the preview reflects whether the import will succeed.
+  // These rules mirror the server (server/api/admin/onboard/import.post.ts). The
+  // one check we cannot do client-side is "user already exists" - that needs the
+  // database, so it is still enforced server-side at import time.
+  const lowerHeaders = headers.map((h) => h.toLowerCase());
+  const missing = ["email", "name"].filter((f) => !lowerHeaders.includes(f));
+  const headerError = missing.length
+    ? `Missing required column${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}. Your CSV must include email and name columns.`
+    : null;
 
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i]?.trim();
-    if (!line) continue;
+  // Resolve the actual header keys we validate (headers may be in any case).
+  const keyFor = (field: string) => headers.find((h) => h.toLowerCase() === field);
+  const emailKey = keyFor("email");
+  const nameKey = keyFor("name");
+  const roleKey = keyFor("roletype");
 
-    const values = line.split(",").map((v) => v.trim());
-    const row: Record<string, string> = {};
+  const rows: PreviewRow[] = parsed.data.map((raw) => {
+    const cells: Record<string, string> = {};
+    for (const h of headers) cells[h] = (raw[h] ?? "").trim();
 
-    headers.forEach((header, index) => {
-      row[header] = values[index] || "";
-    });
+    let error: string | null = null;
+    if (!headerError) {
+      const email = emailKey ? cells[emailKey] ?? "" : "";
+      const name = nameKey ? cells[nameKey] ?? "" : "";
+      const roleType = roleKey ? cells[roleKey] ?? "" : "";
+      if (!EMAIL_REGEX.test(email)) {
+        error = email ? `Invalid email format: ${email}` : "Email is required";
+      } else if (!name) {
+        error = "Name is required";
+      } else if (roleType && !VALID_ROLE_TYPES.includes(roleType)) {
+        error = `Invalid role type: ${roleType}. Must be dev, design, qa, growth, or management`;
+      }
+    }
+    return { cells, error };
+  });
 
-    rows.push(row);
+  // Duplicate-email pass over the otherwise-valid rows (mirrors the server).
+  if (!headerError && emailKey) {
+    const seen = new Set<string>();
+    for (const row of rows) {
+      if (row.error) continue;
+      const email = row.cells[emailKey] ?? "";
+      if (seen.has(email)) row.error = `Duplicate email in file: ${email}`;
+      else seen.add(email);
+    }
   }
 
-  csvPreview.value = { headers, rows };
+  const issues: PreviewIssue[] = [];
+  rows.forEach((row, i) => {
+    if (row.error) issues.push({ row: i + 1, message: row.error });
+  });
+
+  csvPreview.value = {
+    headers,
+    rows,
+    headerError,
+    issues,
+    invalidRowCount: issues.length,
+  };
 };
 
 const clearFile = () => {
   selectedFile.value = null;
   csvPreview.value = null;
+  importError.value = null;
   if (fileInput.value) {
     fileInput.value.value = "";
   }
@@ -474,9 +583,12 @@ const clearFile = () => {
 
 const importCSV = async () => {
   if (!selectedFile.value || !csvPreview.value) return;
+  // Guard against import when the preview flagged problems (button is also disabled).
+  if (csvPreview.value.headerError || csvPreview.value.invalidRowCount > 0) return;
 
   importing.value = true;
   importResult.value = null;
+  importError.value = null;
 
   try {
     const reader = new FileReader();
@@ -487,7 +599,7 @@ const importCSV = async () => {
         const result = await $api("/admin/onboard/import", {
           method: "POST",
           body: {
-            csvContent,
+            csv: csvContent,
             filename: selectedFile.value?.name,
           },
         });
@@ -504,18 +616,11 @@ const importCSV = async () => {
         (result.createdUsers ?? []).forEach((user: CreatedUser) => {
           selectedUserIds.value[user.id] = true;
         });
-      } catch (error) {
-        importResult.value = {
-          success: false,
-          imported: 0,
-          errors: [
-            {
-              row: 0,
-              field: "system",
-              message: (error as Error).message || "Failed to import CSV",
-            },
-          ],
-        };
+      } catch {
+        // Unexpected/transport failure (not per-row validation, which comes
+        // back in result.errors). Show a clean message, not the raw fetch error.
+        importError.value =
+          "We could not import your file. Please try again, or check the file and re-upload.";
       } finally {
         importing.value = false;
       }
@@ -528,6 +633,7 @@ const importCSV = async () => {
 
 const clearResults = () => {
   importResult.value = null;
+  importError.value = null;
   selectedUserIds.value = {};
 };
 
