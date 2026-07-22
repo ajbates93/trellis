@@ -1,9 +1,12 @@
 import { db } from "#server/database/connection";
 import { users } from "#server/database/schema";
 import { eq, sql, and } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
+
+const buddy = alias(users, "buddy");
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -47,7 +50,7 @@ export default defineEventHandler(async (event) => {
     whereClause = eq(users.workspaceId, workspaceId);
   }
 
-  // Fetch users with their buddy information
+  // Fetch users with their buddy information via self-join (avoids N+1)
   const usersList = await db
     .select({
       id: users.id,
@@ -64,31 +67,18 @@ export default defineEventHandler(async (event) => {
       banned: users.banned,
       banReason: users.banReason,
       nextReviewDate: users.nextReviewDate,
+      buddyName: buddy.name,
     })
     .from(users)
+    .leftJoin(buddy, eq(users.buddyId, buddy.id))
     .where(whereClause)
     .orderBy(users.createdAt);
 
-  // Get buddy names
-  const usersWithBuddies = await Promise.all(
-    usersList.map(async (user) => {
-      let buddyName = null;
-      if (user.buddyId) {
-        const buddy = await db
-          .select({ name: users.name })
-          .from(users)
-          .where(eq(users.id, user.buddyId))
-          .limit(1);
-        buddyName = buddy[0]?.name || null;
-      }
-
-      return {
-        ...user,
-        buddyName,
-        status: user.emailVerified ? "active" : "invited",
-      };
-    })
-  );
+  const usersWithBuddies = usersList.map((user) => ({
+    ...user,
+    buddyName: user.buddyName ?? null,
+    status: user.emailVerified ? "active" : "invited",
+  }));
 
   // Get counts for each filter (scoped to workspace)
   const totalUsers = await db

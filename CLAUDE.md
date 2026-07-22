@@ -559,7 +559,7 @@ Configure in: **Repository Settings → Secrets and variables → Actions**
 **Variables:**
 - `STAGING_URL`: Staging app URL
 - `PRODUCTION_URL`: Production app URL
-- `RAILWAY_STAGING_SERVICE_NAME`: Railway staging service name
+- `RAILWAY_STAGING_SERVICE_ID`: Railway staging service ID
 - `RAILWAY_PRODUCTION_SERVICE_NAME`: Railway production service name
 
 ### Railway Configuration
@@ -682,6 +682,31 @@ npm run db:studio      # Open database GUI
 **Staging/Production:**
 - Migrations run automatically via GitHub Actions
 - Manual intervention only if migration fails
+
+### Database Backups
+
+Both staging and production databases run on Railway managed PostgreSQL. Railway provides automated backups for managed Postgres instances, but backup availability and retention depend on the Railway plan and must be confirmed per environment - do not assume backups are enabled without checking.
+
+**Where Postgres Runs:**
+- Staging: Railway managed PostgreSQL (staging project)
+- Production: Railway managed PostgreSQL (production project)
+
+**Confirming Automated Backups Are Enabled:**
+1. Go to Railway → select the project (staging or production)
+2. Select the PostgreSQL service
+3. Open the **Backups** (or **Data**) tab
+4. Confirm automated/scheduled backups are turned on for that service
+
+**Retention Window:**
+- Retention is configured per-service in the Railway dashboard (Backups tab). Check the dashboard directly for the current retention period rather than relying on a documented number here, as this is plan-dependent and can change.
+
+**Manual Restore Path:**
+- Railway supports restoring a database from a snapshot/backup directly in the dashboard (Backups tab → select a snapshot → restore), and point-in-time restore where available on the plan
+- For an application-level rollback (bad deploy, not data loss), use the deployment redeploy flow described under Rollback Procedures below instead of a database restore
+- Always verify a restore in staging before performing one in production, and confirm with the team before restoring production data, since a restore can overwrite data created after the snapshot
+
+**Backup Checklist:**
+- [ ] Verify Railway backup retention is enabled for staging and production
 
 ### Rollback Procedures
 

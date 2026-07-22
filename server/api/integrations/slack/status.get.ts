@@ -42,9 +42,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error("Slack status check error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to check Slack status",
+      statusCode: 500,
+      message: "Failed to check Slack status",
     });
   }
 });

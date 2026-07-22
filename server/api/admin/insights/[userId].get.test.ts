@@ -38,6 +38,7 @@ describe('GET /api/admin/insights/:userId', () => {
 
   it('returns no analysis when none exists', async () => {
     mockSelect([{ id: 'user-2', name: 'Test User' }]) // user exists
+    mockSelect([{ workspaceId: 'workspace-1' }]) // assertSameWorkspace: target user is in the admin's workspace
     mockSelect([]) // no analysis
 
     const event = createAdminEvent({ params: { userId: 'user-2' } })
@@ -49,6 +50,7 @@ describe('GET /api/admin/insights/:userId', () => {
 
   it('returns analysis with data', async () => {
     mockSelect([{ id: 'user-2', name: 'Test User' }]) // user exists
+    mockSelect([{ workspaceId: 'workspace-1' }]) // assertSameWorkspace: target user is in the admin's workspace
     mockSelect([{
       id: 'insight-1',
       userId: 'user-2',
@@ -68,5 +70,13 @@ describe('GET /api/admin/insights/:userId', () => {
     expect(result.hasAnalysis).toBe(true)
     expect(result.feedbackCount).toBe(5)
     expect(result.data?.sentimentData.positive).toBe(60)
+  })
+
+  it('returns 403 when target user belongs to a different workspace', async () => {
+    mockSelect([{ id: 'user-2', name: 'Test User' }]) // user exists
+    mockSelect([{ workspaceId: 'workspace-2' }]) // assertSameWorkspace: different workspace than admin (workspace-1)
+
+    const event = createAdminEvent({ params: { userId: 'user-2' } })
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 })
   })
 })

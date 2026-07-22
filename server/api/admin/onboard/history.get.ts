@@ -3,10 +3,13 @@ import { onboardingImports, users } from "#server/database/schema";
 import { eq, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   try {
-    // Get all onboarding imports with admin info
+    const workspaceId = getWorkspaceId(event);
+
+    // Get onboarding imports performed by admins in the caller's workspace
     const imports = await db
       .select({
         id: onboardingImports.id,
@@ -19,7 +22,8 @@ export default defineEventHandler(async (event) => {
         adminEmail: users.email,
       })
       .from(onboardingImports)
-      .leftJoin(users, eq(onboardingImports.adminId, users.id))
+      .innerJoin(users, eq(onboardingImports.adminId, users.id))
+      .where(eq(users.workspaceId, workspaceId))
       .orderBy(desc(onboardingImports.createdAt))
       .limit(50); // Last 50 imports
 

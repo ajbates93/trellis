@@ -1,22 +1,19 @@
-FROM node:20-alpine
+# syntax=docker/dockerfile:1
 
+# --- Builder ---
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Install build dependencies for native modules
 RUN apk add --no-cache python3 make g++
-
-# Install dependencies
 COPY package*.json ./
-RUN npm install
-
-# Copy source
+RUN npm ci
 COPY . .
-
-# Build
 RUN npm run build
 
-# Remove build dependencies to reduce image size
-RUN apk del python3 make g++
-
-# Start
+# --- Runner ---
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/.output ./.output
+USER node
+EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]

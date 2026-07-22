@@ -91,9 +91,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error("Bulk send invitation error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to send invitations",
+      statusCode: 500,
+      message: "Failed to send invitations",
     });
   }
 });

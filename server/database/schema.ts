@@ -8,6 +8,7 @@ import {
   boolean,
   integer,
   jsonb,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { ReviewTemplateField } from "#server/schemas/reviewTemplates";
@@ -89,7 +90,11 @@ export const users = pgTable("users", {
   isSuperAdmin: boolean("is_super_admin").default(false),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
-});
+}, (t) => [
+  index("users_workspace_id_idx").on(t.workspaceId),
+  index("users_email_idx").on(t.email),
+  index("users_buddy_id_idx").on(t.buddyId),
+]);
 
 // Relations for users
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -149,7 +154,12 @@ export const feedback = pgTable("feedback", {
   publishedBy: text("published_by").references(() => users.id),
   isFavourite: boolean("is_favourite").notNull().default(false),
   // reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
-});
+}, (t) => [
+  index("feedback_reviewee_id_idx").on(t.revieweeId),
+  index("feedback_reviewer_id_idx").on(t.reviewerId),
+  index("feedback_created_at_idx").on(t.createdAt),
+  index("feedback_published_idx").on(t.published),
+]);
 
 // Relations for feedback
 export const feedbackRelations = relations(feedback, ({ one }) => ({
@@ -182,7 +192,10 @@ export const goals = pgTable("goals", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   completedAt: timestamp("completed_at"),
-});
+}, (t) => [
+  index("goals_user_id_idx").on(t.userId),
+  index("goals_status_idx").on(t.status),
+]);
 
 // Relations for goals
 export const goalsRelations = relations(goals, ({ one, many }) => ({
@@ -277,7 +290,12 @@ export const reviewSchedules = pgTable("review_schedules", {
   reminderSent1d: boolean("reminder_sent_1d").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  index("review_schedules_user_id_idx").on(t.userId),
+  index("review_schedules_buddy_id_idx").on(t.buddyId),
+  index("review_schedules_scheduled_date_idx").on(t.scheduledDate),
+  index("review_schedules_status_idx").on(t.status),
+]);
 
 // Relations for review schedules
 export const reviewSchedulesRelations = relations(
@@ -381,7 +399,11 @@ export const buddyCheckins = pgTable("buddy_checkins", {
   reviewScheduleId: uuid("review_schedule_id").references(() => reviewSchedules.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  index("buddy_checkins_user_id_idx").on(t.userId),
+  index("buddy_checkins_buddy_id_idx").on(t.buddyId),
+  index("buddy_checkins_review_schedule_id_idx").on(t.reviewScheduleId),
+]);
 
 // Relations for buddy check-ins
 export const buddyCheckinsRelations = relations(buddyCheckins, ({ one }) => ({
@@ -423,7 +445,9 @@ export const feedbackInsights = pgTable("feedback_insights", {
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  index("feedback_insights_user_id_idx").on(t.userId),
+]);
 
 // Relations for feedback insights
 export const feedbackInsightsRelations = relations(
@@ -447,7 +471,9 @@ export const achievements = pgTable("achievements", {
   achievedDate: date("achieved_date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  index("achievements_user_id_idx").on(t.userId),
+]);
 
 // Relations for achievements
 export const achievementsRelations = relations(achievements, ({ one }) => ({
@@ -470,7 +496,9 @@ export const notifications = pgTable("notifications", {
   metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
   readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("notifications_user_id_idx").on(t.userId),
+]);
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, {

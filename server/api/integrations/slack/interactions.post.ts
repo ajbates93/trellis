@@ -252,9 +252,10 @@ export default defineEventHandler(async (event) => {
     console.error("Slack interaction error:", error);
 
     // If we can't return a proper Slack response, throw error
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to process interaction",
+      statusCode: 500,
+      message: "Failed to process interaction",
     });
   }
 });

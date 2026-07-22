@@ -311,6 +311,15 @@ export const OnboardingImportResponseSchema = z.object({
       message: z.string(),
     }),
   ),
+  createdUsers: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        email: z.email(),
+      }),
+    )
+    .optional(),
 });
 
 // ===== REVIEW SCHEDULE SCHEMAS =====

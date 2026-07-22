@@ -3,6 +3,7 @@ import { achievements } from "#server/database/schema";
 import { eq, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -19,14 +20,16 @@ export default defineEventHandler(async (event) => {
     const forUserId = query.userId as string | undefined;
 
     // If fetching for a specific user, verify authorization
-    if (forUserId) {
+    if (forUserId && forUserId !== session.user.id) {
       const isAdmin = session.user.role === 'admin';
-      if (!isAdmin && forUserId !== session.user.id) {
+      if (!isAdmin) {
         throw createError({
           statusCode: 403,
           message: "You do not have permission to view these achievements",
         });
       }
+      // Admins may only view users within their own workspace.
+      await assertSameWorkspace(event, forUserId);
     }
 
     const targetUserId = forUserId || session.user.id;
@@ -44,6 +47,12 @@ export default defineEventHandler(async (event) => {
     );
   } catch (error) {
     console.error("Error fetching achievements:", error);
+
+    // Preserve intentional HTTP errors (e.g. the 403 from assertSameWorkspace)
+    // instead of masking them as a generic 500.
+    if (error && typeof error === "object" && "statusCode" in error) {
+      throw error;
+    }
 
     throw createError({
       statusCode: 500,

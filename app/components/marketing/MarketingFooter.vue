@@ -38,6 +38,12 @@ const year = new Date().getFullYear();
             <a href="mailto:hello@jointrellis.app" class="hover:text-white">hello@jointrellis.app</a>
           </li>
         </ul>
+
+        <h4 class="mt-6 text-xs uppercase tracking-widest text-white/40 font-semibold">Legal</h4>
+        <ul class="mt-3 space-y-2 text-sm text-white/60">
+          <li><NuxtLink to="/privacy" class="hover:text-white">Privacy</NuxtLink></li>
+          <li><NuxtLink to="/terms" class="hover:text-white">Terms</NuxtLink></li>
+        </ul>
       </div>
     </div>
 

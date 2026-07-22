@@ -51,6 +51,7 @@ export interface MockDb {
   update: MockFn
   delete: MockFn
   query: Record<string, unknown>
+  transaction: MockFn
 }
 
 interface MockDbResult {
@@ -75,6 +76,10 @@ export function createMockDb(): MockDbResult {
     update: vi.fn(),
     delete: vi.fn(),
     query: {},
+    // Invokes the callback with mockDb itself as `tx`, so `tx.select/update/delete`
+    // inside a `db.transaction(async (tx) => { ... })` route through the same
+    // queued mocks configured via mockSelect/mockUpdate/mockDelete.
+    transaction: vi.fn(async (cb: (tx: MockDb) => unknown) => cb(mockDb)),
   }
 
   function mockSelect(data: unknown[] = []) {

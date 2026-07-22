@@ -6,3 +6,5 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "node .output/server/index.mjs"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300

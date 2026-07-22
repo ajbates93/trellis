@@ -9,7 +9,7 @@ Sentry.init({
 
   // We recommend adjusting this value in production, or using tracesSampler
   // for finer control
-  tracesSampleRate: 1.0,
+  tracesSampleRate: config.public.sentry.tracesSampleRate,
 
   // This sets the sample rate to be 10%. You may want this to be 100% while
   // in development and sample at a lower rate in production
@@ -27,7 +27,7 @@ Sentry.init({
 
   // Enable sending of user PII (Personally Identifiable Information)
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
+  sendDefaultPii: false,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,

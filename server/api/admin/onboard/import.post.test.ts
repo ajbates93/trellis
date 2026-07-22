@@ -43,10 +43,10 @@ describe('POST /api/admin/onboard/import', () => {
 
     const event = createUnauthenticatedEvent()
 
-    // The outer try/catch in import.post.ts re-wraps all errors including 401 as 500
-    // with the original error message preserved
+    // The outer catch in import.post.ts re-throws errors that already carry a
+    // statusCode (like this 401) instead of masking them as a 500.
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 401,
       message: 'Unauthorized',
     })
   })
@@ -63,9 +63,10 @@ describe('POST /api/admin/onboard/import', () => {
       },
     })
 
-    // The outer catch in import.post.ts re-throws internal errors as 500 with the original message
+    // This validation error carries its own statusCode (400) and message,
+    // so it passes through unchanged rather than being masked as a 500.
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 400,
       message: 'CSV must have at least a header row and one data row',
     })
   })
@@ -83,7 +84,7 @@ describe('POST /api/admin/onboard/import', () => {
     })
 
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 400,
       message: 'CSV missing required field: email',
     })
   })
@@ -101,7 +102,7 @@ describe('POST /api/admin/onboard/import', () => {
     })
 
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 400,
       message: 'CSV missing required field: name',
     })
   })
@@ -238,6 +239,9 @@ describe('POST /api/admin/onboard/import', () => {
       success: true,
       rowsImported: 1,
       errors: [],
+      createdUsers: [
+        { id: 'new-user-1', name: 'Jane Smith', email: 'jane@example.com' },
+      ],
     })
   })
 
@@ -246,7 +250,7 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Two existence checks — neither user exists
+    // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
     // Insert first user
@@ -268,6 +272,10 @@ describe('POST /api/admin/onboard/import', () => {
     expect(result).toMatchObject({
       success: true,
       rowsImported: 2,
+      createdUsers: [
+        { id: 'new-user-1', name: 'Alice Brown', email: 'alice@example.com' },
+        { id: 'new-user-2', name: 'Bob Jones', email: 'bob@example.com' },
+      ],
     })
   })
 
@@ -276,11 +284,11 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Existence check for jane — not found
+    // Existence check for jane - not found
     mockSelect([])
     // Insert jane
     mockInsert([{ id: 'user-jane', email: 'jane@example.com', name: 'Jane Smith' }])
-    // Buddy lookup — bob found
+    // Buddy lookup - bob found
     mockSelect([{ id: 'user-bob', email: 'bob@example.com' }])
     // Update jane's buddyId
     mockUpdate([])
@@ -308,11 +316,11 @@ describe('POST /api/admin/onboard/import', () => {
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Existence check — user not found
+    // Existence check - user not found
     mockSelect([])
     // Insert user
     mockInsert([{ id: 'user-jane', email: 'jane@example.com', name: 'Jane Smith' }])
-    // Buddy lookup — not found
+    // Buddy lookup - not found
     mockSelect([])
     // Log successful import (with partial errors)
     mockInsert([])
@@ -336,12 +344,74 @@ describe('POST /api/admin/onboard/import', () => {
     })
   })
 
+  it('imports a row whose quoted name field contains a comma', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
+      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
+    } as any)
+
+    // No existing user
+    mockSelect([])
+    // Insert new user
+    const insertChain = mockInsert([{ id: 'new-user-1', email: 'jane@example.com', name: 'Doe, Jane' }])
+    // Log successful import
+    mockInsert([])
+
+    const event = createAdminEvent({
+      body: {
+        csv: 'email,name\njane@example.com,"Doe, Jane"',
+        filename: 'import.csv',
+      },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toMatchObject({
+      success: true,
+      rowsImported: 1,
+      errors: [],
+    })
+
+    expect(insertChain.values).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'jane@example.com', name: 'Doe, Jane' }),
+    )
+  })
+
+  it('imports rows from a CSV with CRLF line endings', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
+      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
+    } as any)
+
+    // Two existence checks - neither user exists
+    mockSelect([])
+    mockSelect([])
+    // Insert first user
+    mockInsert([{ id: 'new-user-1', email: 'alice@example.com', name: 'Alice Brown' }])
+    // Insert second user
+    mockInsert([{ id: 'new-user-2', email: 'bob@example.com', name: 'Bob Jones' }])
+    // Log successful import
+    mockInsert([])
+
+    const event = createAdminEvent({
+      body: {
+        csv: 'email,name\r\nalice@example.com,Alice Brown\r\nbob@example.com,Bob Jones',
+        filename: 'import.csv',
+      },
+    })
+
+    const result = await handler(event)
+
+    expect(result).toMatchObject({
+      success: true,
+      rowsImported: 2,
+    })
+  })
+
   it('returns validation errors for duplicate emails within the CSV', async () => {
     vi.mocked(auth.api.getSession).mockResolvedValueOnce({
       user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
     } as any)
 
-    // Two existence checks — neither user exists
+    // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
     // Log failed import

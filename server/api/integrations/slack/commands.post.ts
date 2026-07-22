@@ -225,7 +225,7 @@ export default defineEventHandler(async (event) => {
     // Return user-friendly error
     return {
       response_type: "ephemeral",
-      text: `⚠️ Something went wrong: ${error.message || "Unknown error"}`,
+      text: "⚠️ Something went wrong. Please try again.",
     };
   }
 });

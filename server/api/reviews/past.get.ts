@@ -3,6 +3,7 @@ import { reviewSchedules, users, feedback, buddyCheckins } from "#server/databas
 import { eq, and, or, sql, lt, gte } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -43,6 +44,12 @@ export default defineEventHandler(async (event) => {
           statusCode: 403,
           message: "You do not have permission to view these reviews",
         });
+      }
+
+      // An admin viewing a user who isn't their buddy may only do so within
+      // their own workspace.
+      if (isAdmin && !isOwnReviews && !isBuddy) {
+        await assertSameWorkspace(event, forUserId);
       }
     }
 

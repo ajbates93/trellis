@@ -58,9 +58,10 @@ export default defineEventHandler(async (event) => {
     return sendRedirect(event, slackOAuthUrl.toString());
   } catch (error: any) {
     console.error("Slack install error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to initiate Slack installation",
+      statusCode: 500,
+      message: "Failed to initiate Slack installation",
     });
   }
 });

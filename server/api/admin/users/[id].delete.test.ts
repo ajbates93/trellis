@@ -7,7 +7,10 @@ import {
 } from '#server/__tests__/helpers/mock-event'
 import { buildUser } from '#server/__tests__/helpers/factories'
 
-const { mockDb, mockSelect, mockDelete, mockUpdate } = createMockDb()
+const { mockDb, mockSelect } = createMockDb()
+
+const mockAssertNotSoleAdmin = vi.fn().mockResolvedValue(undefined)
+const mockAnonymizeUser = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
 vi.mock('../../../utils/validation', () => ({
@@ -16,6 +19,10 @@ vi.mock('../../../utils/validation', () => ({
 }))
 vi.mock('../../../utils/workspace', () => ({
   getWorkspaceId: vi.fn().mockReturnValue('workspace-1'),
+}))
+vi.mock('../../../utils/accountDeletion', () => ({
+  assertNotSoleAdmin: mockAssertNotSoleAdmin,
+  anonymizeUser: mockAnonymizeUser,
 }))
 
 const { default: handler } = await import('./[id].delete')
@@ -62,69 +69,36 @@ describe('DELETE /api/admin/users/:id', () => {
     })
   })
 
-  it('deletes user and all related data successfully', async () => {
+  it('anonymizes the user instead of hard-deleting', async () => {
     const userToDelete = buildUser({ id: 'user-abc' })
-    const adminUser = buildUser({ id: 'admin-1', role: 'admin' })
 
-    // 1. Select to fetch the user to delete
+    // Select to fetch the user to delete (workspace-scoped lookup)
     mockSelect([userToDelete])
-    // 2. Select to find the first admin for buddy reassignment
-    mockSelect([adminUser])
-    // 3. Delete feedback (reviewer or reviewee)
-    mockDelete([])
-    // 4. Delete goals
-    mockDelete([])
-    // 5. Delete review schedules
-    mockDelete([])
-    // 6. Update users whose buddy was the deleted user
-    mockUpdate([])
-    // 7. Delete the user record itself
-    mockDelete([])
 
     const event = createAdminEvent({ params: { id: 'user-abc' } })
     const result = await handler(event)
 
     expect(result).toEqual({ success: true })
-    expect(mockDb.select).toHaveBeenCalledTimes(2)
-    expect(mockDb.delete).toHaveBeenCalledTimes(4)
-    expect(mockDb.update).toHaveBeenCalledTimes(1)
+    expect(mockAssertNotSoleAdmin).toHaveBeenCalledWith('user-abc', 'workspace-1')
+    expect(mockAnonymizeUser).toHaveBeenCalledWith('user-abc')
+    const assertOrder = mockAssertNotSoleAdmin.mock.invocationCallOrder[0]
+    const anonymizeOrder = mockAnonymizeUser.mock.invocationCallOrder[0]
+    expect(assertOrder).toBeDefined()
+    expect(anonymizeOrder).toBeDefined()
+    expect(assertOrder as number).toBeLessThan(anonymizeOrder as number)
   })
 
-  it('reassigns buddies to first admin when deleting a user who is someone\'s buddy', async () => {
-    const userToDelete = buildUser({ id: 'user-abc' })
-    const firstAdmin = buildUser({ id: 'admin-1', role: 'admin' })
-
+  it('propagates the sole-admin guard error without anonymizing', async () => {
+    const userToDelete = buildUser({ id: 'user-abc', role: 'admin' })
     mockSelect([userToDelete])
-    mockSelect([firstAdmin])
-    mockDelete([])
-    mockDelete([])
-    mockDelete([])
-    mockUpdate([])
-    mockDelete([])
+    mockAssertNotSoleAdmin.mockRejectedValueOnce({
+      statusCode: 400,
+      message: 'You are the only admin in this workspace. Assign another admin before deleting this account.',
+    })
 
     const event = createAdminEvent({ params: { id: 'user-abc' } })
-    await handler(event)
 
-    // Verify update was called to reassign buddies
-    expect(mockDb.update).toHaveBeenCalledTimes(1)
-  })
-
-  it('sets buddy to null when no admin exists for reassignment', async () => {
-    const userToDelete = buildUser({ id: 'user-abc' })
-
-    mockSelect([userToDelete])
-    // No admin found
-    mockSelect([])
-    mockDelete([])
-    mockDelete([])
-    mockDelete([])
-    mockUpdate([])
-    mockDelete([])
-
-    const event = createAdminEvent({ params: { id: 'user-abc' } })
-    const result = await handler(event)
-
-    expect(result).toEqual({ success: true })
-    expect(mockDb.update).toHaveBeenCalledTimes(1)
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 400 })
+    expect(mockAnonymizeUser).not.toHaveBeenCalled()
   })
 })

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { sendUserInvitation } from "#server/utils/invitations";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -60,6 +61,20 @@ export default defineEventHandler(async (event) => {
       updatedAt: new Date(),
     })
     .returning();
+
+  if (!newUser) {
+    throw createError({
+      statusCode: 500,
+      message: "Failed to create user",
+    });
+  }
+
+  // Email the invitation immediately for single manual adds.
+  try {
+    await sendUserInvitation({ id: newUser.id, name: newUser.name, email: newUser.email });
+  } catch (err) {
+    console.error("Failed to send invitation on manual add:", err);
+  }
 
   const response = {
     success: true,

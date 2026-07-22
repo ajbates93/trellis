@@ -29,9 +29,10 @@ export default defineEventHandler(async (event) => {
     return userAccounts;
   } catch (error: any) {
     console.error("Failed to fetch accounts:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to fetch accounts",
+      statusCode: 500,
+      message: "Failed to fetch accounts",
     });
   }
 });

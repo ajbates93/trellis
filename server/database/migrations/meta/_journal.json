@@ -134,6 +134,20 @@
       "when": 1780604742161,
       "tag": "0018_known_betty_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1781036400000,
+      "tag": "0019_add_slack_workspaces_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1784619472830,
+      "tag": "0020_sweet_captain_america",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import Papa from "papaparse";
 import { db } from "#server/database/connection";
 import { users, onboardingImports } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
@@ -35,10 +36,14 @@ export default defineEventHandler(async (event) => {
     const csvContent = body.csv;
     const filename = body.filename;
 
-    // Parse CSV (simple parsing - split by lines and commas)
-    const lines = csvContent.trim().split("\n");
+    // Parse CSV with papaparse (handles quoted fields, commas-in-values, CRLF)
+    const parsed = Papa.parse<Record<string, string>>(csvContent.trim(), {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim().toLowerCase(),
+    });
 
-    if (lines.length < 2) {
+    if (parsed.data.length === 0) {
       throw createError({
         statusCode: 400,
         message: "CSV must have at least a header row and one data row",
@@ -46,11 +51,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // Validate header
-    const header = lines[0]!.toLowerCase().split(",").map((h) => h.trim());
+    const headerFields = parsed.meta.fields ?? [];
     const requiredFields = ["email", "name"];
 
     for (const field of requiredFields) {
-      if (!header.includes(field)) {
+      if (!headerFields.includes(field)) {
         throw createError({
           statusCode: 400,
           message: `CSV missing required field: ${field}`,
@@ -62,56 +67,51 @@ export default defineEventHandler(async (event) => {
     const rows: CSVRow[] = [];
     const errors: ValidationError[] = [];
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i]?.trim();
-      if (!line) continue; // Skip empty lines
-
-      const values = line.split(",").map((v) => v.trim());
-      const row: any = {};
-
-      header.forEach((key, index) => {
-        row[key] = values[index] || "";
-      });
+    parsed.data.forEach((raw, i) => {
+      const rowNum = i + 2; // header is row 1
+      const email = (raw.email ?? "").trim();
+      const name = (raw.name ?? "").trim();
+      const roleType = (raw.roletype ?? "").trim();
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(row.email)) {
+      if (!emailRegex.test(email)) {
         errors.push({
-          row: i + 1,
+          row: rowNum,
           field: "email",
-          message: `Invalid email format: ${row.email}`,
+          message: `Invalid email format: ${email}`,
         });
-        continue;
+        return;
       }
 
       // Validate name is not empty
-      if (!row.name || row.name.trim() === "") {
+      if (!name) {
         errors.push({
-          row: i + 1,
+          row: rowNum,
           field: "name",
           message: "Name cannot be empty",
         });
-        continue;
+        return;
       }
 
       // Validate roleType if provided
-      if (row.roletype && !["dev", "design", "qa", "growth"].includes(row.roletype)) {
+      if (roleType && !["dev", "design", "qa", "growth", "management"].includes(roleType)) {
         errors.push({
-          row: i + 1,
+          row: rowNum,
           field: "roleType",
-          message: `Invalid role type: ${row.roletype}. Must be dev, design, qa, or growth`,
+          message: `Invalid role type: ${roleType}. Must be dev, design, qa, growth, or management`,
         });
-        continue;
+        return;
       }
 
       rows.push({
-        email: row.email,
-        name: row.name,
-        roleType: row.roletype || undefined,
-        buddyEmail: row.buddyemail || undefined,
-        nextReviewDate: row.nextreviewdate || undefined,
+        email,
+        name,
+        roleType: roleType || undefined,
+        buddyEmail: (raw.buddyemail ?? "").trim() || undefined,
+        nextReviewDate: (raw.nextreviewdate ?? "").trim() || undefined,
       });
-    }
+    });
 
     // Check for duplicate emails within the CSV
     const emailSet = new Set<string>();
@@ -166,6 +166,7 @@ export default defineEventHandler(async (event) => {
 
     // Create users using Better Auth (or direct DB insert with emailVerified=false)
     const importedUsers: string[] = [];
+    const createdUsers: Array<{ id: string; name: string; email: string }> = [];
 
     for (const row of rows) {
       try {
@@ -192,6 +193,7 @@ export default defineEventHandler(async (event) => {
         }
 
         importedUsers.push(newUser.id);
+        createdUsers.push({ id: newUser.id, name: newUser.name, email: newUser.email });
       } catch (error) {
         console.error(`Failed to import user ${row.email}:`, error);
         errors.push({
@@ -244,13 +246,15 @@ export default defineEventHandler(async (event) => {
       success: true,
       rowsImported: importedUsers.length,
       errors: errors.length > 0 ? errors : [],
+      createdUsers,
     };
     return validateResponse(response, apiSchemas.OnboardingImportResponseSchema);
-  } catch (error) {
+  } catch (error: any) {
     console.error("CSV import error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Failed to import CSV",
+      message: "Failed to import CSV",
     });
   }
 });

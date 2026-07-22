@@ -4,6 +4,7 @@ import { db } from "#server/database/connection";
 import { users, buddyCheckins } from "#server/database/schema";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -47,6 +48,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "You are not a buddy of this user",
       });
+    }
+
+    // An admin viewing a user who isn't their buddy may only do so within
+    // their own workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, buddyIdFilter);
     }
 
     // Fetch check-ins for specific buddy

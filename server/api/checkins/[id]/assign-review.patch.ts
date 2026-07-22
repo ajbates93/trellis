@@ -8,6 +8,7 @@ import {
 } from "#server/database/schema";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -60,6 +61,12 @@ export default defineEventHandler(async (event) => {
       statusCode: 403,
       message: "You are not authorized to modify this check-in",
     });
+  }
+
+  // An admin modifying a check-in that isn't their buddy's may only do so
+  // within their own workspace.
+  if (isAdmin && !isBuddy) {
+    await assertSameWorkspace(event, checkin.userId);
   }
 
   // If reviewScheduleId is provided, validate it

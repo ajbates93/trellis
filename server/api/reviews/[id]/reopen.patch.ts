@@ -3,6 +3,7 @@ import { reviewSchedules } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session;
@@ -47,6 +48,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "Only the buddy or admin can re-open this review",
       });
+    }
+
+    // An admin re-opening someone else's review may only do so within their
+    // own workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, review.userId);
     }
 
     // Validate: review must be completed

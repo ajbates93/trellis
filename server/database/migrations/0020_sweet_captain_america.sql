@@ -1,0 +1,19 @@
+CREATE INDEX "achievements_user_id_idx" ON "achievements" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "buddy_checkins_user_id_idx" ON "buddy_checkins" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "buddy_checkins_buddy_id_idx" ON "buddy_checkins" USING btree ("buddy_id");--> statement-breakpoint
+CREATE INDEX "buddy_checkins_review_schedule_id_idx" ON "buddy_checkins" USING btree ("review_schedule_id");--> statement-breakpoint
+CREATE INDEX "feedback_reviewee_id_idx" ON "feedback" USING btree ("reviewee_id");--> statement-breakpoint
+CREATE INDEX "feedback_reviewer_id_idx" ON "feedback" USING btree ("reviewer_id");--> statement-breakpoint
+CREATE INDEX "feedback_created_at_idx" ON "feedback" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "feedback_published_idx" ON "feedback" USING btree ("published");--> statement-breakpoint
+CREATE INDEX "feedback_insights_user_id_idx" ON "feedback_insights" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "goals_user_id_idx" ON "goals" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "goals_status_idx" ON "goals" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "notifications_user_id_idx" ON "notifications" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "review_schedules_user_id_idx" ON "review_schedules" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "review_schedules_buddy_id_idx" ON "review_schedules" USING btree ("buddy_id");--> statement-breakpoint
+CREATE INDEX "review_schedules_scheduled_date_idx" ON "review_schedules" USING btree ("scheduled_date");--> statement-breakpoint
+CREATE INDEX "review_schedules_status_idx" ON "review_schedules" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "users_workspace_id_idx" ON "users" USING btree ("workspace_id");--> statement-breakpoint
+CREATE INDEX "users_email_idx" ON "users" USING btree ("email");--> statement-breakpoint
+CREATE INDEX "users_buddy_id_idx" ON "users" USING btree ("buddy_id");

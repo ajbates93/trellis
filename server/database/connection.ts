@@ -2,7 +2,10 @@ import postgres from 'postgres'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import * as schema from './schema'
 
-const connectionString = process.env.DATABASE_URL!
+const connectionString = process.env.DATABASE_URL
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not set. Set it in your environment before starting the app.')
+}
 
 // Disable SSL for local development (localhost or sslmode=disable in URL)
 const isLocal = connectionString.includes('localhost') || connectionString.includes('sslmode=disable')

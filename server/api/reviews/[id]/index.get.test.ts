@@ -137,6 +137,8 @@ describe('GET /api/reviews/:id', () => {
 
     // 1. review lookup — admin-1 is neither reviewee nor buddy
     mockSelect([review])
+    // assertSameWorkspace: review owner is in admin's workspace
+    mockSelect([{ workspaceId: 'workspace-1' }])
     // 2. user info
     mockSelect([{ id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, roleType: user.roleType }])
     // 3. buddy info
@@ -152,5 +154,22 @@ describe('GET /api/reviews/:id', () => {
     const result = await handler(event)
 
     expect(result.review).toMatchObject({ id: review.id })
+  })
+
+  it('returns 403 when admin views a review owned by a user in another workspace', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-5',
+      buddyId: 'user-6',
+    })
+
+    // 1. review lookup — admin-1 is neither reviewee nor buddy
+    mockSelect([review])
+    // assertSameWorkspace: review owner belongs to a DIFFERENT workspace
+    mockSelect([{ workspaceId: 'workspace-2' }])
+
+    const event = createAdminEvent({ params: { id: 'review-1' } })
+
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 })
   })
 })

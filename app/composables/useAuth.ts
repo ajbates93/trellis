@@ -56,6 +56,7 @@ export const useAuth = () => {
   const sessionData = authClient.useSession();
   const user = computed(() => sessionData.value.data?.user);
   const session = computed(() => sessionData.value.data?.session);
+  const isSessionPending = computed(() => sessionData.value.isPending);
 
   // Check if user is a super admin (platform-level)
   const isSuperAdmin = computed(() => user.value?.isSuperAdmin === true);
@@ -82,6 +83,7 @@ export const useAuth = () => {
     authClient,
     user,
     session,
+    isSessionPending,
     signOut,
     refreshSession,
     isSuperAdmin,

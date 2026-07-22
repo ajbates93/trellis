@@ -25,6 +25,12 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    // Sign-in only. The public sign-up route is disabled so nobody can register
+    // with an invited-but-not-yet-activated user's email and hijack their
+    // pre-created account (which would also transfer role/isSuperAdmin/workspace
+    // via the linking hook below). Account creation happens exclusively through
+    // the token-verified invitation flow in server/api/auth/set-password.post.ts.
+    disableSignUp: true,
     password: {
         hash: hashPassword,
         verify: verifyPassword,
