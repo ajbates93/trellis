@@ -323,10 +323,11 @@ watch(
 const answerTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 const saveAnswers = async () => {
-  // Never attempt to persist answers once the review is locked — the API
-  // rejects it with "Cannot update a completed review". Nor from a tab that
-  // doesn't own the editor, whose answers are stale by definition.
-  if (!review.value || isCompleted.value || isEditingElsewhere.value) return;
+  // canEdit re-checked at fire time, not just when the save was scheduled: a
+  // debounce can outlive the conditions that allowed it. Chiefly the review
+  // completing underneath us — from another device, where no Web Lock
+  // applies — after which the API rejects the write outright.
+  if (!review.value || !canEdit.value) return;
   try {
     await withLock(`review-save:${reviewId}:answers`, () =>
       $api(`/reviews/${reviewId}`, {
@@ -365,7 +366,10 @@ onUnmounted(() => {
 
 const saveSelfScore = async (value: number | null) => {
   selfScore.value = value;
-  if (!review.value || isEditingElsewhere.value) return;
+  // Scoring is reviewee-only, which the field enforces; canEdit covers the
+  // completed/lock half of that condition. Not flagged in review, but held to
+  // the same rule as the other two writers rather than left inconsistent.
+  if (!review.value || !canEdit.value) return;
   try {
     await withLock(`review-save:${reviewId}:selfScore`, () =>
       $api(`/reviews/${reviewId}`, {
@@ -393,7 +397,8 @@ const saveTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 const saveControllers = new Map<string, AbortController>();
 
 const saveReflection = async (field: string, value: string) => {
-  if (!review.value || isEditingElsewhere.value) return;
+  // See saveAnswers: same fire-time re-check of canEdit.
+  if (!review.value || !canEdit.value) return;
 
   const isBuddyComment = field === "buddyComments";
   if (isBuddyComment) {
