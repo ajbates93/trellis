@@ -4,19 +4,13 @@ import { eq, and, desc, gte } from "drizzle-orm";
 import { analyzeFeedback } from "#server/services/anthropicClient";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Check if user has analyzed in the last 24 hours (rate limiting)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -93,13 +87,13 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get user name for context
-    const user = await db
+    const userRecord = await db
       .select({ name: users.name })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1);
 
-    const userName = user[0]?.name || "the employee";
+    const userName = userRecord[0]?.name || "the employee";
 
     // Analyze feedback using Claude
     const analysisResult = await analyzeFeedback(validFeedback, userName);

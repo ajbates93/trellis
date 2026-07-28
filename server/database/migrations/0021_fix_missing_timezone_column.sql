@@ -1,0 +1,12 @@
+-- Reconciliation migration: the users.timezone column is present in schema.ts
+-- and in the drizzle snapshots from 0020 onward, but no migration ever emitted
+-- the DDL (it was applied out-of-band via db:push). A database built purely
+-- from the committed migration chain was therefore missing the column, so a
+-- fresh developer / staging / DR rebuild would fail the first time the code
+-- selected users.timezone. This adds the missing column so the chain
+-- reproduces the current schema exactly.
+--
+-- IF NOT EXISTS keeps this idempotent: the existing production and staging
+-- databases already have the column (added via db:push), so re-applying is a
+-- safe no-op there.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "timezone" varchar(100);

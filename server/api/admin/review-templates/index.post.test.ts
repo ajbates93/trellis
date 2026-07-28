@@ -56,10 +56,9 @@ describe('POST /api/admin/review-templates', () => {
       path: '/api/admin/review-templates',
     })
     // Admin role enforcement now lives in the z-admin middleware. The handler
-    // reads the workspace from event.context.user (via getWorkspaceId) and the
-    // session for createdBy / the no-session guard.
-    event.context.session = { user: { id: 'admin-1', role: 'admin' } }
-    event.context.user = { workspaceId: 'ws-1' }
+    // reads the authenticated user from event.context.user (via requireUser)
+    // for both the workspace (getWorkspaceId) and createdBy.
+    event.context.user = { id: 'admin-1', role: 'admin', workspaceId: 'ws-1' }
 
     const res = await handler(event)
 

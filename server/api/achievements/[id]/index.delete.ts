@@ -3,16 +3,10 @@ import { achievements } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const achievementId = getRouterParam(event, "id");
 
@@ -37,7 +31,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    if (achievement[0]!.userId !== session.user.id) {
+    if (achievement[0]!.userId !== user.id) {
       throw createError({
         statusCode: 403,
         message: "Not authorized to delete this achievement",

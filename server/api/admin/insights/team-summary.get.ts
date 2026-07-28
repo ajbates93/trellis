@@ -4,6 +4,7 @@ import { eq, desc, inArray } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { requireAdmin } from "#server/utils/auth-guards";
 
 interface SentimentData {
   positive: number;
@@ -24,22 +25,7 @@ interface UserSentimentSummary {
 }
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
-
-  // Check if user is admin
-  if (session.user.role !== "admin") {
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden - Admin access required",
-    });
-  }
+  requireAdmin(event);
 
   try {
     const workspaceId = getWorkspaceId(event);

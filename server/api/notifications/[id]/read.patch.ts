@@ -3,16 +3,10 @@ import { notifications } from '#server/database/schema'
 import { and, eq, isNull } from 'drizzle-orm'
 import { validateResponse } from '#server/utils/validation'
 import { apiSchemas } from '#server/schemas'
+import { requireUser } from '#server/utils/auth-guards'
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized - Please log in',
-    })
-  }
+  const user = requireUser(event)
 
   const id = getRouterParam(event, 'id')
 
@@ -29,7 +23,7 @@ export default defineEventHandler(async (event) => {
     .where(
       and(
         eq(notifications.id, id),
-        eq(notifications.userId, session.user.id),
+        eq(notifications.userId, user.id),
         isNull(notifications.readAt),
       ),
     )

@@ -8,23 +8,17 @@ import { buildSnapshot, DEFAULT_TEMPLATE_FIELDS } from "#server/utils/reviewTemp
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const body = await validateBody(event, apiSchemas.CreateReviewScheduleRequestSchema);
     const { userId, scheduledDate, name, notes, templateId } = body;
 
     // Validate cannot create review for yourself
-    if (userId === session.user.id) {
+    if (userId === user.id) {
       throw createError({
         statusCode: 400,
         message: "You cannot create a review for yourself",
@@ -45,7 +39,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    if (targetUser.buddyId !== session.user.id) {
+    if (targetUser.buddyId !== user.id) {
       throw createError({
         statusCode: 403,
         message: "You can only create reviews for users you are a buddy of",
@@ -111,7 +105,7 @@ export default defineEventHandler(async (event) => {
       .insert(reviewSchedules)
       .values({
         userId,
-        buddyId: session.user.id,
+        buddyId: user.id,
         scheduledDate: scheduledDate,
         name: reviewName,
         notes: notes || null,
@@ -133,7 +127,7 @@ export default defineEventHandler(async (event) => {
       const [buddy] = await db
         .select({ name: users.name, preferredName: users.preferredName })
         .from(users)
-        .where(eq(users.id, session.user.id))
+        .where(eq(users.id, user.id))
         .limit(1);
 
       if (reviewee && buddy && newReview) {
@@ -148,7 +142,7 @@ export default defineEventHandler(async (event) => {
           title: `${buddyName} scheduled a review with you`,
           body: dateStr,
           link: `/reviews/${newReview.id}`,
-          metadata: { reviewId: newReview.id, actorId: session.user.id },
+          metadata: { reviewId: newReview.id, actorId: user.id },
         });
 
         if (await shouldEmail(userId, "review_created")) {

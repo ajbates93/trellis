@@ -1,22 +1,14 @@
 import { db } from "#server/database/connection";
 import { users, verifications } from "#server/database/schema";
 import { eq, and, inArray } from "drizzle-orm";
-import { auth } from "#server/utils/auth";
+import { requireUser } from "#server/utils/auth-guards";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await auth.api.getSession({ headers: event.headers });
+    const user = requireUser(event);
 
-    if (!session?.user) {
-      throw createError({ statusCode: 401, message: "Unauthorized" });
-    }
-
-    const sessionUser = session.user as typeof session.user & {
-      role?: string | null;
-      isSuperAdmin?: boolean | null;
-    };
-    const isAdmin = sessionUser.role === "admin" || sessionUser.isSuperAdmin === true;
+    const isAdmin = user.role === "admin" || user.isSuperAdmin === true;
     if (!isAdmin) {
       throw createError({ statusCode: 403, message: "Admin access required" });
     }

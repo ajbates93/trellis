@@ -2,20 +2,10 @@ import { createHmac } from 'crypto'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
-import { auth } from '#server/utils/auth'
 
 const { mockDb, mockSelect, mockInsert, mockUpdate } = createMockDb()
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
-
-// Mock auth module
-vi.mock('../../../utils/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-    },
-  },
-}))
 
 vi.mock('../../../utils/encryption', () => ({
   encrypt: vi.fn().mockImplementation((token: string) => `encrypted:${token}`),
@@ -62,18 +52,14 @@ function mockSlackTokenSuccess() {
   })
 }
 
-// Helper: mock an admin session
-function mockAdminSession() {
-  ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-    user: {
-      id: 'admin-1',
-      email: 'admin@example.com',
-      name: 'Admin User',
-      role: 'admin',
-      workspaceId: 'workspace-1',
-      isSuperAdmin: false,
-    },
-  })
+// Admin user set on the event context (auth middleware populates event.context.user)
+const adminUser = {
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: 'Admin User',
+  role: 'admin',
+  workspaceId: 'workspace-1',
+  isSuperAdmin: false,
 }
 
 describe('GET /api/integrations/slack/callback', () => {
@@ -176,8 +162,8 @@ describe('GET /api/integrations/slack/callback', () => {
 
   it('redirects to error page when session is not found (user not logged in)', async () => {
     mockSlackTokenSuccess()
-    ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null)
 
+    // No user on the event context = unauthenticated
     const event = createMockEvent({
       query: {
         code: 'oauth-code-123',
@@ -194,7 +180,8 @@ describe('GET /api/integrations/slack/callback', () => {
 
   it('redirects to error page when session user is not admin', async () => {
     mockSlackTokenSuccess()
-    ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+
+    const event = createMockEvent({
       user: {
         id: 'user-1',
         email: 'user@example.com',
@@ -203,9 +190,6 @@ describe('GET /api/integrations/slack/callback', () => {
         workspaceId: 'workspace-1',
         isSuperAdmin: false,
       },
-    })
-
-    const event = createMockEvent({
       query: {
         code: 'oauth-code-123',
         state: buildState(),
@@ -221,7 +205,6 @@ describe('GET /api/integrations/slack/callback', () => {
 
   it('creates new slack workspace record and redirects to success page', async () => {
     mockSlackTokenSuccess()
-    mockAdminSession()
 
     // No existing slack workspace
     mockSelect([])
@@ -229,6 +212,7 @@ describe('GET /api/integrations/slack/callback', () => {
     mockInsert([{ id: 'slack-ws-new' }])
 
     const event = createMockEvent({
+      user: adminUser,
       query: {
         code: 'oauth-code-123',
         state: buildState(),
@@ -247,7 +231,6 @@ describe('GET /api/integrations/slack/callback', () => {
 
   it('updates existing slack workspace record and redirects to success page', async () => {
     mockSlackTokenSuccess()
-    mockAdminSession()
 
     // Existing slack workspace found
     mockSelect([{ id: 'slack-ws-existing', slackTeamId: 'T12345' }])
@@ -255,6 +238,7 @@ describe('GET /api/integrations/slack/callback', () => {
     mockUpdate([{ id: 'slack-ws-existing' }])
 
     const event = createMockEvent({
+      user: adminUser,
       query: {
         code: 'oauth-code-123',
         state: buildState(),

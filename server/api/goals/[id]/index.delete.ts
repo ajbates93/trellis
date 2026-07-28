@@ -3,16 +3,10 @@ import { goals } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const goalId = getRouterParam(event, "id");
 
@@ -28,7 +22,7 @@ export default defineEventHandler(async (event) => {
     // Note: goal_notes will be cascade deleted due to foreign key constraint
     const deletedGoal = await db
       .delete(goals)
-      .where(and(eq(goals.id, goalId), eq(goals.userId, session.user.id)))
+      .where(and(eq(goals.id, goalId), eq(goals.userId, user.id)))
       .returning();
 
     if (deletedGoal.length === 0) {

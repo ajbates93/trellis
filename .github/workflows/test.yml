@@ -47,6 +47,71 @@ jobs:
           BETTER_AUTH_URL: http://localhost:3000
           ANTHROPIC_API_KEY: mock-anthropic-key
 
+  migration-drift:
+    name: Migration Drift Check
+    runs-on: ubuntu-latest
+
+    # Guards against the drift class in CQ-2: a column (or table) that lives in
+    # schema.ts and the drizzle snapshots but was never emitted as migration
+    # DDL (e.g. applied out-of-band via db:push). drizzle-kit generate/check
+    # cannot see this because they compare schema.ts to the snapshot, which
+    # agree. The only reliable detector is to materialise both a
+    # migration-built DB and a schema-built DB and diff their actual columns.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create databases
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE migrated;'
+          PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE schema_built;'
+
+      - name: Build database from the migration chain
+        run: npx drizzle-kit migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/migrated
+
+      - name: Build database from schema.ts
+        run: yes | npx drizzle-kit push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/schema_built
+
+      - name: Assert the migration chain reproduces schema.ts
+        run: |
+          Q="select table_name||'.'||column_name||' '||data_type||' '||is_nullable from information_schema.columns where table_schema='public' order by 1"
+          if diff \
+            <(PGPASSWORD=postgres psql -h localhost -U postgres -d schema_built -tA -c "$Q") \
+            <(PGPASSWORD=postgres psql -h localhost -U postgres -d migrated -tA -c "$Q"); then
+            echo "No drift: the migration chain reproduces schema.ts exactly."
+          else
+            echo "::error::Migration chain does not reproduce schema.ts. Lines starting with '<' are in schema.ts but missing from the migrations (add a migration); '>' are in the migrations but not schema.ts."
+            exit 1
+          fi
+
   integration:
     name: Integration Tests (real Postgres)
     runs-on: ubuntu-latest

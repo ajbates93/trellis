@@ -1,6 +1,7 @@
 import { db } from "#server/database/connection";
 import { reviewTemplates } from "#server/database/schema";
 import { and, eq, isNull, desc } from "drizzle-orm";
+import { requireUser } from "#server/utils/auth-guards";
 
 /**
  * List the workspace's review templates for selection when scheduling a review.
@@ -10,10 +11,7 @@ import { and, eq, isNull, desc } from "drizzle-orm";
  * /api/admin/review-templates (create/edit/delete stay admin-gated). Read-only.
  */
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized - Please log in" });
-  }
+  requireUser(event);
 
   // Non-throwing workspace read: a missing workspace context should just hide
   // the picker (empty list), not 403 the whole scheduling flow.

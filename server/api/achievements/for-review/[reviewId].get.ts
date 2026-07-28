@@ -3,16 +3,10 @@ import { achievements, reviewSchedules } from "#server/database/schema";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const reviewId = getRouterParam(event, "reviewId");
 
@@ -40,7 +34,7 @@ export default defineEventHandler(async (event) => {
     const currentReview = review[0]!;
 
     // Verify the user is either the reviewer or the reviewee
-    if (currentReview.userId !== session.user.id && currentReview.buddyId !== session.user.id) {
+    if (currentReview.userId !== user.id && currentReview.buddyId !== user.id) {
       throw createError({
         statusCode: 403,
         message: "Not authorized to view achievements for this review",

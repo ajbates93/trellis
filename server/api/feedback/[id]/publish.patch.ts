@@ -5,16 +5,10 @@ import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { notifyRevieweeOfPublishedFeedback } from "#server/utils/notifications";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const feedbackId = getRouterParam(event, "id");
 
@@ -71,7 +65,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Verify current user is the buddy of the reviewee
-    if (reviewee.buddyId !== session.user.id) {
+    if (reviewee.buddyId !== user.id) {
       throw createError({
         statusCode: 403,
         message: "You are not authorized to publish this feedback",
@@ -84,7 +78,7 @@ export default defineEventHandler(async (event) => {
       .set({
         published: true,
         publishedAt: new Date(),
-        publishedBy: session.user.id,
+        publishedBy: user.id,
       })
       .where(eq(feedback.id, feedbackId))
       .returning();

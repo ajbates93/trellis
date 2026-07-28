@@ -3,16 +3,10 @@ import { users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     // Fetch users where current user is their buddy
@@ -31,7 +25,7 @@ export default defineEventHandler(async (event) => {
         createdAt: users.createdAt,
       })
       .from(users)
-      .where(eq(users.buddyId, session.user.id));
+      .where(eq(users.buddyId, user.id));
 
     return validateResponse(
       { buddies: myBuddies },

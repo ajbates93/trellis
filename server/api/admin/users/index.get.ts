@@ -5,26 +5,12 @@ import { alias } from "drizzle-orm/pg-core";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { requireAdmin } from "#server/utils/auth-guards";
 
 const buddy = alias(users, "buddy");
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
-
-  // Check if user is admin
-  if (session.user.role !== "admin") {
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden - Admin access required",
-    });
-  }
+  requireAdmin(event);
 
   // Get workspace ID from current user
   const workspaceId = getWorkspaceId(event);

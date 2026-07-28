@@ -9,16 +9,10 @@ import {
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session || !session.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
+  const user = requireUser(event);
 
   const checkinId = getRouterParam(event, "id");
 
@@ -53,8 +47,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // Verify authorization (buddy or admin)
-  const isBuddy = checkin.user.buddyId === session.user.id;
-  const isAdmin = session.user.role === "admin";
+  const isBuddy = checkin.user.buddyId === user.id;
+  const isAdmin = user.role === "admin";
 
   if (!isBuddy && !isAdmin) {
     throw createError({

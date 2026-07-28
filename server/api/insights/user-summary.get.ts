@@ -3,19 +3,13 @@ import { feedbackInsights, feedback } from "#server/database/schema";
 import { eq, and, desc, gt } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Get the most recent completed analysis for the user
     const latestAnalysis = await db

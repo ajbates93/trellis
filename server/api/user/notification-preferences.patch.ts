@@ -3,6 +3,7 @@ import { users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { validateBody, validateResponse } from "#server/utils/validation";
+import { requireUser } from "#server/utils/auth-guards";
 
 const EmailCategoryKey = z.enum([
   "feedback_received",
@@ -21,17 +22,14 @@ const BodySchema = z.object({
 const ResponseSchema = z.object({ success: z.literal(true) });
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized - Please log in" });
-  }
+  const user = requireUser(event);
 
   const { preferences } = await validateBody(event, BodySchema);
 
   await db
     .update(users)
     .set({ emailNotificationPreferences: preferences })
-    .where(eq(users.id, session.user.id));
+    .where(eq(users.id, user.id));
 
   return validateResponse({ success: true }, ResponseSchema);
 });

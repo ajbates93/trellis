@@ -4,23 +4,17 @@ import { eq, and, gte, lt, isNotNull } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { computeStreak } from "#server/utils/community-scoring";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const authUser = requireUser(event);
 
   try {
     // Get current user details
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, session.user.id))
+      .where(eq(users.id, authUser.id))
       .limit(1);
 
     if (!user) {
@@ -48,7 +42,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.reviewerId, session.user.id),
+          eq(feedback.reviewerId, authUser.id),
           gte(feedback.createdAt, startOfThisWeek)
         )
       );
@@ -59,7 +53,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.reviewerId, session.user.id),
+          eq(feedback.reviewerId, authUser.id),
           gte(feedback.createdAt, startOfLastWeek),
           lt(feedback.createdAt, startOfThisWeek)
         )
@@ -71,7 +65,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.revieweeId, session.user.id),
+          eq(feedback.revieweeId, authUser.id),
           eq(feedback.published, true),
           gte(feedback.publishedAt, startOfThisWeek)
         )
@@ -83,7 +77,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.revieweeId, session.user.id),
+          eq(feedback.revieweeId, authUser.id),
           eq(feedback.published, true),
           gte(feedback.publishedAt, startOfLastWeek),
           lt(feedback.publishedAt, startOfThisWeek)
@@ -115,7 +109,7 @@ export default defineEventHandler(async (event) => {
       .from(reviewSchedules)
       .where(
         and(
-          eq(reviewSchedules.userId, session.user.id),
+          eq(reviewSchedules.userId, authUser.id),
           eq(reviewSchedules.status, "scheduled"),
           gte(reviewSchedules.scheduledDate, now.toISOString().split('T')[0]!)
         )
@@ -137,7 +131,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.reviewerId, session.user.id),
+          eq(feedback.reviewerId, authUser.id),
           isNotNull(feedback.weekYear),
         ),
       );

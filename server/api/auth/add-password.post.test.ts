@@ -5,13 +5,6 @@ import { createMockEvent } from '#server/__tests__/helpers/mock-event'
 const { mockDb, mockSelect, mockInsert, mockUpdate } = createMockDb()
 
 vi.mock('../../database/connection', () => ({ db: mockDb }))
-vi.mock('../../utils/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-    },
-  },
-}))
 vi.mock('../../utils/password', () => ({
   hashPassword: vi.fn().mockResolvedValue('hashed-password'),
 }))
@@ -21,7 +14,8 @@ const mockReadBody = vi.fn()
 vi.stubGlobal('readBody', mockReadBody)
 
 const { default: handler } = await import('./add-password.post')
-const { auth } = await import('../../utils/auth')
+
+const authedUser = { id: 'user-1', email: 'test@example.com', name: 'Test User' }
 
 describe('POST /api/auth/add-password', () => {
   beforeEach(() => {
@@ -29,8 +23,6 @@ describe('POST /api/auth/add-password', () => {
   })
 
   it('returns 401 when no session', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce(null as any)
-
     const event = createMockEvent()
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -39,12 +31,9 @@ describe('POST /api/auth/add-password', () => {
   })
 
   it('returns 400 when password missing', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'user-1', email: 'test@example.com' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({})
 
-    const event = createMockEvent()
+    const event = createMockEvent({ user: authedUser })
 
     await expect(handler(event)).rejects.toMatchObject({
       statusCode: 400,
@@ -52,12 +41,9 @@ describe('POST /api/auth/add-password', () => {
   })
 
   it('returns 400 when password too short', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'user-1', email: 'test@example.com' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ password: 'short' })
 
-    const event = createMockEvent()
+    const event = createMockEvent({ user: authedUser })
 
     await expect(handler(event)).rejects.toMatchObject({
       statusCode: 400,
@@ -65,13 +51,10 @@ describe('POST /api/auth/add-password', () => {
   })
 
   it('returns 400 when password already set', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'user-1', email: 'test@example.com' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ password: 'validpassword123' })
     mockSelect([{ id: 'acc-1', providerId: 'credential' }])
 
-    const event = createMockEvent()
+    const event = createMockEvent({ user: authedUser })
 
     await expect(handler(event)).rejects.toMatchObject({
       statusCode: 400,
@@ -80,15 +63,12 @@ describe('POST /api/auth/add-password', () => {
   })
 
   it('adds password successfully', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'user-1', email: 'test@example.com' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ password: 'validpassword123' })
     mockSelect([])
     mockInsert([])
     mockUpdate([])
 
-    const event = createMockEvent()
+    const event = createMockEvent({ user: authedUser })
     const result = await handler(event)
 
     expect(result).toEqual({

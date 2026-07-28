@@ -1,6 +1,7 @@
 import { db } from "#server/database/connection";
 import { users } from "#server/database/schema";
 import { eq, sql } from "drizzle-orm";
+import { requireUser } from "#server/utils/auth-guards";
 
 const VALID_TASK_IDS = [
   "submit-feedback",
@@ -10,14 +11,7 @@ const VALID_TASK_IDS = [
 ];
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const body = await readBody(event);
@@ -34,7 +28,7 @@ export default defineEventHandler(async (event) => {
     const currentUser = await db
       .select({ onboardingTasks: users.onboardingTasks })
       .from(users)
-      .where(eq(users.id, session.user.id))
+      .where(eq(users.id, user.id))
       .limit(1);
 
     if (!currentUser.length) {
@@ -60,7 +54,7 @@ export default defineEventHandler(async (event) => {
         onboardingTasks: updatedTasks,
         updatedAt: new Date(),
       })
-      .where(eq(users.id, session.user.id));
+      .where(eq(users.id, user.id));
 
     return { onboardingTasks: updatedTasks, alreadyCompleted: false };
   } catch (error) {
