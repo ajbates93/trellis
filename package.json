@@ -34,7 +34,8 @@
     "db:reseed": "npm run db:reset && npm run db:seed",
     "db:backfill-workspaces": "tsx server/database/scripts/backfill-workspaces.ts",
     "db:fix-avatar-urls": "tsx server/database/scripts/fix-avatar-urls.ts",
-    "db:seed-review-templates": "tsx server/database/scripts/seed-review-templates.ts"
+    "db:seed-review-templates": "tsx server/database/scripts/seed-review-templates.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
