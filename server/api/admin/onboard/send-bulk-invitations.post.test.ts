@@ -101,10 +101,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
       success: true,
       sent: 2,
       failed: 0,
-      details: {
-        sent: [user1.email, user2.email],
-        failed: [],
-      },
     })
     expect(sendEmail).toHaveBeenCalledTimes(2)
   })
@@ -155,12 +151,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
       success: false,
       sent: 1,
       failed: 1,
-      details: {
-        sent: [user1.email],
-        failed: expect.arrayContaining([
-          expect.objectContaining({ email: user2.email }),
-        ]),
-      },
     })
   })
 

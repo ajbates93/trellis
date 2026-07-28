@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { requireAdmin } from "#server/utils/auth-guards";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event);
@@ -33,6 +34,14 @@ export default defineEventHandler(async (event) => {
 
   // Validate request body
   const body = await validateBody(event, apiSchemas.UpdateUserRequestSchema);
+
+  // The buddy relationship is a trust edge (a buddy gets read access to the
+  // partner's feedback, goals, reviews and check-ins). An admin must not be
+  // able to assign a buddy from another workspace, which would grant that
+  // outsider read access into this tenant (F10).
+  if (body.buddyId) {
+    await assertSameWorkspace(event, body.buddyId);
+  }
 
   // Build update object with only provided fields
   const updateData: any = {};

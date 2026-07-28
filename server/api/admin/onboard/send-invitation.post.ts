@@ -2,6 +2,7 @@ import { db } from "#server/database/connection";
 import { users } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { requireUser } from "#server/utils/auth-guards";
+import { getWorkspaceId } from "#server/utils/workspace";
 import { sendUserInvitation } from "#server/utils/invitations";
 
 export default defineEventHandler(async (event) => {
@@ -29,7 +30,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Find the pre-created user
+    // Find the pre-created user, scoped to the caller's workspace. Without the
+    // workspace predicate an admin could invite (and, via the response, confirm
+    // the email of) any pre-created user in any other tenant (F11).
+    const workspaceId = getWorkspaceId(event);
     const [user] = await db
       .select()
       .from(users)
@@ -37,6 +41,7 @@ export default defineEventHandler(async (event) => {
         and(
           eq(users.id, userId),
           eq(users.emailVerified, false), // Must be pre-created
+          eq(users.workspaceId, workspaceId),
         ),
       )
       .limit(1);

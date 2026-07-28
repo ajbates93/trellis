@@ -16,6 +16,9 @@ vi.mock('../../../utils/validation', () => ({
 }))
 vi.mock('../../../utils/workspace', () => ({
   getWorkspaceId: vi.fn().mockReturnValue('workspace-1'),
+  // The cross-workspace buddy check is exercised for real in the integration
+  // tier; stub it here so the handler-logic tests stay focused.
+  assertSameWorkspace: vi.fn().mockResolvedValue(undefined),
 }))
 
 const { default: handler } = await import('./[id].patch')
