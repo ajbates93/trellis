@@ -3,16 +3,10 @@ import { feedback } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     // Count unread published feedback received by the current user
@@ -21,7 +15,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.revieweeId, session.user.id),
+          eq(feedback.revieweeId, user.id),
           eq(feedback.published, true),
           eq(feedback.isRead, false)
         )

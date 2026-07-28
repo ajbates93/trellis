@@ -2,12 +2,10 @@ import { db } from "#server/database/connection";
 import { reviewTemplates } from "#server/database/schema";
 import { and, eq } from "drizzle-orm";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized - Please log in" });
-  }
+  const user = requireUser(event);
   const id = getRouterParam(event, "id");
   if (!id) throw createError({ statusCode: 400, message: "Template id is required" });
   const workspaceId = getWorkspaceId(event);
@@ -27,7 +25,7 @@ export default defineEventHandler(async (event) => {
       description: source.description,
       isDefault: false,
       fields: source.fields,
-      createdBy: session.user.id,
+      createdBy: user.id,
     })
     .returning();
 

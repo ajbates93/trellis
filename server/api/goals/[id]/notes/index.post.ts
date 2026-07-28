@@ -3,16 +3,10 @@ import { goals, goalNotes, users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const goalId = getRouterParam(event, "id");
 
@@ -49,8 +43,8 @@ export default defineEventHandler(async (event) => {
         message: "Goal not found",
       });
     }
-    const isOwner = goalData.userId === session.user.id;
-    const isBuddy = goalData.owner.buddyId === session.user.id;
+    const isOwner = goalData.userId === user.id;
+    const isBuddy = goalData.owner.buddyId === user.id;
 
     if (!isOwner && !isBuddy) {
       throw createError({
@@ -64,7 +58,7 @@ export default defineEventHandler(async (event) => {
       .insert(goalNotes)
       .values({
         goalId: goalId,
-        authorId: session.user.id,
+        authorId: user.id,
         noteText: body.noteText.trim(),
       })
       .returning();

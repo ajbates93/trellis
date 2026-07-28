@@ -16,13 +16,6 @@ vi.mock('../../../utils/validation', () => ({
 vi.mock('../../../utils/workspace', () => ({
   getWorkspaceId: vi.fn().mockReturnValue('workspace-1'),
 }))
-vi.mock('../../../utils/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-    },
-  },
-}))
 vi.mock('../../../schemas', () => ({
   apiSchemas: {
     OnboardingImportRequestSchema: {},
@@ -31,7 +24,6 @@ vi.mock('../../../schemas', () => ({
 }))
 
 const { default: handler } = await import('./import.post')
-const { auth } = await import('../../../utils/auth')
 
 describe('POST /api/admin/onboard/import', () => {
   beforeEach(() => {
@@ -39,8 +31,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns error when unauthenticated', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce(null as any)
-
     const event = createUnauthenticatedEvent()
 
     // The outer catch in import.post.ts re-throws errors that already carry a
@@ -52,10 +42,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns error when CSV has only a header row', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     const event = createAdminEvent({
       body: {
         csv: 'email,name,roleType,buddyEmail',
@@ -72,10 +58,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns error when CSV is missing required email field', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     const event = createAdminEvent({
       body: {
         csv: 'name,roleType\nJohn Doe,dev',
@@ -90,10 +72,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns error when CSV is missing required name field', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     const event = createAdminEvent({
       body: {
         csv: 'email,roleType\njohn@example.com,dev',
@@ -108,10 +86,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns validation errors and logs failed import when email is invalid', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // mockInsert for logging the failed import
     mockInsert([])
 
@@ -134,10 +108,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns validation errors when name is empty', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     mockInsert([])
 
     const event = createAdminEvent({
@@ -159,10 +129,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns validation errors when roleType is invalid', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     mockInsert([])
 
     const event = createAdminEvent({
@@ -184,10 +150,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns error when user already exists in database', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // Existing user found
     mockSelect([{ id: 'existing-user', email: 'john@example.com' }])
     // Log failed import
@@ -215,10 +177,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('imports a single valid user successfully', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // No existing user
     mockSelect([])
     // Insert new user
@@ -246,10 +204,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('imports multiple valid users successfully', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
@@ -280,10 +234,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('assigns buddy relationship when buddyEmail is provided and buddy exists', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // Existence check for jane - not found
     mockSelect([])
     // Insert jane
@@ -312,10 +262,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('records a buddyEmail error when buddy is not found', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // Existence check - user not found
     mockSelect([])
     // Insert user
@@ -345,10 +291,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('imports a row whose quoted name field contains a comma', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // No existing user
     mockSelect([])
     // Insert new user
@@ -377,10 +319,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('imports rows from a CSV with CRLF line endings', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])
@@ -407,10 +345,6 @@ describe('POST /api/admin/onboard/import', () => {
   })
 
   it('returns validation errors for duplicate emails within the CSV', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
-
     // Two existence checks - neither user exists
     mockSelect([])
     mockSelect([])

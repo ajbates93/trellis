@@ -10,13 +10,6 @@ import { buildUser } from '#server/__tests__/helpers/factories'
 const { mockDb, mockSelect, mockInsert } = createMockDb()
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
-vi.mock('../../../utils/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-    },
-  },
-}))
 vi.mock('../../../utils/email', () => ({
   sendEmail: vi.fn().mockResolvedValue(undefined),
   emailTemplates: {
@@ -29,7 +22,6 @@ const mockReadBody = vi.fn()
 vi.stubGlobal('readBody', mockReadBody)
 
 const { default: handler } = await import('./send-bulk-invitations.post')
-const { auth } = await import('../../../utils/auth')
 const { sendEmail } = await import('../../../utils/email')
 
 describe('POST /api/admin/onboard/send-bulk-invitations', () => {
@@ -40,8 +32,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce(null as any)
-
     const event = createUnauthenticatedEvent()
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -50,10 +40,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('returns 403 when user is not an admin', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'user-1', email: 'user@example.com', name: 'Regular User', role: 'user' },
-    } as any)
-
     const event = createAuthenticatedEvent()
 
     await expect(handler(event)).rejects.toMatchObject({
@@ -63,9 +49,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('returns 400 when userIds is not an array', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: 'not-an-array' })
 
     const event = createAdminEvent()
@@ -77,9 +60,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('returns 400 when userIds is an empty array', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: [] })
 
     const event = createAdminEvent()
@@ -91,9 +71,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('returns 404 when no pre-created users are found', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: ['nonexistent-1', 'nonexistent-2'] })
     // DB returns no pre-created users
     mockSelect([])
@@ -107,9 +84,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('sends invitations to all found pre-created users', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: ['pre-user-1', 'pre-user-2'] })
 
     const user1 = buildUser({ id: 'pre-user-1', email: 'alice@example.com', name: 'Alice Brown', emailVerified: false })
@@ -136,9 +110,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('sends invitation to a single pre-created user', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: ['pre-user-3'] })
 
     const user = buildUser({ id: 'pre-user-3', email: 'charlie@example.com', name: 'Charlie Davis', emailVerified: false })
@@ -163,9 +134,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('records failed sends and reports partial success', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: ['pre-user-4', 'pre-user-5'] })
 
     const user1 = buildUser({ id: 'pre-user-4', email: 'dave@example.com', name: 'Dave Evans', emailVerified: false })
@@ -197,15 +165,6 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
   })
 
   it('allows super admin to send bulk invitations', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: {
-        id: 'super-1',
-        email: 'super@example.com',
-        name: 'Super Admin',
-        role: 'user',
-        isSuperAdmin: true,
-      },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: ['pre-user-6'] })
 
     const user = buildUser({ id: 'pre-user-6', email: 'frank@example.com', name: 'Frank Green', emailVerified: false })
@@ -213,16 +172,23 @@ describe('POST /api/admin/onboard/send-bulk-invitations', () => {
     mockSelect([user])
     mockInsert([])
 
-    const event = createAdminEvent()
+    const event = createAuthenticatedEvent({
+      session: {
+        user: {
+          id: 'super-1',
+          email: 'super@example.com',
+          name: 'Super Admin',
+          role: 'user',
+          isSuperAdmin: true,
+        },
+      },
+    })
     const result = await handler(event)
 
     expect(result).toMatchObject({ success: true, sent: 1 })
   })
 
   it('inserts verification tokens for each user', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValueOnce({
-      user: { id: 'admin-1', email: 'admin@example.com', name: 'Admin User', role: 'admin' },
-    } as any)
     mockReadBody.mockResolvedValueOnce({ userIds: ['pre-user-7', 'pre-user-8'] })
 
     const user1 = buildUser({ id: 'pre-user-7', email: 'grace@example.com', name: 'Grace Hall', emailVerified: false })

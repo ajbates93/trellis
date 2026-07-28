@@ -5,16 +5,10 @@ import { users, buddyCheckins, reviewSchedules } from "#server/database/schema";
 import { findNextReview } from "#server/utils/reviews";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session || !session.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
+  const user = requireUser(event);
 
   const body = await validateBody(event, apiSchemas.CreateBuddyCheckinRequestSchema);
   const { userId, notes } = body;
@@ -31,8 +25,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const isBuddy = targetUser.buddyId === session.user.id;
-  const isAdmin = session.user.role === "admin";
+  const isBuddy = targetUser.buddyId === user.id;
+  const isAdmin = user.role === "admin";
 
   if (!isBuddy && !isAdmin) {
     throw createError({
@@ -48,7 +42,7 @@ export default defineEventHandler(async (event) => {
   const [createdCheckin] = await db
     .insert(buddyCheckins)
     .values({
-      buddyId: session.user.id,
+      buddyId: user.id,
       userId,
       notes: notes.trim(),
       reviewScheduleId: nextReview?.id || null,

@@ -1,27 +1,16 @@
 import { db } from "#server/database/connection";
 import { users } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
-import { auth } from "#server/utils/auth";
+import { requireUser } from "#server/utils/auth-guards";
 import { sendUserInvitation } from "#server/utils/invitations";
 
 export default defineEventHandler(async (event) => {
   try {
     // Verify admin session
-    const session = await auth.api.getSession({ headers: event.headers });
-
-    if (!session?.user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
+    const authUser = requireUser(event);
 
     // Check if user is admin (workspace admin or super admin)
-    const sessionUser = session.user as typeof session.user & {
-      role?: string | null;
-      isSuperAdmin?: boolean | null;
-    };
-    const isAdmin = sessionUser.role === "admin" || sessionUser.isSuperAdmin === true;
+    const isAdmin = authUser.role === "admin" || authUser.isSuperAdmin === true;
     if (!isAdmin) {
       throw createError({
         statusCode: 403,

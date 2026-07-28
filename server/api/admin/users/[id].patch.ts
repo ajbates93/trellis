@@ -3,24 +3,10 @@ import { users } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireAdmin } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
-
-  // Check if user is admin
-  if (session.user.role !== "admin") {
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden - Admin access required",
-    });
-  }
+  requireAdmin(event);
 
   const userId = getRouterParam(event, "id");
   if (!userId) {

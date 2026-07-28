@@ -3,6 +3,7 @@ import { feedback } from "#server/database/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 function getISOWeek(date: Date): string {
   const d = new Date(date);
@@ -16,17 +17,10 @@ function getISOWeek(date: Date): string {
 }
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Build last 12 weeks list
     const now = new Date();

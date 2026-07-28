@@ -5,12 +5,10 @@ import { validateResponse } from "#server/utils/validation";
 import { getWorkspaceId } from "#server/utils/workspace";
 import { computePlantHealth } from "#server/utils/community-scoring";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
-  }
+  requireUser(event);
 
   const workspaceId = getWorkspaceId(event);
 

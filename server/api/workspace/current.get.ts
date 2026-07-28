@@ -1,18 +1,12 @@
 import { db } from "#server/database/connection";
 import { workspaces } from "#server/database/schema";
 import { eq } from "drizzle-orm";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
+  const user = requireUser(event);
 
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
-
-  const workspaceId = session.user.workspaceId;
+  const workspaceId = user.workspaceId;
 
   if (!workspaceId) {
     return { workspace: null };
