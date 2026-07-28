@@ -66,13 +66,23 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
+      // input: false on the privilege- and tenancy-bearing fields (roleType,
+      // buddyId, workspaceId, isSuperAdmin) so they cannot be set through the
+      // public /api/auth/update-user endpoint. Without this, any authenticated
+      // user could self-promote to platform super-admin or relocate into
+      // another tenant in a single request (F1). Legitimate changes to these
+      // fields go through server-side admin flows that write via drizzle
+      // directly, not this self-service path, so locking them here does not
+      // affect those flows.
       roleType: {
         type: "string",
         required: false,
+        input: false,
       },
       buddyId: {
         type: "string",
         required: false,
+        input: false,
       },
       nextReviewDate: {
         type: "date",
@@ -113,10 +123,12 @@ export const auth = betterAuth({
       workspaceId: {
         type: "string",
         required: false,
+        input: false,
       },
       isSuperAdmin: {
         type: "boolean",
         required: false,
+        input: false,
       },
       passwordEnabled: {
         type: "boolean",
