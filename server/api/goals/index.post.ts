@@ -2,16 +2,10 @@ import { db } from "#server/database/connection";
 import { goals } from "#server/database/schema";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     // Validate request body
@@ -21,7 +15,7 @@ export default defineEventHandler(async (event) => {
     const newGoal = await db
       .insert(goals)
       .values({
-        userId: session.user.id,
+        userId: user.id,
         goalText: body.goalText.trim(),
         description: body.description || null, // Rich text HTML from TipTap
         status: body.status || "active",

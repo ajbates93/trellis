@@ -3,16 +3,10 @@ import { feedback } from "#server/database/schema";
 import { eq, and, gte, or } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     // Calculate date range for last 12 weeks
@@ -33,9 +27,9 @@ export default defineEventHandler(async (event) => {
       .where(
         and(
           or(
-            eq(feedback.reviewerId, session.user.id),
+            eq(feedback.reviewerId, user.id),
             and(
-              eq(feedback.revieweeId, session.user.id),
+              eq(feedback.revieweeId, user.id),
               eq(feedback.published, true) // Only count published feedback received
             )
           ),
@@ -71,11 +65,11 @@ export default defineEventHandler(async (event) => {
       });
 
       const given = feedbackInWeek.filter(
-        fb => fb.reviewerId === session.user.id
+        fb => fb.reviewerId === user.id
       ).length;
 
       const received = feedbackInWeek.filter(
-        fb => fb.revieweeId === session.user.id && fb.published
+        fb => fb.revieweeId === user.id && fb.published
       ).length;
 
       return {

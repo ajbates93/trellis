@@ -2,14 +2,12 @@ import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
 import { assertNotSoleAdmin, anonymizeUser } from "#server/utils/accountDeletion";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
-  }
+  const user = requireUser(event);
   const workspaceId = getWorkspaceId(event);
-  await assertNotSoleAdmin(session.user.id, workspaceId);
-  await anonymizeUser(session.user.id);
+  await assertNotSoleAdmin(user.id, workspaceId);
+  await anonymizeUser(user.id);
   return validateResponse({ success: true }, apiSchemas.SuccessResponseSchema);
 });

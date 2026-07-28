@@ -2,6 +2,7 @@ import { db } from "#server/database/connection";
 import { slackWorkspaces } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 /**
  * Get Slack workspace connection status
@@ -9,13 +10,7 @@ import { getWorkspaceId } from "#server/utils/workspace";
  */
 export default defineEventHandler(async (event) => {
   try {
-    const user = event.context.user;
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
+    const user = requireUser(event);
 
     // Get current workspace
     const workspaceId = getWorkspaceId(event);

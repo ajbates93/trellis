@@ -2,16 +2,10 @@ import { db } from "#server/database/connection";
 import { achievements } from "#server/database/schema";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const body = await validateBody(event, apiSchemas.CreateAchievementRequestSchema);
@@ -20,7 +14,7 @@ export default defineEventHandler(async (event) => {
     const newAchievement = await db
       .insert(achievements)
       .values({
-        userId: session.user.id,
+        userId: user.id,
         title: body.title.trim(),
         description: body.description || null, // Rich text HTML from TipTap
         achievedDate: body.achievedDate,

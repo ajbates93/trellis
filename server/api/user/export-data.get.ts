@@ -1,13 +1,11 @@
 import { db } from "#server/database/connection";
 import { users, feedback, goals, reviewSchedules, buddyCheckins, achievements } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
-  }
-  const uid = session.user.id;
+  const user = requireUser(event);
+  const uid = user.id;
 
   // Explicit profile columns: the export is the user's own data, not internal
   // moderation/access-control state (role, banned, banReason, isSuperAdmin).

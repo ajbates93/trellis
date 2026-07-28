@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { auth } from "#server/utils/auth";
 import { db } from "#server/database/connection";
 import { users } from "#server/database/schema";
 import { eq } from "drizzle-orm";
+import { requireUser } from "#server/utils/auth-guards";
 
 const UpdateTimezoneSchema = z.object({
   timezone: z.string().min(1, "Timezone is required"),
@@ -11,13 +11,7 @@ const UpdateTimezoneSchema = z.object({
 export default defineEventHandler(async (event) => {
   try {
     // Get authenticated user
-    const session = await auth.api.getSession({ headers: event.headers });
-    if (!session?.user?.id) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
+    const user = requireUser(event);
 
     // Parse and validate request body
     const body = await readBody(event);
@@ -39,7 +33,7 @@ export default defineEventHandler(async (event) => {
       .set({
         timezone,
       })
-      .where(eq(users.id, session.user.id))
+      .where(eq(users.id, user.id))
       .returning();
 
     if (!updatedUser) {

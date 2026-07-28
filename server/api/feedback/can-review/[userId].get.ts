@@ -4,17 +4,10 @@ import { and, eq } from "drizzle-orm";
 import { format } from "date-fns";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  // Get session/user from better-auth
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const userId = getRouterParam(event, "userId");
 
@@ -53,7 +46,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .where(
         and(
-          eq(feedback.reviewerId, session.user.id),
+          eq(feedback.reviewerId, user.id),
           eq(feedback.revieweeId, userId),
           eq(feedback.weekYear, currentWeekYear)
         )

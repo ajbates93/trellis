@@ -3,16 +3,10 @@ import { feedback, users, reviewSchedules } from "#server/database/schema";
 import { eq, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     // Fetch all feedback given by the current user (regardless of published status)
@@ -36,7 +30,7 @@ export default defineEventHandler(async (event) => {
       })
       .from(feedback)
       .innerJoin(users, eq(feedback.revieweeId, users.id))
-      .where(eq(feedback.reviewerId, session.user.id))
+      .where(eq(feedback.reviewerId, user.id))
       .orderBy(desc(feedback.createdAt));
 
     return validateResponse(

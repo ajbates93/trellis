@@ -4,16 +4,10 @@ import { eq } from "drizzle-orm";
 import { uploadAvatarToS3 } from "#server/utils/s3";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const body = await readBody(event);
@@ -96,7 +90,7 @@ export default defineEventHandler(async (event) => {
         // Upload to S3 and get the URL
         try {
           console.log("Avatar upload requested");
-          const s3Url = await uploadAvatarToS3(body.avatarUrl, session.user.id);
+          const s3Url = await uploadAvatarToS3(body.avatarUrl, user.id);
           console.log("Avatar uploaded successfully, URL:", s3Url);
           updateData.avatarUrl = s3Url;
         } catch (error) {
@@ -119,7 +113,7 @@ export default defineEventHandler(async (event) => {
     const updatedUser = await db
       .update(users)
       .set(updateData)
-      .where(eq(users.id, session.user.id))
+      .where(eq(users.id, user.id))
       .returning({
         id: users.id,
         email: users.email,

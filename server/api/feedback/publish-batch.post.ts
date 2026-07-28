@@ -5,16 +5,10 @@ import { inArray } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { notifyRevieweeOfPublishedFeedback } from "#server/utils/notifications";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   // Validate request body
   const body = await validateBody(event, apiSchemas.PublishBatchFeedbackRequestSchema);
@@ -62,7 +56,7 @@ export default defineEventHandler(async (event) => {
       .where(inArray(users.id, revieweeIds));
 
     const unauthorized = reviewees.filter(
-      (r) => r.buddyId !== session.user.id
+      (r) => r.buddyId !== user.id
     );
 
     if (unauthorized.length > 0) {
@@ -78,7 +72,7 @@ export default defineEventHandler(async (event) => {
       .set({
         published: true,
         publishedAt: new Date(),
-        publishedBy: session.user.id,
+        publishedBy: user.id,
       })
       .where(inArray(feedback.id, body.feedbackIds))
       .returning();

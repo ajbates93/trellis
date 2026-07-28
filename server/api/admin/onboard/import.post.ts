@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { db } from "#server/database/connection";
 import { users, onboardingImports } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
-import { auth } from "#server/utils/auth";
+import { requireUser } from "#server/utils/auth-guards";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
@@ -17,16 +17,9 @@ interface ValidationError {
 export default defineEventHandler(async (event) => {
   try {
     // Get current admin user from session
-    const session = await auth.api.getSession({ headers: event.headers });
+    const user = requireUser(event);
 
-    if (!session?.user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
-
-    const adminId = session.user.id;
+    const adminId = user.id;
 
     // Get workspace ID from current admin
     const workspaceId = getWorkspaceId(event);

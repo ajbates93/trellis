@@ -3,16 +3,10 @@ import { goals, users, goalMilestones } from "#server/database/schema";
 import { eq, desc, and, or, asc, inArray } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const query = getQuery(event);
@@ -28,7 +22,7 @@ export default defineEventHandler(async (event) => {
         avatarUrl: users.avatarUrl,
       })
       .from(users)
-      .where(eq(users.buddyId, session.user.id));
+      .where(eq(users.buddyId, user.id));
 
     // If filtering by buddyId, verify it's one of the assigned buddies
     if (buddyIdFilter) {
@@ -74,7 +68,7 @@ export default defineEventHandler(async (event) => {
         and(
           buddyIdFilter
             ? eq(users.id, buddyIdFilter)
-            : eq(users.buddyId, session.user.id),
+            : eq(users.buddyId, user.id),
           or(eq(goals.status, "active"), eq(goals.status, "completed"))
         )
       )

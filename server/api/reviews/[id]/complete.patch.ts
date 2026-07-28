@@ -7,16 +7,10 @@ import { createNotification } from "#server/utils/inAppNotifications";
 import { assertSameWorkspace } from "#server/utils/workspace";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const reviewId = getRouterParam(event, "id");
 
@@ -46,8 +40,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // AUTHORIZATION CHECK: Only buddy or admin can complete the review
-    const isBuddy = review.buddyId === session.user.id;
-    const isAdmin = session.user.role === 'admin';
+    const isBuddy = review.buddyId === user.id;
+    const isAdmin = user.role === 'admin';
 
     if (!isBuddy && !isAdmin) {
       throw createError({
@@ -88,7 +82,7 @@ export default defineEventHandler(async (event) => {
       const [actor] = await db
         .select({ name: users.name, preferredName: users.preferredName })
         .from(users)
-        .where(eq(users.id, session.user.id))
+        .where(eq(users.id, user.id))
         .limit(1);
 
       if (recipient && actor) {
@@ -101,7 +95,7 @@ export default defineEventHandler(async (event) => {
           type: "review_completed",
           title: `${actorName} marked your review complete`,
           link: `/reviews/${reviewId}`,
-          metadata: { reviewId, actorId: session.user.id },
+          metadata: { reviewId, actorId: user.id },
         });
 
         if (await shouldEmail(review.userId, "review_completed")) {
