@@ -25,6 +25,24 @@ import { beforeEach, afterAll } from "vitest";
 // connection, so ordering them first is safe.
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 
+// Handlers under test transitively import modules that construct third-party
+// clients at import time (e.g. email.ts does `new Resend(RESEND_API_KEY)`,
+// which throws on an empty key). CI's integration job only sets
+// TEST_DATABASE_URL, so provide the same harmless mock defaults the unit setup
+// does, or those imports fail before any test runs.
+const testEnvDefaults: Record<string, string> = {
+  RESEND_API_KEY: "re_test_mock_key",
+  BETTER_AUTH_SECRET: "mock-secret-key-for-testing-only",
+  BETTER_AUTH_URL: "http://localhost:3000",
+  GOOGLE_CLIENT_ID: "mock-client-id",
+  GOOGLE_CLIENT_SECRET: "mock-client-secret",
+};
+for (const [key, value] of Object.entries(testEnvDefaults)) {
+  if (!process.env[key]) {
+    process.env[key] = value;
+  }
+}
+
 // Register h3 auto-imports as globals so endpoint files work outside Nuxt,
 // exactly as the unit-test setup does.
 Object.assign(globalThis, {
