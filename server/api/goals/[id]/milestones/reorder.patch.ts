@@ -1,6 +1,6 @@
 import { db } from "#server/database/connection";
 import { goals, goalMilestones } from "#server/database/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { requireUser } from "#server/utils/auth-guards";
@@ -41,11 +41,20 @@ export default defineEventHandler(async (event) => {
     // Validate request body
     const body = await validateBody(event, apiSchemas.ReorderMilestonesRequestSchema);
 
-    // Verify all milestones exist and belong to this goal
+    // Verify all milestones exist AND belong to this goal. The goalId predicate
+    // is essential: without it, any milestone id supplied in the body would be
+    // accepted and rewritten, letting a user reorder another user's milestones
+    // across the tenant boundary (F17).
+    const milestoneIds = body.milestones.map((m) => m.id);
     const existingMilestones = await db
       .select({ id: goalMilestones.id })
       .from(goalMilestones)
-      .where(inArray(goalMilestones.id, body.milestones.map(m => m.id)));
+      .where(
+        and(
+          inArray(goalMilestones.id, milestoneIds),
+          eq(goalMilestones.goalId, goalId),
+        ),
+      );
 
     if (existingMilestones.length !== body.milestones.length) {
       throw createError({
@@ -54,13 +63,19 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Update display order for each milestone
+    // Update display order for each milestone, again bound to the owned goal so
+    // a body id belonging to another goal cannot be written.
     await Promise.all(
       body.milestones.map((m) =>
         db
           .update(goalMilestones)
           .set({ displayOrder: m.displayOrder, updatedAt: new Date() })
-          .where(eq(goalMilestones.id, m.id))
+          .where(
+            and(
+              eq(goalMilestones.id, m.id),
+              eq(goalMilestones.goalId, goalId),
+            ),
+          )
       )
     );
 

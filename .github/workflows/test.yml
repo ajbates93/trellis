@@ -40,6 +40,10 @@ jobs:
       - name: Build application
         run: npm run build
         env:
+          # The Nitro server build is memory-hungry (large app + sourcemaps) and
+          # was intermittently OOM-ing on the runner's default heap. Give Node
+          # headroom; ubuntu-latest has 16GB.
+          NODE_OPTIONS: --max-old-space-size=6144
           DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
           GOOGLE_CLIENT_ID: mock-client-id
           GOOGLE_CLIENT_SECRET: mock-client-secret

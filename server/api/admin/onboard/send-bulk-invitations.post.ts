@@ -2,7 +2,12 @@ import { db } from "#server/database/connection";
 import { users, verifications } from "#server/database/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { requireUser } from "#server/utils/auth-guards";
+import { getWorkspaceId } from "#server/utils/workspace";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+
+// Bound the batch so a single request cannot enumerate or spam an unbounded
+// number of users (F11).
+const MAX_BULK_INVITES = 200;
 
 export default defineEventHandler(async (event) => {
   try {
@@ -20,7 +25,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: "userIds array is required" });
     }
 
-    // Find pre-created users
+    if (userIds.length > MAX_BULK_INVITES) {
+      throw createError({
+        statusCode: 400,
+        message: `Too many userIds: at most ${MAX_BULK_INVITES} per request`,
+      });
+    }
+
+    // Find pre-created users, scoped to the caller's workspace. Without the
+    // workspace predicate this enumerated pre-created users platform-wide and
+    // echoed their email addresses back to the caller (F11).
+    const workspaceId = getWorkspaceId(event);
     const preCreatedUsers = await db
       .select()
       .from(users)
@@ -28,6 +43,7 @@ export default defineEventHandler(async (event) => {
         and(
           inArray(users.id, userIds),
           eq(users.emailVerified, false),
+          eq(users.workspaceId, workspaceId),
         ),
       );
 
@@ -75,11 +91,13 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Return counts only. Echoing the matched email addresses back (the old
+    // `details: results`) was a cross-tenant disclosure vector (F11); the caller
+    // does not need resolved addresses to know the outcome.
     return {
       success: results.failed.length === 0,
       sent: results.sent.length,
       failed: results.failed.length,
-      details: results,
     };
   } catch (error: any) {
     console.error("Bulk send invitation error:", error);

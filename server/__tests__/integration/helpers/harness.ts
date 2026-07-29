@@ -3,7 +3,12 @@ import { createEvent, type H3Event } from "h3";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { Socket } from "node:net";
 import { db, client } from "#server/database/connection";
-import { workspaces, users, goals } from "#server/database/schema";
+import {
+  workspaces,
+  users,
+  goals,
+  goalMilestones,
+} from "#server/database/schema";
 
 // The REAL query layer, connected to the disposable test database (see
 // integration/setup.ts). Unlike the unit tests, nothing here is mocked: query
@@ -74,6 +79,23 @@ export async function seedGoal(
   return row;
 }
 
+export async function seedGoalMilestone(
+  goalId: string,
+  overrides: Partial<typeof goalMilestones.$inferInsert> = {},
+) {
+  const [row] = await db
+    .insert(goalMilestones)
+    .values({
+      goalId,
+      title: "A seeded milestone",
+      displayOrder: 0,
+      ...overrides,
+    })
+    .returning();
+  if (!row) throw new Error("seedGoalMilestone: insert returned no row");
+  return row;
+}
+
 interface IntegrationEventOptions {
   method?: string;
   path?: string;
@@ -81,6 +103,7 @@ interface IntegrationEventOptions {
   query?: Record<string, string>;
   params?: Record<string, string>;
   user?: Record<string, unknown> | null;
+  workspace?: { id: string; name?: string } | null;
 }
 
 /**
@@ -91,8 +114,15 @@ interface IntegrationEventOptions {
 export function createIntegrationEvent(
   options: IntegrationEventOptions = {},
 ): H3Event {
-  const { method = "GET", path = "/", body, query = {}, params = {}, user } =
-    options;
+  const {
+    method = "GET",
+    path = "/",
+    body,
+    query = {},
+    params = {},
+    user,
+    workspace,
+  } = options;
 
   const qs = new URLSearchParams(query).toString();
   const url = qs ? `${path}?${qs}` : path;
@@ -119,6 +149,9 @@ export function createIntegrationEvent(
   if (user) {
     event.context.user = user;
     event.context.session = { user };
+  }
+  if (workspace) {
+    event.context.workspace = workspace;
   }
 
   return event;

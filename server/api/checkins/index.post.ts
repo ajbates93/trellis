@@ -6,6 +6,7 @@ import { findNextReview } from "#server/utils/reviews";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { requireUser } from "#server/utils/auth-guards";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   const user = requireUser(event);
@@ -33,6 +34,14 @@ export default defineEventHandler(async (event) => {
       statusCode: 403,
       message: "You are not a buddy of this user",
     });
+  }
+
+  // An admin acting on a user who isn't their buddy may only do so within their
+  // own workspace, mirroring checkins/buddy.get.ts. Without this an admin could
+  // write a check-in onto - and read back the details of - a user in another
+  // tenant (F2).
+  if (isAdmin && !isBuddy) {
+    await assertSameWorkspace(event, userId);
   }
 
   // Find next upcoming review for auto-assignment
