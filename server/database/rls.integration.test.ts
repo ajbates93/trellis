@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 import postgres from "postgres";
 import { sql } from "drizzle-orm";
-import { db, withWorkspace, withRlsBypass } from "./connection";
+import {
+  db,
+  withWorkspace,
+  withRlsBypass,
+  enterRequestScope,
+  bindWorkspaceToScope,
+  releaseRequestScope,
+} from "./connection";
 
 // Two-layer proof of the row-level-security plumbing:
 //
@@ -56,6 +63,46 @@ describe("RLS plumbing: db proxy + withWorkspace set workspace context", () => {
       return row?.sa;
     });
     expect(seen).toBe("on");
+  });
+});
+
+describe("request-scope primitives (reserve / bind / release)", () => {
+  it("routes db through a reserved connection carrying the workspace, then falls back after release", async () => {
+    const scope = enterRequestScope();
+    try {
+      await bindWorkspaceToScope(scope, {
+        workspaceId: "ws-req",
+        isSuperAdmin: false,
+      });
+      const [bound] = await db.execute<{ ws: string }>(
+        sql`select current_setting('app.current_workspace_id', true) as ws`,
+      );
+      expect(bound?.ws).toBe("ws-req");
+    } finally {
+      await releaseRequestScope(scope);
+    }
+
+    // After release the scope is cleared, so db uses the base pool again.
+    const [after] = await db.execute<{ ws: string | null }>(
+      sql`select current_setting('app.current_workspace_id', true) as ws`,
+    );
+    expect(after?.ws == null || after.ws === "").toBe(true);
+  });
+
+  it("binds the super-admin flag when requested", async () => {
+    const scope = enterRequestScope();
+    try {
+      await bindWorkspaceToScope(scope, {
+        workspaceId: null,
+        isSuperAdmin: true,
+      });
+      const [row] = await db.execute<{ sa: string }>(
+        sql`select current_setting('app.is_super_admin', true) as sa`,
+      );
+      expect(row?.sa).toBe("on");
+    } finally {
+      await releaseRequestScope(scope);
+    }
   });
 });
 
