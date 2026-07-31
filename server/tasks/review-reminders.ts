@@ -1,6 +1,6 @@
 import { db } from "#server/database/connection";
 import { reviewSchedules, users } from "#server/database/schema";
-import { eq, and, between } from "drizzle-orm";
+import { eq, and, between, inArray, type SQL } from "drizzle-orm";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
@@ -12,10 +12,25 @@ export default defineTask({
     name: "review-reminders",
     description: "Send email reminders for upcoming scheduled reviews",
   },
-  async run() {
+  async run(ctx: { payload?: { workspaceId?: string } }) {
     const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
     const now = new Date();
     let emailsSent = 0;
+
+    // Optional workspace scope. The scheduled (cron) run passes no payload and
+    // processes every workspace, which is intended. The manual admin trigger
+    // passes its own workspaceId so one tenant's admin can only send reminders
+    // for - and flip the reminder-sent flags of - their own workspace (F14).
+    const workspaceId = ctx?.payload?.workspaceId;
+    const workspaceScope: SQL | undefined = workspaceId
+      ? inArray(
+          reviewSchedules.userId,
+          db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.workspaceId, workspaceId)),
+        )
+      : undefined;
 
     try {
       // 7-day reminders: scheduledDate is 7 days from now
@@ -39,6 +54,7 @@ export default defineTask({
               sevenDayStart.toISOString(),
               sevenDayEnd.toISOString(),
             ),
+            workspaceScope,
           ),
         );
 
@@ -74,6 +90,7 @@ export default defineTask({
               oneDayStart.toISOString(),
               oneDayEnd.toISOString(),
             ),
+            workspaceScope,
           ),
         );
 
