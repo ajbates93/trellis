@@ -139,6 +139,9 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 // Feedback table
 export const feedback = pgTable("feedback", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (nullable for now; backfilled and made NOT NULL +
+  // RLS-enforced in later migrations). Derived from the reviewee's workspace.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   reviewerId: text("reviewer_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -182,6 +185,8 @@ export const feedbackRelations = relations(feedback, ({ one }) => ({
 // Goals table
 export const goals = pgTable("goals", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -210,6 +215,8 @@ export const goalsRelations = relations(goals, ({ one, many }) => ({
 // Goal milestones table
 export const goalMilestones = pgTable("goal_milestones", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived via the goal.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   goalId: uuid("goal_id")
     .notNull()
     .references(() => goals.id, { onDelete: "cascade" }),
@@ -232,6 +239,8 @@ export const goalMilestonesRelations = relations(goalMilestones, ({ one }) => ({
 // Goal notes table
 export const goalNotes = pgTable("goal_notes", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived via the goal.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   goalId: uuid("goal_id")
     .notNull()
     .references(() => goals.id, { onDelete: "cascade" }),
@@ -258,6 +267,8 @@ export const goalNotesRelations = relations(goalNotes, ({ one }) => ({
 // Review schedules table
 export const reviewSchedules = pgTable("review_schedules", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -354,6 +365,8 @@ export const reviewTemplatesRelations = relations(
 // Onboarding imports table
 export const onboardingImports = pgTable("onboarding_imports", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from adminId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   adminId: text("admin_id")
     .notNull()
     .references(() => users.id),
@@ -389,6 +402,8 @@ export const feedbackPrompts = pgTable("feedback_prompts", {
 // Check-ins are per-user (covering all goals) and can be linked to review schedules
 export const buddyCheckins = pgTable("buddy_checkins", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   buddyId: text("buddy_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -431,6 +446,8 @@ export const buddyCheckinsRelations = relations(buddyCheckins, ({ one }) => ({
 // minimize API costs and improve performance.
 export const feedbackInsights = pgTable("feedback_insights", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -463,6 +480,8 @@ export const feedbackInsightsRelations = relations(
 // Achievements table (Brag Bucket)
 export const achievements = pgTable("achievements", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -486,6 +505,8 @@ export const achievementsRelations = relations(achievements, ({ one }) => ({
 // Notifications table (in-app event log per recipient)
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
+  // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
