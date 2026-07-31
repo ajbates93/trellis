@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Frontend Framework**: Nuxt 4.1.3 with SSR
 - **UI Library**: Nuxt UI (component library)
-- **Authentication**: Better-auth with Google OAuth (Pocketworks workspace only)
+- **Authentication**: Better-auth with Google OAuth and email/password (invitation-only account creation, any email domain)
 - **Database**: PostgreSQL
 - **Hosting**: Railway (Nuxt app + PostgreSQL database)
 - **TypeScript**: 5.9.3 for type-safe development
@@ -51,13 +51,13 @@ npm run generate
 5. Server-side rendering returns initial page state
 
 ### Authentication Flow
-- Google OAuth via Better-auth
+- Better-auth with two methods: Google OAuth and email/password. Public sign-up is disabled; accounts are created only through the token-verified invitation flow.
 - **Invitation-based access**: Only users pre-created by admins can authenticate (any email domain allowed)
 - Users must be imported via CSV or created by admin before they can log in
 - Unauthorized OAuth attempts are rejected with friendly error message
-- First user automatically becomes admin (`is_admin = true`)
+- **Roles** live on the `users` row as `role` (`user` | `admin`, the workspace admin) plus a separate `is_super_admin` boolean (the platform operator). There is no `is_admin` column and no automatic first-user-admin promotion.
 - Server-side sessions stored in PostgreSQL (30-day duration)
-- Protected routes require valid session
+- Protected routes require valid session (see the Request enforcement chain below)
 
 ### User Linking System
 The application implements an automatic user-linking system to handle pre-populated user data before OAuth authentication:
@@ -95,7 +95,7 @@ The application implements an automatic user-linking system to handle pre-popula
    - **Invited users**: Single authenticated user with all pre-configured relationships preserved
    - **Unauthorized users**: Access denied, no user record created
 
-**Implementation**: See `server/utils/auth.ts` hooks configuration. The hook runs after successful OAuth sign-in and performs atomic database migrations to ensure data consistency.
+**Implementation**: See `server/utils/auth.ts` hooks configuration. The hook runs after successful OAuth sign-in and migrates the pre-created user's relationships onto the OAuth user id. Note: this migration is currently a sequence of individual statements, **not** wrapped in a single transaction (tracked for hardening as CQ-12), so it should not yet be described as atomic.
 
 **Benefits**:
 - Admins can set up complete team structures before user access
@@ -120,9 +120,13 @@ User sees existing buddy, can give/receive feedback immediately
 ### Core Tables
 
 **users**: Employee profiles and buddy relationships
-- `id` (UUID), `email`, `name`, `role_type` (dev/design/qa/growth/management)
-- `buddy_id` (self-referential), `is_admin`
-- Indexes on email, buddy_id
+- `id` (text), `email`, `name`, `role_type` (dev/design/qa/growth/management)
+- `buddy_id` (self-referential), `role` (`user`/`admin`), `is_super_admin`, `workspace_id`
+- Indexes on email, buddy_id, workspace_id
+
+**Note on the schema below:** the tables listed here are the core feedback/goals/review set. The live schema (`server/database/schema.ts`) also includes `workspaces`, `review_templates`, `goal_notes`, `feedback_prompts`, `feedback_insights`, `achievements`, `notifications`, `onboarding_imports`, `demo_requests`, and the better-auth tables (`session`, `account`, `verification`). Treat `server/database/schema.ts` as the source of truth.
+
+**Tenant isolation:** most content tables now carry a `workspace_id` column (added as the DB-level isolation backstop); historically isolation was enforced only in application code via `assertSameWorkspace`/`getWorkspaceId` (`server/utils/workspace.ts`). Row-level security enforcement is being layered on top - see `docs/audits/db-isolation-backstop-plan.md`.
 
 **feedback**: Peer feedback submissions
 - `id` (UUID), `reviewer_id`, `reviewee_id`, `content`
@@ -163,9 +167,9 @@ Following Nuxt file-based conventions:
 - **layouts/**: Application layouts
   - Default layout with sidebar navigation
   - Admin layout for admin-specific pages
-- **middleware/**: Route middleware
-  - `auth.ts`: Verify user session
-  - `admin.ts`: Check is_admin flag
+- **middleware/**: Client route middleware
+  - `auth.ts`: Verify user session; `buddy.ts`: buddy-only pages
+  - `admin.global.ts` / `super-admin.ts`: gate admin and super-admin areas by `role`/`is_super_admin`
 - **server/api/**: API route handlers
   - `/auth/*`: Authentication endpoints
   - `/users/*`: User management
@@ -182,10 +186,13 @@ Following Nuxt file-based conventions:
 ## Key API Endpoints
 
 ### Authentication
-- `POST /api/auth/google` - Initiate OAuth
-- `GET /api/auth/callback` - OAuth callback
-- `GET /api/auth/session` - Get current session
-- `POST /api/auth/logout` - Clear session
+Authentication is handled by better-auth through a catch-all handler at `server/api/auth/[...all].ts` (sign-in, sign-out, session, OAuth callback, update-user, etc. - see the better-auth docs for the exact sub-paths). The app adds a few auth-adjacent routes of its own:
+- `GET /api/auth/accounts` - list linked accounts
+- `POST /api/auth/add-password` - add a password to an OAuth account
+- `POST /api/auth/set-password` - set password from an invitation token
+- `GET /api/auth/error` - friendly auth-error page
+
+Note: privilege- and tenancy-bearing fields (`role`, `is_super_admin`, `workspace_id`, `role_type`, `buddy_id`) are **not** editable through the better-auth update-user endpoint - they are marked `input: false` (see `server/utils/auth.ts`), and `role`/`banned` are gated by the admin plugin.
 
 ### Feedback
 - `POST /api/feedback` - Submit feedback
@@ -259,12 +266,13 @@ jane.smith@company.com,Jane Smith,management,
 ## Security Considerations
 
 - **Invitation-based access control**: Only pre-created users can authenticate (prevents unauthorized access)
-- All endpoints (except auth) require valid session
-- Admin endpoints verify `is_admin` flag
+- All endpoints (except the public set) require a valid session, enforced by `server/middleware/auth.ts`
+- Session/role guards are centralised in `requireUser`/`requireAdmin`/`requireSuperAdmin` (`server/utils/auth-guards.ts`); admin and super-admin route trees are additionally gated by `z-admin`/`z-super-admin` server middleware. Authorisation checks `role === "admin"` / `is_super_admin`, not an `is_admin` flag.
+- **Tenant isolation**: handlers acting on a caller-supplied user/resource id must call `assertSameWorkspace` (`server/utils/workspace.ts`); a DB-level `workspace_id` + row-level-security backstop is being layered in (`docs/audits/db-isolation-backstop-plan.md`)
 - SQL injection prevention via parameterized queries
 - XSS protection via content sanitization
 - CSRF protection via Better-auth
-- Rate limiting on feedback submission (max 10/hour)
+- Rate limiting (`server/middleware/rate-limit.ts`) covers the sensitive unauthenticated endpoints - sign-in, set/reset/forget password, Slack interactions, and the demo-request form. It does **not** currently throttle `POST /api/feedback`. (Hardening of the limiter itself is tracked as F5.)
 - Input validation on all user-submitted content
 - OAuth user records automatically deleted if no matching invitation found
 
@@ -315,9 +323,11 @@ jane.smith@company.com,Jane Smith,management,
 - ⏳ Performance optimization
 - ⏳ Production deployment
 
-## Multi-Tenancy Strategy (Future Phase 11)
+## Multi-Tenancy Strategy
 
-Trellis will support multiple organizations with three potential approaches:
+**Current state:** Trellis is multi-tenant. The workspace model (Option A below) is implemented: a `workspaces` table with per-workspace membership via `users.workspace_id`, a workspace admin (`role = "admin"`) and platform super-admin (`is_super_admin`), and `/api/super-admin/*` operations. Tenant isolation is enforced in application code today (`assertSameWorkspace`), with a DB-level `workspace_id` + row-level-security backstop in progress (`docs/audits/db-isolation-backstop-plan.md`). The subdomain/hybrid options below remain design notes for a possible future enterprise tier.
+
+The three approaches considered:
 
 ### Option A: Workspace Model (Recommended for SMB)
 - **Access:** Single domain `app.trellis.com` with workspace switcher
@@ -375,7 +385,7 @@ Trellis will support multiple organizations with three potential approaches:
 - Per-workspace OAuth naturally supported
 - Future-proof architecture
 
-**Current Status:** Single-tenant (Pocketworks only)
+**Current Status:** Multi-tenant via the workspace model (Option A). Subdomain/hybrid options remain future design notes.
 
 **Detailed Plans:**
 - Full subdomain architecture: `.cursor/plans/multi-tenancy-saas-architecture.md`
@@ -758,5 +768,5 @@ This visual style should guide the implementation using Nuxt UI components.
 - ESLint config extends from `.nuxt/eslint.config.mjs` (auto-generated)
 - TypeScript uses project references to `.nuxt/` for type generation
 - The `postinstall` script runs `nuxt prepare` to generate types
-- Detailed specifications available in `docs/cohort-tech-spec.md` and `docs/cohort-wireframes.md`
+- `docs/cohort-tech-spec.md` and `docs/cohort-wireframes.md` are **historical pre-build artefacts** from the original "Cohort" concept; where they disagree with the code, the code (and this file) win. Treat them as background, not current spec.
 - UI design reference in `docs/example-dashboard-ui.png`
