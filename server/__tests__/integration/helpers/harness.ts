@@ -8,6 +8,7 @@ import {
   users,
   goals,
   goalMilestones,
+  reviewSchedules,
 } from "#server/database/schema";
 
 // The REAL query layer, connected to the disposable test database (see
@@ -93,6 +94,25 @@ export async function seedGoalMilestone(
     })
     .returning();
   if (!row) throw new Error("seedGoalMilestone: insert returned no row");
+  return row;
+}
+
+export async function seedReviewSchedule(
+  userId: string,
+  buddyId: string,
+  overrides: Partial<typeof reviewSchedules.$inferInsert> = {},
+) {
+  const [row] = await db
+    .insert(reviewSchedules)
+    .values({
+      userId,
+      buddyId,
+      scheduledDate: new Date().toISOString(),
+      status: "scheduled",
+      ...overrides,
+    })
+    .returning();
+  if (!row) throw new Error("seedReviewSchedule: insert returned no row");
   return row;
 }
 

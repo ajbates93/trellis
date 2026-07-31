@@ -42,7 +42,10 @@ export const sendEmail = async (options: SendEmailOptions) => {
   }
 };
 
-// Escape HTML-significant characters in user-supplied strings before interpolating into email HTML.
+// Escape HTML-significant characters in user-supplied strings before
+// interpolating into email HTML. Applied to every user-controlled value (names
+// are self-set and admin-set), so a display name like `<a href=...>` cannot
+// inject markup into a DKIM-signed Trellis email (F16).
 const escapeHtml = (input: string): string =>
   input
     .replace(/&/g, "&amp;")
@@ -66,7 +69,7 @@ export const emailTemplates = {
             <h1 style="color: #059669;">Welcome to Trellis</h1>
           </div>
 
-          <p>Hi ${name},</p>
+          <p>Hi ${escapeHtml(name)},</p>
 
           <p>You've been invited to join Trellis, your team's peer feedback platform.</p>
 
@@ -108,7 +111,7 @@ export const emailTemplates = {
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #059669;">Reset Your Password</h1>
 
-          <p>Hi ${name},</p>
+          <p>Hi ${escapeHtml(name)},</p>
 
           <p>You requested to reset your password for your Trellis account.</p>
 
@@ -148,8 +151,8 @@ export const emailTemplates = {
       <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #059669;">New review scheduled</h1>
-          <p>Hi ${recipientName},</p>
-          <p>${otherPartyName} has scheduled a review with you on <strong>${reviewDate}</strong>.</p>
+          <p>Hi ${escapeHtml(recipientName)},</p>
+          <p>${escapeHtml(otherPartyName)} has scheduled a review with you on <strong>${reviewDate}</strong>.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View review</a>
           </div>
@@ -170,8 +173,8 @@ export const emailTemplates = {
       <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #059669;">Review rescheduled</h1>
-          <p>Hi ${recipientName},</p>
-          <p>${otherPartyName} has rescheduled your review. The new date is <strong>${reviewDate}</strong>.</p>
+          <p>Hi ${escapeHtml(recipientName)},</p>
+          <p>${escapeHtml(otherPartyName)} has rescheduled your review. The new date is <strong>${reviewDate}</strong>.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View review</a>
           </div>
@@ -192,8 +195,8 @@ export const emailTemplates = {
       <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #059669;">Review cancelled</h1>
-          <p>Hi ${recipientName},</p>
-          <p>${otherPartyName} has cancelled the review previously scheduled for <strong>${reviewDate}</strong>.</p>
+          <p>Hi ${escapeHtml(recipientName)},</p>
+          <p>${escapeHtml(otherPartyName)} has cancelled the review previously scheduled for <strong>${reviewDate}</strong>.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View reviews</a>
           </div>
@@ -213,8 +216,8 @@ export const emailTemplates = {
       <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #059669;">Review marked complete</h1>
-          <p>Hi ${recipientName},</p>
-          <p>${otherPartyName} has marked your review as complete.</p>
+          <p>Hi ${escapeHtml(recipientName)},</p>
+          <p>${escapeHtml(otherPartyName)} has marked your review as complete.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${appUrl}/reviews" style="background-color: #059669; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">View review</a>
           </div>
@@ -237,9 +240,9 @@ export const emailTemplates = {
             <h1 style="color: #059669;">Trellis</h1>
           </div>
 
-          <p>Hi ${buddyName},</p>
+          <p>Hi ${escapeHtml(buddyName)},</p>
 
-          <p>New feedback has been submitted for <strong>${revieweeName}</strong>. Log in to review and publish it.</p>
+          <p>New feedback has been submitted for <strong>${escapeHtml(revieweeName)}</strong>. Log in to review and publish it.</p>
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${appUrl}/feedback/inbox"
@@ -271,7 +274,7 @@ export const emailTemplates = {
             <h1 style="color: #059669;">Trellis</h1>
           </div>
 
-          <p>Hi ${revieweeName},</p>
+          <p>Hi ${escapeHtml(revieweeName)},</p>
 
           <p>You have new feedback! Log in to read it.</p>
 
@@ -305,9 +308,9 @@ export const emailTemplates = {
             <h1 style="color: #059669;">Trellis</h1>
           </div>
 
-          <p>Hi ${revieweeName},</p>
+          <p>Hi ${escapeHtml(revieweeName)},</p>
 
-          <p>Your review with <strong>${buddyName}</strong> is ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} (${reviewDate}).</p>
+          <p>Your review with <strong>${escapeHtml(buddyName)}</strong> is ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} (${reviewDate}).</p>
 
           <p>${daysUntil <= 1 ? "Make sure you're prepared and have completed any reflections." : "This is a good time to start preparing your reflections and reviewing your goals."}</p>
 
@@ -341,9 +344,9 @@ export const emailTemplates = {
             <h1 style="color: #059669;">Trellis</h1>
           </div>
 
-          <p>Hi ${buddyName},</p>
+          <p>Hi ${escapeHtml(buddyName)},</p>
 
-          <p>Your review with <strong>${revieweeName}</strong> is ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} (${reviewDate}).</p>
+          <p>Your review with <strong>${escapeHtml(revieweeName)}</strong> is ${daysUntil <= 1 ? "tomorrow" : "in 1 week"} (${reviewDate}).</p>
 
           <p>${daysUntil <= 1 ? "Make sure you've reviewed their recent feedback and goals before the session." : "This is a good time to review their recent feedback and check in on their goals."}</p>
 
@@ -375,7 +378,7 @@ export const emailTemplates = {
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #059669;">Verify Your Email</h1>
 
-          <p>Hi ${name},</p>
+          <p>Hi ${escapeHtml(name)},</p>
 
           <p>Please verify your email address to complete your account setup.</p>
 
