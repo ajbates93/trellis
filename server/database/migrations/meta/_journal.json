@@ -155,6 +155,20 @@
       "when": 1785236560492,
       "tag": "0021_fix_missing_timezone_column",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1785495605101,
+      "tag": "0022_add_workspace_id_to_content_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1785495623288,
+      "tag": "0023_backfill_workspace_id",
+      "breakpoints": true
     }
   ]
 }
