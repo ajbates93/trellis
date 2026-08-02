@@ -13,21 +13,19 @@ Related context the new agent should also read:
 ## Status (updated 2026-08-02): cutover code has landed
 
 The staging soak of the request middleware (PR #101) passed, and the cutover was
-implemented as the two PRs below (into `staging`). Sections 1-8 remain accurate
-as the design; this banner records what is now done versus what still needs a
-human.
+implemented and reviewed as two parts, now consolidated into a single PR (#103)
+into `staging`. Sections 1-8 remain accurate as the design; this banner records
+what is now done versus what still needs a human.
 
-- **Prep PR (`feature/rls-cutover-prep`):** migration 0024 gives the ten content
-  tables a `workspace_id` column DEFAULT from `app.current_workspace_id`, and every
-  write path with no request scope was made RLS-ready (notifications, the two
-  reminder tasks, the user-linking auth hook, the Slack webhook). Extends the
-  restricted-role integration test to prove the DEFAULT stamps + confines new
-  rows. Safe with RLS still OFF; merge and it changes nothing observable.
-- **Enable PR (`feature/rls-cutover-enable`):** migration 0025 creates the
-  `trellis_app` role (idempotent), grants it, and enables RLS + the
-  `tenant_isolation` policy on the ten tables. **Inert until the connection swap**
-  because the table owner bypasses RLS - so deploying it changes nothing until
-  step 4 below.
+- **Prep (migration 0024):** gives the ten content tables a `workspace_id` column
+  DEFAULT from `app.current_workspace_id`, and every write path with no request
+  scope was made RLS-ready (notifications, the two reminder tasks, the user-linking
+  auth hook, the Slack webhook). Extends the restricted-role integration test to
+  prove the DEFAULT stamps + confines new rows. Safe with RLS still OFF.
+- **Enable (migration 0025):** creates the `trellis_app` role (idempotent), grants
+  it, and enables RLS + the `tenant_isolation` policy on the ten tables. **Inert
+  until the connection swap** because the table owner bypasses RLS - so deploying
+  it changes nothing until step 4 below.
 
 **Two deviations from the plan in sections 4/6, both deliberate:**
 1. **Role is created by migration 0025**, not by hand. It reads the password from
