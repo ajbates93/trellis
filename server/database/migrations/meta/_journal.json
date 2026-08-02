@@ -176,6 +176,13 @@
       "when": 1785702150861,
       "tag": "0024_workspace_id_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1785671973000,
+      "tag": "0025_enable_rls",
+      "breakpoints": true
     }
   ]
 }
