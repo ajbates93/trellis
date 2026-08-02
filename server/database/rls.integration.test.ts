@@ -293,4 +293,22 @@ describe("RLS enforcement against a real non-superuser role", () => {
       await fresh.end().catch(() => {});
     }
   });
+
+  it("degrades an empty-string workspace context to NULL (no FK 500)", async () => {
+    // A workspace-less user (users.workspace_id NULL) makes the middleware set the
+    // GUC to '' (empty). The DEFAULT's NULLIF turns that into NULL rather than
+    // stamping '', so the insert fails *closed* via RLS - not with a confusing
+    // foreign-key violation against `workspaces`. Assert the error is the RLS one.
+    const err = await appSql
+      .begin(async (tx) => {
+        await tx`select set_config('app.current_workspace_id', '', true)`;
+        await tx`insert into goals (user_id, goal_text) values ('e','empty-ctx')`;
+      })
+      .then(
+        () => null,
+        (e: unknown) => (e instanceof Error ? e.message : String(e)),
+      );
+    expect(err).toMatch(/row-level security/i);
+    expect(err).not.toMatch(/foreign key/i);
+  });
 });

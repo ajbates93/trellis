@@ -13,6 +13,11 @@ export default defineTask({
     // it, once the app connects as the restricted role the goal/notification
     // reads below would be filtered to nothing. There is no external I/O in the
     // body, so holding the bypass transaction for its duration is fine.
+    //
+    // Note: each createNotification inside opens its own withWorkspace connection,
+    // so those inserts commit independently of this bypass transaction (they are
+    // fire-and-forget and intentionally survive a rollback here) - a nested
+    // transaction on a second pooled connection per iteration.
     return withRlsBypass(() => runGoalReminders());
   },
 });
