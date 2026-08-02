@@ -10,6 +10,42 @@ Related context the new agent should also read:
 
 ---
 
+## Status (updated 2026-08-02): cutover code has landed
+
+The staging soak of the request middleware (PR #101) passed, and the cutover was
+implemented and reviewed as two parts, now consolidated into a single PR (#103)
+into `staging`. Sections 1-8 remain accurate as the design; this banner records
+what is now done versus what still needs a human.
+
+- **Prep (migration 0024):** gives the ten content tables a `workspace_id` column
+  DEFAULT from `app.current_workspace_id`, and every write path with no request
+  scope was made RLS-ready (notifications, the two reminder tasks, the user-linking
+  auth hook, the Slack webhook). Extends the restricted-role integration test to
+  prove the DEFAULT stamps + confines new rows. Safe with RLS still OFF.
+- **Enable (migration 0025):** creates the `trellis_app` role (idempotent), grants
+  it, and enables RLS + the `tenant_isolation` policy on the ten tables. **Inert
+  until the connection swap** because the table owner bypasses RLS - so deploying
+  it changes nothing until step 4 below.
+
+**Two deviations from the plan in sections 4/6, both deliberate:**
+1. **Role is created by migration 0025**, not by hand. It reads the password from
+   a `trellis.app_role_password` setting; with none provided it creates the role
+   *without* a password (so automated deploys never block) and it simply cannot
+   log in until a password is set. See the revised checklist in section 6.
+2. **`NOT NULL` on `workspace_id` is deferred** to a follow-up (not in 0025). The
+   RLS policies already make any NULL-workspace row invisible to every tenant
+   (fail closed), so isolation does not depend on it. Adding `NOT NULL` now would
+   break the integration tier, which builds its DB from `schema.ts` via
+   `drizzle-kit push` and inserts through handlers without a request workspace
+   GUC (so the DEFAULT resolves to NULL). The follow-up must first teach that tier
+   to set a workspace context. Tracked as a new hardening task under TRE-44.
+
+**What still needs a human (the actual cutover):** set the `trellis_app` password
+and point the app's `DATABASE_URL` at it - staging first, soak, then production.
+Details in sections 5, 6, and 8.
+
+---
+
 ## 1. Where we are
 
 The backstop was built in four steps; the first three are **merged to `staging`**:
@@ -117,11 +153,38 @@ Sequencing inside the migration matters: grants + DEFAULTs + backfill-any-nulls 
 
 ## 6. Railway checklist for Alex (the human steps)
 
+Migration 0025 already creates the `trellis_app` role and enables RLS when it
+deploys (via the normal migrate step). Because the migration got no password, the
+role exists but cannot log in yet. To finish the cutover, per environment
+(**staging first, soak, then production**):
+
 1. Generate a strong password for `trellis_app`.
-2. The enable migration creates the role with that password (pass it via a migration variable/secret, or create the role manually in each env's DB and let the migration `CREATE ROLE ... IF NOT EXISTS`-guard). Manual creation via `railway connect Postgres` is fine too.
-3. Build the app-role connection string: same host/port/db as the owner URL, username `trellis_app`, the new password. (From a laptop use `DATABASE_PUBLIC_URL`'s host - the `*.proxy.rlwy.net` one; `postgres.railway.internal` only resolves inside Railway.)
-4. Set the **app service** `DATABASE_URL` to that string - **staging first**, soak, then production.
-5. Keep `STAGING_DATABASE_URL`/`PRODUCTION_DATABASE_URL` GitHub secrets as the **owner** connection (migrations need it).
+2. Set the password on the role, interactively via `railway connect Postgres` for
+   the env, then in the `psql` prompt:
+   ```
+   \password trellis_app
+   ```
+   Use `\password` (not `ALTER ROLE ... PASSWORD '<pw>'`): it prompts for the
+   value and sends it pre-hashed, so the plaintext never lands in psql history or
+   the Postgres server log. **Do not** script this or bake the password into a URL
+   - both leak it into shell history / CI logs. (The migration can also take a
+   password via a `trellis.app_role_password` setting, but that path is not
+   recommended here: it depends on the migrate driver forwarding startup options
+   and breaks on passwords containing `=`, `&`, or spaces - prefer `\password`.)
+   Then re-verify the attributes:
+   `SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname='trellis_app';`
+   - both flags must be `f` (see section 8), else RLS is silently inert.
+3. Build the app-role connection string: same host/port/db as the owner URL,
+   username `trellis_app`, the new password. (From a laptop use
+   `DATABASE_PUBLIC_URL`'s host - the `*.proxy.rlwy.net` one;
+   `postgres.railway.internal` only resolves inside Railway.)
+4. Set the **app service** `DATABASE_URL` to that string. This is the cutover
+   moment: the app now runs under RLS. Soak, verify no over-restriction / no
+   cross-workspace leakage (section 5), then repeat for production.
+5. Keep `STAGING_DATABASE_URL`/`PRODUCTION_DATABASE_URL` GitHub secrets as the
+   **owner** connection (migrations must keep running as the owner).
+6. Rollback if needed: revert the app `DATABASE_URL` to the owner connection - RLS
+   is instantly inert again (owner bypasses), no data lost.
 
 ---
 

@@ -7,7 +7,11 @@ import { notifyBuddyOfNewFeedback } from '#server/utils/notifications'
 
 const { mockDb, mockSelect, mockInsert } = createMockDb()
 
-vi.mock('../../../database/connection', () => ({ db: mockDb }))
+vi.mock('../../../database/connection', () => ({
+  db: mockDb,
+  // Pass-through: the feedback insert runs directly against mockDb.
+  withWorkspace: (_ctx: unknown, fn: () => unknown) => fn(),
+}))
 
 vi.mock('../../../utils/encryption', () => ({
   decrypt: vi.fn().mockImplementation((token: string) => token),

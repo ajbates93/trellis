@@ -120,19 +120,24 @@ describe("RLS enforcement against a real non-superuser role", () => {
         `CREATE ROLE ${TEST_ROLE} LOGIN PASSWORD '${TEST_PW}' NOSUPERUSER NOBYPASSRLS;`,
       ),
     );
-    await db.execute(
-      sql.raw(`GRANT SELECT, INSERT, UPDATE, DELETE ON feedback TO ${TEST_ROLE};`),
-    );
-    await db.execute(sql.raw(`ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;`));
-    await db.execute(
-      sql.raw(`
-        CREATE POLICY tenant_isolation ON feedback
-          USING (workspace_id = current_setting('app.current_workspace_id', true)
-                 OR current_setting('app.is_super_admin', true) = 'on')
-          WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-                 OR current_setting('app.is_super_admin', true) = 'on');
-      `),
-    );
+    // feedback + goals stand in for the ten content tables: they exercise both
+    // the explicit-workspace_id path and the column-DEFAULT path (goals inserts
+    // in the tests below omit workspace_id, as the real handlers do).
+    for (const table of ["feedback", "goals"]) {
+      await db.execute(
+        sql.raw(`GRANT SELECT, INSERT, UPDATE, DELETE ON ${table} TO ${TEST_ROLE};`),
+      );
+      await db.execute(sql.raw(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY;`));
+      await db.execute(
+        sql.raw(`
+          CREATE POLICY tenant_isolation ON ${table}
+            USING (workspace_id = current_setting('app.current_workspace_id', true)
+                   OR current_setting('app.is_super_admin', true) = 'on')
+            WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
+                   OR current_setting('app.is_super_admin', true) = 'on');
+        `),
+      );
+    }
 
     // A connection as the non-superuser role (RLS applies to it).
     const url = process.env.DATABASE_URL as string;
@@ -166,11 +171,14 @@ describe("RLS enforcement against a real non-superuser role", () => {
 
   afterAll(async () => {
     await appSql?.end().catch(() => {});
-    await db.execute(sql.raw(`DROP POLICY IF EXISTS tenant_isolation ON feedback;`)).catch(() => {});
-    await db.execute(sql.raw(`ALTER TABLE feedback DISABLE ROW LEVEL SECURITY;`)).catch(() => {});
+    for (const table of ["feedback", "goals"]) {
+      await db.execute(sql.raw(`DROP POLICY IF EXISTS tenant_isolation ON ${table};`)).catch(() => {});
+      await db.execute(sql.raw(`ALTER TABLE ${table} DISABLE ROW LEVEL SECURITY;`)).catch(() => {});
+    }
     await db.execute(sql.raw(`DROP OWNED BY ${TEST_ROLE};`)).catch(() => {});
     await db.execute(sql.raw(`DROP ROLE IF EXISTS ${TEST_ROLE};`)).catch(() => {});
     await db.execute(sql.raw(`DELETE FROM feedback WHERE reviewer_id = 'r';`)).catch(() => {});
+    await db.execute(sql.raw(`DELETE FROM goals WHERE user_id IN ('r','e');`)).catch(() => {});
   });
 
   async function countAsApp(setup: (tx: postgres.TransactionSql) => Promise<void>) {
@@ -208,5 +216,99 @@ describe("RLS enforcement against a real non-superuser role", () => {
                  values ('wsB','r','e','evil','2025-W01')`;
       }),
     ).rejects.toThrow(/row-level security/i);
+  });
+
+  // The prep step (migration 0024) gives the content tables a column DEFAULT
+  // that reads `app.current_workspace_id`. These prove that mechanism end-to-end
+  // under the restricted role: a handler that inserts WITHOUT a workspace_id (as
+  // all the request-scoped handlers do) has the row stamped with, and confined
+  // to, the caller's workspace - and an insert with no context fails closed.
+  it("stamps an omitted workspace_id from the session context (feedback)", async () => {
+    const ws = await appSql.begin(async (tx) => {
+      await tx`select set_config('app.current_workspace_id', 'wsA', true)`;
+      const rows = await tx`
+        insert into feedback (reviewer_id, reviewee_id, content, week_year)
+        values ('r','e','F-default','2025-W02')
+        returning workspace_id`;
+      return rows[0]!.workspace_id as string;
+    });
+    expect(ws).toBe("wsA");
+  });
+
+  it("stamps an omitted workspace_id from the session context (goals)", async () => {
+    const ws = await appSql.begin(async (tx) => {
+      await tx`select set_config('app.current_workspace_id', 'wsB', true)`;
+      const rows = await tx`
+        insert into goals (user_id, goal_text)
+        values ('e','G-default')
+        returning workspace_id`;
+      return rows[0]!.workspace_id as string;
+    });
+    expect(ws).toBe("wsB");
+  });
+
+  it("confines a default-stamped row to its workspace", async () => {
+    // Insert under wsA with no explicit workspace_id.
+    await appSql.begin(async (tx) => {
+      await tx`select set_config('app.current_workspace_id', 'wsA', true)`;
+      await tx`insert into goals (user_id, goal_text) values ('e','only-wsA')`;
+    });
+
+    const countIn = async (ws: string) =>
+      appSql.begin(async (tx) => {
+        await tx`select set_config('app.current_workspace_id', ${ws}, true)`;
+        const rows = await tx`select count(*)::int as c from goals`;
+        return rows[0]!.c as number;
+      });
+
+    expect(await countIn("wsA")).toBe(1);
+    expect(await countIn("wsB")).toBe(0);
+  });
+
+  it("rejects an insert made with no workspace context (fail closed)", async () => {
+    // A brand-new connection that has never set the workspace GUC: current_setting
+    // returns NULL, so the DEFAULT resolves to NULL and the RLS WITH CHECK rejects
+    // the write. A fresh client is used deliberately: a *reused* pooled connection
+    // that previously ran a transaction-local set_config reverts the custom GUC to
+    // '' (empty), not NULL, on commit - which would trip the workspace FK instead.
+    // Production avoids that by resetting released connections with DISCARD ALL,
+    // so an unscoped app connection is always in this NULL state.
+    const parsed = new URL(process.env.DATABASE_URL as string);
+    const fresh = postgres({
+      host: parsed.hostname,
+      port: Number(parsed.port || 5432),
+      database: parsed.pathname.slice(1),
+      username: TEST_ROLE,
+      password: TEST_PW,
+      ssl: false,
+      max: 1,
+    });
+    try {
+      await expect(
+        fresh.begin(async (tx) => {
+          await tx`insert into goals (user_id, goal_text) values ('e','no-context')`;
+        }),
+      ).rejects.toThrow(/row-level security/i);
+    } finally {
+      await fresh.end().catch(() => {});
+    }
+  });
+
+  it("degrades an empty-string workspace context to NULL (no FK 500)", async () => {
+    // A workspace-less user (users.workspace_id NULL) makes the middleware set the
+    // GUC to '' (empty). The DEFAULT's NULLIF turns that into NULL rather than
+    // stamping '', so the insert fails *closed* via RLS - not with a confusing
+    // foreign-key violation against `workspaces`. Assert the error is the RLS one.
+    const err = await appSql
+      .begin(async (tx) => {
+        await tx`select set_config('app.current_workspace_id', '', true)`;
+        await tx`insert into goals (user_id, goal_text) values ('e','empty-ctx')`;
+      })
+      .then(
+        () => null,
+        (e: unknown) => (e instanceof Error ? e.message : String(e)),
+      );
+    expect(err).toMatch(/row-level security/i);
+    expect(err).not.toMatch(/foreign key/i);
   });
 });

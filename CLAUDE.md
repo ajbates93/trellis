@@ -95,7 +95,7 @@ The application implements an automatic user-linking system to handle pre-popula
    - **Invited users**: Single authenticated user with all pre-configured relationships preserved
    - **Unauthorized users**: Access denied, no user record created
 
-**Implementation**: See `server/utils/auth.ts` hooks configuration. The hook runs after successful OAuth sign-in and migrates the pre-created user's relationships onto the OAuth user id. Note: this migration is currently a sequence of individual statements, **not** wrapped in a single transaction (tracked for hardening as CQ-12), so it should not yet be described as atomic.
+**Implementation**: See `server/utils/auth.ts` hooks configuration. The hook runs after successful OAuth sign-in and migrates the pre-created user's relationships onto the OAuth user id. As of the RLS cutover prep, the migration statements are wrapped in a single `withRlsBypass` transaction (needed so they run under the restricted DB role), which also makes the linking atomic and resolves the CQ-12 caveat - a mid-way failure now rolls the whole migration back rather than leaving a partial link.
 
 **Benefits**:
 - Admins can set up complete team structures before user access

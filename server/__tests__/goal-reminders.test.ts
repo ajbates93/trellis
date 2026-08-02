@@ -3,7 +3,11 @@ import { createMockDb } from "./helpers/mock-db";
 
 const { mockDb, mockSelect } = createMockDb();
 
-vi.mock("#server/database/connection", () => ({ db: mockDb }));
+vi.mock("#server/database/connection", () => ({
+  db: mockDb,
+  // Pass-through: the task body runs directly against mockDb.
+  withRlsBypass: (fn: () => unknown) => fn(),
+}));
 
 const createNotification = vi.fn().mockResolvedValue(undefined);
 vi.mock("#server/utils/inAppNotifications", () => ({ createNotification }));

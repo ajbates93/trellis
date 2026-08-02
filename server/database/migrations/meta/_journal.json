@@ -169,6 +169,20 @@
       "when": 1785495623288,
       "tag": "0023_backfill_workspace_id",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1785702150861,
+      "tag": "0024_workspace_id_defaults",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1785671973000,
+      "tag": "0025_enable_rls",
+      "breakpoints": true
     }
   ]
 }
