@@ -10,7 +10,7 @@ import {
   jsonb,
   index,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import type { ReviewTemplateField } from "#server/schemas/reviewTemplates";
 
 // Workspaces table (multi-tenancy)
@@ -141,7 +141,7 @@ export const feedback = pgTable("feedback", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (nullable for now; backfilled and made NOT NULL +
   // RLS-enforced in later migrations). Derived from the reviewee's workspace.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   reviewerId: text("reviewer_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -186,7 +186,7 @@ export const feedbackRelations = relations(feedback, ({ one }) => ({
 export const goals = pgTable("goals", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -216,7 +216,7 @@ export const goalsRelations = relations(goals, ({ one, many }) => ({
 export const goalMilestones = pgTable("goal_milestones", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived via the goal.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   goalId: uuid("goal_id")
     .notNull()
     .references(() => goals.id, { onDelete: "cascade" }),
@@ -240,7 +240,7 @@ export const goalMilestonesRelations = relations(goalMilestones, ({ one }) => ({
 export const goalNotes = pgTable("goal_notes", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived via the goal.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   goalId: uuid("goal_id")
     .notNull()
     .references(() => goals.id, { onDelete: "cascade" }),
@@ -268,7 +268,7 @@ export const goalNotesRelations = relations(goalNotes, ({ one }) => ({
 export const reviewSchedules = pgTable("review_schedules", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -366,7 +366,7 @@ export const reviewTemplatesRelations = relations(
 export const onboardingImports = pgTable("onboarding_imports", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from adminId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   adminId: text("admin_id")
     .notNull()
     .references(() => users.id),
@@ -403,7 +403,7 @@ export const feedbackPrompts = pgTable("feedback_prompts", {
 export const buddyCheckins = pgTable("buddy_checkins", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   buddyId: text("buddy_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -447,7 +447,7 @@ export const buddyCheckinsRelations = relations(buddyCheckins, ({ one }) => ({
 export const feedbackInsights = pgTable("feedback_insights", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -481,7 +481,7 @@ export const feedbackInsightsRelations = relations(
 export const achievements = pgTable("achievements", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -506,7 +506,7 @@ export const achievementsRelations = relations(achievements, ({ one }) => ({
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Tenant isolation backstop (see feedback.workspaceId). Derived from userId.
-  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).default(sql`current_setting('app.current_workspace_id', true)`),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

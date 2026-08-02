@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import type { BetterAuthOptions, User } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
-import { db } from "#server/database/connection";
+import { db, withRlsBypass } from "#server/database/connection";
 import * as schema from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { APIError } from "better-auth/api";
@@ -214,6 +214,12 @@ export const auth = betterAuth({
             `🔗 Linking pre-created user ${seededUser.name} (${seededUser.id}) with OAuth user (${user.id})`,
           );
 
+          // The whole migration runs under the RLS bypass: it rewrites content
+          // rows (feedback, goals, review_schedules) across the pre-created and
+          // OAuth user ids at first login - before any request workspace scope
+          // exists - so the restricted app role would otherwise match no rows.
+          // It also makes the sequence a single transaction (atomic linking).
+          await withRlsBypass(async () => {
           // Update all feedback references to point to the new Better Auth user ID
           await db
             .update(schema.feedback)
@@ -286,6 +292,7 @@ export const auth = betterAuth({
           await db
             .delete(schema.users)
             .where(eq(schema.users.id, seededUser.id));
+          });
 
           console.log(
             `✅ Successfully merged pre-created user ${seededUser.name} into OAuth user`,
