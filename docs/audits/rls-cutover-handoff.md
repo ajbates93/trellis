@@ -161,15 +161,21 @@ role exists but cannot log in yet. To finish the cutover, per environment
 (**staging first, soak, then production**):
 
 1. Generate a strong password for `trellis_app`.
-2. Set the password on the role. Either:
-   - **Manually** (simplest): `railway connect Postgres` for the env, then
-     `ALTER ROLE trellis_app WITH LOGIN PASSWORD '<pw>';`. Re-verify with
-     `SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname='trellis_app';`
-     - it must be `f | f` (see section 8), else RLS is silently inert.
-   - **Or via the migration**: run `db:migrate` once with the connection carrying
-     `trellis.app_role_password` set to the password (e.g. append
-     `?options=-c%20trellis.app_role_password%3D<pw>` to the migrate DATABASE_URL);
-     the idempotent DO block will `ALTER` the password on that run.
+2. Set the password on the role, interactively via `railway connect Postgres` for
+   the env, then in the `psql` prompt:
+   ```
+   \password trellis_app
+   ```
+   Use `\password` (not `ALTER ROLE ... PASSWORD '<pw>'`): it prompts for the
+   value and sends it pre-hashed, so the plaintext never lands in psql history or
+   the Postgres server log. **Do not** script this or bake the password into a URL
+   - both leak it into shell history / CI logs. (The migration can also take a
+   password via a `trellis.app_role_password` setting, but that path is not
+   recommended here: it depends on the migrate driver forwarding startup options
+   and breaks on passwords containing `=`, `&`, or spaces - prefer `\password`.)
+   Then re-verify the attributes:
+   `SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname='trellis_app';`
+   - both flags must be `f` (see section 8), else RLS is silently inert.
 3. Build the app-role connection string: same host/port/db as the owner URL,
    username `trellis_app`, the new password. (From a laptop use
    `DATABASE_PUBLIC_URL`'s host - the `*.proxy.rlwy.net` one;

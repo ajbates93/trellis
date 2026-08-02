@@ -15,7 +15,11 @@
 -- 1. The restricted application role. Idempotent, and safe to run from an
 --    automated deploy: if no password is provided via the trellis.app_role_password
 --    setting, the role is created without one (it simply cannot authenticate until
---    a password is set) so `drizzle-kit migrate` never blocks a deploy.
+--    a password is set) so `drizzle-kit migrate` never blocks a deploy. When the
+--    role already exists (e.g. hand-created), the security-critical attributes are
+--    ALWAYS re-applied so RLS can never be silently bypassed by a role that was
+--    created SUPERUSER/BYPASSRLS/NOLOGIN by mistake; the password is only touched
+--    when one is supplied.
 DO $$
 DECLARE
   pw text := current_setting('trellis.app_role_password', true);
@@ -26,8 +30,11 @@ BEGIN
     ELSE
       EXECUTE 'CREATE ROLE trellis_app LOGIN NOSUPERUSER NOBYPASSRLS';
     END IF;
-  ELSIF pw IS NOT NULL AND pw <> '' THEN
-    EXECUTE format('ALTER ROLE trellis_app WITH LOGIN NOSUPERUSER NOBYPASSRLS PASSWORD %L', pw);
+  ELSE
+    EXECUTE 'ALTER ROLE trellis_app WITH LOGIN NOSUPERUSER NOBYPASSRLS';
+    IF pw IS NOT NULL AND pw <> '' THEN
+      EXECUTE format('ALTER ROLE trellis_app WITH PASSWORD %L', pw);
+    END IF;
   END IF;
 END $$;--> statement-breakpoint
 
@@ -42,88 +49,32 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO trellis_app;--> statement-breakpoint
 
 -- 3. Enable RLS + the tenant-isolation policy on each of the ten content tables.
---    USING filters reads; WITH CHECK filters writes. Both allow a row when its
---    workspace matches the request's `app.current_workspace_id`, OR when the
---    caller is running under the super-admin/background bypass
---    (`app.is_super_admin = 'on'`). `current_setting(..., true)` returns NULL when
---    unset, so with no context the policy matches nothing (fail closed).
---    FORCE is not used: the owner must keep bypassing so migrations/backfills work.
-ALTER TABLE "achievements" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "achievements";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "achievements"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "buddy_checkins" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "buddy_checkins";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "buddy_checkins"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "feedback" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "feedback";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "feedback"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "feedback_insights" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "feedback_insights";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "feedback_insights"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "goal_milestones" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "goal_milestones";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "goal_milestones"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "goal_notes" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "goal_notes";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "goal_notes"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "goals" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "goals";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "goals"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "notifications" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "notifications";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "notifications"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "onboarding_imports" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "onboarding_imports";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "onboarding_imports"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');--> statement-breakpoint
-
-ALTER TABLE "review_schedules" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP POLICY IF EXISTS tenant_isolation ON "review_schedules";--> statement-breakpoint
-CREATE POLICY tenant_isolation ON "review_schedules"
-  USING (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on')
-  WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
-         OR current_setting('app.is_super_admin', true) = 'on');
+--    Driven from a single table list so the policy expression is defined once and
+--    can never desync across tables. USING filters reads; WITH CHECK filters
+--    writes. Both allow a row when its workspace matches the request's
+--    `app.current_workspace_id`, OR when the caller is running under the
+--    super-admin/background bypass (`app.is_super_admin = 'on'`).
+--    `current_setting(..., true)` returns NULL when unset, so with no context the
+--    policy matches nothing (fail closed). FORCE is not used: the owner must keep
+--    bypassing so migrations/backfills work.
+DO $$
+DECLARE
+  tbl text;
+  content_tables text[] := ARRAY[
+    'achievements', 'buddy_checkins', 'feedback', 'feedback_insights',
+    'goal_milestones', 'goal_notes', 'goals', 'notifications',
+    'onboarding_imports', 'review_schedules'
+  ];
+BEGIN
+  FOREACH tbl IN ARRAY content_tables LOOP
+    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', tbl);
+    EXECUTE format('DROP POLICY IF EXISTS tenant_isolation ON %I', tbl);
+    EXECUTE format($policy$
+      CREATE POLICY tenant_isolation ON %I
+        USING (workspace_id = current_setting('app.current_workspace_id', true)
+               OR current_setting('app.is_super_admin', true) = 'on')
+        WITH CHECK (workspace_id = current_setting('app.current_workspace_id', true)
+               OR current_setting('app.is_super_admin', true) = 'on')
+    $policy$, tbl);
+  END LOOP;
+END $$;
