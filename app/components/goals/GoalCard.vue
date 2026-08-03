@@ -486,7 +486,7 @@ const actionMenuItems = computed(() => {
                 :key="milestone.id"
                 class="flex items-center gap-3 p-3 rounded-lg transition-colors"
                 :class="milestone.isCompleted
-                  ? 'bg-primary-50 dark:bg-primary-900/20'
+                  ? 'bg-success-50 dark:bg-success-900/20'
                   : 'bg-gray-50 dark:bg-gray-800'"
               >
                 <UIcon

@@ -225,7 +225,7 @@ const isItemOrChildActive = (item: NavItem): boolean => {
                   class="flex items-center gap-3 px-4 py-1 rounded-lg text-sm transition-colors duration-200 ml-4"
                   :class="[
                     child.active
-                      ? 'bg-primary/10 text-primary-600 dark:text-primary-400 font-medium'
+                      ? 'bg-white/10 text-emerald-300 font-medium'
                       : 'text-emerald-50/60 hover:bg-white/5 hover:text-emerald-100',
                   ]"
                   :title="collapsed ? child.label : undefined"

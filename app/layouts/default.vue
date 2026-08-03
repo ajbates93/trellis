@@ -330,13 +330,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 >Trellis</span
               >
             </NuxtLink>
-            <UColorModeSwitch
-              v-if="!collapsed"
-              :ui="{
-                base: 'data-[state=unchecked]:bg-emerald-800',
-                thumb: 'data-[state=unchecked]:bg-emerald-200',
-              }"
-            />
+            <AppColorModeSwitch v-if="!collapsed" />
           </div>
         </template>
 
@@ -588,12 +582,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 >
                   <UIcon name="i-heroicons-swatch" class="w-5 h-5" />
                   <span class="flex-1 font-medium">Theme</span>
-                  <UColorModeSwitch
-                    :ui="{
-                base: 'data-[state=unchecked]:bg-emerald-800',
-                thumb: 'data-[state=unchecked]:bg-emerald-200',
-              }"
-                  />
+                  <AppColorModeSwitch />
                 </div>
                 <button
                   class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-50/70 hover:bg-white/5 transition-colors"

@@ -38,7 +38,7 @@
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
             :class="[
               task.completed
-                ? 'bg-primary-50 dark:bg-primary-900/20'
+                ? 'bg-success-50 dark:bg-success-900/20'
                 : 'hover:bg-gray-100 dark:hover:bg-gray-800'
             ]"
           >
@@ -47,7 +47,7 @@
               class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
               :class="[
                 task.completed
-                  ? 'bg-primary text-inverted'
+                  ? 'bg-success text-inverted'
                   : 'border-2 border-dashed border-gray-300 dark:border-gray-600'
               ]"
             >
@@ -64,7 +64,7 @@
                 class="text-sm font-medium truncate"
                 :class="[
                   task.completed
-                    ? 'text-primary'
+                    ? 'text-success'
                     : 'text-gray-900 dark:text-white'
                 ]"
               >
