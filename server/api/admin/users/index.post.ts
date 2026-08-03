@@ -4,24 +4,11 @@ import { eq } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { sendUserInvitation } from "#server/utils/invitations";
+import { requireAdmin } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
-
-  // Check if user is admin
-  if (session.user.role !== "admin") {
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden - Admin access required",
-    });
-  }
+  requireAdmin(event);
 
   // Get workspace ID from current admin
   const workspaceId = getWorkspaceId(event);
@@ -60,6 +47,20 @@ export default defineEventHandler(async (event) => {
       updatedAt: new Date(),
     })
     .returning();
+
+  if (!newUser) {
+    throw createError({
+      statusCode: 500,
+      message: "Failed to create user",
+    });
+  }
+
+  // Email the invitation immediately for single manual adds.
+  try {
+    await sendUserInvitation({ id: newUser.id, name: newUser.name, email: newUser.email });
+  } catch (err) {
+    console.error("Failed to send invitation on manual add:", err);
+  }
 
   const response = {
     success: true,

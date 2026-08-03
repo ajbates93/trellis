@@ -36,7 +36,18 @@
       "Bash(git commit *)",
       "Bash(npx eslint *)",
       "Bash(/Users/alexbates/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/brainstorming/scripts/start-server.sh *)",
-      "Bash(npx nuxi *)"
+      "Bash(npx nuxi *)",
+      "WebFetch(domain:jointrellis.app)",
+      "Bash(curl -s https://jointrellis.app/)",
+      "Bash(echo \"---EXITCODE $?---\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://plausible.io/js/pa-PP63S8SuHEtqDK6vMAYSW.js\")",
+      "Bash(curl -s \"https://plausible.io/js/pa-PP63S8SuHEtqDK6vMAYSW.js\")",
+      "Bash(curl -s https://jointrellis.app/__TRACKED_VAR__)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__list_pages",
+      "Bash(node *)",
+      "Bash(npx vue-tsc *)",
+      "Bash(echo \"EXIT_GREP=$?\")"
     ],
     "deny": [],
     "ask": []

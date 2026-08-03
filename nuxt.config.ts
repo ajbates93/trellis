@@ -1,4 +1,26 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+const cspDirectives = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://plausible.io",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: https:",
+  "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io https://plausible.io",
+  // Sentry session replay runs in a blob worker; without this, worker
+  // creation falls back to script-src and gets blocked.
+  "worker-src 'self' blob:",
+];
+
+// Dev only: allowing same-origin framing keeps the Nuxt DevTools panel
+// working, which embeds app routes in iframes. Production refuses all
+// framing (stricter than the X-Frame-Options fallback below).
+if (process.env.NODE_ENV === "development") {
+  cspDirectives.push("frame-ancestors 'self'");
+} else {
+  cspDirectives.push("frame-ancestors 'none'");
+}
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
@@ -80,6 +102,7 @@ export default defineNuxtConfig({
       sentry: {
         dsn: "", // Set via NUXT_PUBLIC_SENTRY_DSN in production
         environment: process.env.NODE_ENV || "development",
+        tracesSampleRate: Number(process.env.NUXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE ?? "0.1"),
       },
     },
   },
@@ -168,8 +191,7 @@ export default defineNuxtConfig({
           "Referrer-Policy": "strict-origin-when-cross-origin",
           "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
           "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-          "Content-Security-Policy":
-            "default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io https://plausible.io; frame-ancestors 'none'",
+          "Content-Security-Policy": cspDirectives.join("; "),
         },
       },
     },

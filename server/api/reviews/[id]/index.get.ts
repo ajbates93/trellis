@@ -3,16 +3,11 @@ import { reviewSchedules, users, feedback, goals } from "#server/database/schema
 import { eq, and, sql, lte, gte, desc, inArray, ne } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const authUser = requireUser(event);
 
   const reviewId = getRouterParam(event, "id");
 
@@ -39,15 +34,21 @@ export default defineEventHandler(async (event) => {
     }
 
     // AUTHORIZATION CHECK: Only reviewee, their buddy, or admins can access
-    const isReviewee = review.userId === session.user.id;
-    const isBuddy = review.buddyId === session.user.id;
-    const isAdmin = session.user.role === 'admin';
+    const isReviewee = review.userId === authUser.id;
+    const isBuddy = review.buddyId === authUser.id;
+    const isAdmin = authUser.role === 'admin';
 
     if (!isReviewee && !isBuddy && !isAdmin) {
       throw createError({
         statusCode: 403,
         message: "You do not have permission to view this review",
       });
+    }
+
+    // An admin acting on a review that isn't their own/their buddy's may only
+    // do so within their own workspace.
+    if (isAdmin && !isReviewee && !isBuddy) {
+      await assertSameWorkspace(event, review.userId);
     }
 
     // Get user info

@@ -40,9 +40,139 @@ jobs:
       - name: Build application
         run: npm run build
         env:
+          # The Nitro server build is memory-hungry (large app + sourcemaps) and
+          # was intermittently OOM-ing on the runner's default heap. Give Node
+          # headroom; ubuntu-latest has 16GB.
+          NODE_OPTIONS: --max-old-space-size=6144
           DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
           GOOGLE_CLIENT_ID: mock-client-id
           GOOGLE_CLIENT_SECRET: mock-client-secret
           BETTER_AUTH_SECRET: mock-secret-key-for-testing-only
           BETTER_AUTH_URL: http://localhost:3000
           ANTHROPIC_API_KEY: mock-anthropic-key
+
+  dependency-audit:
+    name: Dependency Audit (production deps)
+    runs-on: ubuntu-latest
+
+    # F7 audit gate: fail the build on critical/high advisories in production
+    # dependencies, so known-vulnerable packages cannot silently regress into
+    # the deployed image. Dev-only advisories (vitest, build tooling) do not
+    # block; they surface via routine npm audit runs instead.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  migration-drift:
+    name: Migration Drift Check
+    runs-on: ubuntu-latest
+
+    # Guards against the drift class in CQ-2: a column (or table) that lives in
+    # schema.ts and the drizzle snapshots but was never emitted as migration
+    # DDL (e.g. applied out-of-band via db:push). drizzle-kit generate/check
+    # cannot see this because they compare schema.ts to the snapshot, which
+    # agree. The only reliable detector is to materialise both a
+    # migration-built DB and a schema-built DB and diff their actual columns.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create databases
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE migrated;'
+          PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE schema_built;'
+
+      - name: Build database from the migration chain
+        run: npx drizzle-kit migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/migrated
+
+      - name: Build database from schema.ts
+        run: yes | npx drizzle-kit push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/schema_built
+
+      - name: Assert the migration chain reproduces schema.ts
+        run: |
+          Q="select table_name||'.'||column_name||' '||data_type||' '||is_nullable from information_schema.columns where table_schema='public' order by 1"
+          if diff \
+            <(PGPASSWORD=postgres psql -h localhost -U postgres -d schema_built -tA -c "$Q") \
+            <(PGPASSWORD=postgres psql -h localhost -U postgres -d migrated -tA -c "$Q"); then
+            echo "No drift: the migration chain reproduces schema.ts exactly."
+          else
+            echo "::error::Migration chain does not reproduce schema.ts. Lines starting with '<' are in schema.ts but missing from the migrations (add a migration); '>' are in the migrations but not schema.ts."
+            exit 1
+          fi
+
+  integration:
+    name: Integration Tests (real Postgres)
+    runs-on: ubuntu-latest
+
+    # Runs the real query layer against a disposable Postgres so tenancy,
+    # ownership and validation regressions are caught (CQ-5) - the seams the
+    # mocked unit suite cannot see.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: trellis_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trellis_test

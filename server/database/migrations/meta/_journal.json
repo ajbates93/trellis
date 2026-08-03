@@ -134,6 +134,62 @@
       "when": 1780604742161,
       "tag": "0018_known_betty_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1781036400000,
+      "tag": "0019_add_slack_workspaces_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1784619472830,
+      "tag": "0020_sweet_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1785236560492,
+      "tag": "0021_fix_missing_timezone_column",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1785495605101,
+      "tag": "0022_add_workspace_id_to_content_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1785495623288,
+      "tag": "0023_backfill_workspace_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1785702150861,
+      "tag": "0024_workspace_id_defaults",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1785671973000,
+      "tag": "0025_enable_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1785766481958,
+      "tag": "0026_add_rate_limits_table",
+      "breakpoints": true
     }
   ]
 }

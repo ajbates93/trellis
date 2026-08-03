@@ -50,7 +50,7 @@ describe('GET /api/health', () => {
       status: 'unhealthy',
       database: {
         status: 'disconnected',
-        error: 'Connection refused',
+        error: 'Database connection failed',
       },
     })
     expect(result).toHaveProperty('timestamp')
@@ -60,13 +60,13 @@ describe('GET /api/health', () => {
     expect(mockSetResponseStatus).toHaveBeenCalledWith(event, 503)
   })
 
-  it('returns "Unknown error" in database error field when a non-Error is thrown', async () => {
+  it('returns a generic error in database error field when a non-Error is thrown', async () => {
     mockExecute.mockRejectedValueOnce('string error')
 
     const event = createMockEvent()
     const result = await handler(event)
 
-    expect(result.database.error).toBe('Unknown error')
+    expect(result.database.error).toBe('Database connection failed')
     expect(result.status).toBe('unhealthy')
   })
 

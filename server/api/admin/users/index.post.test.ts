@@ -17,8 +17,12 @@ vi.mock('../../../utils/validation', () => ({
 vi.mock('../../../utils/workspace', () => ({
   getWorkspaceId: vi.fn().mockReturnValue('workspace-1'),
 }))
+vi.mock('../../../utils/invitations', () => ({
+  sendUserInvitation: vi.fn().mockResolvedValue(undefined),
+}))
 
 const { default: handler } = await import('./index.post')
+const { sendUserInvitation } = await import('../../../utils/invitations')
 
 describe('POST /api/admin/users', () => {
   beforeEach(() => {
@@ -89,6 +93,12 @@ describe('POST /api/admin/users', () => {
     })
     expect(mockDb.select).toHaveBeenCalledTimes(1)
     expect(mockDb.insert).toHaveBeenCalledTimes(1)
+    expect(sendUserInvitation).toHaveBeenCalledTimes(1)
+    expect(sendUserInvitation).toHaveBeenCalledWith({
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+    })
   })
 
   it('creates a user with a buddy assignment', async () => {

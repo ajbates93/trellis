@@ -65,14 +65,13 @@ describe('GET /api/feedback/received', () => {
     expect(mockDb.select).toHaveBeenCalled()
   })
 
-  it('returns 500 when a non-admin tries to view another user feedback', async () => {
-    // The 403 is thrown inside the try block, so the catch re-throws it as 500
+  it('returns 403 when a non-admin tries to view another user feedback', async () => {
     const event = createAuthenticatedEvent({
       query: { userId: 'user-99' },
     })
 
     await expect(handler(event)).rejects.toMatchObject({
-      statusCode: 500,
+      statusCode: 403,
     })
   })
 
@@ -100,6 +99,8 @@ describe('GET /api/feedback/received', () => {
         roleType: reviewer.roleType,
       },
     }
+    // assertSameWorkspace: target user is in admin's workspace
+    mockSelect([{ workspaceId: 'workspace-1' }])
     mockSelect([row])
 
     const event = createAdminEvent({
@@ -110,6 +111,22 @@ describe('GET /api/feedback/received', () => {
 
     expect(result).toEqual({ feedback: [row] })
     expect(mockDb.select).toHaveBeenCalled()
+  })
+
+  it('rejects when admin queries a user in a different workspace', async () => {
+    // assertSameWorkspace: target user belongs to another workspace
+    mockSelect([{ workspaceId: 'workspace-2' }])
+
+    const event = createAdminEvent({
+      query: { userId: 'user-99' },
+    })
+
+    // assertSameWorkspace throws 403 and the handler preserves it.
+    await expect(handler(event)).rejects.toMatchObject({
+      statusCode: 403,
+    })
+    // Only the workspace lookup ran; the feedback select was never reached
+    expect(mockDb.select).toHaveBeenCalledTimes(1)
   })
 
   it('returns empty array when there is no feedback for the current user', async () => {

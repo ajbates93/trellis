@@ -3,33 +3,30 @@ import { feedback, users } from "#server/database/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const query = getQuery(event);
     const forUserId = query.userId as string | undefined;
 
     // If fetching for a specific user, verify authorization
-    if (forUserId) {
-      const isAdmin = session.user.role === 'admin';
-      if (!isAdmin && forUserId !== session.user.id) {
+    if (forUserId && forUserId !== user.id) {
+      const isAdmin = user.role === 'admin';
+      if (!isAdmin) {
         throw createError({
           statusCode: 403,
           message: "You do not have permission to view this feedback",
         });
       }
+      // Admins may only view users within their own workspace.
+      await assertSameWorkspace(event, forUserId);
     }
 
-    const targetUserId = forUserId || session.user.id;
+    const targetUserId = forUserId || user.id;
 
     // Fetch only published feedback for the target user
     const receivedFeedback = await db
@@ -70,6 +67,13 @@ export default defineEventHandler(async (event) => {
     return validateResponse(response, apiSchemas.GetReceivedFeedbackResponseSchema);
   } catch (error) {
     console.error("Error fetching received feedback:", error);
+
+    // Preserve intentional HTTP errors (e.g. the 403 from assertSameWorkspace
+    // or the non-admin permission check) instead of masking them as a 500.
+    if (error && typeof error === "object" && "statusCode" in error) {
+      throw error;
+    }
+
     throw createError({
       statusCode: 500,
       message: "Failed to fetch received feedback",

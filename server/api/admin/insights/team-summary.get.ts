@@ -1,8 +1,10 @@
 import { db } from "#server/database/connection";
 import { feedbackInsights, users } from "#server/database/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { getWorkspaceId } from "#server/utils/workspace";
+import { requireAdmin } from "#server/utils/auth-guards";
 
 interface SentimentData {
   positive: number;
@@ -23,25 +25,12 @@ interface UserSentimentSummary {
 }
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
-
-  // Check if user is admin
-  if (session.user.role !== "admin") {
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden - Admin access required",
-    });
-  }
+  requireAdmin(event);
 
   try {
-    // Get all users
+    const workspaceId = getWorkspaceId(event);
+
+    // Get all users in the caller's workspace
     const allUsers = await db
       .select({
         id: users.id,
@@ -50,9 +39,32 @@ export default defineEventHandler(async (event) => {
         image: users.image,
         roleType: users.roleType,
       })
-      .from(users);
+      .from(users)
+      .where(eq(users.workspaceId, workspaceId));
 
-    // Get the two most recent analyses for each user (for trend comparison)
+    // Get the two most recent analyses for each user (for trend comparison),
+    // fetched in a single batched query instead of one query per user.
+    const userIds = allUsers.map((u) => u.id);
+    const allInsights = userIds.length
+      ? await db
+          .select({
+            userId: feedbackInsights.userId,
+            sentimentData: feedbackInsights.sentimentData,
+            analysisDate: feedbackInsights.analysisDate,
+            feedbackCount: feedbackInsights.feedbackCount,
+          })
+          .from(feedbackInsights)
+          .where(inArray(feedbackInsights.userId, userIds))
+          .orderBy(desc(feedbackInsights.analysisDate))
+      : [];
+
+    const insightsByUser = new Map<string, typeof allInsights>();
+    for (const row of allInsights) {
+      const list = insightsByUser.get(row.userId) ?? [];
+      if (list.length < 2) list.push(row);
+      insightsByUser.set(row.userId, list);
+    }
+
     const userSummaries: UserSentimentSummary[] = [];
     let totalPositive = 0;
     let totalConstructive = 0;
@@ -61,16 +73,7 @@ export default defineEventHandler(async (event) => {
 
     for (const user of allUsers) {
       // Get the two most recent analyses for this user
-      const recentAnalyses = await db
-        .select({
-          sentimentData: feedbackInsights.sentimentData,
-          analysisDate: feedbackInsights.analysisDate,
-          feedbackCount: feedbackInsights.feedbackCount,
-        })
-        .from(feedbackInsights)
-        .where(eq(feedbackInsights.userId, user.id))
-        .orderBy(desc(feedbackInsights.analysisDate))
-        .limit(2);
+      const recentAnalyses = insightsByUser.get(user.id) ?? [];
 
       const latestAnalysis = recentAnalyses[0];
       const previousAnalysis = recentAnalyses[1];

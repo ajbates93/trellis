@@ -2,20 +2,10 @@ import { createHmac } from 'crypto'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockDb } from '#server/__tests__/helpers/mock-db'
 import { createMockEvent } from '#server/__tests__/helpers/mock-event'
-import { auth } from '#server/utils/auth'
 
 const { mockDb, mockSelect, mockInsert, mockUpdate } = createMockDb()
 
 vi.mock('../../../database/connection', () => ({ db: mockDb }))
-
-// Mock auth module
-vi.mock('../../../utils/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-    },
-  },
-}))
 
 vi.mock('../../../utils/encryption', () => ({
   encrypt: vi.fn().mockImplementation((token: string) => `encrypted:${token}`),
@@ -62,18 +52,14 @@ function mockSlackTokenSuccess() {
   })
 }
 
-// Helper: mock an admin session
-function mockAdminSession() {
-  ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-    user: {
-      id: 'admin-1',
-      email: 'admin@example.com',
-      name: 'Admin User',
-      role: 'admin',
-      workspaceId: 'workspace-1',
-      isSuperAdmin: false,
-    },
-  })
+// Admin user set on the event context (auth middleware populates event.context.user)
+const adminUser = {
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: 'Admin User',
+  role: 'admin',
+  workspaceId: 'workspace-1',
+  isSuperAdmin: false,
 }
 
 describe('GET /api/integrations/slack/callback', () => {
@@ -160,7 +146,10 @@ describe('GET /api/integrations/slack/callback', () => {
       }),
     })
 
+    // Valid session + nonce so the request reaches the token exchange.
     const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
+      user: adminUser,
       query: {
         code: 'oauth-code-123',
         state: buildState(),
@@ -175,10 +164,9 @@ describe('GET /api/integrations/slack/callback', () => {
   })
 
   it('redirects to error page when session is not found (user not logged in)', async () => {
-    mockSlackTokenSuccess()
-    ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null)
-
+    // No user on the event context = unauthenticated
     const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
       query: {
         code: 'oauth-code-123',
         state: buildState(),
@@ -190,11 +178,13 @@ describe('GET /api/integrations/slack/callback', () => {
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
     const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
+    // Session checks run before the code exchange: no token was minted.
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
   it('redirects to error page when session user is not admin', async () => {
-    mockSlackTokenSuccess()
-    ;(auth.api.getSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+    const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
       user: {
         id: 'user-1',
         email: 'user@example.com',
@@ -203,9 +193,6 @@ describe('GET /api/integrations/slack/callback', () => {
         workspaceId: 'workspace-1',
         isSuperAdmin: false,
       },
-    })
-
-    const event = createMockEvent({
       query: {
         code: 'oauth-code-123',
         state: buildState(),
@@ -217,11 +204,93 @@ describe('GET /api/integrations/slack/callback', () => {
     expect(mockSendRedirect).toHaveBeenCalledTimes(1)
     const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
     expect(redirectUrl).toContain('/settings/integrations?error=')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects a state minted for a different workspace than the session user (F6)', async () => {
+    const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
+      user: adminUser, // workspace-1
+      query: {
+        code: 'oauth-code-123',
+        state: buildState({ workspaceId: 'workspace-2' }),
+      },
+    })
+
+    await handler(event)
+
+    expect(mockSendRedirect).toHaveBeenCalledTimes(1)
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
+    expect(redirectUrl).toContain('/settings/integrations?error=')
+    expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockDb.insert).not.toHaveBeenCalled()
+    expect(mockDb.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects a callback without the install nonce cookie (state replay, F6)', async () => {
+    const event = createMockEvent({
+      user: adminUser,
+      query: {
+        code: 'oauth-code-123',
+        state: buildState(),
+      },
+    })
+
+    await handler(event)
+
+    expect(mockSendRedirect).toHaveBeenCalledTimes(1)
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
+    expect(redirectUrl).toContain('/settings/integrations?error=')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects a callback whose cookie nonce does not match the state nonce (F6)', async () => {
+    const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=some-other-nonce' },
+      user: adminUser,
+      query: {
+        code: 'oauth-code-123',
+        state: buildState(),
+      },
+    })
+
+    await handler(event)
+
+    expect(mockSendRedirect).toHaveBeenCalledTimes(1)
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
+    expect(redirectUrl).toContain('/settings/integrations?error=')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('refuses to re-bind a Slack team already linked to another workspace (F6)', async () => {
+    mockSlackTokenSuccess()
+
+    // Existing mapping for the same Slack team, owned by a DIFFERENT workspace
+    mockSelect([
+      { id: 'slack-ws-existing', slackTeamId: 'T12345', workspaceId: 'workspace-2' },
+    ])
+
+    const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
+      user: adminUser,
+      query: {
+        code: 'oauth-code-123',
+        state: buildState(),
+      },
+    })
+
+    await handler(event)
+
+    expect(mockDb.insert).not.toHaveBeenCalled()
+    expect(mockDb.update).not.toHaveBeenCalled()
+    expect(mockSendRedirect).toHaveBeenCalledWith(
+      expect.anything(),
+      '/settings/integrations?error=slack_team_already_linked'
+    )
   })
 
   it('creates new slack workspace record and redirects to success page', async () => {
     mockSlackTokenSuccess()
-    mockAdminSession()
 
     // No existing slack workspace
     mockSelect([])
@@ -229,6 +298,8 @@ describe('GET /api/integrations/slack/callback', () => {
     mockInsert([{ id: 'slack-ws-new' }])
 
     const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
+      user: adminUser,
       query: {
         code: 'oauth-code-123',
         state: buildState(),
@@ -243,18 +314,25 @@ describe('GET /api/integrations/slack/callback', () => {
       expect.anything(),
       '/settings/integrations?success=slack_installed'
     )
+    // The nonce cookie is consumed (cleared) on use.
+    const setCookieHeader = event.node.res.getHeader('set-cookie')
+    expect(String(setCookieHeader)).toContain('slack_install_nonce=')
+    expect(String(setCookieHeader)).toContain('Max-Age=0')
   })
 
-  it('updates existing slack workspace record and redirects to success page', async () => {
+  it('updates an existing record owned by the SAME workspace (re-install)', async () => {
     mockSlackTokenSuccess()
-    mockAdminSession()
 
-    // Existing slack workspace found
-    mockSelect([{ id: 'slack-ws-existing', slackTeamId: 'T12345' }])
+    // Existing slack workspace found, owned by the caller's workspace
+    mockSelect([
+      { id: 'slack-ws-existing', slackTeamId: 'T12345', workspaceId: 'workspace-1' },
+    ])
     // Update existing record
     mockUpdate([{ id: 'slack-ws-existing' }])
 
     const event = createMockEvent({
+      headers: { cookie: 'slack_install_nonce=abc123' },
+      user: adminUser,
       query: {
         code: 'oauth-code-123',
         state: buildState(),

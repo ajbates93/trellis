@@ -1,21 +1,14 @@
-import { auth } from "#server/utils/auth";
 import { db } from "#server/database/connection";
 import { users, accounts } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { hashPassword } from "#server/utils/password";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
   try {
     // Verify user is authenticated
-    const session = await auth.api.getSession({ headers: event.headers });
-
-    if (!session?.user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
+    const user = requireUser(event);
 
     const body = await readBody(event);
     const { password } = body;
@@ -48,7 +41,7 @@ export default defineEventHandler(async (event) => {
       .from(accounts)
       .where(
         and(
-          eq(accounts.userId, session.user.id),
+          eq(accounts.userId, user.id),
           eq(accounts.providerId, "credential"),
         ),
       )
@@ -68,8 +61,8 @@ export default defineEventHandler(async (event) => {
     const now = new Date();
     await db.insert(accounts).values({
       id: randomUUID(),
-      userId: session.user.id,
-      accountId: session.user.email,
+      userId: user.id,
+      accountId: user.email,
       providerId: "credential",
       password: hashedPassword,
       createdAt: now,
@@ -80,9 +73,9 @@ export default defineEventHandler(async (event) => {
     await db
       .update(users)
       .set({ passwordEnabled: true, updatedAt: now })
-      .where(eq(users.id, session.user.id));
+      .where(eq(users.id, user.id));
 
-    console.log(`✅ Password added for user ${session.user.email}`);
+    console.log(`✅ Password added for user ${user.email}`);
 
     return {
       success: true,
@@ -90,9 +83,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error("Add password error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to set password",
+      statusCode: 500,
+      message: "Failed to set password",
     });
   }
 });

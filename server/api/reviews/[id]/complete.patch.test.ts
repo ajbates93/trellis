@@ -149,6 +149,8 @@ describe('PATCH /api/reviews/:id/complete', () => {
 
     // review lookup — admin is neither reviewee nor buddy
     mockSelect([review])
+    // assertSameWorkspace: review owner is in admin's workspace
+    mockSelect([{ workspaceId: 'workspace-1' }])
     mockUpdate([{ ...review, status: 'completed', completedDate: new Date().toISOString(), completionNotes: null }])
     // recipient lookup (user-5, the reviewee)
     mockSelect([{ name: 'User Five', preferredName: null, email: 'user5@example.com' }])
@@ -165,6 +167,28 @@ describe('PATCH /api/reviews/:id/complete', () => {
     expect(result.success).toBe(true)
     expect(result.review.status).toBe('completed')
     expect(mockDb.update).toHaveBeenCalled()
+  })
+
+  it('returns 403 when admin completes a review owned by a user in another workspace', async () => {
+    const review = buildReviewSchedule({
+      id: 'review-1',
+      userId: 'user-5',
+      buddyId: 'user-6',
+      status: 'scheduled',
+    })
+
+    // review lookup — admin is neither reviewee nor buddy
+    mockSelect([review])
+    // assertSameWorkspace: review owner belongs to a DIFFERENT workspace
+    mockSelect([{ workspaceId: 'workspace-2' }])
+
+    const event = createAdminEvent({
+      params: { id: 'review-1' },
+      body: {},
+    })
+
+    await expect(handler(event)).rejects.toMatchObject({ statusCode: 403 })
+    expect(mockDb.update).not.toHaveBeenCalled()
   })
 
   it('emits review_completed notification when a review is completed', async () => {

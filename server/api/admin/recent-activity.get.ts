@@ -3,9 +3,14 @@ import { feedback, goals, users } from "#server/database/schema";
 import { eq, sql, desc, or } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { getWorkspaceId } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
   try {
+    // Scope to the caller's workspace. Feedback/goals carry no workspaceId, so
+    // constrain them via the reviewee/owner's workspace.
+    const workspaceId = getWorkspaceId(event);
+
     // Get recent feedback (last 10)
     const recentFeedback = await db
       .select({
@@ -20,6 +25,7 @@ export default defineEventHandler(async (event) => {
       .from(feedback)
       .leftJoin(sql`users as reviewer`, eq(feedback.reviewerId, sql`reviewer.id`))
       .leftJoin(sql`users as reviewee`, eq(feedback.revieweeId, sql`reviewee.id`))
+      .where(sql`reviewee.workspace_id = ${workspaceId}`)
       .orderBy(desc(feedback.createdAt))
       .limit(10);
 
@@ -34,7 +40,8 @@ export default defineEventHandler(async (event) => {
         status: goals.status,
       })
       .from(goals)
-      .leftJoin(users, eq(goals.userId, users.id))
+      .innerJoin(users, eq(goals.userId, users.id))
+      .where(eq(users.workspaceId, workspaceId))
       .orderBy(desc(goals.createdAt))
       .limit(10);
 

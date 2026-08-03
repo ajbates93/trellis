@@ -1,4 +1,4 @@
-import { db } from "#server/database/connection";
+import { db, withRlsBypass } from "#server/database/connection";
 import { goals, notifications } from "#server/database/schema";
 import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { createNotification } from "#server/utils/inAppNotifications";
@@ -9,6 +9,20 @@ export default defineTask({
     description: "Emit goal_approaching and goal_overdue notifications",
   },
   async run() {
+    // This task spans every workspace, so it runs under the RLS bypass; without
+    // it, once the app connects as the restricted role the goal/notification
+    // reads below would be filtered to nothing. There is no external I/O in the
+    // body, so holding the bypass transaction for its duration is fine.
+    //
+    // Note: each createNotification inside opens its own withWorkspace connection,
+    // so those inserts commit independently of this bypass transaction (they are
+    // fire-and-forget and intentionally survive a rollback here) - a nested
+    // transaction on a second pooled connection per iteration.
+    return withRlsBypass(() => runGoalReminders());
+  },
+});
+
+async function runGoalReminders() {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -88,5 +102,4 @@ export default defineTask({
       console.error("[goal-reminders] Task failed:", error);
       return { result: `Task failed: ${error}` };
     }
-  },
-});
+}

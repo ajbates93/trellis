@@ -3,23 +3,17 @@ import { users, feedback } from "#server/database/schema";
 import { eq, and, sql, notInArray } from "drizzle-orm";
 import { format } from "date-fns";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const query = getQuery(event);
   const excludeIds = query.excludeIds
     ? String(query.excludeIds).split(",").filter(Boolean)
     : [];
 
-  const currentUserId = session.user.id;
+  const currentUserId = user.id;
   const workspaceId = getWorkspaceId(event);
   const currentWeekYear = format(new Date(), "RRRR-'W'II");
 

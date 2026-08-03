@@ -6,6 +6,7 @@ import { validateResponse } from "#server/utils/validation";
 import { getWorkspaceId } from "#server/utils/workspace";
 import { computeStreak } from "#server/utils/community-scoring";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 type Period = "this-week" | "last-7-days" | "last-30-days" | "all-time";
 
@@ -33,10 +34,7 @@ function getDateRanges(period: Period) {
 }
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
-  }
+  requireUser(event);
 
   const workspaceId = getWorkspaceId(event);
   const query = getQuery(event);

@@ -54,6 +54,8 @@ describe('GET /api/achievements', () => {
   it('returns achievements for another user when admin queries by userId', async () => {
     const achievement = buildAchievement({ userId: 'user-99', achievedDate: '2025-02-01' })
 
+    // assertSameWorkspace: target user is in admin's workspace
+    mockSelect([{ workspaceId: 'workspace-1' }])
     mockSelect([achievement])
 
     const event = createAuthenticatedEvent({
@@ -63,6 +65,23 @@ describe('GET /api/achievements', () => {
     const result = await handler(event)
 
     expect(result).toEqual({ achievements: [achievement] })
+  })
+
+  it('rejects when admin queries a user in a different workspace', async () => {
+    // assertSameWorkspace: target user belongs to another workspace
+    mockSelect([{ workspaceId: 'workspace-2' }])
+
+    const event = createAuthenticatedEvent({
+      query: { userId: 'user-99' },
+      session: { user: { id: 'user-1', email: 'admin@example.com', name: 'Admin', role: 'admin' } },
+    })
+
+    // assertSameWorkspace throws 403 and the handler preserves it.
+    await expect(handler(event)).rejects.toMatchObject({
+      statusCode: 403,
+    })
+    // Only the workspace lookup ran; the achievements select was never reached
+    expect(mockDb.select).toHaveBeenCalledTimes(1)
   })
 
   it('returns 500 on database error', async () => {

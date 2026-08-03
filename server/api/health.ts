@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     // Set status code to 503 (Service Unavailable)
     setResponseStatus(event, 503);
+    console.error("Health check failed:", error);
 
     return {
       status: "unhealthy",
@@ -32,7 +33,7 @@ export default defineEventHandler(async (event) => {
       uptime: process.uptime(),
       database: {
         status: "disconnected",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Database connection failed",
       },
       environment: process.env.NODE_ENV || "development",
       version: "1.0.0",

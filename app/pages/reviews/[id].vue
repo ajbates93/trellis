@@ -63,6 +63,31 @@ const isAdmin = computed(() => {
 
 const isCompleted = computed(() => review.value?.status === "completed");
 
+// Only one tab may edit a given review at a time. Our auto-save guards
+// (debounce timers, per-field AbortControllers) are scoped to one JS context,
+// so two tabs on the same review would interleave PATCHes and silently
+// clobber each other. The lock is released when the owning tab goes away, at
+// which point another tab is promoted.
+const { isLeader: ownsEditor } = useLeaderTab(`review-editor:${reviewId}`);
+const { withLock } = useWebLock();
+
+const isEditingElsewhere = computed(() => !ownsEditor.value);
+
+// Single source of truth for "may this tab write to this review right now".
+const canEdit = computed(
+  () =>
+    (isReviewee.value || isBuddy.value) &&
+    !isCompleted.value &&
+    !isEditingElsewhere.value,
+);
+
+// On promotion (the other tab closed) our copy of the review is whatever was
+// loaded at mount, and may be several edits stale. Re-fetch before letting the
+// user type, so they don't overwrite work done in the tab that just went away.
+watch(ownsEditor, (owns, previouslyOwned) => {
+  if (owns && previouslyOwned === false) refresh();
+});
+
 // Open edit modal
 const openEditModal = () => {
   if (!review.value) return;
@@ -298,14 +323,18 @@ watch(
 const answerTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 const saveAnswers = async () => {
-  // Never attempt to persist answers once the review is locked — the API
-  // rejects it with "Cannot update a completed review".
-  if (!review.value || isCompleted.value) return;
+  // canEdit re-checked at fire time, not just when the save was scheduled: a
+  // debounce can outlive the conditions that allowed it. Chiefly the review
+  // completing underneath us — from another device, where no Web Lock
+  // applies — after which the API rejects the write outright.
+  if (!review.value || !canEdit.value) return;
   try {
-    await $api(`/reviews/${reviewId}`, {
-      method: "PATCH",
-      body: { answers: answers.value },
-    });
+    await withLock(`review-save:${reviewId}:answers`, () =>
+      $api(`/reviews/${reviewId}`, {
+        method: "PATCH",
+        body: { answers: answers.value },
+      }),
+    );
   } catch (error) {
     console.error("Failed to save answers:", error);
     toast.add({
@@ -322,7 +351,7 @@ const onAnswerChange = (fieldId: string, value: string) => {
   // echoes (value matches what's stored) and any change while the review isn't
   // editable — otherwise we fire auto-saves that the API rejects once the
   // review is completed. Mirrors the guards on the comment auto-save watchers.
-  if ((!isReviewee.value && !isBuddy.value) || isCompleted.value) return;
+  if (!canEdit.value) return;
   if (value === (review.value?.answers?.[fieldId] ?? "")) return;
   answers.value = { ...answers.value, [fieldId]: value };
   clearTimeout(answerTimers.get(fieldId));
@@ -337,12 +366,17 @@ onUnmounted(() => {
 
 const saveSelfScore = async (value: number | null) => {
   selfScore.value = value;
-  if (!review.value) return;
+  // Scoring is reviewee-only, which the field enforces; canEdit covers the
+  // completed/lock half of that condition. Not flagged in review, but held to
+  // the same rule as the other two writers rather than left inconsistent.
+  if (!review.value || !canEdit.value) return;
   try {
-    await $api(`/reviews/${reviewId}`, {
-      method: "PATCH",
-      body: { selfScore: value },
-    });
+    await withLock(`review-save:${reviewId}:selfScore`, () =>
+      $api(`/reviews/${reviewId}`, {
+        method: "PATCH",
+        body: { selfScore: value },
+      }),
+    );
   } catch (error) {
     console.error("Failed to save self-score:", error);
     toast.add({
@@ -363,7 +397,8 @@ const saveTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 const saveControllers = new Map<string, AbortController>();
 
 const saveReflection = async (field: string, value: string) => {
-  if (!review.value) return;
+  // See saveAnswers: same fire-time re-check of canEdit.
+  if (!review.value || !canEdit.value) return;
 
   const isBuddyComment = field === "buddyComments";
   if (isBuddyComment) {
@@ -378,13 +413,19 @@ const saveReflection = async (field: string, value: string) => {
   saveControllers.set(field, controller);
 
   try {
-    await $api(`/reviews/${reviewId}`, {
-      method: "PATCH",
-      body: {
-        [field]: value,
-      },
-      signal: controller.signal,
-    });
+    // Serialised per field across tabs. Leadership already stops a follower
+    // tab writing at all; this keeps ordering deterministic across the
+    // handover window, when a promoted tab may save while the outgoing tab's
+    // last PATCH is still in flight.
+    await withLock(`review-save:${reviewId}:${field}`, () =>
+      $api(`/reviews/${reviewId}`, {
+        method: "PATCH",
+        body: {
+          [field]: value,
+        },
+        signal: controller.signal,
+      }),
+    );
   } catch (error) {
     // AbortError just means a newer save superseded this one — ignore.
     if ((error as Error)?.name === "AbortError") return;
@@ -465,8 +506,7 @@ const flushPendingSaves = async () => {
 // Only watch if the user has permission to edit that field to avoid unnecessary saves on load
 watch(buddyComments, (newValue, oldValue) => {
   if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
+    canEdit.value &&
     newValue !== (review.value?.buddyComments || "") &&
     oldValue !== ""
   ) {
@@ -476,8 +516,7 @@ watch(buddyComments, (newValue, oldValue) => {
 
 watch(revieweeComments, (newValue, oldValue) => {
   if (
-    (isReviewee.value || isBuddy.value) &&
-    !isCompleted.value &&
+    canEdit.value &&
     newValue !== (review.value?.revieweeComments || "") &&
     oldValue !== ""
   ) {
@@ -660,6 +699,19 @@ watch(revieweeComments, (newValue, oldValue) => {
             </div>
           </div>
 
+          <!-- Shown only to a tab that lost the editor lock to another tab of
+               the same browser. Editing is disabled here rather than letting
+               the two tabs overwrite one another. -->
+          <UAlert
+            v-if="isEditingElsewhere && !isCompleted && (isReviewee || isBuddy)"
+            icon="i-heroicons-lock-closed"
+            color="warning"
+            variant="subtle"
+            title="This review is open in another tab"
+            description="Editing is disabled here so your changes can't overwrite each other. Close the other tab and this one will take over automatically."
+            class="mb-6"
+          />
+
           <!-- Two-column layout: editors on the left, supporting data sticky on the right.
                We only split at xl: (1280px) so narrow desktops / iPad-landscape don't get crushed. -->
           <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_400px] xl:gap-6">
@@ -697,7 +749,7 @@ watch(revieweeComments, (newValue, oldValue) => {
                   :key="field.id"
                   :field="field"
                   :model-value="answers[field.id] || ''"
-                  :readonly="(!isReviewee && !isBuddy) || isCompleted"
+                  :readonly="!canEdit"
                   @update:model-value="(v) => onAnswerChange(field.id, v)"
                 />
               </template>
@@ -722,7 +774,7 @@ watch(revieweeComments, (newValue, oldValue) => {
 
               <ReviewsSelfScoreField
                 :model-value="selfScore"
-                :readonly="!isReviewee || isCompleted"
+                :readonly="!isReviewee || isCompleted || isEditingElsewhere"
                 @update:model-value="saveSelfScore"
               />
             </div>
@@ -759,7 +811,7 @@ watch(revieweeComments, (newValue, oldValue) => {
               label="Anything else you'd like to add?"
               icon="i-heroicons-chat-bubble-left-ellipsis"
               placeholder="Any other thoughts, questions, or comments for your buddy..."
-              :readonly="(!isReviewee && !isBuddy) || isCompleted"
+              :readonly="!canEdit"
             />
           </UCard>
 
@@ -794,7 +846,7 @@ watch(revieweeComments, (newValue, oldValue) => {
               label="Notes from your buddy"
               icon="i-heroicons-user"
               placeholder="Add comments about the review..."
-              :readonly="(!isReviewee && !isBuddy) || isCompleted"
+              :readonly="!canEdit"
             />
           </UCard>
 

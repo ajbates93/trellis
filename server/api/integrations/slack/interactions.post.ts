@@ -1,4 +1,4 @@
-import { db } from "#server/database/connection";
+import { db, withWorkspace } from "#server/database/connection";
 import { slackWorkspaces, users, feedback } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
 import { decrypt } from "#server/utils/encryption";
@@ -188,19 +188,21 @@ export default defineEventHandler(async (event) => {
     const now = new Date();
     const weekYear = format(now, "RRRR-'W'II");
 
-    // Create feedback (as draft, unpublished)
+    // Create feedback (as draft, unpublished). The Slack slash command is an
+    // unauthenticated webhook, so there is no request workspace scope; bind the
+    // resolved Trellis workspace explicitly so `workspace_id` is stamped (via the
+    // column default) and the insert satisfies RLS once enforcement is enabled.
     try {
-      const [newFeedback] = await db
-        .insert(feedback)
-        .values({
+      await withWorkspace({ workspaceId }, () =>
+        db.insert(feedback).values({
           reviewerId: reviewer.id,
           revieweeId: reviewee.id,
           content: trimmedContent,
           weekYear,
           isRead: false,
           published: false, // Draft by default
-        })
-        .returning();
+        }),
+      );
 
       // Notify buddy (fire-and-forget)
       notifyBuddyOfNewFeedback(reviewee.id);
@@ -252,9 +254,10 @@ export default defineEventHandler(async (event) => {
     console.error("Slack interaction error:", error);
 
     // If we can't return a proper Slack response, throw error
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to process interaction",
+      statusCode: 500,
+      message: "Failed to process interaction",
     });
   }
 });

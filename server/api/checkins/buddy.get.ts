@@ -4,16 +4,11 @@ import { db } from "#server/database/connection";
 import { users, buddyCheckins } from "#server/database/schema";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session || !session.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
+  const user = requireUser(event);
 
   const query = getQuery(event);
   const buddyIdFilter = query.buddyId as string | undefined;
@@ -39,14 +34,20 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const isBuddy = targetUser.buddyId === session.user.id;
-    const isAdmin = session.user.role === "admin";
+    const isBuddy = targetUser.buddyId === user.id;
+    const isAdmin = user.role === "admin";
 
     if (!isBuddy && !isAdmin) {
       throw createError({
         statusCode: 403,
         message: "You are not a buddy of this user",
       });
+    }
+
+    // An admin viewing a user who isn't their buddy may only do so within
+    // their own workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, buddyIdFilter);
     }
 
     // Fetch check-ins for specific buddy
@@ -101,7 +102,7 @@ export default defineEventHandler(async (event) => {
 
   // If no filter, get all buddies of session user and their check-ins
   const sessionUserBuddies = await db.query.users.findMany({
-    where: eq(users.buddyId, session.user.id),
+    where: eq(users.buddyId, user.id),
     columns: {
       id: true,
     },
@@ -117,7 +118,7 @@ export default defineEventHandler(async (event) => {
   const checkins = await db.query.buddyCheckins.findMany({
     where: (t) =>
       buddyIds.length > 0
-        ? and(eq(t.buddyId, session.user.id))
+        ? and(eq(t.buddyId, user.id))
         : undefined,
     with: {
       buddy: {

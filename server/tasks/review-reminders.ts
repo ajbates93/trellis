@@ -1,6 +1,6 @@
-import { db } from "#server/database/connection";
+import { db, withRlsBypass } from "#server/database/connection";
 import { reviewSchedules, users } from "#server/database/schema";
-import { eq, and, between } from "drizzle-orm";
+import { eq, and, between, inArray, type SQL } from "drizzle-orm";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
@@ -12,10 +12,25 @@ export default defineTask({
     name: "review-reminders",
     description: "Send email reminders for upcoming scheduled reviews",
   },
-  async run() {
+  async run(ctx: { payload?: { workspaceId?: string } }) {
     const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
     const now = new Date();
     let emailsSent = 0;
+
+    // Optional workspace scope. The scheduled (cron) run passes no payload and
+    // processes every workspace, which is intended. The manual admin trigger
+    // passes its own workspaceId so one tenant's admin can only send reminders
+    // for - and flip the reminder-sent flags of - their own workspace (F14).
+    const workspaceId = ctx?.payload?.workspaceId;
+    const workspaceScope: SQL | undefined = workspaceId
+      ? inArray(
+          reviewSchedules.userId,
+          db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.workspaceId, workspaceId)),
+        )
+      : undefined;
 
     try {
       // 7-day reminders: scheduledDate is 7 days from now
@@ -27,29 +42,40 @@ export default defineTask({
       sevenDayEnd.setDate(sevenDayEnd.getDate() + 7);
       sevenDayEnd.setHours(23, 59, 59, 999);
 
-      const sevenDayReviews = await db
-        .select()
-        .from(reviewSchedules)
-        .where(
-          and(
-            eq(reviewSchedules.status, "scheduled"),
-            eq(reviewSchedules.reminderSent7d, false),
-            between(
-              reviewSchedules.scheduledDate,
-              sevenDayStart.toISOString(),
-              sevenDayEnd.toISOString(),
+      // The task spans every workspace (or a single one for the manual admin
+      // trigger, still narrowed by workspaceScope), so every review_schedules
+      // read/write runs under the RLS bypass - otherwise the restricted app
+      // role would see none of them. Each DB access is wrapped individually
+      // rather than the whole run() so the bypass transaction is never held
+      // across the email sends / rate-limit sleeps in sendReminders().
+      const sevenDayReviews = await withRlsBypass(() =>
+        db
+          .select()
+          .from(reviewSchedules)
+          .where(
+            and(
+              eq(reviewSchedules.status, "scheduled"),
+              eq(reviewSchedules.reminderSent7d, false),
+              between(
+                reviewSchedules.scheduledDate,
+                sevenDayStart.toISOString(),
+                sevenDayEnd.toISOString(),
+              ),
+              workspaceScope,
             ),
           ),
-        );
+      );
 
       for (const review of sevenDayReviews) {
         const sent = await sendReminders(review, 7, appUrl);
         emailsSent += sent;
         if (sent > 0) {
-          await db
-            .update(reviewSchedules)
-            .set({ reminderSent7d: true })
-            .where(eq(reviewSchedules.id, review.id));
+          await withRlsBypass(() =>
+            db
+              .update(reviewSchedules)
+              .set({ reminderSent7d: true })
+              .where(eq(reviewSchedules.id, review.id)),
+          );
         }
       }
 
@@ -62,29 +88,34 @@ export default defineTask({
       oneDayEnd.setDate(oneDayEnd.getDate() + 1);
       oneDayEnd.setHours(23, 59, 59, 999);
 
-      const oneDayReviews = await db
-        .select()
-        .from(reviewSchedules)
-        .where(
-          and(
-            eq(reviewSchedules.status, "scheduled"),
-            eq(reviewSchedules.reminderSent1d, false),
-            between(
-              reviewSchedules.scheduledDate,
-              oneDayStart.toISOString(),
-              oneDayEnd.toISOString(),
+      const oneDayReviews = await withRlsBypass(() =>
+        db
+          .select()
+          .from(reviewSchedules)
+          .where(
+            and(
+              eq(reviewSchedules.status, "scheduled"),
+              eq(reviewSchedules.reminderSent1d, false),
+              between(
+                reviewSchedules.scheduledDate,
+                oneDayStart.toISOString(),
+                oneDayEnd.toISOString(),
+              ),
+              workspaceScope,
             ),
           ),
-        );
+      );
 
       for (const review of oneDayReviews) {
         const sent = await sendReminders(review, 1, appUrl);
         emailsSent += sent;
         if (sent > 0) {
-          await db
-            .update(reviewSchedules)
-            .set({ reminderSent1d: true })
-            .where(eq(reviewSchedules.id, review.id));
+          await withRlsBypass(() =>
+            db
+              .update(reviewSchedules)
+              .set({ reminderSent1d: true })
+              .where(eq(reviewSchedules.id, review.id)),
+          );
         }
       }
 
@@ -136,6 +167,7 @@ async function sendReminders(
   // Always emit in-app notification for the reviewee
   await createNotification({
     userId: reviewee.id,
+    workspaceId: reviewee.workspaceId,
     type: "review_reminder",
     title: `Review with ${buddy.name} in ${daysUntil} day${daysUntil === 1 ? "" : "s"}`,
     body: reviewDate,
@@ -170,6 +202,7 @@ async function sendReminders(
 
   await createNotification({
     userId: buddy.id,
+    workspaceId: buddy.workspaceId,
     type: "review_reminder",
     title: `Review with ${reviewee.name} in ${daysUntil} day${daysUntil === 1 ? "" : "s"}`,
     body: reviewDate,

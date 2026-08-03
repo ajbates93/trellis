@@ -1,9 +1,11 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import { getCookie, deleteCookie } from "h3";
 import { db } from "#server/database/connection";
 import { slackWorkspaces } from "#server/database/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "#server/utils/auth";
 import { encrypt } from "#server/utils/encryption";
+import { requireUser } from "#server/utils/auth-guards";
+import { SLACK_INSTALL_NONCE_COOKIE } from "#server/utils/slack";
 
 /**
  * Handles Slack OAuth callback
@@ -70,6 +72,51 @@ export default defineEventHandler(async (event) => {
 
     const { workspaceId } = stateData;
 
+    // All session/binding checks happen BEFORE the code exchange (F6): a
+    // request that fails them must not consume the OAuth code or mint a token.
+
+    // The callback is a public route, so check the session by hand.
+    const user = requireUser(event);
+    if (user.role !== "admin" && !user.isSuperAdmin) {
+      throw createError({
+        statusCode: 403,
+        message: "Forbidden - Only admins can install Slack integration",
+      });
+    }
+
+    // Bind the install to the initiating session's workspace: the caller must
+    // belong to the workspace named in the state, otherwise a captured state
+    // completed by an admin of another workspace would bind the Slack team
+    // (and its bot token) to the attacker's workspace.
+    if (!user.workspaceId || user.workspaceId !== workspaceId) {
+      throw createError({
+        statusCode: 403,
+        message: "Slack install state does not belong to your workspace",
+      });
+    }
+
+    // Single-use nonce: the browser completing the callback must be the one
+    // that initiated the install (cookie set in install.get.ts), and the
+    // cookie is cleared here so a state value can never be replayed within
+    // its validity window.
+    const cookieNonce = getCookie(event, SLACK_INSTALL_NONCE_COOKIE);
+    const nonceBuffer = Buffer.from(stateData.nonce ?? "");
+    const cookieBuffer = Buffer.from(cookieNonce ?? "");
+    if (
+      !cookieNonce ||
+      nonceBuffer.length === 0 ||
+      nonceBuffer.length !== cookieBuffer.length ||
+      !timingSafeEqual(nonceBuffer, cookieBuffer)
+    ) {
+      throw createError({
+        statusCode: 403,
+        message: "Slack install was not initiated from this session",
+      });
+    }
+    deleteCookie(event, SLACK_INSTALL_NONCE_COOKIE, {
+      path: "/api/integrations/slack",
+    });
+
     // Exchange code for access token
     const redirectUri = `${config.public.baseUrl || config.betterAuthUrl}/api/integrations/slack/callback`;
 
@@ -103,40 +150,30 @@ export default defineEventHandler(async (event) => {
     const slackTeamName = tokenData.team.name;
     const botUserId = tokenData.bot_user_id;
 
-    // Get current user session (callback is public route, so we need to manually check)
-    const session = await auth.api.getSession({
-      headers: event.headers,
-    });
-
-    if (!session?.user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized - Please log in to install Slack integration",
-      });
-    }
-
-    const user = session.user as typeof session.user & {
-      role?: string | null;
-      isSuperAdmin?: boolean | null;
-    };
-
-    // Verify user is admin (only admins can install Slack integration)
-    if (user.role !== "admin" && !user.isSuperAdmin) {
-      throw createError({
-        statusCode: 403,
-        message: "Forbidden - Only admins can install Slack integration",
-      });
-    }
-
-    // Check if Slack workspace already exists
+    // Check if this Slack team is already linked somewhere
     const [existingSlackWorkspace] = await db
       .select()
       .from(slackWorkspaces)
       .where(eq(slackWorkspaces.slackTeamId, slackTeamId))
       .limit(1);
 
+    // Never silently re-bind a Slack team that another workspace owns (F6):
+    // the upsert keyed on slackTeamId would otherwise hijack the existing
+    // integration (and its /submit routing) onto the caller's workspace.
+    // Re-installing into the SAME workspace (token refresh, scope change)
+    // remains allowed.
+    if (existingSlackWorkspace && existingSlackWorkspace.workspaceId !== workspaceId) {
+      console.warn(
+        `Slack install refused: team ${slackTeamId} is already linked to another workspace`,
+      );
+      return sendRedirect(
+        event,
+        "/settings/integrations?error=slack_team_already_linked",
+      );
+    }
+
     if (existingSlackWorkspace) {
-      // Update existing record
+      // Update existing record (same workspace re-install)
       await db
         .update(slackWorkspaces)
         .set({
@@ -170,7 +207,7 @@ export default defineEventHandler(async (event) => {
     console.error("Slack OAuth callback error:", error);
     return sendRedirect(
       event,
-      `/settings/integrations?error=${encodeURIComponent(error.message || "slack_install_failed")}`
+      "/settings/integrations?error=slack_install_failed"
     );
   }
 });

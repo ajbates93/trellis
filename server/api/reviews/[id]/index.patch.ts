@@ -8,16 +8,11 @@ import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
 import { validateAnswers } from "#server/utils/reviewTemplates";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const reviewId = getRouterParam(event, "id");
 
@@ -70,9 +65,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // AUTHORIZATION CHECK
-    const isReviewee = existingReview.userId === session.user.id;
-    const isBuddy = existingReview.buddyId === session.user.id;
-    const isAdmin = session.user.role === "admin";
+    const isReviewee = existingReview.userId === user.id;
+    const isBuddy = existingReview.buddyId === user.id;
+    const isAdmin = user.role === "admin";
 
     // Must be either the reviewee, buddy, or admin
     if (!isReviewee && !isBuddy && !isAdmin) {
@@ -80,6 +75,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 403,
         message: "You do not have permission to edit this review",
       });
+    }
+
+    // An admin editing a review that isn't their own/their buddy's may only do
+    // so within their own workspace.
+    if (isAdmin && !isReviewee && !isBuddy) {
+      await assertSameWorkspace(event, existingReview.userId);
     }
 
     // Build update object with role-based field access
@@ -146,7 +147,7 @@ export default defineEventHandler(async (event) => {
     if (dateChanged) {
       try {
         const recipientId =
-          existingReview.userId === session.user.id
+          existingReview.userId === user.id
             ? existingReview.buddyId
             : existingReview.userId;
 
@@ -159,7 +160,7 @@ export default defineEventHandler(async (event) => {
         const [actor] = await db
           .select({ name: users.name, preferredName: users.preferredName })
           .from(users)
-          .where(eq(users.id, session.user.id))
+          .where(eq(users.id, user.id))
           .limit(1);
 
         if (existingReview && recipient && actor) {
@@ -174,7 +175,7 @@ export default defineEventHandler(async (event) => {
             title: `${actorName} rescheduled your review`,
             body: dateStr,
             link: `/reviews/${reviewId}`,
-            metadata: { reviewId, actorId: session.user.id },
+            metadata: { reviewId, actorId: user.id },
           });
 
           if (await shouldEmail(recipientId, "review_rescheduled")) {

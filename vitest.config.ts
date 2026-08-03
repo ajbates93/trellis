@@ -8,7 +8,13 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     setupFiles: ['./server/__tests__/setup.ts'],
-    exclude: ['node_modules/**', '.claude/worktrees/**'],
+    // Integration tests run against a real Postgres via a separate config
+    // (vitest.integration.config.ts); keep them out of the fast mocked suite.
+    exclude: [
+      'node_modules/**',
+      '.claude/worktrees/**',
+      '**/*.integration.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

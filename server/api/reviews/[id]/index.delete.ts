@@ -5,16 +5,11 @@ import { format } from "date-fns";
 import { createNotification } from "#server/utils/inAppNotifications";
 import { shouldEmail } from "#server/utils/emailPreferences";
 import { sendEmail, emailTemplates } from "#server/utils/email";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const reviewId = getRouterParam(event, "id");
 
@@ -41,8 +36,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // AUTHORIZATION CHECK: Only the buddy or admins can delete reviews
-    const isBuddy = existingReview.buddyId === session.user.id;
-    const isAdmin = session.user.role === "admin";
+    const isBuddy = existingReview.buddyId === user.id;
+    const isAdmin = user.role === "admin";
 
     if (!isBuddy && !isAdmin) {
       throw createError({
@@ -51,10 +46,16 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // An admin deleting someone else's review may only do so within their own
+    // workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, existingReview.userId);
+    }
+
     // Emit cancellation notification + email to the OTHER party
     try {
       const recipientId =
-        existingReview.userId === session.user.id
+        existingReview.userId === user.id
           ? existingReview.buddyId
           : existingReview.userId;
 
@@ -67,7 +68,7 @@ export default defineEventHandler(async (event) => {
       const [actor] = await db
         .select({ name: users.name, preferredName: users.preferredName })
         .from(users)
-        .where(eq(users.id, session.user.id))
+        .where(eq(users.id, user.id))
         .limit(1);
 
       if (recipient && actor) {
@@ -82,7 +83,7 @@ export default defineEventHandler(async (event) => {
           title: `${actorName} cancelled your review`,
           body: dateStr,
           link: "/reviews",
-          metadata: { reviewId, actorId: session.user.id },
+          metadata: { reviewId, actorId: user.id },
         });
 
         if (await shouldEmail(recipientId, "review_cancelled")) {

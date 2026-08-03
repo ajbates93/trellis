@@ -5,16 +5,11 @@ import { users, buddyCheckins, reviewSchedules } from "#server/database/schema";
 import { findNextReview } from "#server/utils/reviews";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
+import { assertSameWorkspace } from "#server/utils/workspace";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session || !session.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized",
-    });
-  }
+  const user = requireUser(event);
 
   const body = await validateBody(event, apiSchemas.CreateBuddyCheckinRequestSchema);
   const { userId, notes } = body;
@@ -31,14 +26,22 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const isBuddy = targetUser.buddyId === session.user.id;
-  const isAdmin = session.user.role === "admin";
+  const isBuddy = targetUser.buddyId === user.id;
+  const isAdmin = user.role === "admin";
 
   if (!isBuddy && !isAdmin) {
     throw createError({
       statusCode: 403,
       message: "You are not a buddy of this user",
     });
+  }
+
+  // An admin acting on a user who isn't their buddy may only do so within their
+  // own workspace, mirroring checkins/buddy.get.ts. Without this an admin could
+  // write a check-in onto - and read back the details of - a user in another
+  // tenant (F2).
+  if (isAdmin && !isBuddy) {
+    await assertSameWorkspace(event, userId);
   }
 
   // Find next upcoming review for auto-assignment
@@ -48,7 +51,7 @@ export default defineEventHandler(async (event) => {
   const [createdCheckin] = await db
     .insert(buddyCheckins)
     .values({
-      buddyId: session.user.id,
+      buddyId: user.id,
       userId,
       notes: notes.trim(),
       reviewScheduleId: nextReview?.id || null,

@@ -3,16 +3,10 @@ import { feedback, users } from "#server/database/schema";
 import { eq, and, inArray, desc } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const query = getQuery(event);
@@ -28,7 +22,7 @@ export default defineEventHandler(async (event) => {
         avatarUrl: users.avatarUrl,
       })
       .from(users)
-      .where(eq(users.buddyId, session.user.id));
+      .where(eq(users.buddyId, user.id));
 
     if (buddyAssignments.length === 0) {
       return { buddyAssignments: [] };

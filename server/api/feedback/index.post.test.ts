@@ -16,6 +16,13 @@ vi.mock('../../utils/validation', () => ({
 vi.mock('../../utils/notifications', () => ({
   notifyBuddyOfNewFeedback: vi.fn(),
 }))
+// Tenant scoping (assertSameWorkspace) is exercised for real against a database
+// in the integration tier (feedback/index.post.integration.test.ts); here it is
+// stubbed so these tests stay focused on the handler's own logic.
+vi.mock('../../utils/workspace', () => ({
+  assertSameWorkspace: vi.fn().mockResolvedValue(undefined),
+  getWorkspaceId: vi.fn().mockReturnValue('workspace-1'),
+}))
 
 // Import handler after mocks are set up
 const { default: handler } = await import('./index.post')

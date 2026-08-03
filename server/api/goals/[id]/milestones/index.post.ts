@@ -3,16 +3,10 @@ import { goals, goalMilestones } from "#server/database/schema";
 import { eq, max } from "drizzle-orm";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const goalId = getRouterParam(event, "id");
 
@@ -37,7 +31,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    if (goal.userId !== session.user.id) {
+    if (goal.userId !== user.id) {
       throw createError({
         statusCode: 403,
         message: "You can only add milestones to your own goals",

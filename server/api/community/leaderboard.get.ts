@@ -13,6 +13,7 @@ import {
   type WeekFeedback,
 } from "#server/utils/community-scoring";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 const VALID_PERIODS = ["4weeks", "12weeks", "alltime"] as const;
 type Period = (typeof VALID_PERIODS)[number];
@@ -30,10 +31,7 @@ function getPeriodCutoff(period: Period): Date | null {
 }
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
-  }
+  requireUser(event);
 
   const workspaceId = getWorkspaceId(event);
   const query = getQuery(event);

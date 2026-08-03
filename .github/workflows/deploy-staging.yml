@@ -27,3 +27,15 @@ jobs:
         run: npm run db:migrate
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        # Railway project tokens are environment-scoped, and all three
+        # environments share one service ID. The STAGING-scoped token is what
+        # routes this deploy to the staging environment - do NOT reuse the
+        # production RAILWAY_TOKEN here or a staging push deploys to production.
+        run: railway up --service ${{ vars.RAILWAY_STAGING_SERVICE_ID }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}

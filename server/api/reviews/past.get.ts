@@ -3,16 +3,11 @@ import { reviewSchedules, users, feedback, buddyCheckins } from "#server/databas
 import { eq, and, or, sql, lt, gte } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   try {
     const query = getQuery(event);
@@ -34,15 +29,21 @@ export default defineEventHandler(async (event) => {
         });
       }
 
-      const isOwnReviews = forUserId === session.user.id;
-      const isBuddy = targetUser.buddyId === session.user.id;
-      const isAdmin = session.user.role === 'admin';
+      const isOwnReviews = forUserId === user.id;
+      const isBuddy = targetUser.buddyId === user.id;
+      const isAdmin = user.role === 'admin';
 
       if (!isOwnReviews && !isBuddy && !isAdmin) {
         throw createError({
           statusCode: 403,
           message: "You do not have permission to view these reviews",
         });
+      }
+
+      // An admin viewing a user who isn't their buddy may only do so within
+      // their own workspace.
+      if (isAdmin && !isOwnReviews && !isBuddy) {
+        await assertSameWorkspace(event, forUserId);
       }
     }
 
@@ -84,7 +85,7 @@ export default defineEventHandler(async (event) => {
         and(
           forUserId
             ? eq(reviewSchedules.userId, forUserId)
-            : eq(reviewSchedules.userId, session.user.id),
+            : eq(reviewSchedules.userId, user.id),
           eq(reviewSchedules.status, 'completed')
         )
       )

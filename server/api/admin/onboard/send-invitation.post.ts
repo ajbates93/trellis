@@ -1,27 +1,17 @@
 import { db } from "#server/database/connection";
-import { users, verifications } from "#server/database/schema";
+import { users } from "#server/database/schema";
 import { eq, and } from "drizzle-orm";
-import { auth } from "#server/utils/auth";
-import { sendEmail, emailTemplates } from "#server/utils/email";
+import { requireUser } from "#server/utils/auth-guards";
+import { getWorkspaceId } from "#server/utils/workspace";
+import { sendUserInvitation } from "#server/utils/invitations";
 
 export default defineEventHandler(async (event) => {
   try {
     // Verify admin session
-    const session = await auth.api.getSession({ headers: event.headers });
-
-    if (!session?.user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
+    const authUser = requireUser(event);
 
     // Check if user is admin (workspace admin or super admin)
-    const sessionUser = session.user as typeof session.user & {
-      role?: string | null;
-      isSuperAdmin?: boolean | null;
-    };
-    const isAdmin = sessionUser.role === "admin" || sessionUser.isSuperAdmin === true;
+    const isAdmin = authUser.role === "admin" || authUser.isSuperAdmin === true;
     if (!isAdmin) {
       throw createError({
         statusCode: 403,
@@ -40,7 +30,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Find the pre-created user
+    // Find the pre-created user, scoped to the caller's workspace. Without the
+    // workspace predicate an admin could invite (and, via the response, confirm
+    // the email of) any pre-created user in any other tenant (F11).
+    const workspaceId = getWorkspaceId(event);
     const [user] = await db
       .select()
       .from(users)
@@ -48,6 +41,7 @@ export default defineEventHandler(async (event) => {
         and(
           eq(users.id, userId),
           eq(users.emailVerified, false), // Must be pre-created
+          eq(users.workspaceId, workspaceId),
         ),
       )
       .limit(1);
@@ -59,30 +53,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Generate verification token
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Store verification token in Better Auth's verification table
-    await db.insert(verifications).values({
-      id: crypto.randomUUID(),
-      identifier: user.email,
-      value: token,
-      expiresAt,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    // Build set password URL
-    const baseUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-    const setPasswordUrl = `${baseUrl}/set-password?token=${token}&email=${encodeURIComponent(user.email)}`;
-
-    // Send invitation email
-    await sendEmail({
-      to: user.email,
-      subject: "Welcome to Trellis - Set Your Password",
-      html: emailTemplates.invitation(user.name, setPasswordUrl),
-    });
+    await sendUserInvitation(user);
 
     console.log(`📧 Invitation email sent to ${user.email}`);
 
@@ -92,9 +63,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     console.error("Send invitation error:", error);
+    if (error?.statusCode) throw error;
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Failed to send invitation",
+      statusCode: 500,
+      message: "Failed to send invitation",
     });
   }
 });

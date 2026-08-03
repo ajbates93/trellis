@@ -4,12 +4,10 @@ import { validateBody } from "#server/utils/validation";
 import { getWorkspaceId } from "#server/utils/workspace";
 import { CreateReviewTemplateRequestSchema } from "#server/schemas/reviewTemplates";
 import { buildSnapshot } from "#server/utils/reviewTemplates";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: "Unauthorized - Please log in" });
-  }
+  const user = requireUser(event);
   const workspaceId = getWorkspaceId(event);
 
   const body = await validateBody(event, CreateReviewTemplateRequestSchema);
@@ -29,7 +27,7 @@ export default defineEventHandler(async (event) => {
       description: body.description ?? null,
       isDefault: false,
       fields,
-      createdBy: session.user.id,
+      createdBy: user.id,
     })
     .returning();
 

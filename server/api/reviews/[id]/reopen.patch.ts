@@ -3,16 +3,11 @@ import { reviewSchedules } from "#server/database/schema";
 import { eq } from "drizzle-orm";
 import { validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { assertSameWorkspace } from "#server/utils/workspace";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: "Unauthorized - Please log in",
-    });
-  }
+  const user = requireUser(event);
 
   const reviewId = getRouterParam(event, "id");
 
@@ -39,14 +34,20 @@ export default defineEventHandler(async (event) => {
     }
 
     // AUTHORIZATION CHECK: Only buddy or admin can re-open the review
-    const isBuddy = review.buddyId === session.user.id;
-    const isAdmin = session.user.role === 'admin';
+    const isBuddy = review.buddyId === user.id;
+    const isAdmin = user.role === 'admin';
 
     if (!isBuddy && !isAdmin) {
       throw createError({
         statusCode: 403,
         message: "Only the buddy or admin can re-open this review",
       });
+    }
+
+    // An admin re-opening someone else's review may only do so within their
+    // own workspace.
+    if (isAdmin && !isBuddy) {
+      await assertSameWorkspace(event, review.userId);
     }
 
     // Validate: review must be completed

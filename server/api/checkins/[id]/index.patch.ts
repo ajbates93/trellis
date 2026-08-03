@@ -4,16 +4,10 @@ import { db } from "#server/database/connection";
 import { buddyCheckins, users } from "#server/database/schema";
 import { validateBody, validateResponse } from "#server/utils/validation";
 import { apiSchemas } from "#server/schemas";
+import { requireUser } from "#server/utils/auth-guards";
 
 export default defineEventHandler(async (event) => {
-  const session = event.context.session;
-
-  if (!session || !session.user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized",
-    });
-  }
+  const user = requireUser(event);
 
   const id = getRouterParam(event, "id");
   if (!id) {
@@ -48,7 +42,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Verify the user is the buddy who created this check-in
-    if (checkin.buddyId !== session.user.id) {
+    if (checkin.buddyId !== user.id) {
       throw createError({
         statusCode: 403,
         statusMessage: "You can only edit your own check-ins",
