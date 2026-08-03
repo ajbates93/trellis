@@ -584,3 +584,13 @@ export const demoRequests = pgTable("demo_requests", {
   status: text("status").notNull().default("new"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Shared rate-limit counters (F5). Postgres-backed so limits survive restarts
+// and hold across replicas. Not tenant data: no workspace_id and no RLS policy;
+// rows are keyed by limiter scope (ip:..., user:..., auth-fail:...) and expire
+// via reset_at.
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+});
