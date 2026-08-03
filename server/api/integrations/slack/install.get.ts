@@ -1,5 +1,7 @@
 import { randomBytes, createHmac } from "crypto";
+import { setCookie } from "h3";
 import { getWorkspaceId } from "#server/utils/workspace";
+import { SLACK_INSTALL_NONCE_COOKIE } from "#server/utils/slack";
 
 /**
  * Initiates Slack OAuth install flow
@@ -51,8 +53,16 @@ export default defineEventHandler(async (event) => {
     slackOAuthUrl.searchParams.set("state", state);
     slackOAuthUrl.searchParams.set("redirect_uri", redirectUri);
 
-    // Store state in session for verification (optional additional security)
-    // This requires session storage implementation
+    // Bind the install to this browser session (F6): the callback requires
+    // this cookie to match the state's nonce and clears it (single-use), so a
+    // captured state cannot be completed by a victim admin's session.
+    setCookie(event, SLACK_INSTALL_NONCE_COOKIE, nonce, {
+      httpOnly: true,
+      secure: redirectUri.startsWith("https://"),
+      sameSite: "lax",
+      path: "/api/integrations/slack",
+      maxAge: 600,
+    });
 
     // Redirect to Slack OAuth
     return sendRedirect(event, slackOAuthUrl.toString());

@@ -359,3 +359,11 @@ export function extractFeedbackText(text: string): string | null {
 
   return cleanText.length > 0 ? cleanText : null;
 }
+
+/**
+ * Cookie carrying the Slack install nonce (F6). Set when an admin starts the
+ * OAuth install, required to match the state's nonce at the callback and
+ * cleared there (single-use), so a captured state value cannot be completed
+ * from any session other than the one that initiated the install.
+ */
+export const SLACK_INSTALL_NONCE_COOKIE = "slack_install_nonce";

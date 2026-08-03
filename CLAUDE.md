@@ -272,7 +272,7 @@ jane.smith@company.com,Jane Smith,management,
 - SQL injection prevention via parameterized queries
 - XSS protection via content sanitization
 - CSRF protection via Better-auth
-- Rate limiting (`server/middleware/rate-limit.ts`) covers the sensitive unauthenticated endpoints - sign-in, set/reset/forget password, Slack interactions, and the demo-request form. It does **not** currently throttle `POST /api/feedback`. (Hardening of the limiter itself is tracked as F5.)
+- Rate limiting (`server/middleware/rate-limit.ts`, hardened per audit F5) covers sign-in, set/reset/forget password, Slack interactions, the demo-request form, and `POST /api/feedback`. Counters live in the Postgres `rate_limits` table (shared across replicas, survive restarts; see `server/utils/rate-limit-store.ts`); the client IP is derived from the trusted-proxy hop count (`TRUST_PROXY_HOPS`, default 1 for Railway - see `server/utils/client-ip.ts`), never raw `X-Forwarded-For`; paths are normalised before matching; and email sign-in has a per-account failure counter with exponential backoff.
 - Input validation on all user-submitted content
 - OAuth user records automatically deleted if no matching invitation found
 

@@ -81,6 +81,25 @@ describe('GET /api/integrations/slack/install', () => {
     expect(stateDecoded.timestamp).toBeTypeOf('number')
   })
 
+  it('sets a single-use HttpOnly nonce cookie matching the state nonce (F6)', async () => {
+    const event = createAdminEvent()
+
+    await handler(event)
+
+    const redirectUrl: string = mockSendRedirect.mock.calls[0]?.[1]
+    const parsed = new URL(redirectUrl)
+    const stateEncoded = parsed.searchParams.get('state')!
+    const payload = stateEncoded.split('.')[0]!
+    const stateDecoded = JSON.parse(Buffer.from(payload, 'base64').toString())
+
+    const setCookieHeader = String(event.node.res.getHeader('set-cookie'))
+    expect(setCookieHeader).toContain(`slack_install_nonce=${stateDecoded.nonce}`)
+    expect(setCookieHeader).toContain('HttpOnly')
+    expect(setCookieHeader).toContain('Path=/api/integrations/slack')
+    expect(setCookieHeader).toContain('Max-Age=600')
+    expect(setCookieHeader).toContain('SameSite=Lax')
+  })
+
   it('redirects for superAdmin user', async () => {
     const event = createAuthenticatedEvent({
       session: {

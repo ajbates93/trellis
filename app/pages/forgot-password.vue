@@ -57,7 +57,7 @@ const handleForgotPassword = async () => {
   loading.value = true;
 
   try {
-    await authClient.forgetPassword({
+    await authClient.requestPasswordReset({
       email: email.value,
       redirectTo: "/reset-password",
     });
