@@ -51,6 +51,27 @@ jobs:
           BETTER_AUTH_URL: http://localhost:3000
           ANTHROPIC_API_KEY: mock-anthropic-key
 
+  dependency-audit:
+    name: Dependency Audit (production deps)
+    runs-on: ubuntu-latest
+
+    # F7 audit gate: fail the build on critical/high advisories in production
+    # dependencies, so known-vulnerable packages cannot silently regress into
+    # the deployed image. Dev-only advisories (vitest, build tooling) do not
+    # block; they surface via routine npm audit runs instead.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
   migration-drift:
     name: Migration Drift Check
     runs-on: ubuntu-latest

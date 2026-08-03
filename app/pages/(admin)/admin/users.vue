@@ -309,9 +309,10 @@ const handleSendPasswordReset = async (user: User) => {
   const toast = useToast();
 
   try {
-    // Use Better Auth's forget password endpoint
+    // Use Better Auth's password reset endpoint (renamed from forgetPassword
+    // in better-auth 1.6)
     const { authClient } = useAuth();
-    await authClient.forgetPassword({
+    await authClient.requestPasswordReset({
       email: user.email,
       redirectTo: "/reset-password",
     });

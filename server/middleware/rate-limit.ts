@@ -37,7 +37,10 @@ const rules: RateLimitRule[] = [
       "/api/auth/sign-in",
       "/api/auth/set-password",
       "/api/auth/reset-password",
+      // better-auth 1.6 renamed forget-password to request-password-reset;
+      // keep both so the limiter covers the live route either way.
       "/api/auth/forget-password",
+      "/api/auth/request-password-reset",
     ],
     // POST only: these are all POST endpoints, and without the restriction a
     // stray GET (prefetch, probe) from the same IP eats the sign-in budget.

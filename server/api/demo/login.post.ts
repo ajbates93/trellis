@@ -13,7 +13,9 @@ export default defineEventHandler(async (event) => {
 
   // Sign in server-side and forward the Set-Cookie header(s) to the client,
   // so prospects enter the demo with one click (no Google OAuth).
-  let response: Awaited<ReturnType<typeof auth.api.signInEmail<true>>>;
+  // asResponse: true returns a web Response (the generic ReturnType shortcut
+  // this used stopped type-checking under better-auth 1.6).
+  let response: Response;
   try {
     response = await auth.api.signInEmail({
       body: { email, password },
