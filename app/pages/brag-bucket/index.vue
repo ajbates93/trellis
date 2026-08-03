@@ -14,7 +14,7 @@
 
         <!-- Stats Banner -->
         <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UCard class="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20">
+          <UCard class="bg-teal-100 dark:bg-teal-900/20 ring-teal-300 dark:ring-teal-700/30">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -28,7 +28,7 @@
             </div>
           </UCard>
 
-          <UCard class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+          <UCard class="bg-blue-100 dark:bg-blue-900/20 ring-blue-300 dark:ring-blue-700/30">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">

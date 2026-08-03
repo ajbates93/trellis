@@ -185,7 +185,7 @@ watch(isOpen, (newVal, oldVal) => {
             <span v-if="goalText.length < 10" class="text-red-500">
               Minimum 10 characters
             </span>
-            <span v-else class="text-green-500"> ✓ Valid </span>
+            <span v-else class="text-success"> ✓ Valid </span>
             <span :class="{ 'text-red-500': charCount > 500 }">
               {{ charCount }}/500
             </span>

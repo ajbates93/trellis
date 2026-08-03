@@ -341,12 +341,8 @@ const tipsAccordionItems: AccordionItem[] = [
           <!-- Selected User Card -->
           <div v-if="selectedUserObject && !suggestionsExhausted">
             <div
-              class="relative overflow-hidden rounded-xl border border-primary-500/40 dark:border-primary-500/15 bg-gradient-to-br from-primary-500/[0.20] via-teal-500/[0.10] to-primary-500/[0.06] dark:from-primary-500/[0.12] dark:via-teal-500/[0.06] dark:to-transparent shadow-sm shadow-primary-900/5 dark:shadow-none"
+              class="relative overflow-hidden rounded-xl border border-teal-300 dark:border-teal-700/30 bg-teal-100 dark:bg-teal-900/20"
             >
-              <div
-                class="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/8 dark:bg-primary-500/5 rounded-full blur-3xl"
-              />
-
               <div class="relative p-5 sm:p-6">
                 <div class="flex items-center gap-4">
                   <UAvatar
@@ -563,18 +559,18 @@ const tipsAccordionItems: AccordionItem[] = [
                 <!-- Question Prompt -->
                 <div
                   v-if="currentPrompt"
-                  class="flex items-start gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/15 border border-primary-200 dark:border-primary-700/30 px-4 py-3"
+                  class="flex items-start gap-3 rounded-lg bg-teal-100 dark:bg-teal-900/20 border border-teal-300 dark:border-teal-700/30 px-4 py-3"
                 >
                   <UIcon
                     name="i-heroicons-light-bulb"
-                    class="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5"
+                    class="w-5 h-5 text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5"
                   />
                   <div class="flex-1 min-w-0">
                     <p
                       class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
                     >
                       <span
-                        class="font-medium text-primary-600 dark:text-primary-400"
+                        class="font-medium text-teal-600 dark:text-teal-400"
                         >Need inspiration?</span
                       >
                       {{ currentPrompt.question }}
@@ -582,7 +578,7 @@ const tipsAccordionItems: AccordionItem[] = [
                   </div>
                   <button
                     type="button"
-                    class="flex-shrink-0 text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                    class="flex-shrink-0 text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors"
                     :disabled="isRefreshingPrompt"
                     @click="randomizePrompt"
                   >

@@ -56,8 +56,8 @@ const isItemOrChildActive = (item: NavItem): boolean => {
         class="flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
         :class="[
           dashboardLink.active
-            ? 'bg-primary/10 text-primary-600 dark:text-primary-400'
-            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+            ? 'bg-white/10 text-emerald-300'
+            : 'text-emerald-50/70 hover:bg-white/5 hover:text-emerald-100',
         ]"
         :title="collapsed ? dashboardLink.label : undefined"
       >
@@ -82,7 +82,7 @@ const isItemOrChildActive = (item: NavItem): boolean => {
       <!-- Section Header (only show if user has buddies) -->
       <div
         v-if="hasBuddies"
-        class="px-4 py-2 mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+        class="px-4 py-2 mt-2 text-xs font-semibold text-emerald-200/45 uppercase tracking-wider"
       >
         <span v-if="!collapsed">Personal</span>
       </div>
@@ -98,8 +98,8 @@ const isItemOrChildActive = (item: NavItem): boolean => {
             class="flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
             :class="[
               item.active
-                ? 'bg-primary/10 text-primary-600 dark:text-primary-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+                ? 'bg-white/10 text-emerald-300'
+                : 'text-emerald-50/70 hover:bg-white/5 hover:text-emerald-100',
             ]"
             :title="collapsed ? item.label : undefined"
           >
@@ -126,7 +126,7 @@ const isItemOrChildActive = (item: NavItem): boolean => {
     <div v-if="hasBuddies" class="space-y-1 mt-6">
       <!-- Section Header -->
       <div
-        class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+        class="px-4 py-2 text-xs font-semibold text-emerald-200/45 uppercase tracking-wider"
       >
         <span v-if="!collapsed">Buddy</span>
       </div>
@@ -140,8 +140,8 @@ const isItemOrChildActive = (item: NavItem): boolean => {
           class="flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
           :class="[
             item.active
-              ? 'bg-primary/10 text-primary-600 dark:text-primary-400'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+              ? 'bg-white/10 text-emerald-300'
+              : 'text-emerald-50/70 hover:bg-white/5 hover:text-emerald-100',
           ]"
           :title="collapsed ? item.label : undefined"
         >
@@ -167,7 +167,7 @@ const isItemOrChildActive = (item: NavItem): boolean => {
     <div class="flex-1" />
 
     <!-- Settings and Admin Section -->
-    <div class="space-y-1 border-t border-gray-200 dark:border-gray-800 pt-4">
+    <div class="space-y-1 border-t border-white/10 pt-4">
       <div class="space-y-1">
         <template v-for="item in settingsAndAdminLinks" :key="item.label">
           <!-- Items with children (collapsible) -->
@@ -177,8 +177,8 @@ const isItemOrChildActive = (item: NavItem): boolean => {
               class="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
               :class="[
                 isItemOrChildActive(item)
-                  ? 'bg-primary/10 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+                  ? 'bg-white/10 text-emerald-300'
+                  : 'text-emerald-50/70 hover:bg-white/5 hover:text-emerald-100',
               ]"
               :title="collapsed ? item.label : undefined"
               @click="toggleExpanded(item.label)"
@@ -225,8 +225,8 @@ const isItemOrChildActive = (item: NavItem): boolean => {
                   class="flex items-center gap-3 px-4 py-1 rounded-lg text-sm transition-colors duration-200 ml-4"
                   :class="[
                     child.active
-                      ? 'bg-primary/10 text-primary-600 dark:text-primary-400 font-medium'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+                      ? 'bg-white/10 text-emerald-300 font-medium'
+                      : 'text-emerald-50/60 hover:bg-white/5 hover:text-emerald-100',
                   ]"
                   :title="collapsed ? child.label : undefined"
                 >
@@ -243,8 +243,8 @@ const isItemOrChildActive = (item: NavItem): boolean => {
             class="flex items-center gap-3 px-4 py-1.5 rounded-lg transition-colors duration-200"
             :class="[
               item.active
-                ? 'bg-primary/10 text-primary-600 dark:text-primary-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+                ? 'bg-white/10 text-emerald-300'
+                : 'text-emerald-50/70 hover:bg-white/5 hover:text-emerald-100',
             ]"
             :title="collapsed ? item.label : undefined"
           >
