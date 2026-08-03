@@ -39,6 +39,9 @@ const rules: RateLimitRule[] = [
       "/api/auth/reset-password",
       "/api/auth/forget-password",
     ],
+    // POST only: these are all POST endpoints, and without the restriction a
+    // stray GET (prefetch, probe) from the same IP eats the sign-in budget.
+    methods: ["POST"],
     maxAttempts: 5,
     windowMinutes: 15,
     errorMessage: (remainingTime) =>
@@ -174,10 +177,13 @@ export default defineEventHandler(async (event) => {
     // Record the attempt outcome once the response is written. Registered only
     // for attempts that were allowed through, so rejected (429) requests do not
     // extend a lockout the legitimate account owner is waiting out.
+    // Only credential-shaped rejections (401/403) count as failures: a 400
+    // (malformed body) is not an attempt on the account, and 5xx during an
+    // incident must not lock users out for retrying once service recovers.
     event.node.res.on("finish", () => {
       const status = event.node.res.statusCode;
       const outcome =
-        status >= 400
+        status === 401 || status === 403
           ? recordAuthFailure(email)
           : status < 300
             ? clearAuthFailures(email)

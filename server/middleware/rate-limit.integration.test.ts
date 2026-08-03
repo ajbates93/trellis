@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
+import { IncomingMessage, ServerResponse } from "node:http";
+import { Socket } from "node:net";
+import { createEvent } from "h3";
 import handler from "./rate-limit";
-import { createIntegrationEvent } from "#server/__tests__/integration/helpers/harness";
+import authHandler from "../api/auth/[...all]";
+import { createIntegrationEvent, seedWorkspace, seedUser } from "#server/__tests__/integration/helpers/harness";
 import {
   getAuthLockoutMs,
   recordAuthFailure,
@@ -127,6 +131,47 @@ describe("rate-limit middleware (integration, real store)", () => {
     }
 
     expect(await getAuthLockoutMs("target@example.com")).toBeGreaterThan(0);
+  });
+
+  it("leaves the request body readable by the real better-auth handler after the middleware peeks at it", async () => {
+    // Real node stream (not the harness's cached-body shortcut): readBody in
+    // the middleware consumes the socket stream and caches the raw body;
+    // better-auth then reads the same request via toWebRequest. If h3 failed
+    // to replay the cached body, better-auth's validation would 400 on an
+    // empty body - a credential rejection (401) proves the body arrived.
+    await seedWorkspace({ id: "ws-auth" });
+    await seedUser({
+      id: "auth-user",
+      email: "streams@example.com",
+      workspaceId: "ws-auth",
+      emailVerified: true,
+    });
+
+    const body = JSON.stringify({
+      email: "streams@example.com",
+      password: "definitely-wrong-password",
+    });
+    const socket = new Socket();
+    const req = new IncomingMessage(socket);
+    req.method = "POST";
+    req.url = "/api/auth/sign-in/email";
+    req.headers = {
+      host: "localhost:3000",
+      origin: "http://localhost:3000",
+      "content-type": "application/json",
+      "content-length": String(Buffer.byteLength(body)),
+      "x-forwarded-for": "10.9.9.9",
+    };
+    req.push(body);
+    req.push(null);
+    const event = createEvent(req, new ServerResponse(req));
+
+    await expect(handler(event)).resolves.toBeUndefined();
+
+    const response = (await authHandler(event)) as Response;
+    // 401 = better-auth parsed the credentials and rejected them; a lost body
+    // would surface as a 400 validation error instead.
+    expect(response.status).toBe(401);
   });
 
   it("clears the streak on a successful sign-in", async () => {

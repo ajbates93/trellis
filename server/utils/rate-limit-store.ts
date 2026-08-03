@@ -84,6 +84,12 @@ function lockKey(identifier: string): string {
  * Record a failed authentication attempt for `identifier`. Past the free
  * threshold each additional failure extends the lockout exponentially
  * (1 min, 2 min, 4 min, ... capped at 1 hour).
+ *
+ * Deliberate tradeoff: anyone who knows an email can lock its owner out for
+ * up to an hour by sending wrong passwords. Support signal: "too many failed
+ * attempts but I haven't tried" may mean the account is being targeted. If it
+ * becomes a problem in practice, refine to require failures from a shared IP
+ * prefix, or a CAPTCHA step instead of a hard lock.
  */
 export async function recordAuthFailure(identifier: string): Promise<void> {
   const { count } = await hitRateLimit(failureKey(identifier), AUTH_FAILURE_DECAY_MS);

@@ -154,6 +154,27 @@ describe("rate-limit middleware", () => {
     expect(clearAuthFailures).not.toHaveBeenCalled();
   });
 
+  it("does not count a 5xx sign-in response as an auth failure", async () => {
+    mockHit.mockResolvedValue({ count: 1, resetAt: new Date(Date.now() + 60000) });
+    const { event, res } = makeEvent({
+      path: "/api/auth/sign-in/email",
+      method: "POST",
+      body: { email: "victim@example.com", password: "x" },
+    });
+    await handler(event);
+    res.statusCode = 500;
+    res.emit("finish");
+    await new Promise((r) => setTimeout(r, 0));
+    expect(recordAuthFailure).not.toHaveBeenCalled();
+    expect(clearAuthFailures).not.toHaveBeenCalled();
+  });
+
+  it("does not consume the sign-in bucket on GET requests to auth paths", async () => {
+    const { event } = makeEvent({ path: "/api/auth/sign-in", method: "GET" });
+    await handler(event);
+    expect(mockHit).not.toHaveBeenCalled();
+  });
+
   it("clears the failure streak when sign-in succeeds", async () => {
     mockHit.mockResolvedValue({ count: 1, resetAt: new Date(Date.now() + 60000) });
     const { event, res } = makeEvent({
