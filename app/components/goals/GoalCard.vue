@@ -190,7 +190,7 @@ const actionMenuItems = computed(() => {
 
 <template>
   <UCard
-    class="hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/30"
+    class="hover:shadow-lg transition-all duration-200 hover:ring-primary/30"
   >
     <div class="space-y-4">
       <!-- Goal Header with Progress Ring -->
@@ -223,7 +223,7 @@ const actionMenuItems = computed(() => {
               :stroke-dasharray="150.8"
               :stroke-dashoffset="150.8 - (150.8 * milestoneProgress) / 100"
               stroke-linecap="round"
-              :class="milestoneProgress === 100 ? 'text-green-500' : 'text-primary'"
+              :class="milestoneProgress === 100 ? 'text-success' : 'text-primary'"
               class="transition-all duration-500"
             />
           </svg>
@@ -281,7 +281,7 @@ const actionMenuItems = computed(() => {
                 'text-red-500': dateUrgency.color === 'error',
                 'text-amber-500': dateUrgency.color === 'warning',
                 'text-primary': dateUrgency.color === 'primary',
-                'text-green-500': dateUrgency.color === 'success',
+                'text-success': dateUrgency.color === 'success',
               }"
             >
               {{ dateUrgency.label }}
@@ -336,8 +336,8 @@ const actionMenuItems = computed(() => {
 
         <!-- Completed Goal: Show completion state -->
         <div v-else-if="goal.status === 'completed'" class="flex items-center gap-2">
-          <UIcon name="i-heroicons-check-badge" class="w-5 h-5 text-green-500" />
-          <span class="text-sm text-green-600 dark:text-green-400 font-medium">Completed</span>
+          <UIcon name="i-heroicons-check-badge" class="w-5 h-5 text-success" />
+          <span class="text-sm text-success font-medium">Completed</span>
         </div>
 
         <!-- Archived Goal: Muted state -->
@@ -415,7 +415,7 @@ const actionMenuItems = computed(() => {
                     :stroke-dasharray="125.6"
                     :stroke-dashoffset="125.6 - (125.6 * milestoneProgress) / 100"
                     stroke-linecap="round"
-                    :class="milestoneProgress === 100 ? 'text-green-500' : 'text-primary'"
+                    :class="milestoneProgress === 100 ? 'text-success' : 'text-primary'"
                   />
                 </svg>
                 <div class="absolute inset-0 flex items-center justify-center">
@@ -447,7 +447,7 @@ const actionMenuItems = computed(() => {
                 'text-red-500': dateUrgency.color === 'error',
                 'text-amber-500': dateUrgency.color === 'warning',
                 'text-primary': dateUrgency.color === 'primary',
-                'text-green-500': dateUrgency.color === 'success',
+                'text-success': dateUrgency.color === 'success',
               }"
             />
             <div>
@@ -486,13 +486,13 @@ const actionMenuItems = computed(() => {
                 :key="milestone.id"
                 class="flex items-center gap-3 p-3 rounded-lg transition-colors"
                 :class="milestone.isCompleted
-                  ? 'bg-green-50 dark:bg-green-900/20'
+                  ? 'bg-primary-50 dark:bg-primary-900/20'
                   : 'bg-gray-50 dark:bg-gray-800'"
               >
                 <UIcon
                   v-if="milestone.isCompleted"
                   name="i-heroicons-check-circle-solid"
-                  class="w-6 h-6 flex-shrink-0 text-green-500"
+                  class="w-6 h-6 flex-shrink-0 text-success"
                 />
                 <div
                   v-else

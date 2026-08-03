@@ -34,7 +34,7 @@ const getAvatarUrl = (buddy: Buddy) => {
 <template>
   <NuxtLink :to="`/buddies/${buddy.id}`">
     <UCard
-      class="hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/30 cursor-pointer h-full"
+      class="hover:shadow-lg transition-all duration-200 hover:ring-primary/30 cursor-pointer h-full"
     >
       <div class="space-y-4">
         <!-- Header with Avatar and Name -->

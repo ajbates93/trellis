@@ -139,7 +139,7 @@ const completedCount = computed(
           <div
             v-if="!milestone.isCompleted"
             :class="[
-              'w-5 h-5 rounded-full border-2 border-gray-400 hover:border-green-500 transition-colors',
+              'w-5 h-5 rounded-full border-2 border-gray-400 hover:border-success transition-colors',
               updatingIds.has(milestone.id) ? 'opacity-50' : '',
             ]"
           />
@@ -147,7 +147,7 @@ const completedCount = computed(
             v-else
             name="i-heroicons-check-circle-solid"
             :class="[
-              'w-5 h-5 text-green-500 transition-colors',
+              'w-5 h-5 text-success transition-colors',
               updatingIds.has(milestone.id) ? 'opacity-50' : '',
             ]"
           />
@@ -158,7 +158,7 @@ const completedCount = computed(
           <UIcon
             v-if="milestone.isCompleted"
             name="i-heroicons-check-circle-solid"
-            class="w-5 h-5 text-green-500"
+            class="w-5 h-5 text-success"
           />
           <div
             v-else

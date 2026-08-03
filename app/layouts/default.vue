@@ -226,17 +226,17 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
   <div class="relative">
     <!-- Mobile header bar (hidden on desktop via CSS) -->
     <header
-      class="fixed top-0 left-0 right-0 z-30 h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 lg:hidden"
+      class="fixed top-0 left-0 right-0 z-30 h-14 bg-emerald-950 border-b border-white/10 flex items-center justify-between px-4 lg:hidden"
       :class="{ 'top-12': isImpersonating }"
     >
       <button
         aria-label="Open navigation menu"
         :aria-expanded="mobileNavOpen"
         aria-controls="mobile-navigation"
-        class="p-2 -ml-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center"
+        class="p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors flex items-center"
         @click="toggleMobileNav"
       >
-        <UIcon name="i-heroicons-bars-3" class="w-6 h-6 text-gray-300" />
+        <UIcon name="i-heroicons-bars-3" class="w-6 h-6 text-emerald-50/80" />
       </button>
 
       <!-- App logo/name -->
@@ -253,9 +253,9 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       <NuxtLink
         to="/notifications"
         aria-label="Notifications"
-        class="relative p-2 -mr-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center"
+        class="relative p-2 -mr-2 rounded-lg hover:bg-white/10 transition-colors flex items-center"
       >
-        <UIcon name="i-heroicons-bell" class="w-6 h-6 text-gray-300" />
+        <UIcon name="i-heroicons-bell" class="w-6 h-6 text-emerald-50/80" />
         <span
           v-if="notificationsUnread > 0"
           class="absolute top-1 right-1 min-w-[1rem] h-4 px-1 rounded-full bg-primary-500 text-[10px] font-semibold text-gray-900 flex items-center justify-center"
@@ -306,11 +306,11 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       }"
     >
       <UDashboardSidebar
-        class="hidden lg:flex bg-default"
+        class="hidden lg:flex bg-emerald-950"
         collapsible
         resizable
         :ui="{
-          footer: 'lg:border-t lg:border-gray-200 dark:lg:border-gray-800',
+          footer: 'lg:border-t lg:border-white/10',
         }"
       >
         <!-- Logo and branding -->
@@ -325,12 +325,18 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
               <TrellisLogo :size="32" />
               <span
                 v-if="!collapsed"
-                class="text-lg font-bold"
+                class="text-lg font-bold text-white"
                 style="font-family: &quot;Plus Jakarta Sans&quot;, sans-serif"
                 >Trellis</span
               >
             </NuxtLink>
-            <UColorModeSwitch v-if="!collapsed" />
+            <UColorModeSwitch
+              v-if="!collapsed"
+              :ui="{
+                base: 'data-[state=unchecked]:bg-emerald-800',
+                thumb: 'data-[state=unchecked]:bg-emerald-200',
+              }"
+            />
           </div>
         </template>
 
@@ -357,8 +363,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 :ui="{ content: 'p-0 bg-gray-100 dark:bg-gray-800 border border-default rounded-lg ring-1 ring-black/10 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5),0_8px_20px_-6px_rgba(0,0,0,0.4)]' }"
               >
                 <button
-                  class="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg text-gray-700 dark:text-gray-300 transition-colors duration-200"
-                  :class="notificationsOpen ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'"
+                  class="w-full flex items-center gap-3 px-4 py-1.5 rounded-lg text-emerald-50/70 transition-colors duration-200"
+                  :class="notificationsOpen ? 'bg-white/10 text-emerald-100' : 'hover:bg-white/5 hover:text-emerald-100'"
                   :title="collapsed ? 'Notifications' : undefined"
                 >
                   <UIcon name="i-heroicons-bell" class="w-5 h-5 flex-shrink-0" />
@@ -384,7 +390,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
             <!-- User profile + Sign out row -->
             <div v-if="user" class="flex justify-between items-center gap-2">
               <button
-                class="flex items-center gap-3 px-4 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-0 flex-1 text-left"
+                class="flex items-center gap-3 px-4 py-1.5 rounded-lg hover:bg-white/10 transition-colors min-w-0 flex-1 text-left"
                 @click="navigateTo('/profile')"
               >
                 <UAvatar
@@ -398,7 +404,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 />
                 <div v-if="!collapsed" class="min-w-0 flex-1">
                   <p
-                    class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                    class="text-sm font-medium text-white truncate"
                   >
                     {{
                       user.preferredName || user.name || user.email || "User"
@@ -406,7 +412,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   </p>
                   <p
                     v-if="workspace"
-                    class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                    class="text-xs text-emerald-50/55 truncate"
                   >
                     {{ workspace.name }}
                   </p>
@@ -420,7 +426,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 variant="ghost"
                 size="sm"
                 square
-                class="px-4"
+                class="px-4 text-emerald-50/70 hover:text-white hover:bg-white/10"
                 @click="isLogoutModalOpen = true"
               />
             </div>
@@ -439,12 +445,12 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
       class="lg:hidden"
       side="left"
       :close="false"
-      :ui="{ header: 'hidden', body: 'p-0' }"
+      :ui="{ header: 'hidden', body: 'p-0 bg-emerald-950' }"
     >
       <template #body>
         <div class="flex flex-col h-full">
           <!-- User profile section -->
-          <div v-if="user" class="p-4 border-b border-gray-800">
+          <div v-if="user" class="p-4 border-b border-white/10">
             <div class="flex items-center gap-3">
               <UAvatar
                 :src="
@@ -454,24 +460,24 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                 "
                 :alt="user.name || 'User'"
                 size="lg"
-                class="ring-2 ring-gray-700"
+                class="ring-2 ring-white/20"
               />
               <div class="flex-1">
                 <h3 class="text-base font-semibold text-white">
                   {{ user.preferredName || user.name || "User" }}
                 </h3>
-                <p class="text-sm text-gray-400">
+                <p class="text-sm text-emerald-50/55">
                   {{ workspace?.name || "Workspace" }}
                 </p>
               </div>
               <button
                 aria-label="Close navigation menu"
-                class="p-2 -mr-2 rounded-lg hover:bg-gray-800 transition-colors"
+                class="p-2 -mr-2 rounded-lg hover:bg-white/10 transition-colors"
                 @click="mobileNavOpen = false"
               >
                 <UIcon
                   name="i-heroicons-x-mark"
-                  class="w-5 h-5 text-gray-400"
+                  class="w-5 h-5 text-emerald-50/60"
                 />
               </button>
             </div>
@@ -482,7 +488,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
             <!-- Main Menu Section -->
             <div class="px-4 mb-4">
               <p
-                class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2"
+                class="text-xs font-semibold text-emerald-200/45 uppercase tracking-wider mb-2 px-2"
               >
                 Main Menu
               </p>
@@ -492,8 +498,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
                   :class="
                     dashboardLink.active
-                      ? 'bg-primary/10 text-primary-400'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      ? 'bg-white/10 text-emerald-300'
+                      : 'text-emerald-50/70 hover:bg-white/5'
                   "
                   @click="mobileNavOpen = false"
                 >
@@ -503,7 +509,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   }}</span>
                   <UIcon
                     name="i-heroicons-chevron-right"
-                    class="w-4 h-4 text-gray-500"
+                    class="w-4 h-4 text-emerald-50/40"
                   />
                 </NuxtLink>
                 <NuxtLink
@@ -513,8 +519,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
                   :class="
                     link.active
-                      ? 'bg-primary/10 text-primary-400'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      ? 'bg-white/10 text-emerald-300'
+                      : 'text-emerald-50/70 hover:bg-white/5'
                   "
                   @click="mobileNavOpen = false"
                 >
@@ -529,7 +535,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   />
                   <UIcon
                     name="i-heroicons-chevron-right"
-                    class="w-4 h-4 text-gray-500"
+                    class="w-4 h-4 text-emerald-50/40"
                   />
                 </NuxtLink>
               </nav>
@@ -538,7 +544,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
             <!-- Account Section -->
             <div class="px-4">
               <p
-                class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2"
+                class="text-xs font-semibold text-emerald-200/45 uppercase tracking-wider mb-2 px-2"
               >
                 Account
               </p>
@@ -548,8 +554,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
                   :class="
                     route.path === '/profile'
-                      ? 'bg-primary/10 text-primary-400'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      ? 'bg-white/10 text-emerald-300'
+                      : 'text-emerald-50/70 hover:bg-white/5'
                   "
                   @click="mobileNavOpen = false"
                 >
@@ -557,7 +563,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   <span class="flex-1 font-medium">My Profile</span>
                   <UIcon
                     name="i-heroicons-chevron-right"
-                    class="w-4 h-4 text-gray-500"
+                    class="w-4 h-4 text-emerald-50/40"
                   />
                 </NuxtLink>
                 <NuxtLink
@@ -565,8 +571,8 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
                   :class="
                     route.path.startsWith('/settings')
-                      ? 'bg-primary/10 text-primary-400'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      ? 'bg-white/10 text-emerald-300'
+                      : 'text-emerald-50/70 hover:bg-white/5'
                   "
                   @click="mobileNavOpen = false"
                 >
@@ -574,18 +580,23 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   <span class="flex-1 font-medium">Settings</span>
                   <UIcon
                     name="i-heroicons-chevron-right"
-                    class="w-4 h-4 text-gray-500"
+                    class="w-4 h-4 text-emerald-50/40"
                   />
                 </NuxtLink>
                 <div
-                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-50/70"
                 >
                   <UIcon name="i-heroicons-swatch" class="w-5 h-5" />
                   <span class="flex-1 font-medium">Theme</span>
-                  <UColorModeSwitch />
+                  <UColorModeSwitch
+                    :ui="{
+                base: 'data-[state=unchecked]:bg-emerald-800',
+                thumb: 'data-[state=unchecked]:bg-emerald-200',
+              }"
+                  />
                 </div>
                 <button
-                  class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors"
+                  class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-50/70 hover:bg-white/5 transition-colors"
                   @click="isLogoutModalOpen = true"
                 >
                   <UIcon
@@ -595,7 +606,7 @@ const mobilePersonalLinks = computed(() => personalLinks.value);
                   <span class="flex-1 font-medium text-left">Sign Out</span>
                   <UIcon
                     name="i-heroicons-chevron-right"
-                    class="w-4 h-4 text-gray-500"
+                    class="w-4 h-4 text-emerald-50/40"
                   />
                 </button>
               </nav>
