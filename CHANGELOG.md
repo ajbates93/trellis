@@ -1,5 +1,103 @@
 # Changelog
 
+## [0.19.0](https://github.com/ajbates93/trellis/compare/v0.18.0...v0.19.0) (2026-08-03)
+
+
+### Features
+
+* admin user removal anonymizes instead of hard-deleting ([12cd2c8](https://github.com/ajbates93/trellis/commit/12cd2c854438728596ec75363958008e49699ad7))
+* anonymize-user routine and sole-admin guard ([d0da2cb](https://github.com/ajbates93/trellis/commit/d0da2cb31b01d70a3dee90ec22561d04f2b20669))
+* branded app error page with status-specific copy ([6ad44ca](https://github.com/ajbates93/trellis/commit/6ad44ca7d5a99b737c0285cf93f29bbe1321cc00))
+* **db:** add nullable workspace_id + backfill on content tables (RLS groundwork, TRE-44) ([bf98e14](https://github.com/ajbates93/trellis/commit/bf98e14cda699c130746bae49653584bed5ebde1))
+* **db:** add nullable workspace_id + backfill on content tables (TRE-44, RLS groundwork) ([369ba91](https://github.com/ajbates93/trellis/commit/369ba91cb5379a7d88b6dbe097be49b2dfc18ada))
+* **db:** request-scoped workspace context plumbing for RLS (TRE-44) ([dcbc355](https://github.com/ajbates93/trellis/commit/dcbc355b12735d6a9daf8741ed5ce3b5a2776746))
+* **db:** request-scoped workspace context plumbing for RLS (TRE-44) ([775ffb3](https://github.com/ajbates93/trellis/commit/775ffb3e1bde1ee30b478db117bf8e35e4d2a46a))
+* draft privacy and terms pages with footer links ([431e759](https://github.com/ajbates93/trellis/commit/431e7594f2b611336d5587c5d7c81e6feb7a40a4))
+* email invitation immediately when an admin adds a single user ([36671ea](https://github.com/ajbates93/trellis/commit/36671eadcbc2450af9aa5bfc77d645b34599295c))
+* guard review auto-save against cross-tab clobbering ([59f2953](https://github.com/ajbates93/trellis/commit/59f29534dca5311084099557365172e867141912))
+* guard review auto-save against cross-tab clobbering ([416e77a](https://github.com/ajbates93/trellis/commit/416e77a9305db0c01bccadb41312eb4c3ad938d8))
+* review-then-send invitations on CSV import; drop Pocketworks-only copy ([89a455c](https://github.com/ajbates93/trellis/commit/89a455c45fda2e4762d916e4efb966f7c3f43146))
+* **rls:** enable row-level security tenant isolation (TRE-44) ([2cd5098](https://github.com/ajbates93/trellis/commit/2cd50984cc1d4932f19e4f78e55d05e79b434c7e))
+* **rls:** prep content writes for tenant-isolation cutover (TRE-44) ([6981f92](https://github.com/ajbates93/trellis/commit/6981f92f75bab0254eacc3ef0dde76934e8b4627))
+* **rls:** tenant-isolation cutover — workspace_id DEFAULT + RLS enable (TRE-44) ([3f46e30](https://github.com/ajbates93/trellis/commit/3f46e3071b0a43cfc88afed7c441669d4ec52805))
+* self-service account deletion endpoint ([3e9e540](https://github.com/ajbates93/trellis/commit/3e9e54075fed72ad7eb60da385d546f14d33a979))
+* self-service data export endpoint ([7274d2c](https://github.com/ajbates93/trellis/commit/7274d2c04d63dbcbdc8541edc0dc6475c9ac99a2))
+* **server:** per-request workspace scope middleware (TRE-44) ([72f3093](https://github.com/ajbates93/trellis/commit/72f30935b618b1e075b8bd8ea09de609b1eabffe))
+* **server:** per-request workspace scope middleware (TRE-44) ([7099d7f](https://github.com/ajbates93/trellis/commit/7099d7fe15b80b8b3a863f57a50d36ffd250a7d0))
+* settings privacy page (data export + account deletion) ([2eb59de](https://github.com/ajbates93/trellis/commit/2eb59deb609ae093d286595182b9c85221186879))
+
+
+### Bug Fixes
+
+* 404s and CSPs ([78d9c84](https://github.com/ajbates93/trellis/commit/78d9c840d98e45c36e8c37c754a48ff60d607baa))
+* address combined review findings (em-dashes, staging var doc) ([9f5d91d](https://github.com/ajbates93/trellis/commit/9f5d91da0db4b60dd045534e87f2f9e0c30a734b))
+* address Cycle 1 whole-branch review findings ([b3f40a8](https://github.com/ajbates93/trellis/commit/b3f40a8ac69108b407b9e39e923a0471b84b226a))
+* **api:** enforce workspace boundary on cross-tenant handlers (F2/F3/F10/F11/F17) ([9d6ce45](https://github.com/ajbates93/trellis/commit/9d6ce456e1b78f58c4d61c7e57d49dd23d0005ad))
+* **api:** enforce workspace boundary on cross-tenant handlers (F2/F3/F10/F11/F17) ([ba3784e](https://github.com/ajbates93/trellis/commit/ba3784e002cf57d37df0906e2baf204844e6478a))
+* **auth:** block self-promotion via update-user (F1, Critical) ([94e1827](https://github.com/ajbates93/trellis/commit/94e1827c5a461e4cad3d24930759cbf6902355e8))
+* **auth:** block self-promotion via update-user (F1, Critical) ([9da3696](https://github.com/ajbates93/trellis/commit/9da36963a58d490874618774079bbebe92e8d5c4))
+* clear error on missing DATABASE_URL and stabilise test env ([cf90e18](https://github.com/ajbates93/trellis/commit/cf90e18372de7c381ed91727a446401d9c66dcbc))
+* **db:** reconcile migration chain with schema + CI drift check (CQ-2) ([a32ce9a](https://github.com/ajbates93/trellis/commit/a32ce9ad341527279b2cb56d85735964c3ee5cbf))
+* **db:** reconcile migration chain with schema and add CI drift check (CQ-2) ([59200b8](https://github.com/ajbates93/trellis/commit/59200b86c5aed0f7a84425a99e2f4732c899eb5a))
+* journal slack_workspaces migration so fresh databases get the table ([7aed621](https://github.com/ajbates93/trellis/commit/7aed621ee34a48cca17628aed090575535820b39))
+* parse onboarding CSV with papaparse (quoted fields, CRLF); allow management role ([b2b8b04](https://github.com/ajbates93/trellis/commit/b2b8b04ac5a433592601dbf9550ef55a2e2a5d9d))
+* PR fixes ([08d4d01](https://github.com/ajbates93/trellis/commit/08d4d013869c903b3cf4603c17ecd4aeb2b7f90b))
+* **rate-limit:** address PR [#105](https://github.com/ajbates93/trellis/issues/105) review - 401/403-only failures, grant, POST-only rule ([e5a6c4f](https://github.com/ajbates93/trellis/commit/e5a6c4fa54a92f33d33f19249a396c4188989e36))
+* reorder test-setup env default below imports (eslint import/first) ([13b6fa9](https://github.com/ajbates93/trellis/commit/13b6fa91a186da29cfbf0aa4aed797932210431d))
+* **rls:** address PR [#103](https://github.com/ajbates93/trellis/issues/103) review - 0024 snapshot, NULLIF default, docs ([932319a](https://github.com/ajbates93/trellis/commit/932319aa6bca4d2a65d7d60586f58fbfd2941d3a))
+* **rls:** address PR [#104](https://github.com/ajbates93/trellis/issues/104) review - role attrs, policy loop, doc safety ([79d9ef8](https://github.com/ajbates93/trellis/commit/79d9ef8b5e5e2bc6087b7dc64c1d5ba187140a14))
+* scope reminder trigger to workspace + escape names in emails (F14, F16) ([2835601](https://github.com/ajbates93/trellis/commit/28356012ad26120883c52675471e3eea3d0cc6b6))
+* scope reminder trigger to workspace + escape names in emails (F14, F16) ([18de830](https://github.com/ajbates93/trellis/commit/18de830075ab53390811213f1ff2d2cde257de56))
+* **security:** bind Slack install state to the initiating session (TRE-41) ([97097dd](https://github.com/ajbates93/trellis/commit/97097ddd4022a11716dffe5cb8dab5a6cfa3d05e))
+* **security:** bind Slack install state to the initiating session (TRE-41) ([d3611dd](https://github.com/ajbates93/trellis/commit/d3611dde5e46e54effad23831a1ff13632dd6326))
+* **security:** dependency upgrades + CI audit gate for production deps (TRE-42) ([7410b8c](https://github.com/ajbates93/trellis/commit/7410b8c796570d975914e46778e7fe9a0b82c6e2))
+* **security:** dependency upgrades + CI audit gate for production deps (TRE-42) ([c816aa7](https://github.com/ajbates93/trellis/commit/c816aa77b4df2014964efbb4b8851a6c10c895a9))
+* **security:** real rate limiting - trusted IP, shared store, per-account backoff (TRE-40) ([e58c0a2](https://github.com/ajbates93/trellis/commit/e58c0a2777098588b327bd58a8fa6eb5c54d6dfa))
+* **security:** real rate limiting - trusted IP, shared store, per-account backoff (TRE-40) ([27b1b73](https://github.com/ajbates93/trellis/commit/27b1b738876641c4377ff1f9f3b39d6172f9cfdf))
+* stop forwarding raw error messages to clients on 500 ([1d0d068](https://github.com/ajbates93/trellis/commit/1d0d0680fc6471dc95587a97805c275b6c516ca2))
+* workspace isolation fix, auth account takeover fix ([388af9c](https://github.com/ajbates93/trellis/commit/388af9c267abdac5dd17f80712053165b5b8def7))
+
+
+### Performance
+
+* add indexes on foreign keys and hot query paths ([42a5704](https://github.com/ajbates93/trellis/commit/42a5704a26c215dffc4f5e743d75de657f51187f))
+* batch team-summary insights into one query (fix N+1) ([26da8df](https://github.com/ajbates93/trellis/commit/26da8dff09217633c9a17f8410a150ee1b1a056f))
+* resolve buddy names via join in admin users list (fix N+1) ([e3b04e2](https://github.com/ajbates93/trellis/commit/e3b04e201c2bcae0b93fe2d9d0e419ec6e9cbb30))
+
+
+### Refactoring
+
+* extract sendUserInvitation util ([a2d7d2d](https://github.com/ajbates93/trellis/commit/a2d7d2d79a95450688ee4ec7af158d118374a0d8))
+* route all review write guards through canEdit ([704989c](https://github.com/ajbates93/trellis/commit/704989c313cce082459c75cf18cb044d40ffdff1))
+* **server:** extract shared requireUser/requireAdmin guards (CQ-4) ([d59ada9](https://github.com/ajbates93/trellis/commit/d59ada944c874df373dafac05c8ba0acb1d5dd92))
+* **server:** extract shared requireUser/requireAdmin guards (CQ-4) ([7cd4c96](https://github.com/ajbates93/trellis/commit/7cd4c96c5dd0e59f81c413f35cf56aa60bb89d5f))
+
+
+### Documentation
+
+* document database backup and restore story ([22de78a](https://github.com/ajbates93/trellis/commit/22de78a17bd71781eaf4f956e5249897e3ecd667))
+* item [#2](https://github.com/ajbates93/trellis/issues/2) cycle 1 & cycle 2 implementation plans ([8e0622f](https://github.com/ajbates93/trellis/commit/8e0622f7a6ab30bb6a84ad64f0a4467d0f4c4578))
+* item [#2](https://github.com/ajbates93/trellis/issues/2) hardening & polish design spec ([e85d72b](https://github.com/ajbates93/trellis/commit/e85d72b075743449e49e62ca1978b81cfefa2a99))
+* reconcile CLAUDE.md security model with the code (CQ-9) ([372bff4](https://github.com/ajbates93/trellis/commit/372bff4e2e445244b49d6d830d45bd94be4ef975))
+* reconcile CLAUDE.md security model with the code (CQ-9) ([7cd51bb](https://github.com/ajbates93/trellis/commit/7cd51bbfe00471ebb7f07cc1194da77ff4274f19))
+* RLS cutover handoff (TRE-44) ([3edc049](https://github.com/ajbates93/trellis/commit/3edc0494724fac2bc99b61ab9af820b037f5f375))
+* RLS cutover handoff for a new session (TRE-44) ([2e45c60](https://github.com/ajbates93/trellis/commit/2e45c60d4c46346a948531f453ea8add3745cf96))
+* **rls:** consolidate cutover into a single PR ([#103](https://github.com/ajbates93/trellis/issues/103)) ([f5296e5](https://github.com/ajbates93/trellis/commit/f5296e5deb5171edf4f2906847b0015a7915c611))
+
+
+### Miscellaneous
+
+* formatting ([4e1bec5](https://github.com/ajbates93/trellis/commit/4e1bec5c2d402a077b826a6e4bd224dfdecf0c7d))
+* retrigger CI after build OOM ([150a515](https://github.com/ajbates93/trellis/commit/150a515e18eefe70887066fdff5900067a3b1582))
+
+
+### Tests
+
+* default mock env for modules that build clients at import ([a43d1bf](https://github.com/ajbates93/trellis/commit/a43d1bfe17e5bcb3433f5a408a5e044de07bec77))
+* **server:** add integration test tier against a real Postgres (CQ-5) ([942ef20](https://github.com/ajbates93/trellis/commit/942ef202fe8f201d0f7d378685fcebd8215f0d31))
+* **server:** integration test tier against a real Postgres (CQ-5) ([2d512f8](https://github.com/ajbates93/trellis/commit/2d512f8ce47104c0789857d009b1659744a41966))
+* strengthen export-data success test to catch dropped where clauses ([b2f9f00](https://github.com/ajbates93/trellis/commit/b2f9f00b042b53907f9b1549e3be88559aaf5009))
+
 ## [0.18.0](https://github.com/ajbates93/trellis/compare/v0.17.0...v0.18.0) (2026-07-17)
 
 
