@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1 class="text-2xl sm:text-3xl font-bold text-highlighted">
+    <h1 class="text-3xl sm:text-4xl font-bold text-highlighted">
       {{ greeting }}, {{ displayName }}
     </h1>
-    <p class="mt-1 text-sm sm:text-base text-muted">
+    <p class="mt-2 text-base text-muted">
       {{ subtitle }}
     </p>
   </div>
