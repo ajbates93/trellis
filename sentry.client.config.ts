@@ -22,6 +22,15 @@ Sentry.init({
   // If you don't want to use Session Replay, just remove the line below:
   integrations: [Sentry.replayIntegration()],
 
+  // Stale-chunk fetches after a redeploy (hashed chunk names change between
+  // builds) are transient and already handled by Nuxt's automatic reload
+  // (experimental.emitRouteChunkError defaults to "automatic"); the second
+  // message is the Safari/Firefox wording of the same failure.
+  ignoreErrors: [
+    "Failed to fetch dynamically imported module",
+    "Importing a module script failed",
+  ],
+
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
