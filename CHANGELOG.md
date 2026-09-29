@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.19.1](https://github.com/ajbates93/trellis/compare/v0.19.0...v0.19.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* ignore transient stale-chunk import errors in Sentry client ([3a87512](https://github.com/ajbates93/trellis/commit/3a87512cd661a0fe52bea3dbc94f391aad8e2124))
+* stop production memory growth from SSR auth clients and pool deadlock ([a4472a7](https://github.com/ajbates93/trellis/commit/a4472a76ed1190f52fdda4df7781dbe53053fac8))
+
+
+### Miscellaneous
+
+* **deps:** npm audit fix (lockfile only) to clear production audit gate ([6549ed1](https://github.com/ajbates93/trellis/commit/6549ed1d50a1a292c4477266a14bfeb9001f047f))
+
+
+### Tests
+
+* give z-workspace-scope integration event an /api path ([812c00d](https://github.com/ajbates93/trellis/commit/812c00de8972b3b4b982e60e67ebe631152d382d))
+
 ## [0.19.0](https://github.com/ajbates93/trellis/compare/v0.18.0...v0.19.0) (2026-08-03)
 
 
