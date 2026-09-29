@@ -2,6 +2,7 @@ import postgres from "postgres";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { sql } from "drizzle-orm";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { createError } from "h3";
 import * as schema from "./schema";
 
 type Db = PostgresJsDatabase<typeof schema>;
@@ -134,6 +135,34 @@ export function getRequestScope(): DbScope | undefined {
   return scopeStore.getStore();
 }
 
+// How long a request waits for a free pooled connection before failing. Without
+// a bound, an exhausted pool leaves requests (and everything they reference)
+// queued in memory forever, so a stuck pool shows up as an unbounded memory
+// climb instead of errors.
+const RESERVE_TIMEOUT_MS = 10_000;
+
+async function reserveWithTimeout(): Promise<postgres.ReservedSql> {
+  const pending = client.reserve();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      // If the connection arrives after we gave up, hand it straight back.
+      pending.then((late) => late.release()).catch(() => {});
+      reject(
+        createError({
+          statusCode: 503,
+          message: "Database busy, please retry",
+        }),
+      );
+    }, RESERVE_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([pending, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Reserve a dedicated connection, set the caller's workspace context on it as
  * session settings, and populate `scope` so `db` routes through it. Idempotent
@@ -145,7 +174,7 @@ export async function bindWorkspaceToScope(
 ): Promise<void> {
   if (scope.db) return;
 
-  const reserved = await client.reserve();
+  const reserved = await reserveWithTimeout();
   try {
     await reserved`select set_config('app.current_workspace_id', ${ctx.workspaceId ?? ""}, false)`;
     await reserved`select set_config('app.is_super_admin', ${ctx.isSuperAdmin ? "on" : "off"}, false)`;

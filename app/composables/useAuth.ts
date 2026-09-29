@@ -53,7 +53,20 @@ export const useAuth = () => {
       adminClient(),
     ],
   });
-  const sessionData = authClient.useSession();
+  // better-auth never fetches the session during SSR, so on the server the
+  // store only ever holds its initial pending state. Subscribing to it anyway
+  // registers listeners on process-wide singletons that are only removed when
+  // the component scope is disposed, which never happens during SSR, so every
+  // rendered page leaked a whole auth client. Use that initial state directly.
+  type SessionRef = ReturnType<typeof authClient.useSession<never>>;
+  const sessionData: SessionRef = import.meta.server
+    ? (shallowRef({
+        data: null,
+        error: null,
+        isPending: true,
+        isRefetching: false,
+      }) as unknown as SessionRef)
+    : authClient.useSession();
   const user = computed(() => sessionData.value.data?.user);
   const session = computed(() => sessionData.value.data?.session);
   const isSessionPending = computed(() => sessionData.value.isPending);

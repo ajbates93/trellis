@@ -24,6 +24,13 @@ export default defineEventHandler(async (event) => {
 
   if (!user) return;
 
+  // Only API requests get a reserved connection. A server-rendered page reads
+  // its data through internal $fetch calls to /api/*, each of which reserves
+  // its own connection; reserving one for the page as well held a connection
+  // idle while its child requests queued for the pool, so a handful of
+  // concurrent page loads could exhaust it and deadlock every request after.
+  if (!event.path.startsWith("/api/")) return;
+
   const scope = enterRequestScope();
 
   // Release when the response finishes or the connection closes. `close` always

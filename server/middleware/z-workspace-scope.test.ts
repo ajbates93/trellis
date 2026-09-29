@@ -14,9 +14,9 @@ vi.mock("#server/database/connection", () => ({
 
 const { default: handler } = await import("./z-workspace-scope");
 
-function mockEvent(user: unknown) {
+function mockEvent(user: unknown, path = "/api/goals") {
   const res = new EventEmitter();
-  return { event: { context: { user }, node: { res } }, res };
+  return { event: { path, context: { user }, node: { res } }, res };
 }
 
 describe("z-workspace-scope middleware", () => {
@@ -24,6 +24,13 @@ describe("z-workspace-scope middleware", () => {
 
   it("does nothing for an unauthenticated request", async () => {
     const { event } = mockEvent(undefined);
+    await handler(event as never);
+    expect(enterRequestScope).not.toHaveBeenCalled();
+    expect(bindWorkspaceToScope).not.toHaveBeenCalled();
+  });
+
+  it("does not reserve a connection for a server-rendered page", async () => {
+    const { event } = mockEvent({ workspaceId: "ws1" }, "/dashboard");
     await handler(event as never);
     expect(enterRequestScope).not.toHaveBeenCalled();
     expect(bindWorkspaceToScope).not.toHaveBeenCalled();

@@ -12,7 +12,7 @@ import { getRequestScope, db } from "#server/database/connection";
 describe("z-workspace-scope middleware (integration, real scope)", () => {
   function mockEvent(user: unknown) {
     const res = new EventEmitter();
-    return { event: { context: { user }, node: { res } }, res };
+    return { event: { path: "/api/goals", context: { user }, node: { res } }, res };
   }
 
   it("binds the workspace so a later query in the same context is scoped", async () => {
